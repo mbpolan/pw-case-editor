@@ -54,6 +54,9 @@ void drawEvidenceInfoPage(const std::vector<Case::Evidence> &evidence, int index
 // draw the profiles page
 void drawProfilesPage(int page);
 
+// draw the examination scene
+void drawExamineScene(SDL_Surface *background, int cursorX, int cursorY);
+
 }; // namespace Renderer
 
 #endif

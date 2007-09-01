@@ -28,10 +28,10 @@
       <mainprogram>/home/mike/Documents/programming/pw_case_player/src/pw_case_player</mainprogram>
       <terminal>true</terminal>
       <runarguments>
-        <pw_case_player/>
+        <pw_case_player></pw_case_player>
       </runarguments>
       <debugarguments>
-        <pw_case_player/>
+        <pw_case_player></pw_case_player>
       </debugarguments>
       <cwd>
         <pw_case_player>/home/mike/Documents/programming/pw_case_player/debug/./src</pw_case_player>

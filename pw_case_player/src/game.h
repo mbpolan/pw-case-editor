@@ -71,6 +71,9 @@ struct _GameState {
 	int selectedEvidence;
 	int selectedControl;
 	
+	// x,y coordinates or examination cursor
+	int examineX, examineY;
+	
 	// the current evidence being shown
 	std::string shownEvidence;
 	Position shownEvidencePos;
@@ -113,6 +116,9 @@ class Game {
 		void onMouseEvent(SDL_MouseButtonEvent *e);
 		
 	private:
+		// check the current input device state
+		void checkInputState();
+		
 		// toggle game state flags
 		void toggle(int flags);
 		
@@ -151,6 +157,21 @@ class Game {
 		
 		// evidence info page click handler
 		void onEvidenceInfoPageClickEvent(int x, int y);
+		
+		// examine button activated handler
+		void onExamineButtonActivated();
+		
+		// move button activated handler
+		void onMoveButtonActivated();
+		
+		// talk button activated handler
+		void onTalkButtonActivated();
+		
+		// present button activated handler
+		void onPresentButtonActivated();
+		
+		// examine the hotspot in provided coordinate range
+		void onExamineThing(int x, int y);
 		
 		// pointer to current case
 		Case::Case *m_Case;

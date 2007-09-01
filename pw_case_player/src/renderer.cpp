@@ -20,6 +20,7 @@
 // renderer.cpp: implementations of Renderer namespace
 
 #include <cmath>
+#include "SDL_gfxPrimitives.h"
 
 #include "font.h"
 #include "renderer.h"
@@ -260,4 +261,26 @@ void Renderer::drawProfilesPage(int page) {
 	// draw the title bar
 	Renderer::drawImage(0, 197+9, "tc_profiles_bar");
 	
+}
+
+// draw the examination scene
+void Renderer::drawExamineScene(SDL_Surface *background, int cursorX, int cursorY) {
+	// get pointer to screen surface
+	SDL_Surface *screen=SDL_GetVideoSurface();
+	if (!screen)
+		return;
+	
+	// get opaque screen and make it completely transparent
+	SDL_Surface *overlay=Textures::queryTexture("transparent");
+	SDL_FillRect(overlay, NULL, 0);
+	
+	// draw crosshairs
+	vlineRGBA(overlay, cursorX, 0, 192, 0, 0, 255, 200);
+	hlineRGBA(overlay, 0, 256, cursorY, 0, 0, 255, 200);
+	
+	// draw center rectangle
+	rectangleRGBA(overlay, cursorX-6, cursorY-6, cursorX+6, cursorY+6, 0, 0, 255, 200);
+	
+	// draw overlay
+	Renderer::drawImage(0, 197, overlay);
 }

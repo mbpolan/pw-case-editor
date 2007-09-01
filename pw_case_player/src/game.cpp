@@ -39,6 +39,10 @@ Game::Game(const std::string &rootPath, Case::Case *pcase): m_RootPath(rootPath)
 	m_State.selectedEvidence=0;
 	m_State.selectedControl=0;
 	
+	// reset examination cursor position
+	m_State.examineX=256/2;
+	m_State.examineY=192/2;
+	
 	// null out variables
 	m_State.currentLocation="null";
 	m_State.shownEvidence="null";
@@ -115,6 +119,12 @@ bool Game::loadStockTextures() {
 	textures.push_back(std::make_pair<std::string, std::string>("tc_select_tr", "data/gui/select_tr.tga"));
 	textures.push_back(std::make_pair<std::string, std::string>("tc_select_br", "data/gui/select_br.tga"));
 	textures.push_back(std::make_pair<std::string, std::string>("tc_select_bl", "data/gui/select_bl.tga"));
+	textures.push_back(std::make_pair<std::string, std::string>("tc_top_bar_thin", "data/stock/topbar_thin.tga"));
+	textures.push_back(std::make_pair<std::string, std::string>("tc_lower_bar_thin", "data/stock/lowerbar_thin.tga"));
+	textures.push_back(std::make_pair<std::string, std::string>("tc_examine_bar", "data/stock/examine_bar.tga"));
+	textures.push_back(std::make_pair<std::string, std::string>("tc_court_rec_btn_thin", "data/gui/court_record_thin.tga"));
+	textures.push_back(std::make_pair<std::string, std::string>("tc_back_btn_thin", "data/gui/back_thin.tga"));
+	textures.push_back(std::make_pair<std::string, std::string>("tc_examine_btn_thin", "data/gui/examine_thin.tga"));
 	
 	// iterate over textures and load them
 	for (int i=0; i<textures.size(); i++) {
@@ -137,6 +147,7 @@ bool Game::loadStockTextures() {
 	// map of opaque surfaces
 	std::map<std::string, std::pair<int, int> > surfaces;
 	surfaces["opaque_black"]=std::make_pair<int, int>(256, 192);
+	surfaces["transparent"]=std::make_pair<int, int>(256, 192);
 	
 	// create these surfaces and add them as textures
 	for (std::map<std::string, std::pair<int, int> >::iterator it=surfaces.begin(); it!=surfaces.end(); ++it) {
@@ -154,6 +165,9 @@ bool Game::loadStockTextures() {
 		// add this surface as a texture
 		Textures::pushTexture((*it).first, opaque);
 	}
+	
+	// modify surfaces
+	SDL_SetColorKey(Textures::queryTexture("transparent"), SDL_SRCCOLORKEY, 0);
 	
 	// begin parsing the game script
 	BufferMap bmap=m_Case->getBuffers();
@@ -227,6 +241,10 @@ void Game::render() {
 			toggle(flags);
 		}
 	}
+	
+	// check input state at this point
+	checkInputState();
+	
 }
 
 // handle keyboard event
@@ -238,12 +256,15 @@ void Game::onKeyboardEvent(SDL_KeyboardEvent *e) {
 		if (amount>8)
 			amount=8;
 		
+		// select the next evidence
 		if (e->keysym.sym==SDLK_RIGHT)
 			selectEvidence(true);
 		
+		// select the previous evidence
 		else if (e->keysym.sym==SDLK_LEFT)
 			selectEvidence(false);
 		
+		// ask for more information about selected evidence
 		else if (e->keysym.sym==SDLK_RETURN)
 			// show the evidence info page for this evidence
 			toggle(STATE_EVIDENCE_INFO_PAGE | STATE_LOWER_BAR | STATE_BACK_BTN | STATE_PROFILES_BTN);
@@ -251,18 +272,21 @@ void Game::onKeyboardEvent(SDL_KeyboardEvent *e) {
 	
 	// if controls are drawn, change the selection
 	else if (m_State.drawFlags & STATE_CONTROLS) {
+		// select the right control
 		if (e->keysym.sym==SDLK_RIGHT) {
 			m_State.selectedControl+=1;
 			if (m_State.selectedControl>3)
 				m_State.selectedControl=0;
 		}
 		
+		// select the left control
 		else if (e->keysym.sym==SDLK_LEFT) {
 			m_State.selectedControl-=1;
 			if (m_State.selectedControl<0)
 				m_State.selectedControl=3;
 		}
 		
+		// select the upper control
 		else if (e->keysym.sym==SDLK_UP) {
 			if (m_State.selectedControl==2)
 				m_State.selectedControl=0;
@@ -271,6 +295,7 @@ void Game::onKeyboardEvent(SDL_KeyboardEvent *e) {
 				m_State.selectedControl=1;
 		}
 		
+		// select the lower control
 		else if (e->keysym.sym==SDLK_DOWN) {
 			if (m_State.selectedControl==0)
 				m_State.selectedControl=2;
@@ -278,19 +303,48 @@ void Game::onKeyboardEvent(SDL_KeyboardEvent *e) {
 			else if (m_State.selectedControl==1)
 				m_State.selectedControl=3;
 		}
+		
+		// activate a button
+		else if (e->keysym.sym==SDLK_RETURN) {
+			// based on selected control, ask to activate it via keyboard
+			switch(m_State.selectedControl) {
+				case 0: onExamineButtonActivated(); break;
+				case 1: onMoveButtonActivated(); break;
+				case 2: onTalkButtonActivated(); break;
+				case 3: onPresentButtonActivated(); break;
+			}
+		}
 	}
 }
 
 // handle mouse click event
 void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 	if (e->type==SDL_MOUSEBUTTONDOWN) {
-		// see if the click hit the top right button, if any
-		if ((e->x>=176 && e->x<=176+80) && (e->y>=197 && e->y<=197+33))
-			onTopRightButtonClicked();
+		// buttons have different positions in the examine scene
+		if (!(m_State.drawFlags & STATE_EXAMINE)) {
+			// see if the click hit the top right button, if any
+			if ((e->x>=176 && e->x<=176+80) && (e->y>=197 && e->y<=197+33))
+				onTopRightButtonClicked();
+			
+			// see if the bottom left button was clicked
+			else if ((e->x>=0 && e->x<=79) && (e->y>=359 && e->y<=359+30))
+				onBottomLeftButtonClicked();
+		}
 		
-		// see if the bottom left button was clicked
-		else if ((e->x>=0 && e->x<=79) && (e->y>=359 && e->y<=359+30))
-			onBottomLeftButtonClicked();
+		// ditto
+		else if (m_State.drawFlags & STATE_EXAMINE) {
+			// this will always be the court record button in this case
+			if ((e->x>=176 && e->x<=176+79) && (e->y>=197 && e->y<=197+21))
+				onTopRightButtonClicked();
+			
+			// likewise, this will always be the back button
+			else if ((e->x>=0 && e->x<=79) && (e->y>=369 && e->y<=369+21))
+				onBottomLeftButtonClicked();
+			
+			// examine button clicked
+			else if ((e->x>=256-79 && e->x<=256) && (e->y>=369 && e->y>=369+21))
+				onExamineThing(e->x, e->y);
+		}
 		
 		// see if the center button was clicked
 		if ((m_State.drawFlags & STATE_NEXT_BTN) && ((e->x>=16 && e->x<=16+223) && (e->y>=242 && e->y<=242+111)))
@@ -303,6 +357,43 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 		// same applies for evidence info page
 		else if (m_State.drawFlags & STATE_EVIDENCE_INFO_PAGE)
 			onEvidenceInfoPageClickEvent(e->x, e->y);
+	}
+}
+
+// check input device state
+void Game::checkInputState() {
+	// if the examination scene is shown, move the crosshairs
+	if (m_State.drawFlags & STATE_EXAMINE) {
+		// get the current keyboard state
+		Uint8 *keys=SDL_GetKeyState(NULL);
+		
+		// move cursor up
+		if (keys[SDLK_UP] && m_State.examineY!=0) {
+			m_State.examineY-=1;
+		}
+		
+		// move cursor down
+		if (keys[SDLK_DOWN] && m_State.examineY<256)
+			m_State.examineY+=1;
+		
+		// move cursor left
+		if (keys[SDLK_LEFT] && m_State.examineX!=0)
+			m_State.examineX-=1;
+		
+		// move cursor right
+		if (keys[SDLK_RIGHT] && m_State.examineX<256)
+			m_State.examineX+=1;
+		
+		// get the mouse state
+		int mx, my;
+		Uint8 state=SDL_GetMouseState(&mx, &my);
+		
+		// move the cursors if the first button is pressed
+		if ((state & SDL_BUTTON(1)) && (my>=197+22 && my<=391-22)) {
+			// update position
+			m_State.examineX=mx;
+			m_State.examineY=192-(391-my);
+		}
 	}
 }
 
@@ -358,6 +449,16 @@ void Game::renderTopView() {
 		// and draw it
 		if (bg)
 			Renderer::drawImage(0, 0, bg);
+		
+		// if the examination scene is up, dim the upper screen
+		if (m_State.drawFlags & STATE_EXAMINE) {
+			// get an opaque black surface
+			SDL_Surface *opaque=Textures::queryTexture("opaque_black");
+			SDL_SetAlpha(opaque, SDL_SRCALPHA, 128);
+			
+			// draw it over the location
+			Renderer::drawImage(0, 0, opaque);
+		}
 	}
 	
 	else {
@@ -385,8 +486,22 @@ void Game::renderTopView() {
 
 // render the menu view (lower screen)
 void Game::renderMenuView() {
-	// render the background texture
-	Renderer::drawImage(0, 197, "court_overview_g");
+	// when dealing with drawing elements, some need to be drawn "thin"
+	// this is only true when the examine scene is being drawn
+	std::string append="";
+	if (m_State.drawFlags & STATE_EXAMINE)
+		append="_thin";
+	
+	// render the background texture (or location background if examining)
+	if (m_State.drawFlags & STATE_EXAMINE) {
+		// get the current background
+		Case::Location location=m_Case->getLocations()[m_State.currentLocation];
+		Case::Background bg=m_Case->getBackgrounds()[location.bg];
+		
+		Renderer::drawImage(0, 197, bg.texture);
+	}
+	else
+		Renderer::drawImage(0, 197, "court_overview_g");
 	
 	// render court record pages, if needed
 	if (m_State.drawFlags & STATE_EVIDENCE_PAGE)
@@ -397,6 +512,15 @@ void Game::renderMenuView() {
 	
 	else if (m_State.drawFlags & STATE_EVIDENCE_INFO_PAGE)
 		Renderer::drawEvidenceInfoPage(m_State.visibleEvidence, m_State.evidencePage*8+m_State.selectedEvidence);
+	
+	// draw the examination scene
+	else if (m_State.drawFlags & STATE_EXAMINE) {
+		// get the current location and its mapped background
+		Case::Location location=m_Case->getLocations()[m_State.currentLocation];
+		Case::Background bg=m_Case->getBackgrounds()[location.bg];
+		
+		Renderer::drawExamineScene(bg.texture, m_State.examineX, m_State.examineY);
+	}
 	
 	// draw next button in case of dialog
 	else if (m_State.drawFlags & STATE_NEXT_BTN) {
@@ -412,23 +536,40 @@ void Game::renderMenuView() {
 	Renderer::drawImage(0, 197, "scanlines_overlay");
 	
 	// draw the top border bar
-	Renderer::drawImage(0, 197, "tc_top_bar");
+	Renderer::drawImage(0, 197, "tc_top_bar"+append);
 	
 	// draw border bars
-	if (m_State.drawFlags & STATE_LOWER_BAR)
-		Renderer::drawImage(0, 357, "tc_lower_bar");
+	if (m_State.drawFlags & STATE_LOWER_BAR) {
+		// thin bar needs to be drawn lower
+		int y=357;
+		if (append=="_thin")
+			y+=10;
+		
+		// draw this lower bar border
+		Renderer::drawImage(0, y, "tc_lower_bar"+append);
+	}
 	
 	// draw activated buttons
 	if (m_State.drawFlags & STATE_COURT_REC_BTN)
-		Renderer::drawImage(176, 197, "tc_court_rec_btn");
+		Renderer::drawImage(176, 197, "tc_court_rec_btn"+append);
 	else if (m_State.drawFlags & STATE_EVIDENCE_BTN)
 		Renderer::drawImage(177, 197, "tc_evidence_btn");
 	else if (m_State.drawFlags & STATE_PROFILES_BTN)
 		Renderer::drawImage(177, 197, "tc_profiles_btn");
 	
+	if (m_State.drawFlags & STATE_EXAMINE)
+		Renderer::drawImage(256-79, 369, "tc_examine_btn_thin");
+	
 	// draw the back button
-	if (m_State.drawFlags & STATE_BACK_BTN)
-		Renderer::drawImage(0, 359, "tc_back_btn");
+	if (m_State.drawFlags & STATE_BACK_BTN) {
+		// same applies here, draw the back button lower if it is the thin variety
+		int y=359;
+		if (append=="_thin")
+			y+=10;
+		
+		// draw the button
+		Renderer::drawImage(0, y, "tc_back_btn"+append);
+	}
 }
 
 // render the text box
@@ -575,8 +716,9 @@ void Game::onTopRightButtonClicked() {
 void Game::onBottomLeftButtonClicked() {
 	// if the back button is shown, return to main screen
 	if (m_State.drawFlags & STATE_BACK_BTN) {
-		// if either evidence or profiles pages are shown, revert to main screen
-		if ((m_State.drawFlags & STATE_EVIDENCE_PAGE) || (m_State.drawFlags & STATE_PROFILES_PAGE)) {
+		// if either evidence or profiles pages, or examination scene are shown, revert to main screen
+		if ((m_State.drawFlags & STATE_EVIDENCE_PAGE) || (m_State.drawFlags & STATE_PROFILES_PAGE) ||
+		    (m_State.drawFlags & STATE_EXAMINE)) {
 			int flags=STATE_COURT_REC_BTN | STATE_CONTROLS;
 			
 			// if the text box is also present, draw it as well
@@ -660,4 +802,27 @@ void Game::onEvidenceInfoPageClickEvent(int x, int y) {
 	// right button
 	else if ((x>=240 && x<=240+16) && (y>=ey && y<=ey+63))
 		selectEvidence(true);
+}
+
+// examine button activated handler
+void Game::onExamineButtonActivated() {
+	toggle(STATE_EXAMINE | STATE_COURT_REC_BTN | STATE_LOWER_BAR | STATE_BACK_BTN);
+}
+
+// move button activated handler
+void Game::onMoveButtonActivated() {
+}
+
+// talk button activated handler
+void Game::onTalkButtonActivated() {
+}
+
+// present button activated handler
+void Game::onPresentButtonActivated() {
+}
+
+// examine the hotspot in provided coordinate range
+void Game::onExamineThing(int x, int y) {
+	// get our current location
+	Case::Location location=m_Case->getLocations()[m_State.currentLocation];
 }

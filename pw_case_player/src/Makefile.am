@@ -8,6 +8,6 @@ AM_CPPFLAGS =  $(LIBSDL_CFLAGS) $(all_includes)
 
 # the library search path.
 pw_case_player_LDFLAGS = $(all_libraries) $(LIBSDL_RPATH)
-pw_case_player_LDADD = -lSDL_image $(LIBSDL_LIBS) -lGL -lGLU -lm
+pw_case_player_LDADD = -lSDL_gfx $(LIBSDL_LIBS) -lSDL_image -lm
 noinst_HEADERS = application.h case.h character.h common.h font.h game.h \
 	iohandler.h renderer.h textparser.h texture.h
