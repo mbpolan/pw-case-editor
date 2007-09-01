@@ -29,6 +29,7 @@
 #include <gtkmm/image.h>
 #include <gtkmm/label.h>
 #include <gtkmm/liststore.h>
+#include <gtkmm/listviewtext.h>
 #include <gtkmm/notebook.h>
 #include <gtkmm/scrolledwindow.h>
 #include <gtkmm/textbuffer.h>
@@ -36,12 +37,61 @@
 
 #include "case.h"
 #include "character.h"
+#include "hotspotwidget.h"
+
+// dialog used to add a hotspot to a location
+class NewHotspotDialog: public Gtk::Dialog {
+	public:
+		// constructor
+		NewHotspotDialog();
+		
+		// set pixbuf for background
+		void set_pixbuf(const Glib::RefPtr<Gdk::Pixbuf> &pixbuf) { m_HSWidget->set_image(pixbuf); }
+		
+		// return the hotspot
+		Case::Hotspot get_hotspot();
+		
+	private:
+		// build the ui
+		void construct();
+		
+		// signal handler for point changes
+		void on_point_changed(int x, int y);
+		
+		// signal handler for dimension changes
+		void on_dimensions_changed(int w, int h);
+		
+		// handler for coordinate entry changes
+		void on_coord_entry_changed();
+		
+		// handler for dimension entry changes
+		void on_dimension_entry_changed();
+		
+		// labels
+		Gtk::Label *m_XLabel;
+		Gtk::Label *m_YLabel;
+		Gtk::Label *m_WLabel;
+		Gtk::Label *m_HLabel;
+		Gtk::Label *m_BlockLabel;
+		
+		// entries
+		Gtk::Entry *m_XEntry;
+		Gtk::Entry *m_YEntry;
+		Gtk::Entry *m_WEntry;
+		Gtk::Entry *m_HEntry;
+		Gtk::Entry *m_BlockEntry;
+		
+		// widget to visually edit the hotspot
+		HotspotWidget *m_HSWidget;
+};
+
+/***************************************************************************/
 
 // dialog used to manage locations
 class LocationsDialog: public Gtk::Dialog {
 	public:
 		// constructor
-		LocationsDialog(const LocationMap &locations, const StringVector &usedIds);
+		LocationsDialog(const LocationMap &locations, const BackgroundMap &bgs, const StringVector &usedIds);
 		
 		// return the stored location map
 		LocationMap get_locations() const { return m_Locations; }
@@ -56,6 +106,12 @@ class LocationsDialog: public Gtk::Dialog {
 		// remove a location
 		void on_delete();
 		
+		// add a hotspot
+		void on_add_hotspot();
+		
+		// remove a hotspot
+		void on_delete_hotspot();
+		
 		// amend button click handler
 		void on_amend_button_clicked();
 		
@@ -65,6 +121,8 @@ class LocationsDialog: public Gtk::Dialog {
 		// buttons
 		Gtk::Button *m_AddButton;
 		Gtk::Button *m_DeleteButton;
+		Gtk::Button *m_AddHSButton;
+		Gtk::Button *m_DeleteHSButton;
 		Gtk::Button *m_AmendButton;
 		
 		// labels
@@ -73,14 +131,16 @@ class LocationsDialog: public Gtk::Dialog {
 		Gtk::Label *m_IdLabel;
 		Gtk::Label *m_NameLabel;
 		Gtk::Label *m_BGLabel;
+		Gtk::Label *m_HotspotsLabel;
 		
 		// entries
 		Gtk::Entry *m_IdEntry;
 		Gtk::Entry *m_NameEntry;
 		Gtk::Entry *m_BGEntry;
 		
-		// scrolled window
+		// scrolled windows
 		Gtk::ScrolledWindow *m_SWindow;
+		Gtk::ScrolledWindow *m_HotspotSWindow;
 		
 		// tree model and view
 		Gtk::TreeView *m_TreeView;
@@ -101,8 +161,12 @@ class LocationsDialog: public Gtk::Dialog {
 		// column record instance
 		ColumnRec m_ColumnRec;
 		
+		// list view for hotspots
+		Gtk::ListViewText *m_HotspotList;
+		
 		// stored location data
 		LocationMap m_Locations;
+		BackgroundMap m_Backgrounds;
 		StringVector m_UsedIds;
 };
 

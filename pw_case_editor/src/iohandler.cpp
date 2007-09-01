@@ -143,6 +143,24 @@ bool IO::save_case_to_file(const Glib::ustring &path, const Case::Case &pcase,
 		
 		// write bg id
 		write_string(f, (*it).second.bg);
+		
+		// write amount of hotspots
+		int hcount=(*it).second.hotspots.size();
+		fwrite(&hcount, sizeof(int), 1, f);
+		
+		// iterate over hotspots
+		for (int i=0; i<hcount; i++) {
+			Case::Hotspot hspot=(*it).second.hotspots[i];
+			
+			// write x,y; width and height
+			fwrite(&hspot.rect.x, sizeof(int), 1, f);
+			fwrite(&hspot.rect.y, sizeof(int), 1, f);
+			fwrite(&hspot.rect.w, sizeof(int), 1, f);
+			fwrite(&hspot.rect.h, sizeof(int), 1, f);
+			
+			// write target block
+			write_string(f, hspot.block);
+		}
 	}
 	
 	// write count of blocks
@@ -292,6 +310,24 @@ bool IO::export_case_to_file(const Glib::ustring &path, const Case::Case &pcase,
 		
 		// write bg id
 		write_string(f, (*it).second.bg);
+		
+		// write amount of hotspots
+		int hcount=(*it).second.hotspots.size();
+		fwrite(&hcount, sizeof(int), 1, f);
+		
+		// iterate over hotspots
+		for (int i=0; i<hcount; i++) {
+			Case::Hotspot hspot=(*it).second.hotspots[i];
+			
+			// write area and dimensions
+			fwrite(&hspot.rect.x, sizeof(int), 1, f);
+			fwrite(&hspot.rect.y, sizeof(int), 1, f);
+			fwrite(&hspot.rect.w, sizeof(int), 1, f);
+			fwrite(&hspot.rect.h, sizeof(int), 1, f);
+			
+			// write target block
+			write_string(f, hspot.block);
+		}
 	}
 	
 	// write count of blocks
@@ -467,6 +503,27 @@ bool IO::load_case_from_file(const Glib::ustring &path, Case::Case &pcase,
 		
 		// read bg id
 		location.bg=read_string(f);
+		
+		// read amount of hotspots
+		int hcount;
+		fread(&hcount, sizeof(int), 1, f);
+		
+		// iterate over hotspots
+		for (int i=0; i<hcount; i++) {
+			Case::Hotspot hspot;
+			
+			// read area and dimensions
+			fread(&hspot.rect.x, sizeof(int), 1, f);
+			fread(&hspot.rect.y, sizeof(int), 1, f);
+			fread(&hspot.rect.w, sizeof(int), 1, f);
+			fread(&hspot.rect.h, sizeof(int), 1, f);
+			
+			// read target block
+			hspot.block=read_string(f);
+			
+			// add this hotspot
+			location.hotspots.push_back(hspot);
+		}
 		
 		// add this location
 		pcase.add_location(location);

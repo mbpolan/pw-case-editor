@@ -23,15 +23,144 @@
 #include <gtkmm/frame.h>
 #include <gtkmm/messagedialog.h>
 #include <gtkmm/table.h>
+#include <sstream>
 
 #include "dialogs.h"
 
 // constructor
-LocationsDialog::LocationsDialog(const LocationMap &locations, const StringVector &usedIds) {
+NewHotspotDialog::NewHotspotDialog() {
+	construct();
+}
+
+// return the hotspot
+Case::Hotspot NewHotspotDialog::get_hotspot() {
+	// get the hotspot from the hotspot widget
+	Case::Hotspot hspot=m_HSWidget->get_hotspot();
+	
+	// fill in target id
+	hspot.block=m_BlockEntry->get_text();
+	
+	return hspot;
+}
+
+// build the ui
+void NewHotspotDialog::construct() {
+	// get default vbox
+	Gtk::VBox *vb=get_vbox();
+	vb->set_border_width(10);
+	
+	// allocate layout table
+	Gtk::Table *table=manage(new Gtk::Table);
+	table->set_spacings(5);
+	
+	// allocate labels
+	m_XLabel=manage(new Gtk::Label("X"));
+	m_YLabel=manage(new Gtk::Label("Y"));
+	m_WLabel=manage(new Gtk::Label("Width"));
+	m_HLabel=manage(new Gtk::Label("Height"));
+	m_BlockLabel=manage(new Gtk::Label("Target Block Id"));
+	
+	// allocate entries
+	m_XEntry=manage(new Gtk::Entry);
+	m_YEntry=manage(new Gtk::Entry);
+	m_WEntry=manage(new Gtk::Entry);
+	m_HEntry=manage(new Gtk::Entry);
+	m_BlockEntry=manage(new Gtk::Entry);
+	
+	// connect entry signals
+	m_XEntry->signal_changed().connect(sigc::mem_fun(*this, &NewHotspotDialog::on_coord_entry_changed));
+	m_YEntry->signal_changed().connect(sigc::mem_fun(*this, &NewHotspotDialog::on_coord_entry_changed));
+	m_WEntry->signal_changed().connect(sigc::mem_fun(*this, &NewHotspotDialog::on_dimension_entry_changed));
+	m_HEntry->signal_changed().connect(sigc::mem_fun(*this, &NewHotspotDialog::on_dimension_entry_changed));
+	
+	// allocate hotspot widget
+	m_HSWidget=manage(new HotspotWidget);
+	
+	// connect signals
+	m_HSWidget->signal_point_changed().connect(sigc::mem_fun(*this, &NewHotspotDialog::on_point_changed));
+	m_HSWidget->signal_dimensions_changed().connect(sigc::mem_fun(*this, &NewHotspotDialog::on_dimensions_changed));
+	
+	// attach options
+	Gtk::AttachOptions xops=Gtk::FILL | Gtk::EXPAND;
+	Gtk::AttachOptions yops=Gtk::SHRINK | Gtk::SHRINK;
+	
+	// place widgets
+	table->attach(*m_HSWidget, 0, 2, 0, 1, xops, yops);
+	table->attach(*m_XLabel, 0, 1, 1, 2, xops, yops);
+	table->attach(*m_XEntry, 1, 2, 1, 2, xops, yops);
+	table->attach(*m_YLabel, 0, 1, 2, 3, xops, yops);
+	table->attach(*m_YEntry, 1, 2, 2, 3, xops, yops);
+	table->attach(*m_WLabel, 0, 1, 3, 4, xops, yops);
+	table->attach(*m_WEntry, 1, 2, 3, 4, xops, yops);
+	table->attach(*m_HLabel, 0, 1, 4, 5, xops, yops);
+	table->attach(*m_HEntry, 1, 2, 4, 5, xops, yops);
+	table->attach(*m_BlockLabel, 0, 1, 5, 6, xops, yops);
+	table->attach(*m_BlockEntry, 1, 2, 5, 6, xops, yops);
+	
+	vb->pack_start(*table, Gtk::PACK_SHRINK);
+	
+	// add buttons
+	add_button("OK", Gtk::RESPONSE_OK);
+	add_button("Cancel", Gtk::RESPONSE_CANCEL);
+	
+	show_all_children();
+}
+
+// signal handler for point changes
+void NewHotspotDialog::on_point_changed(int x, int y) {
+	// update entries
+	std::stringstream ss;
+	ss << x;
+	
+	m_XEntry->set_text(ss.str());
+	ss.str("");
+	
+	ss << y;
+	m_YEntry->set_text(ss.str());
+	ss.str("");
+}
+
+// signal handler for dimension changes
+void NewHotspotDialog::on_dimensions_changed(int w, int h) {
+	// update entries
+	std::stringstream ss;
+	ss << w;
+	
+	m_WEntry->set_text(ss.str());
+	ss.str("");
+	
+	ss << h;
+	m_HEntry->set_text(ss.str());
+	ss.str("");
+}
+
+// handler for coordinate entry changes
+void NewHotspotDialog::on_coord_entry_changed() {
+	// convert text to ints
+	int x=atoi(m_XEntry->get_text().c_str());
+	int y=atoi(m_YEntry->get_text().c_str());
+	
+	m_HSWidget->update_coords(x, y);
+}
+
+// handler for dimension entry changes
+void NewHotspotDialog::on_dimension_entry_changed() {
+	// convert text to ints
+	int w=atoi(m_WEntry->get_text().c_str());
+	int h=atoi(m_HEntry->get_text().c_str());
+	
+	m_HSWidget->update_dimensions(w, h);
+}
+
+/***************************************************************************/
+
+// constructor
+LocationsDialog::LocationsDialog(const LocationMap &locations, const BackgroundMap &bgs, const StringVector &usedIds) {
 	construct();
 	
 	// copy data
 	m_Locations=locations;
+	m_Backgrounds=bgs;
 	m_UsedIds=usedIds;
 	
 	// append ids to tree view
@@ -57,6 +186,7 @@ void LocationsDialog::construct() {
 	m_IdLabel=manage(new Gtk::Label("Internal Id"));
 	m_NameLabel=manage(new Gtk::Label("Name"));
 	m_BGLabel=manage(new Gtk::Label("Background Id"));
+	m_HotspotsLabel=manage(new Gtk::Label("Hotspots"));
 	
 	// allocate entries
 	m_IdEntry=manage(new Gtk::Entry);
@@ -67,12 +197,21 @@ void LocationsDialog::construct() {
 	// allocate buttons
 	m_AddButton=manage(new Gtk::Button("Add"));
 	m_DeleteButton=manage(new Gtk::Button("Delete"));
+	m_AddHSButton=manage(new Gtk::Button("Add"));
+	m_DeleteHSButton=manage(new Gtk::Button("Delete"));
 	m_AmendButton=manage(new Gtk::Button("Amend"));
 	
 	// connect signals
 	m_AddButton->signal_clicked().connect(sigc::mem_fun(*this, &LocationsDialog::on_add));
 	m_DeleteButton->signal_clicked().connect(sigc::mem_fun(*this, &LocationsDialog::on_delete));
+	m_AddHSButton->signal_clicked().connect(sigc::mem_fun(*this, &LocationsDialog::on_add_hotspot));
+	m_DeleteHSButton->signal_clicked().connect(sigc::mem_fun(*this, &LocationsDialog::on_delete_hotspot));
 	m_AmendButton->signal_clicked().connect(sigc::mem_fun(*this, &LocationsDialog::on_amend_button_clicked));
+	
+	// allocate list view
+	m_HotspotList=manage(new Gtk::ListViewText(2));
+	m_HotspotList->set_column_title(0, "Area");
+	m_HotspotList->set_column_title(1, "Target Block");
 	
 	// allocate tree view
 	m_Model=Gtk::ListStore::create(m_ColumnRec);
@@ -89,7 +228,15 @@ void LocationsDialog::construct() {
 	// allocate containing scrolled window
 	m_SWindow=manage(new Gtk::ScrolledWindow);
 	m_SWindow->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
+	m_SWindow->set_size_request(50, 80);
+	
+	m_HotspotSWindow=manage(new Gtk::ScrolledWindow);
+	m_HotspotSWindow->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
+	m_HotspotSWindow->set_size_request(50, 80);
+	
+	// add widgets to scrolled windows
 	m_SWindow->add(*m_TreeView);
+	m_HotspotSWindow->add(*m_HotspotList);
 	
 	// attach options
 	Gtk::AttachOptions xops=Gtk::FILL | Gtk::EXPAND;
@@ -99,7 +246,7 @@ void LocationsDialog::construct() {
 	table->attach(*m_LocationsLabel, 0, 2, 0, 1, xops, yops);
 	table->attach(*m_AddButton, 0, 1, 1, 2, xops, yops);
 	table->attach(*m_DeleteButton, 1, 2, 1, 2, xops, yops);
-	table->attach(*m_SWindow, 0, 2, 2, 5);
+	table->attach(*m_SWindow, 0, 2, 2, 8);
 	table->attach(*m_DetailsLabel, 2, 4, 0, 1, xops, yops);
 	table->attach(*m_IdLabel, 2, 3, 1, 2, xops, yops);
 	table->attach(*m_IdEntry, 3, 4, 1, 2, xops, yops);
@@ -107,7 +254,11 @@ void LocationsDialog::construct() {
 	table->attach(*m_NameEntry, 3, 4, 2, 3, xops, yops);
 	table->attach(*m_BGLabel, 2, 3, 3, 4, xops, yops);
 	table->attach(*m_BGEntry, 3, 4, 3, 4, xops, yops);
-	table->attach(*m_AmendButton, 3, 4, 4, 5, xops, yops);
+	table->attach(*m_HotspotsLabel, 2, 4, 4, 5, xops, yops);
+	table->attach(*m_AddHSButton, 2, 3, 5, 6, yops, yops);
+	table->attach(*m_DeleteHSButton, 3, 4, 5, 6, yops, yops);
+	table->attach(*m_HotspotSWindow, 2, 4, 6, 7);
+	table->attach(*m_AmendButton, 3, 4, 7, 8, xops, yops);
 	
 	vb->pack_start(*table, Gtk::PACK_SHRINK);
 	
@@ -161,6 +312,51 @@ void LocationsDialog::on_delete() {
 	}
 }
 
+// add a hotspot
+void LocationsDialog::on_add_hotspot() {
+	// see if this location exists
+	if (m_Locations.find(m_IdEntry->get_text())==m_Locations.end())
+		return;
+	
+	// set current location's pixbuf
+	Case::Location location=m_Locations[m_IdEntry->get_text()];
+	if (m_Backgrounds.find(location.bg)==m_Backgrounds.end()) {
+		Gtk::MessageDialog md(*this, "The background was not found.", false, Gtk::MESSAGE_ERROR);
+		md.run();
+		return;
+	}
+	
+	// prepare the appropriate dialog
+	NewHotspotDialog nhd;
+	
+	// set the background
+	nhd.set_pixbuf(m_Backgrounds[location.bg].pixbuf);
+	
+	// run it
+	if (nhd.run()==Gtk::RESPONSE_OK) {
+		// get the hotspot
+		Case::Hotspot hspot=nhd.get_hotspot();
+		
+		// create strings for list
+		std::stringstream ss;
+		ss << "(" << hspot.rect.x << "," << hspot.rect.y << "); " << hspot.rect.w << "x" << hspot.rect.h;
+		
+		// append a new row
+		int row=m_HotspotList->append_text(ss.str());
+		m_HotspotList->set_text(row, 1, hspot.block);
+	}
+}
+
+// remove a hotspot
+void LocationsDialog::on_delete_hotspot() {
+	// get the selection
+	int selected=m_HotspotList->get_selected()[0];
+	
+	// clear this row out
+	m_HotspotList->set_text(selected, 0, "null");
+	m_HotspotList->set_text(selected, 1, "null");
+}
+
 // amend button click handler
 void LocationsDialog::on_amend_button_clicked() {
 	// get data of the current location
@@ -171,6 +367,28 @@ void LocationsDialog::on_amend_button_clicked() {
 	// update the location
 	m_Locations[id].name=name;
 	m_Locations[id].bg=bg;
+	
+	// clear hotspots and add new ones in
+	m_Locations[id].hotspots.clear();
+	for (int i=0; i<m_HotspotList->size(); i++) {
+		// get the string for this cell
+		Glib::ustring area=m_HotspotList->get_text(i, 0);
+		
+		// verify this is a valid string
+		if (area=="null")
+			continue;
+		
+		Case::Hotspot hspot;
+		
+		// get the area from the string
+		sscanf(area.c_str(), "(%d,%d); %dx%d", &hspot.rect.x, &hspot.rect.y, &hspot.rect.w, &hspot.rect.h);
+		
+		// get the target block
+		hspot.block=m_HotspotList->get_text(i, 1);
+		
+		// add this hotspot
+		m_Locations[id].hotspots.push_back(hspot);
+	}
 }
 
 // row changes handler
@@ -191,6 +409,21 @@ void LocationsDialog::on_selection_changed() {
 			m_IdEntry->set_text(id);
 			m_NameEntry->set_text(name);
 			m_BGEntry->set_text(bg);
+			
+			// clear list of hotspots
+			m_HotspotList->clear_items();
+			
+			for (int i=0; i<m_Locations[id].hotspots.size(); i++) {
+				Case::Hotspot hspot=m_Locations[id].hotspots[i];
+				
+				// create strings for list
+				std::stringstream ss;
+				ss << "(" << hspot.rect.x << "," << hspot.rect.y << "); " << hspot.rect.w << "x" << hspot.rect.h;
+				
+				// append a new row
+				int row=m_HotspotList->append_text(ss.str());
+				m_HotspotList->set_text(row, 1, hspot.block);
+			}
 		}
 	}
 }

@@ -30,6 +30,15 @@
 
 #include "character.h"
 
+// a rectangle
+struct _Rect {
+	int x, y;
+	int w, h;
+};
+typedef struct _Rect Rect;
+
+
+// case namespace
 namespace Case {
 
 // law system for cases to follow
@@ -64,11 +73,19 @@ struct _Evidence {
 };
 typedef struct _Evidence Evidence;
 
+// location hotspot
+struct _Hotspot {
+	Rect rect; // the rectangle in which this hotspot resides
+	Glib::ustring block; // block to parse when examined
+};
+typedef struct _Hotspot Hotspot;
+
 // location data
 struct _Location {
 	Glib::ustring id; // id referenced from within the script
 	Glib::ustring name; // name of this location
 	Glib::ustring bg; // background id to show in locations list
+	std::vector<Hotspot> hotspots; // examinable hotspots
 };
 typedef struct _Location Location;
 

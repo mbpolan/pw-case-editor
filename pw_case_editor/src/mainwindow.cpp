@@ -405,7 +405,7 @@ void MainWindow::on_case_browse_chars() {
 // edit locations handler
 void MainWindow::on_case_edit_locations() {
 	// run appropriate dialog
-	LocationsDialog ld(m_Case.get_locations(), m_Case.get_location_ids());
+	LocationsDialog ld(m_Case.get_locations(), m_Case.get_backgrounds(), m_Case.get_location_ids());
 	if (ld.run()==Gtk::RESPONSE_OK) {
 		// get updated list of locations
 		LocationMap locations=ld.get_locations();
