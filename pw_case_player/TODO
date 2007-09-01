@@ -1,0 +1,7 @@
+TODO List
+==========
+-Fix font drawing so string is broken by words, not characters
+-Also fix font drawing to there is a pause before each character (timing)
+-Implement animations in controls, scenes, etc
+-Sprites
+-Text effects
