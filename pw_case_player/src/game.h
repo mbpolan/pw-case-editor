@@ -46,7 +46,7 @@ enum GameFlags {
 		 STATE_EXAMINE=8192 };
 
 // menu controls to draw
- enum Controls {
+enum Controls {
 		CONTROLS_ALL=1,
 		CONTROLS_EXAMINE=2,
 		CONTROLS_MOVE=4,
@@ -54,9 +54,14 @@ enum GameFlags {
 		CONTROLS_PRESENT=16 };
 
 // position on screen
-  enum Position {
+enum Position {
 		POSITION_LEFT=1,
 		POSITION_RIGHT=2 };
+
+// screens to draw
+enum Screen {
+		SCREEN_MAIN=0,
+		SCREEN_EXAMINE=1 };
 
 // struct that stores the current game state
 struct _GameState {
@@ -73,6 +78,9 @@ struct _GameState {
 	
 	// x,y coordinates or examination cursor
 	int examineX, examineY;
+	
+	// the previous screen displayed
+	int prevScreen;
 	
 	// the current evidence being shown
 	std::string shownEvidence;

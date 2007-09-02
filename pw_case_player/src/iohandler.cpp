@@ -189,6 +189,27 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 		// read bg id
 		location.bg=readString(f);
 		
+		// read amount of hotspots
+		int hcount;
+		fread(&hcount, sizeof(int), 1, f);
+		
+		// iterate over hotspots
+		for (int i=0; i<hcount; i++) {
+			Case::Hotspot hspot;
+			
+			// read area
+			fread(&hspot.x, sizeof(int), 1, f);
+			fread(&hspot.y, sizeof(int), 1, f);
+			fread(&hspot.w, sizeof(int), 1, f);
+			fread(&hspot.h, sizeof(int), 1, f);
+			
+			// read target block
+			hspot.block=readString(f);
+			
+			// add this hotspot
+			location.hotspots.push_back(hspot);
+		}
+		
 		// add this location
 		pcase.addLocation(location);
 	}

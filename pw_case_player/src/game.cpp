@@ -43,6 +43,9 @@ Game::Game(const std::string &rootPath, Case::Case *pcase): m_RootPath(rootPath)
 	m_State.examineX=256/2;
 	m_State.examineY=192/2;
 	
+	// reset previous page
+	m_State.prevScreen=0;
+	
 	// null out variables
 	m_State.currentLocation="null";
 	m_State.shownEvidence="null";
@@ -188,58 +191,55 @@ void Game::render() {
 	// once everything static is drawn, parse the block
 	std::string status=m_Parser->parse();
 	
-	// if the parser has finished this block, default to the main screen
-	// we flag this only once per complete parse
-	static bool once=false;
-	if (m_Parser->done() && !once) {
-		toggle(STATE_COURT_REC_BTN | STATE_CONTROLS);
-		once=true;
+	// new block ready for parsing
+	if (status!="null" && status!="pause" && status!="end") {
+		m_Parser->setBlock(m_Case->getBuffers()[status]);
 	}
-	
-	else {
-		// new block ready for parsing
-		if (status!="null" && status!="pause" && status!="end") {
-			m_Parser->setBlock(m_Case->getBuffers()[status]);
+		
+	// pause here and wait for next step
+	// while waiting, be sure to keep redrawing the already present screen
+	if (m_Parser->paused()) {
+		int flags=STATE_TEXT_BOX;
+		
+		// draw evidence page
+		if (m_State.drawFlags & STATE_EVIDENCE_PAGE) {
+			flags |= STATE_LOWER_BAR;
+			flags |= STATE_PROFILES_BTN;
+			flags |= STATE_EVIDENCE_PAGE;
+			flags |= STATE_BACK_BTN;
 		}
 		
-		// pause here and wait for next step
-		if (m_Parser->paused()) {
-			int flags=STATE_TEXT_BOX;
-			
-			if (m_State.drawFlags & STATE_EVIDENCE_PAGE) {
-				flags |= STATE_LOWER_BAR;
-				flags |= STATE_PROFILES_BTN;
-				flags |= STATE_EVIDENCE_PAGE;
-				flags |= STATE_BACK_BTN;
-			}
-			else if (m_State.drawFlags & STATE_EVIDENCE_INFO_PAGE) {
-				flags |= STATE_LOWER_BAR;
-				flags |= STATE_PROFILES_BTN;
-				flags |= STATE_EVIDENCE_INFO_PAGE;
-				flags |= STATE_BACK_BTN;
-			}
-			
-			else if (m_State.drawFlags & STATE_PROFILES_PAGE) {
-				flags |= STATE_LOWER_BAR;
-				flags |= STATE_EVIDENCE_BTN;
-				flags |= STATE_PROFILES_PAGE;
-				flags |= STATE_BACK_BTN;
-			}
-			
-			else if (m_State.drawFlags & STATE_PROFILE_INFO_PAGE) {
-				flags |= STATE_LOWER_BAR;
-				flags |= STATE_EVIDENCE_BTN;
-				flags |= STATE_PROFILE_INFO_PAGE;
-				flags |= STATE_BACK_BTN;
-			}
-			
-			else {
-				flags |= STATE_COURT_REC_BTN;
-				flags |= STATE_NEXT_BTN;
-			}
-			
-			toggle(flags);
+		// draw evidence info page
+		else if (m_State.drawFlags & STATE_EVIDENCE_INFO_PAGE) {
+			flags |= STATE_LOWER_BAR;
+			flags |= STATE_PROFILES_BTN;
+			flags |= STATE_EVIDENCE_INFO_PAGE;
+			flags |= STATE_BACK_BTN;
 		}
+		
+		// draw profiles page
+		else if (m_State.drawFlags & STATE_PROFILES_PAGE) {
+			flags |= STATE_LOWER_BAR;
+			flags |= STATE_EVIDENCE_BTN;
+			flags |= STATE_PROFILES_PAGE;
+			flags |= STATE_BACK_BTN;
+		}
+		
+		// draw profile info page
+		else if (m_State.drawFlags & STATE_PROFILE_INFO_PAGE) {
+			flags |= STATE_LOWER_BAR;
+			flags |= STATE_EVIDENCE_BTN;
+			flags |= STATE_PROFILE_INFO_PAGE;
+			flags |= STATE_BACK_BTN;
+		}
+		
+		// otherwise draw the dialog next button
+		else {
+			flags |= STATE_COURT_REC_BTN;
+			flags |= STATE_NEXT_BTN;
+		}
+		
+		toggle(flags);
 	}
 	
 	// check input state at this point
@@ -342,8 +342,8 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 				onBottomLeftButtonClicked();
 			
 			// examine button clicked
-			else if ((e->x>=256-79 && e->x<=256) && (e->y>=369 && e->y>=369+21))
-				onExamineThing(e->x, e->y);
+			else if ((e->x>=256-79 && e->x<=256) && (e->y>=369 && e->y<=369+21))
+				onExamineThing(m_State.examineX, m_State.examineY+197);
 		}
 		
 		// see if the center button was clicked
@@ -714,18 +714,38 @@ void Game::onTopRightButtonClicked() {
 
 // bottom left button was clicked
 void Game::onBottomLeftButtonClicked() {
-	// if the back button is shown, return to main screen
+	// if the back button is shown, return to previous screen
 	if (m_State.drawFlags & STATE_BACK_BTN) {
 		// if either evidence or profiles pages, or examination scene are shown, revert to main screen
-		if ((m_State.drawFlags & STATE_EVIDENCE_PAGE) || (m_State.drawFlags & STATE_PROFILES_PAGE) ||
-		    (m_State.drawFlags & STATE_EXAMINE)) {
-			int flags=STATE_COURT_REC_BTN | STATE_CONTROLS;
+		if ((m_State.drawFlags & STATE_EVIDENCE_PAGE) || (m_State.drawFlags & STATE_PROFILES_PAGE)) {
 			
-			// if the text box is also present, draw it as well
-			if (m_State.drawFlags & STATE_TEXT_BOX)
-				flags |= STATE_TEXT_BOX;
+			// if the previous screen is the examine screen, then draw it instead
+			if (m_State.prevScreen & SCREEN_EXAMINE) {
+				int flags=STATE_EXAMINE | STATE_COURT_REC_BTN | STATE_LOWER_BAR | STATE_BACK_BTN;
+				
+				toggle(flags);
+			}
 			
-			toggle(flags);
+			// must be the main screen
+			else {
+				int flags=STATE_COURT_REC_BTN | STATE_CONTROLS;
+				
+				// if the text box is also present, draw it as well
+				if (m_State.drawFlags & STATE_TEXT_BOX)
+					flags |= STATE_TEXT_BOX;
+				
+				// flag that were are now at the main screen
+				m_State.prevScreen=SCREEN_MAIN;
+				
+				toggle(flags);
+			}
+		}
+		
+		// if examine screen is show, revert back to main screen
+		else if (m_State.drawFlags & STATE_EXAMINE) {
+			m_State.prevScreen=SCREEN_MAIN;
+			
+			toggle(STATE_COURT_REC_BTN | STATE_CONTROLS);
 		}
 		
 		// if evidence info page is shown, revert back to evidence page
@@ -806,7 +826,11 @@ void Game::onEvidenceInfoPageClickEvent(int x, int y) {
 
 // examine button activated handler
 void Game::onExamineButtonActivated() {
+	// toggle the examination scene
 	toggle(STATE_EXAMINE | STATE_COURT_REC_BTN | STATE_LOWER_BAR | STATE_BACK_BTN);
+	
+	// also set this as the previous page
+	m_State.prevScreen=SCREEN_EXAMINE;
 }
 
 // move button activated handler
@@ -825,4 +849,17 @@ void Game::onPresentButtonActivated() {
 void Game::onExamineThing(int x, int y) {
 	// get our current location
 	Case::Location location=m_Case->getLocations()[m_State.currentLocation];
+	
+	// iterate over hotspots and see if one of them was clicked
+	for (int i=0; i<location.hotspots.size(); i++) {
+		Case::Hotspot hspot=location.hotspots[i];
+		
+		// see if the click occured in this area
+		if ((x>=hspot.x && x<=hspot.x+hspot.w) && (y>=197+hspot.y && y<=197+hspot.y+hspot.h)) {
+			if (m_Case->getBuffers().find(hspot.block)!=m_Case->getBuffers().end()) {
+				m_Parser->setBlock(m_Case->getBuffers()[hspot.block]);
+				m_Parser->nextStep();
+			}
+		}
+	}
 }

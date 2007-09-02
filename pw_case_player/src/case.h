@@ -63,11 +63,23 @@ struct _Evidence {
 };
 typedef struct _Evidence Evidence;
 
+// an examinable area in a location
+struct _Hotspot {
+	int x;
+	int y;
+	int w;
+	int h;
+	
+	std::string block; // the block to execute if examined
+};
+typedef struct _Hotspot Hotspot;
+
 // location data
 struct _Location {
 	std::string id; // id referenced from within the script
 	std::string name; // name of this location
 	std::string bg; // background id referenced from within script
+	std::vector<Hotspot> hotspots; // vector of examinable hotspots
 };
 typedef struct _Location Location;
 

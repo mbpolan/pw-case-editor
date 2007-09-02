@@ -156,8 +156,17 @@ std::string TextParser::parse() {
 void TextParser::nextStep() {
 	// if this block is empty and we didn't find the next one,
 	// then we flag that we're done
-	if (m_Block.empty() && m_NextBlock=="null")
+	if (m_Block.empty() && m_NextBlock=="null") {
+		// draw the previous screen
+		if (m_Game->m_State.prevScreen==SCREEN_EXAMINE)
+			m_Game->toggle(STATE_EXAMINE | STATE_COURT_REC_BTN | STATE_LOWER_BAR | STATE_BACK_BTN);
+		
+		else
+			m_Game->toggle(STATE_COURT_REC_BTN | STATE_CONTROLS);
+		
+		// flag that we are done
 		m_Done=true;
+	}
 	
 	m_Pause=false;
 }
