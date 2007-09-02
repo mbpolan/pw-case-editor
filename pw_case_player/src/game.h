@@ -160,6 +160,9 @@ class Game {
 		// bottom left button was clicked
 		void onBottomLeftButtonClicked();
 		
+		// click handler for controls
+		void onControlsClicked(int x, int y);
+		
 		// click handler for move scene
 		void onMoveSceneClicked(int x, int y);
 		

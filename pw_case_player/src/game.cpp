@@ -342,7 +342,7 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 		if (m_State.drawFlags & STATE_MOVE)
 			onMoveSceneClicked(e->x, e->y);
 		
-		// ditto
+		// check for clicks on examine scene
 		if (m_State.drawFlags & STATE_EXAMINE) {
 			// this will always be the court record button in this case
 			if ((e->x>=176 && e->x<=176+79) && (e->y>=197 && e->y<=197+21))
@@ -371,6 +371,10 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 		// see if the center button was clicked
 		if ((m_State.drawFlags & STATE_NEXT_BTN) && ((e->x>=16 && e->x<=16+223) && (e->y>=242 && e->y<=242+111)))
 			m_Parser->nextStep();
+		
+		// if the controls are drawn, see if one was clicked
+		else if (m_State.drawFlags & STATE_CONTROLS)
+			onControlsClicked(e->x, e->y);
 		
 		// if the evidence page is up, see if anything was clicked
 		if (m_State.drawFlags & STATE_EVIDENCE_PAGE)
@@ -806,6 +810,36 @@ void Game::onBottomLeftButtonClicked() {
 			
 			toggle(flags);
 		}
+	}
+}
+
+// click handler for controls
+void Game::onControlsClicked(int x, int y) {
+	// 8, 134
+	int dy=197+20+34;
+	
+	// examine control
+	if ((x>=8 && x<=118) && (y>=dy && y<=dy+26)) {
+		onExamineButtonActivated();
+		m_State.selectedControl=0;
+	}
+	
+	// move control
+	else if ((x>=134 && x<=244) && (y>=dy && y<=dy+26)) {
+		onMoveButtonActivated();
+		m_State.selectedControl=1;
+	}
+	
+	// talk control
+	else if ((x>=8 && x<=118) && (y>=dy+62 && y<=dy+88)) {
+		onTalkButtonActivated();
+		m_State.selectedControl=2;
+	}
+	
+	// present control
+	else if ((x>=134 && x<=244) && (y>=dy+62 && y<=dy+88)) {
+		onPresentButtonActivated();
+		m_State.selectedControl=3;
 	}
 }
 
