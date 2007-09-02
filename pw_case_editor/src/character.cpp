@@ -22,8 +22,8 @@
 #include "character.h"
 
 // constructor
-Character::Character(const Glib::ustring &internal, const Glib::ustring &name, const Glib::ustring &description): 
-		m_InternalName(internal), m_Name(name), m_Description(description) {
+Character::Character(const Glib::ustring &internal, const Glib::ustring &name, const Glib::ustring &caption, const Glib::ustring &description): 
+		m_InternalName(internal), m_Name(name), m_Caption(caption), m_Description(description) {
 	m_SpriteName="null";
 	m_HasTextBoxTag=false;
 	m_HasHeadshot=false;

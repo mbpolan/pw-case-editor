@@ -1317,6 +1317,7 @@ void NewCharDialog::set_character_data(const Character &ch) {
 	// set data
 	m_CodeNameEntry->set_text(ch.get_internal_name());
 	m_NameEntry->set_text(ch.get_name());
+	m_CapEntry->set_text(ch.get_caption());
 	m_DescEntry->set_text(ch.get_description());
 	m_SpriteEntry->set_text(ch.get_sprite_name());
 	
@@ -1341,6 +1342,7 @@ Character NewCharDialog::get_character_data() {
 	// fill in data
 	character.set_internal_name(m_CodeNameEntry->get_text());
 	character.set_name(m_NameEntry->get_text());
+	character.set_caption(m_CapEntry->get_text());
 	character.set_description(m_DescEntry->get_text());
 	character.set_sprite_name(m_SpriteEntry->get_text());
 	
@@ -1470,12 +1472,14 @@ Gtk::Container* NewCharDialog::build_general_page() {
 	// allocate labels
 	m_CodeNameLabel=manage(new Gtk::Label("Internal Code Name"));
 	m_NameLabel=manage(new Gtk::Label("Name"));
+	m_CapLabel=manage(new Gtk::Label("Caption"));
 	m_DescLabel=manage(new Gtk::Label("Description"));
 	m_SpriteLabel=manage(new Gtk::Label("Sprite Name"));
 	
 	// allocate entries
 	m_CodeNameEntry=manage(new Gtk::Entry);
 	m_NameEntry=manage(new Gtk::Entry);
+	m_CapEntry=manage(new Gtk::Entry);
 	m_DescEntry=manage(new Gtk::Entry);
 	m_SpriteEntry=manage(new Gtk::Entry);
 	
@@ -1484,10 +1488,12 @@ Gtk::Container* NewCharDialog::build_general_page() {
 	table->attach(*m_CodeNameEntry, 1, 2, 0, 1, xops, yops);
 	table->attach(*m_NameLabel, 0, 1, 1, 2, xops, yops);
 	table->attach(*m_NameEntry, 1, 2, 1, 2, xops, yops);
-	table->attach(*m_DescLabel, 0, 1, 2, 3, xops, yops);
-	table->attach(*m_DescEntry, 1, 2, 2, 3, xops, yops);
-	table->attach(*m_SpriteLabel, 0, 1, 3, 4, xops, yops);
-	table->attach(*m_SpriteEntry, 1, 2, 3, 4, xops, yops);
+	table->attach(*m_CapLabel, 0, 1, 2, 3, xops, yops);
+	table->attach(*m_CapEntry, 1, 2, 2, 3, xops, yops);
+	table->attach(*m_DescLabel, 0, 1, 3, 4, xops, yops);
+	table->attach(*m_DescEntry, 1, 2, 3, 4, xops, yops);
+	table->attach(*m_SpriteLabel, 0, 1, 4, 5, xops, yops);
+	table->attach(*m_SpriteEntry, 1, 2, 4, 5, xops, yops);
 	
 	// connect signals
 	m_CodeNameEntry->signal_changed().connect(sigc::mem_fun(*this, &NewCharDialog::on_internal_name_changed));

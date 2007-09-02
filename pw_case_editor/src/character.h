@@ -29,7 +29,8 @@
 class Character {
 	public:
 		// constructor
-		Character(const Glib::ustring &internal="", const Glib::ustring &name="", const Glib::ustring &description="");
+		Character(const Glib::ustring &internal="", const Glib::ustring &name="", 
+			  const Glib::ustring &caption="", const Glib::ustring &description="");
 		
 		// set the internal character name
 		void set_internal_name(const Glib::ustring &name) { m_InternalName=name; }
@@ -42,6 +43,12 @@ class Character {
 		
 		// get the displayed name
 		Glib::ustring get_name() const { return m_Name; }
+		
+		// set the caption
+		void set_caption(const Glib::ustring &cap) { m_Caption=cap; }
+		
+		// get the caption
+		Glib::ustring get_caption() const { return m_Caption; }
 		
 		// set the description
 		void set_description(const Glib::ustring &desc) { m_Description=desc; }
@@ -85,6 +92,9 @@ class Character {
 		
 		// displayed name
 		Glib::ustring m_Name;
+		
+		// caption
+		Glib::ustring m_Caption;
 		
 		// description
 		Glib::ustring m_Description;

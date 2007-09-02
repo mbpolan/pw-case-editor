@@ -65,6 +65,9 @@ bool IO::save_case_to_file(const Glib::ustring &path, const Case::Case &pcase,
 		// write displayed name
 		write_string(f, (*it).second.get_name());
 		
+		// write caption
+		write_string(f, (*it).second.get_caption());
+		
 		// write description
 		write_string(f, (*it).second.get_description());
 		
@@ -221,6 +224,9 @@ bool IO::export_case_to_file(const Glib::ustring &path, const Case::Case &pcase,
 		
 		// write displayed name
 		write_string(f, (*it).second.get_name());
+		
+		// write caption
+		write_string(f, (*it).second.get_caption());
 		
 		// write description
 		write_string(f, (*it).second.get_description());
@@ -406,6 +412,10 @@ bool IO::load_case_from_file(const Glib::ustring &path, Case::Case &pcase,
 		// read displayed name
 		str=read_string(f);
 		character.set_name(str);
+		
+		// read caption
+		str=read_string(f);
+		character.set_caption(str);
 		
 		// read description
 		str=read_string(f);

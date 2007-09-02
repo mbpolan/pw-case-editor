@@ -603,6 +603,7 @@ class NewCharDialog: public Gtk::Dialog {
 		// labels
 		Gtk::Label *m_CodeNameLabel;
 		Gtk::Label *m_NameLabel;
+		Gtk::Label *m_CapLabel;
 		Gtk::Label *m_DescLabel;
 		Gtk::Label *m_SpriteLabel;
 		Gtk::Label *m_TextBoxLabel;
@@ -611,6 +612,7 @@ class NewCharDialog: public Gtk::Dialog {
 		// entries
 		Gtk::Entry *m_CodeNameEntry;
 		Gtk::Entry *m_NameEntry;
+		Gtk::Entry *m_CapEntry;
 		Gtk::Entry *m_DescEntry;
 		Gtk::Entry *m_SpriteEntry;
 		
