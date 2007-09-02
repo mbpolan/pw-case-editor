@@ -29,7 +29,8 @@
 class Character {
 	public:
 		// constructor
-		Character(const std::string &internal="", const std::string &name="", const std::string &description="");
+		Character(const std::string &internal="", const std::string &name="", 
+			  const std::string &caption="", const std::string &description="");
 		
 		// set the internal character name
 		void setInternalName(const std::string &name) { m_InternalName=name; }
@@ -42,6 +43,12 @@ class Character {
 		
 		// get the displayed name
 		std::string getName() const { return m_Name; }
+		
+		// set the caption
+		void setCaption(const std::string &caption) { m_Caption=caption; }
+		
+		// get the caption
+		std::string getCaption() const { return m_Caption; }
 		
 		// set the description
 		void setDescription(const std::string &desc) { m_Description=desc; }
@@ -88,6 +95,9 @@ class Character {
 		
 		// displayed name
 		std::string m_Name;
+		
+		// caption
+		std::string m_Caption;
 		
 		// description
 		std::string m_Description;

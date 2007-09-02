@@ -22,8 +22,8 @@
 #include "character.h"
 
 // constructor
-Character::Character(const std::string &internal, const std::string &name, const std::string &description): 
-		m_InternalName(internal), m_Name(name), m_Description(description) {
+Character::Character(const std::string &internal, const std::string &name, const std::string &caption, const std::string &description): 
+		m_InternalName(internal), m_Name(name), m_Caption(caption), m_Description(description) {
 	m_HasTextBoxTag=false;
 	m_HasHeadshot=false;
 	m_SpriteName="null";

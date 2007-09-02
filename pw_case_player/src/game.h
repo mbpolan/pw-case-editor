@@ -76,6 +76,7 @@ struct _GameState {
 	
 	// selections
 	int selectedEvidence;
+	int selectedProfile;
 	int selectedControl;
 	int selectedLocation;
 	
@@ -133,6 +134,9 @@ class Game {
 		// toggle game state flags
 		void toggle(int flags);
 		
+		// see if an element is flagged to be drawn
+		bool flagged(int flag);
+		
 		// set the current backdrop location
 		void setLocation(const std::string &location);
 		
@@ -166,11 +170,11 @@ class Game {
 		// click handler for move scene
 		void onMoveSceneClicked(int x, int y);
 		
-		// evidence page click handler
-		void onEvidencePageClickEvent(int x, int y);
+		// court record page click handler
+		void onRecPageClickEvent(int x, int y);
 		
-		// evidence info page click handler
-		void onEvidenceInfoPageClickEvent(int x, int y);
+		// court record info page click handler
+		void onRecInfoPageClickEvent(int x, int y);
 		
 		// examine button activated handler
 		void onExamineButtonActivated();

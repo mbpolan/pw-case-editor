@@ -37,6 +37,7 @@ Game::Game(const std::string &rootPath, Case::Case *pcase): m_RootPath(rootPath)
 	
 	// reset selections
 	m_State.selectedEvidence=0;
+	m_State.selectedProfile=0;
 	m_State.selectedControl=0;
 	m_State.selectedLocation=0;
 	
@@ -203,7 +204,7 @@ void Game::render() {
 		int flags=STATE_TEXT_BOX;
 		
 		// draw evidence page
-		if (m_State.drawFlags & STATE_EVIDENCE_PAGE) {
+		if (flagged(STATE_EVIDENCE_PAGE)) {
 			flags |= STATE_LOWER_BAR;
 			flags |= STATE_PROFILES_BTN;
 			flags |= STATE_EVIDENCE_PAGE;
@@ -211,7 +212,7 @@ void Game::render() {
 		}
 		
 		// draw evidence info page
-		else if (m_State.drawFlags & STATE_EVIDENCE_INFO_PAGE) {
+		else if (flagged(STATE_EVIDENCE_INFO_PAGE)) {
 			flags |= STATE_LOWER_BAR;
 			flags |= STATE_PROFILES_BTN;
 			flags |= STATE_EVIDENCE_INFO_PAGE;
@@ -219,7 +220,7 @@ void Game::render() {
 		}
 		
 		// draw profiles page
-		else if (m_State.drawFlags & STATE_PROFILES_PAGE) {
+		else if (flagged(STATE_PROFILES_PAGE)) {
 			flags |= STATE_LOWER_BAR;
 			flags |= STATE_EVIDENCE_BTN;
 			flags |= STATE_PROFILES_PAGE;
@@ -227,7 +228,7 @@ void Game::render() {
 		}
 		
 		// draw profile info page
-		else if (m_State.drawFlags & STATE_PROFILE_INFO_PAGE) {
+		else if (flagged(STATE_PROFILE_INFO_PAGE)) {
 			flags |= STATE_LOWER_BAR;
 			flags |= STATE_EVIDENCE_BTN;
 			flags |= STATE_PROFILE_INFO_PAGE;
@@ -251,7 +252,7 @@ void Game::render() {
 // handle keyboard event
 void Game::onKeyboardEvent(SDL_KeyboardEvent *e) {
 	// if the evidence page is displayed, change selected evidence
-	if (m_State.drawFlags & STATE_EVIDENCE_PAGE) {
+	if (flagged(STATE_EVIDENCE_PAGE)) {
 		// get the amount of evidence on this page
 		int amount=m_State.visibleEvidence.size()-(m_State.evidencePage*8);
 		if (amount>8)
@@ -272,7 +273,7 @@ void Game::onKeyboardEvent(SDL_KeyboardEvent *e) {
 	}
 	
 	// if controls are drawn, change the selection
-	else if (m_State.drawFlags & STATE_CONTROLS) {
+	else if (flagged(STATE_CONTROLS)) {
 		// select the right control
 		if (e->keysym.sym==SDLK_RIGHT) {
 			m_State.selectedControl+=1;
@@ -318,7 +319,7 @@ void Game::onKeyboardEvent(SDL_KeyboardEvent *e) {
 	}
 	
 	// if the menu view is drawn, change selection
-	else if (m_State.drawFlags & STATE_MOVE) {
+	else if (flagged(STATE_MOVE)) {
 		// get the current location
 		Case::Location *location=m_Case->getLocation(m_State.currentLocation);
 		if (!location)
@@ -339,11 +340,11 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 	// button pressed down
 	if (e->type==SDL_MOUSEBUTTONDOWN) {
 		// check for clicks on locations in move scene
-		if (m_State.drawFlags & STATE_MOVE)
+		if (flagged(STATE_MOVE))
 			onMoveSceneClicked(e->x, e->y);
 		
 		// check for clicks on examine scene
-		if (m_State.drawFlags & STATE_EXAMINE) {
+		if (flagged(STATE_EXAMINE)) {
 			// this will always be the court record button in this case
 			if ((e->x>=176 && e->x<=176+79) && (e->y>=197 && e->y<=197+21))
 				onTopRightButtonClicked();
@@ -358,7 +359,7 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 		}
 		
 		// buttons have different positions in the examine scene
-		else if (!(m_State.drawFlags & STATE_EXAMINE)) {
+		else if (!flagged(STATE_EXAMINE)) {
 			// see if the click hit the top right button, if any
 			if ((e->x>=176 && e->x<=176+80) && (e->y>=197 && e->y<=197+33))
 				onTopRightButtonClicked();
@@ -369,27 +370,27 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 		}
 		
 		// see if the center button was clicked
-		if ((m_State.drawFlags & STATE_NEXT_BTN) && ((e->x>=16 && e->x<=16+223) && (e->y>=242 && e->y<=242+111)))
+		if (flagged(STATE_NEXT_BTN) && ((e->x>=16 && e->x<=16+223) && (e->y>=242 && e->y<=242+111)))
 			m_Parser->nextStep();
 		
 		// if the controls are drawn, see if one was clicked
-		else if (m_State.drawFlags & STATE_CONTROLS)
+		else if (flagged(STATE_CONTROLS))
 			onControlsClicked(e->x, e->y);
 		
-		// if the evidence page is up, see if anything was clicked
-		if (m_State.drawFlags & STATE_EVIDENCE_PAGE)
-			onEvidencePageClickEvent(e->x, e->y);
+		// if the court record page is up, see if anything was clicked
+		if (flagged(STATE_EVIDENCE_PAGE) || flagged(STATE_PROFILES_PAGE))
+			onRecPageClickEvent(e->x, e->y);
 		
-		// same applies for evidence info page
-		else if (m_State.drawFlags & STATE_EVIDENCE_INFO_PAGE)
-			onEvidenceInfoPageClickEvent(e->x, e->y);
+		// same applies for evidence/profiles info page
+		else if (flagged(STATE_EVIDENCE_INFO_PAGE) || flagged(STATE_PROFILE_INFO_PAGE))
+			onRecInfoPageClickEvent(e->x, e->y);
 	}
 }
 
 // check input device state
 void Game::checkInputState() {
 	// if the examination scene is shown, move the crosshairs
-	if (m_State.drawFlags & STATE_EXAMINE) {
+	if (flagged(STATE_EXAMINE)) {
 		// get the current keyboard state
 		Uint8 *keys=SDL_GetKeyState(NULL);
 		
@@ -427,6 +428,11 @@ void Game::checkInputState() {
 void Game::toggle(int flags) {
 	m_State.drawFlags=0;
 	m_State.drawFlags |= flags;
+}
+
+// see if an element is flagged to be drawn
+bool Game::flagged(int flag) {
+	return (m_State.drawFlags & flag);
 }
 
 // set the current backdrop location
@@ -492,7 +498,7 @@ void Game::renderTopView() {
 			Renderer::drawImage(0, 0, bg);
 		
 		// if the examination scene is up, dim the upper screen
-		if (m_State.drawFlags & STATE_EXAMINE) {
+		if (flagged(STATE_EXAMINE)) {
 			// get an opaque black surface
 			SDL_Surface *opaque=Textures::queryTexture("opaque_black");
 			SDL_SetAlpha(opaque, SDL_SRCALPHA, 128);
@@ -512,7 +518,7 @@ void Game::renderTopView() {
 	}
 	
 	// draw text box, if needed
-	if (m_State.drawFlags & STATE_TEXT_BOX)
+	if (flagged(STATE_TEXT_BOX))
 		renderTextBox();
 	
 	// if there is shown evidence, draw it as well
@@ -534,11 +540,11 @@ void Game::renderMenuView() {
 	// when dealing with drawing elements, some need to be drawn "thin"
 	// this is only true when the examine scene is being drawn
 	std::string append="";
-	if (m_State.drawFlags & STATE_EXAMINE)
+	if (flagged(STATE_EXAMINE))
 		append="_thin";
 	
 	// render the background texture (or location background if examining)
-	if (m_State.drawFlags & STATE_EXAMINE) {
+	if (flagged(STATE_EXAMINE)) {
 		// get the current background
 		Case::Location *location=m_Case->getLocation(m_State.currentLocation);
 		Case::Background *bg=m_Case->getBackground(location->bg);
@@ -548,18 +554,24 @@ void Game::renderMenuView() {
 	else
 		Renderer::drawImage(0, 197, "court_overview_g");
 	
-	// render court record pages, if needed
-	if (m_State.drawFlags & STATE_EVIDENCE_PAGE)
+	// draw the evidence page
+	if (flagged(STATE_EVIDENCE_PAGE))
 		Renderer::drawEvidencePage(m_State.visibleEvidence, m_State.evidencePage, m_State.selectedEvidence);
 	
-	else if (m_State.drawFlags & STATE_PROFILES_PAGE)
-		Renderer::drawProfilesPage(m_State.profilesPage);
+	// draw the profiles page
+	else if (flagged(STATE_PROFILES_PAGE))
+		Renderer::drawProfilesPage(m_State.visibleProfiles, m_State.profilesPage, m_State.selectedProfile);
 	
-	else if (m_State.drawFlags & STATE_EVIDENCE_INFO_PAGE)
+	// draw the evidence info page
+	else if (flagged(STATE_EVIDENCE_INFO_PAGE))
 		Renderer::drawEvidenceInfoPage(m_State.visibleEvidence, m_State.evidencePage*8+m_State.selectedEvidence);
 	
+	// draw the profile info page
+	else if (flagged(STATE_PROFILE_INFO_PAGE))
+		Renderer::drawProfileInfoPage(m_State.visibleProfiles, m_State.profilesPage*8+m_State.selectedProfile);
+	
 	// draw the examination scene
-	else if (m_State.drawFlags & STATE_EXAMINE) {
+	else if (flagged(STATE_EXAMINE)) {
 		// get the current location and its mapped background
 		Case::Location *location=m_Case->getLocation(m_State.currentLocation);
 		Case::Background *bg=m_Case->getBackground(location->bg);
@@ -568,7 +580,7 @@ void Game::renderMenuView() {
 	}
 	
 	// draw the move scene
-	else if (m_State.drawFlags & STATE_MOVE) {
+	else if (flagged(STATE_MOVE)) {
 		// get current location
 		Case::Location *location=m_Case->getLocation(m_State.currentLocation);
 		
@@ -576,13 +588,13 @@ void Game::renderMenuView() {
 	}
 	
 	// draw next button in case of dialog
-	else if (m_State.drawFlags & STATE_NEXT_BTN) {
+	else if (flagged(STATE_NEXT_BTN)) {
 		Renderer::drawImage(16, 242, "tc_next_btn");
 		Renderer::drawImage(16+94, 242+42, "tc_button_arrow_next");
 	}
 	
 	// draw controls, if needed
-	else if (m_State.drawFlags & STATE_CONTROLS)
+	else if (flagged(STATE_CONTROLS))
 		renderControls(CONTROLS_ALL);
 	
 	// top everything off with scanlines
@@ -592,7 +604,7 @@ void Game::renderMenuView() {
 	Renderer::drawImage(0, 197, "tc_top_bar"+append);
 	
 	// draw border bars
-	if (m_State.drawFlags & STATE_LOWER_BAR) {
+	if (flagged(STATE_LOWER_BAR)) {
 		// thin bar needs to be drawn lower
 		int y=357;
 		if (append=="_thin")
@@ -603,18 +615,19 @@ void Game::renderMenuView() {
 	}
 	
 	// draw activated buttons
-	if (m_State.drawFlags & STATE_COURT_REC_BTN)
+	if (flagged(STATE_COURT_REC_BTN))
 		Renderer::drawImage(176, 197, "tc_court_rec_btn"+append);
-	else if (m_State.drawFlags & STATE_EVIDENCE_BTN)
+	else if (flagged(STATE_EVIDENCE_BTN))
 		Renderer::drawImage(177, 197, "tc_evidence_btn");
-	else if (m_State.drawFlags & STATE_PROFILES_BTN)
+	else if (flagged(STATE_PROFILES_BTN))
 		Renderer::drawImage(177, 197, "tc_profiles_btn");
 	
-	if (m_State.drawFlags & STATE_EXAMINE)
+	// draw examine button if needed
+	if (flagged(STATE_EXAMINE))
 		Renderer::drawImage(256-79, 369, "tc_examine_btn_thin");
 	
 	// draw the back button
-	if (m_State.drawFlags & STATE_BACK_BTN) {
+	if (flagged(STATE_BACK_BTN)) {
 		// same applies here, draw the back button lower if it is the thin variety
 		int y=359;
 		if (append=="_thin")
@@ -738,22 +751,55 @@ void Game::renderControls(int flags) {
 // top right button was clicked
 void Game::onTopRightButtonClicked() {
 	// if the court record button is shown, activate evidence page
-	if ((m_State.drawFlags & STATE_COURT_REC_BTN) || (m_State.drawFlags & STATE_EVIDENCE_BTN)) {
+	if (flagged(STATE_COURT_REC_BTN)) {
 		int flags=STATE_BACK_BTN | STATE_PROFILES_BTN | STATE_EVIDENCE_PAGE | STATE_LOWER_BAR;
 		
 		// if the text box is also present, draw it as well
-		if (m_State.drawFlags & STATE_TEXT_BOX)
+		if (flagged(STATE_TEXT_BOX))
 			flags |= STATE_TEXT_BOX;
 		
 		toggle(flags);
 	}
 	
 	// if the profiles button is shown, activate profiles page
-	else if (m_State.drawFlags & STATE_PROFILES_BTN) {
+	else if (flagged(STATE_PROFILES_BTN) && !flagged(STATE_EVIDENCE_INFO_PAGE)) {
 		int flags=STATE_BACK_BTN | STATE_EVIDENCE_BTN | STATE_PROFILES_PAGE | STATE_LOWER_BAR;
 		
 		// if the text box is also present, draw it as well
-		if (m_State.drawFlags & STATE_TEXT_BOX)
+		if (flagged(STATE_TEXT_BOX))
+			flags |= STATE_TEXT_BOX;
+		
+		toggle(flags);
+	}
+	
+	// if the evidence button is shown, activate evidence page
+	else if (flagged(STATE_EVIDENCE_BTN) && !flagged(STATE_PROFILE_INFO_PAGE)) {
+		int flags=STATE_BACK_BTN | STATE_PROFILES_BTN | STATE_EVIDENCE_PAGE | STATE_LOWER_BAR;
+		
+		// if the text box is also present, draw it as well
+		if (flagged(STATE_TEXT_BOX))
+			flags |= STATE_TEXT_BOX;
+		
+		toggle(flags);
+	}
+	
+	// if the profiles button is shown during evidence info screen, switch to profile info screen
+	else if (flagged(STATE_PROFILES_BTN) && flagged(STATE_EVIDENCE_INFO_PAGE)) {
+		int flags=STATE_BACK_BTN | STATE_EVIDENCE_BTN | STATE_PROFILE_INFO_PAGE | STATE_LOWER_BAR;
+		
+		// if the text box is also present, draw it as well
+		if (flagged(STATE_TEXT_BOX))
+			flags |= STATE_TEXT_BOX;
+		
+		toggle(flags);
+	}
+	
+	// if the evidence button is shown during profile info screen, switch to evidence info screen
+	else if (flagged(STATE_EVIDENCE_BTN) && flagged(STATE_PROFILE_INFO_PAGE)) {
+		int flags=STATE_BACK_BTN | STATE_PROFILES_BTN | STATE_EVIDENCE_INFO_PAGE | STATE_LOWER_BAR;
+		
+		// if the text box is also present, draw it as well
+		if (flagged(STATE_TEXT_BOX))
 			flags |= STATE_TEXT_BOX;
 		
 		toggle(flags);
@@ -763,17 +809,17 @@ void Game::onTopRightButtonClicked() {
 // bottom left button was clicked
 void Game::onBottomLeftButtonClicked() {
 	// if the back button is shown, return to previous screen
-	if (m_State.drawFlags & STATE_BACK_BTN) {
+	if (flagged(STATE_BACK_BTN)) {
 		// if either evidence or profiles pages, or examination scene are shown, revert to main screen
-		if ((m_State.drawFlags & STATE_EVIDENCE_PAGE) || (m_State.drawFlags & STATE_PROFILES_PAGE)) {
+		if (flagged(STATE_EVIDENCE_PAGE) || flagged(STATE_PROFILES_PAGE)) {
 			// if the previous screen is the examine screen, then draw it instead
-			if (m_State.prevScreen & SCREEN_EXAMINE) {
+			if (flagged(SCREEN_EXAMINE)) {
 				int flags=STATE_EXAMINE | STATE_COURT_REC_BTN | STATE_LOWER_BAR | STATE_BACK_BTN;
 				toggle(flags);
 			}
 			
 			// if the previous screen is the move screen, then draw it
-			else if (m_State.prevScreen & SCREEN_MOVE) {
+			else if (flagged(SCREEN_MOVE)) {
 				int flags=STATE_MOVE | STATE_COURT_REC_BTN | STATE_LOWER_BAR | STATE_BACK_BTN;
 				toggle(flags);
 			}
@@ -783,7 +829,7 @@ void Game::onBottomLeftButtonClicked() {
 				int flags=STATE_COURT_REC_BTN | STATE_CONTROLS;
 				
 				// if the text box is also present, draw it as well
-				if (m_State.drawFlags & STATE_TEXT_BOX)
+				if (flagged(STATE_TEXT_BOX))
 					flags |= STATE_TEXT_BOX;
 				
 				// flag that were are now at the main screen
@@ -794,18 +840,29 @@ void Game::onBottomLeftButtonClicked() {
 		}
 		
 		// if examine or move screen is show, revert back to main screen
-		else if ((m_State.drawFlags & STATE_EXAMINE) || (m_State.drawFlags & STATE_MOVE)) {
+		else if (flagged(STATE_EXAMINE) || flagged(STATE_MOVE)) {
 			m_State.prevScreen=SCREEN_MAIN;
 			
 			toggle(STATE_COURT_REC_BTN | STATE_CONTROLS);
 		}
 		
 		// if evidence info page is shown, revert back to evidence page
-		else if (m_State.drawFlags & STATE_EVIDENCE_INFO_PAGE) {
+		else if (flagged(STATE_EVIDENCE_INFO_PAGE)) {
 			int flags=STATE_PROFILES_BTN | STATE_BACK_BTN | STATE_EVIDENCE_PAGE | STATE_LOWER_BAR;
 			
 			// if the text box is also present, draw it as well
-			if (m_State.drawFlags & STATE_TEXT_BOX)
+			if (flagged(STATE_TEXT_BOX))
+				flags |= STATE_TEXT_BOX;
+			
+			toggle(flags);
+		}
+		
+		// if profile info page is shown, revert back to profiles page
+		else if (flagged(STATE_PROFILE_INFO_PAGE)) {
+			int flags=STATE_EVIDENCE_BTN | STATE_BACK_BTN | STATE_PROFILES_PAGE | STATE_LOWER_BAR;
+			
+			// if the text box is also present, draw it as well
+			if (flagged(STATE_TEXT_BOX))
 				flags |= STATE_TEXT_BOX;
 			
 			toggle(flags);
@@ -877,26 +934,49 @@ void Game::onMoveSceneClicked(int x, int y) {
 	}
 }
 
-// evidence page click handler
-void Game::onEvidencePageClickEvent(int x, int y) {
+// court record page click handler
+void Game::onRecPageClickEvent(int x, int y) {
 	// see where the click occurred
 	int ex=24+12;
 	int ey=259;
 	
+	// cache the page
+	bool evidence=flagged(STATE_EVIDENCE_PAGE);
+	
 	// iterate over slots and see if something was clicked on
 	for (int i=0; i<8; i++) {
-		// check click bounds
-		if ((x>=ex && x<=ex+40) && (y>=ey && y<=ey+40) && m_State.evidencePage*8+i<m_State.visibleEvidence.size()) {
-			// set the selected evidence
-			m_State.selectedEvidence=i;
-			
-			// and view the evidence info page
-			int flags=STATE_EVIDENCE_INFO_PAGE | STATE_LOWER_BAR | STATE_BACK_BTN | STATE_PROFILES_BTN;
-			if (m_State.drawFlags & STATE_TEXT_BOX)
-				flags |= STATE_TEXT_BOX;
-			toggle(flags);
-			
-			return;
+		// for evidence
+		if (evidence) {
+			// check click bounds
+			if ((x>=ex && x<=ex+40) && (y>=ey && y<=ey+40) && m_State.evidencePage*8+i<m_State.visibleEvidence.size()) {
+				// set the selected evidence
+				m_State.selectedEvidence=i;
+				
+				// and view the evidence info page
+				int flags=STATE_EVIDENCE_INFO_PAGE | STATE_LOWER_BAR | STATE_BACK_BTN | STATE_PROFILES_BTN;
+				if (flagged(STATE_TEXT_BOX))
+					flags |= STATE_TEXT_BOX;
+				toggle(flags);
+				
+				return;
+			}
+		}
+		
+		// for profiles
+		else {
+			// check click bounds
+			if ((x>=ex && x<=ex+40) && (y>=ey && y<=ey+40) && m_State.profilesPage*8+i<m_State.visibleProfiles.size()) {
+				// set the selected profile
+				m_State.selectedProfile=i;
+				
+				// and view the profile info page
+				int flags=STATE_PROFILE_INFO_PAGE | STATE_LOWER_BAR | STATE_BACK_BTN | STATE_EVIDENCE_BTN;
+				if (flagged(STATE_TEXT_BOX))
+					flags |= STATE_TEXT_BOX;
+				toggle(flags);
+				
+				return;
+			}
 		}
 		
 		// advance to next slot
@@ -909,24 +989,44 @@ void Game::onEvidencePageClickEvent(int x, int y) {
 		}
 	}
 	
-	// no evidence was clicked, check the page buttons on either side
+	// no evidence/profile was clicked, check the page buttons on either side
 	// left button
 	if ((x>=1 && x<=1+16) && (y>=253 && y<=253+95)) {
-		m_State.evidencePage-=1;
-		if (m_State.evidencePage<0)
-			m_State.evidencePage=(int) ceil(m_State.visibleEvidence.size()/8);
+		// for evidence
+		if (evidence) {
+			m_State.evidencePage-=1;
+			if (m_State.evidencePage<0)
+				m_State.evidencePage=(int) ceil(m_State.visibleEvidence.size()/8);
+		}
+		
+		// for profiles
+		else {
+			m_State.profilesPage-=1;
+			if (m_State.profilesPage<0)
+				m_State.profilesPage=(int) ceil(m_State.visibleProfiles.size()/8);
+		}
 	}
 	
 	// right button
 	else if ((x>=256-17 && x<=256-1) && (y>=253 && y<=253+95)) {
-		m_State.evidencePage+=1;
-		if (m_State.evidencePage>ceil(m_State.visibleEvidence.size()/8)-1)
-			m_State.evidencePage=0;
+		// for evidence
+		if (evidence) {
+			m_State.evidencePage+=1;
+			if (m_State.evidencePage>ceil(m_State.visibleEvidence.size()/8))
+				m_State.evidencePage=0;
+		}
+		
+		// for profiles
+		else {
+			m_State.profilesPage+=1;
+			if (m_State.profilesPage>ceil(m_State.visibleProfiles.size()/8))
+				m_State.profilesPage=0;
+		}
 	}
 }
 
-// evidence info page click handler
-void Game::onEvidenceInfoPageClickEvent(int x, int y) {
+// court record info page click handler
+void Game::onRecInfoPageClickEvent(int x, int y) {
 	int ex=0;
 	int ey=237;
 	

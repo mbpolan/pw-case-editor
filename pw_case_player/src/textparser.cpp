@@ -210,6 +210,13 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 			m_Game->m_State.visibleEvidence.push_back(*pcase->getEvidence(command));
 	}
 	
+	// add a profile to court record
+	else if (trigger=="add_profile") {
+		// make sure this character exists
+		if (pcase->getCharacter(command))
+			m_Game->m_State.visibleProfiles.push_back(*pcase->getCharacter(command));
+	}
+	
 	// show evidence on screen
 	else if (trigger=="show_evidence_left") {
 		// given the id, get the actual evidence struct

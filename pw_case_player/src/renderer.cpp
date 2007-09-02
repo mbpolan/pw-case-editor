@@ -252,7 +252,7 @@ void Renderer::drawEvidenceInfoPage(const std::vector<Case::Evidence> &evidence,
 }
 
 // draw the profiles page
-void Renderer::drawProfilesPage(int page) {
+void Renderer::drawProfilesPage(const std::vector<Character> &chars, int page, int selected) {
 	// get pointer to screen surface
 	SDL_Surface *screen=SDL_GetVideoSurface();
 	if (!screen)
@@ -261,6 +261,149 @@ void Renderer::drawProfilesPage(int page) {
 	// draw the title bar
 	Renderer::drawImage(0, 197+9, "tc_profiles_bar");
 	
+	// draw the background
+	drawRect(screen, 24, 233, 208, 124, SDL_MapRGB(screen->format, 111, 86, 56));
+	
+	// draw top info bar borders
+	drawRect(screen, 24, 233, 208, 20, SDL_MapRGB(screen->format, 252, 249, 244));
+	drawRect(screen, 25, 234, 207, 19, SDL_MapRGB(screen->format, 168, 167, 163));
+	
+	// draw the top info bar
+	drawRect(screen, 26, 235, 204, 16, SDL_MapRGB(screen->format, 55, 55, 55));
+	
+	// draw buttons
+	drawImage(1, 253, "tc_large_btn_left");
+	drawImage(256-16-1, 253, "tc_large_btn_right");
+	
+	// draw arrows on buttons if there is more than one page
+	if (chars.size()>8) {
+		drawImage(4, 297, "tc_button_arrow_left");
+		drawImage(256-12, 297, "tc_button_arrow_right");
+	}
+	
+	// get the starting index for the vector
+	int index=8*page;
+	
+	// draw 1st row of profile slots
+	int x=24+12;
+	int y=259;
+	for (int i=0; i<8; i++) {
+		// draw the border
+		drawRect(screen, x, y, 39, 39, SDL_MapRGB(screen->format, 145, 121, 93));
+		
+		// draw filled center
+		drawRect(screen, x+2, y+2, 35, 35, SDL_MapRGB(screen->format, 117, 92, 62));
+		
+		// see if there is a profile at this slot
+		if (index<=chars.size()-1 && !chars.empty()) {
+			Character c=chars[index];
+			
+			// if this is the selected profile, write his name in the info
+			// bar, and draw selection box
+			if (i==selected) {
+				// get the name of this character
+				std::string name=c.getName();
+				
+				// calculate string length for this string
+				int width=Fonts::getWidth("orange", name);
+				
+				// find the center x position for the string
+				int centerx=(int) floor((204-width)/2);
+				
+				// draw the string at this position
+				Fonts::drawString(24+centerx, 238, name, "orange");
+				
+				// draw selection box
+				drawRect(screen, x-1, y-1, 42, 42, SDL_MapRGB(screen->format, 255, 255, 255));
+			}
+			
+			// draw profile thumbnail over the empty slot borders
+			SDL_Rect drect;
+			drect.x=x;
+			drect.y=y;
+			SDL_BlitSurface(c.getHeadshotThumb(), NULL, screen, &drect);
+			
+			index++;
+		}
+		
+		// advance to next slot
+		x+=40+8;
+		
+		// reset for next row
+		if (i==3) {
+			y=305;
+			x=24+12;
+		}
+	}
+}
+
+// draw the profile info page
+void Renderer::drawProfileInfoPage(const std::vector<Character> &chars, int index) {
+	// get pointer to screen surface
+	SDL_Surface *screen=SDL_GetVideoSurface();
+	if (!screen)
+		return;
+	
+	// draw the title bar
+	Renderer::drawImage(0, 197+9, "tc_profiles_bar");
+	
+	// get character to draw
+	Character c=chars[index];
+	
+	// keep track of y changes
+	int x=0;
+	int y=197+9;
+	
+	// draw transparent background
+	SDL_Surface *opaqueBlack=Textures::queryTexture("opaque_black");
+	SDL_SetAlpha(opaqueBlack, SDL_SRCALPHA, 80); // set transparent alpha value
+	drawImage(0, 197, opaqueBlack);
+	
+	// draw info strip background
+	drawRect(screen, 0, y+25, 256, 70+6, SDL_MapRGB(screen->format, 111, 86, 56));
+	
+	// draw upper border
+	drawRect(screen, 0, y+25, 256, 6, SDL_MapRGB(screen->format, 218, 218, 218));
+	y+=25+6;
+	
+	// draw button on left
+	drawImage(0, y, "tc_small_btn_left");
+	drawImage(3, y+26, "tc_button_arrow_left");
+	
+	// draw the profile
+	drawImage(19, y, c.getHeadshot());
+	x+=19+70+3;
+	
+	// draw info box's border
+	drawRect(screen, x, y, 148, 70, SDL_MapRGB(screen->format, 255, 255, 255));
+	
+	// draw info box title bar
+	drawRect(screen, x+2, y+2, 144, 15, SDL_MapRGB(screen->format, 55, 55, 55));
+	
+	// calculate center position for name
+	int centerx=(Fonts::getWidth("orange", c.getName())/3)+x;
+	
+	// draw evidence name in title bar
+	Fonts::drawString(centerx, y+4, c.getName(), "orange");
+	
+	// draw info box body
+	drawRect(screen, x+2, y+2+15, 144, 45, SDL_MapRGB(screen->format, 153, 192, 145));
+	
+	// draw character caption in this area
+	Fonts::drawString(x+4, y+2+16, -1, x+2+145, c.getCaption(), "black");
+	
+	// moving right along...
+	x+=148;
+	
+	// draw button with arrow on right
+	drawImage(x+3, y, "tc_small_btn_right");
+	drawImage(x+7, y+26, "tc_button_arrow_right");
+	
+	// draw lower border
+	drawRect(screen, 0, 301, 256, 6, SDL_MapRGB(screen->format, 218, 218, 218));
+	
+	// draw character description in bottom area
+	Fonts::drawString(20, y+75, c.getDescription(), "white");
 }
 
 // draw the examination scene

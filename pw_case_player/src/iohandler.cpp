@@ -77,6 +77,10 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 		str=readString(f);
 		character.setName(str);
 		
+		// read caption
+		str=readString(f);
+		character.setCaption(str);
+		
 		// read description
 		str=readString(f);
 		character.setDescription(str);

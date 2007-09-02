@@ -52,7 +52,12 @@ void drawEvidencePage(const std::vector<Case::Evidence> &evidence, int page, int
 void drawEvidenceInfoPage(const std::vector<Case::Evidence> &evidence, int index);
 
 // draw the profiles page
-void drawProfilesPage(int page);
+// page should be based on index 0, and selected should be an index between 0 and 7
+void drawProfilesPage(const std::vector<Character> &chars, int page, int selected);
+
+// draw profile information page
+// index is the current index into profiles vector
+void drawProfileInfoPage(const std::vector<Character> &chars, int index);
 
 // draw the examination scene
 void drawExamineScene(SDL_Surface *background, int cursorX, int cursorY);
