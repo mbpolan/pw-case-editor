@@ -117,15 +117,18 @@ std::string TextParser::parse() {
 			
 			// normal character
 			else {
-				// add this character to the draw string
-				str+=(char) ch;
-				
-				// see if we are over the text limit and need to break
-				if (Fonts::willBreak(4, 132, SDL_GetVideoSurface()->w, str, "white")) {
-					m_Pause=true;
-					break;
+				// make sure useless characters aren't dealt with
+				if (ch!='\n') {
+					// add this character to the draw string
+					str+=(char) ch;
+					
+					// see if we are over the text limit and need to break
+					if (Fonts::willBreak(4, 132, SDL_GetVideoSurface()->w, str, "white")) {
+						m_Pause=true;
+						break;
+					}
 				}
-				
+					
 				// erase up to this point
 				m_Block.erase(0, 1);
 			}
@@ -171,6 +174,21 @@ void TextParser::nextStep() {
 	m_Pause=false;
 }
 
+// split a command string into pieces based on commas
+std::vector<std::string> TextParser::splitCommand(const std::string &command) {
+	std::vector<std::string> params;
+	
+	// for now, there can only be two parameters
+	// find the separator comma
+	int npos=command.find(",");
+	
+	// break the string apart
+	params.push_back(command.substr(0, npos));
+	params.push_back(command.substr(npos+1, command.size()-1));
+	
+	return params;
+}
+
 // execute a trigger
 std::string TextParser::doTrigger(const std::string &trigger, const std::string &command) {
 	Case::Case *pcase=m_Game->m_Case;
@@ -188,14 +206,14 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	// add evidence to court record
 	else if (trigger=="add_evidence") {
 		// make sure this evidence exists at all
-		if (pcase->getEvidence().find(command)!=pcase->getEvidence().end())
-			m_Game->m_State.visibleEvidence.push_back(pcase->getEvidence()[command]);
+		if (pcase->getEvidence(command))
+			m_Game->m_State.visibleEvidence.push_back(*pcase->getEvidence(command));
 	}
 	
 	// show evidence on screen
 	else if (trigger=="show_evidence_left") {
 		// given the id, get the actual evidence struct
-		if (pcase->getEvidence().find(command)!=pcase->getEvidence().end())
+		if (pcase->getEvidence(command))
 			m_Game->setShownEvidence(command, POSITION_LEFT);
 	}
 	
@@ -206,6 +224,41 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	// set a location
 	else if (trigger=="location")
 		m_Game->setLocation(command);
+	
+	// make a location accessible
+	else if (trigger=="add_location") {
+		// split this command string
+		std::vector<std::string> params=splitCommand(command);
+		std::string target=params[0];
+		std::string location=params[1];
+		
+		// add this location to the target, if the target exists
+		if (pcase->getLocation(target)) {
+			Case::Location *tloc=pcase->getLocation(target);
+			
+			// add the target as an id
+			tloc->moveLocations.push_back(location);
+		}
+		
+		else
+			std::cout << "Warning: trying to add location " << location << " to non existant " << target << " target\n";
+	}
+	
+	// set a trigger block at a location
+	else if (trigger=="set_location_trigger") {
+		// split this command string
+		std::vector<std::string> params=splitCommand(command);
+		std::string target=params[0];
+		std::string block=params[1];
+		
+		// get the target location
+		if (pcase->getLocation(target)) {
+			Case::Location *location=pcase->getLocation(target);
+			
+			// set the trigger here
+			location->triggerBlock=block;
+		}
+	}
 	
 	// set the current speaker
 	else if (trigger=="speaker")

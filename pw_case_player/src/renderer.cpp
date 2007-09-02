@@ -284,3 +284,43 @@ void Renderer::drawExamineScene(SDL_Surface *background, int cursorX, int cursor
 	// draw overlay
 	Renderer::drawImage(0, 197, overlay);
 }
+
+// draw the movement scene
+void Renderer::drawMoveScene(const std::vector<std::string> &locations, LocationMap lmap, int selected) {
+	// get pointer to screen surface
+	SDL_Surface *screen=SDL_GetVideoSurface();
+	if (!screen)
+		return;
+	
+	// keep track of x,y changes
+	int x=256/3;
+	int y=197+34+5;
+	
+	// go over locations
+	for (int i=0; i<locations.size(); i++) {
+		Case::Location location=lmap[locations[i]];
+		
+		// see if this is the selected button
+		if (selected==i) {
+			// draw a gold border around it
+			Renderer::drawRect(screen, x, y, 150, 20, SDL_MapRGB(screen->format, 255, 148, 57));
+			
+			// draw the preview to the left
+			Renderer::drawImage(0, 263, location.bgScaled);
+		}
+		
+		// otherwise, draw only a white border
+		else
+			Renderer::drawRect(screen, x, y, 150, 20, SDL_MapRGB(screen->format, 189, 148, 132));
+		
+		// draw the button
+		Renderer::drawRect(screen, x+1, y+1, 150-2, 18, SDL_MapRGB(screen->format, 255, 255, 255));
+		
+		// draw the string
+		int centerx=(x+(150/2))-(Fonts::getWidth("black", location.name)/2)-4;
+		Fonts::drawString(centerx, y+4, location.name, "black");
+		
+		// increment y
+		y+=25;
+	}
+}

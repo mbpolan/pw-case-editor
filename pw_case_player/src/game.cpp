@@ -38,6 +38,7 @@ Game::Game(const std::string &rootPath, Case::Case *pcase): m_RootPath(rootPath)
 	// reset selections
 	m_State.selectedEvidence=0;
 	m_State.selectedControl=0;
+	m_State.selectedLocation=0;
 	
 	// reset examination cursor position
 	m_State.examineX=256/2;
@@ -315,24 +316,34 @@ void Game::onKeyboardEvent(SDL_KeyboardEvent *e) {
 			}
 		}
 	}
+	
+	// if the menu view is drawn, change selection
+	else if (m_State.drawFlags & STATE_MOVE) {
+		// get the current location
+		Case::Location *location=m_Case->getLocation(m_State.currentLocation);
+		if (!location)
+			return;
+		
+		// move up
+		if (e->keysym.sym==SDLK_UP && m_State.selectedLocation>0)
+			m_State.selectedLocation-=1;
+		
+		// move down
+		else if (e->keysym.sym==SDLK_DOWN && m_State.selectedLocation<location->moveLocations.size()-1)
+			m_State.selectedLocation+=1;
+	}
 }
 
 // handle mouse click event
 void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
+	// button pressed down
 	if (e->type==SDL_MOUSEBUTTONDOWN) {
-		// buttons have different positions in the examine scene
-		if (!(m_State.drawFlags & STATE_EXAMINE)) {
-			// see if the click hit the top right button, if any
-			if ((e->x>=176 && e->x<=176+80) && (e->y>=197 && e->y<=197+33))
-				onTopRightButtonClicked();
-			
-			// see if the bottom left button was clicked
-			else if ((e->x>=0 && e->x<=79) && (e->y>=359 && e->y<=359+30))
-				onBottomLeftButtonClicked();
-		}
+		// check for clicks on locations in move scene
+		if (m_State.drawFlags & STATE_MOVE)
+			onMoveSceneClicked(e->x, e->y);
 		
 		// ditto
-		else if (m_State.drawFlags & STATE_EXAMINE) {
+		if (m_State.drawFlags & STATE_EXAMINE) {
 			// this will always be the court record button in this case
 			if ((e->x>=176 && e->x<=176+79) && (e->y>=197 && e->y<=197+21))
 				onTopRightButtonClicked();
@@ -344,6 +355,17 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 			// examine button clicked
 			else if ((e->x>=256-79 && e->x<=256) && (e->y>=369 && e->y<=369+21))
 				onExamineThing(m_State.examineX, m_State.examineY+197);
+		}
+		
+		// buttons have different positions in the examine scene
+		else if (!(m_State.drawFlags & STATE_EXAMINE)) {
+			// see if the click hit the top right button, if any
+			if ((e->x>=176 && e->x<=176+80) && (e->y>=197 && e->y<=197+33))
+				onTopRightButtonClicked();
+			
+			// see if the bottom left button was clicked
+			else if ((e->x>=0 && e->x<=79) && (e->y>=359 && e->y<=359+30))
+				onBottomLeftButtonClicked();
 		}
 		
 		// see if the center button was clicked
@@ -404,8 +426,24 @@ void Game::toggle(int flags) {
 }
 
 // set the current backdrop location
-void Game::setLocation(const std::string &location) {
-	m_State.currentLocation=location;
+void Game::setLocation(const std::string &locationId) {
+	if (!m_Case->getLocation(locationId))
+		return;
+	
+	// get the location
+	Case::Location *location=m_Case->getLocation(locationId);
+	
+	// set the new location
+	m_State.currentLocation=locationId;
+	
+	// if this location has a trigger block, execute it now
+	if (location->triggerBlock!="null") {
+		m_Parser->setBlock(m_Case->getBuffers()[location->triggerBlock]);
+		m_Parser->nextStep();
+		
+		// clear the trigger
+		location->triggerBlock="null";
+	}
 }
 
 // set the evidence to draw on top screen
@@ -440,11 +478,10 @@ void Game::selectEvidence(bool increment) {
 // render the game view (top screen)
 void Game::renderTopView() {
 	// draw the background for this location
-	if (m_State.currentLocation!="null" &&
-	    m_Case->getLocations().find(m_State.currentLocation)!=m_Case->getLocations().end()) {
+	if (m_State.currentLocation!="null" && m_Case->getLocation(m_State.currentLocation)) {
 		// get the background surface
-		Case::Location location=m_Case->getLocations()[m_State.currentLocation];
-		SDL_Surface *bg=m_Case->getBackgrounds()[location.bg].texture;
+		Case::Location *location=m_Case->getLocation(m_State.currentLocation);
+		SDL_Surface *bg=m_Case->getBackground(location->bg)->texture;
 		
 		// and draw it
 		if (bg)
@@ -476,11 +513,15 @@ void Game::renderTopView() {
 	
 	// if there is shown evidence, draw it as well
 	if (m_State.shownEvidence!="null") {
+		Case::Evidence *ev=m_Case->getEvidence(m_State.shownEvidence);
+		if (!ev)
+			return;
+		
 		// draw the evidence depending on position
 		if (m_State.shownEvidencePos==POSITION_LEFT)
-			Renderer::drawImage(20, 20, m_Case->getEvidence()[m_State.shownEvidence].texture);
+			Renderer::drawImage(20, 20, ev->texture);
 		else
-			Renderer::drawImage(166, 20, m_Case->getEvidence()[m_State.shownEvidence].texture);
+			Renderer::drawImage(166, 20, ev->texture);
 	}
 }
 
@@ -495,10 +536,10 @@ void Game::renderMenuView() {
 	// render the background texture (or location background if examining)
 	if (m_State.drawFlags & STATE_EXAMINE) {
 		// get the current background
-		Case::Location location=m_Case->getLocations()[m_State.currentLocation];
-		Case::Background bg=m_Case->getBackgrounds()[location.bg];
+		Case::Location *location=m_Case->getLocation(m_State.currentLocation);
+		Case::Background *bg=m_Case->getBackground(location->bg);
 		
-		Renderer::drawImage(0, 197, bg.texture);
+		Renderer::drawImage(0, 197, bg->texture);
 	}
 	else
 		Renderer::drawImage(0, 197, "court_overview_g");
@@ -516,10 +557,18 @@ void Game::renderMenuView() {
 	// draw the examination scene
 	else if (m_State.drawFlags & STATE_EXAMINE) {
 		// get the current location and its mapped background
-		Case::Location location=m_Case->getLocations()[m_State.currentLocation];
-		Case::Background bg=m_Case->getBackgrounds()[location.bg];
+		Case::Location *location=m_Case->getLocation(m_State.currentLocation);
+		Case::Background *bg=m_Case->getBackground(location->bg);
 		
-		Renderer::drawExamineScene(bg.texture, m_State.examineX, m_State.examineY);
+		Renderer::drawExamineScene(bg->texture, m_State.examineX, m_State.examineY);
+	}
+	
+	// draw the move scene
+	else if (m_State.drawFlags & STATE_MOVE) {
+		// get current location
+		Case::Location *location=m_Case->getLocation(m_State.currentLocation);
+		
+		Renderer::drawMoveScene(location->moveLocations, m_Case->getLocations(), m_State.selectedLocation);
 	}
 	
 	// draw next button in case of dialog
@@ -581,9 +630,9 @@ void Game::renderTextBox() {
 	Renderer::drawImage(0, 128, "tc_text_box");
 	
 	// character speaking
-	if (speaker!="none" && speaker!="") {
+	if (speaker!="none" && speaker!="" && m_Case->getCharacter(speaker)) {
 		// get the tag
-		SDL_Surface *tag=m_Case->getCharacters()[speaker].getTextBoxTag();
+		SDL_Surface *tag=m_Case->getCharacter(speaker)->getTextBoxTag();
 		
 		// and draw it
 		Renderer::drawImage(0, 118, tag);
@@ -603,11 +652,10 @@ void Game::renderTextBox() {
 		std::string cspeaker=m_Parser->getSpeaker();
 		
 		// see if this character exists
-		CharacterMap cmap=m_Case->getCharacters();
-		if (cmap.find(cspeaker)!=cmap.end()) {
+		if (m_Case->getCharacter(cspeaker)) {
 			// get this character's text box tag, if he has one
-			Character character=cmap[cspeaker];
-			if (character.hasTextBoxTag())
+			Character *character=m_Case->getCharacter(cspeaker);
+			if (character->hasTextBoxTag())
 				speaker=cspeaker;
 		}
 		
@@ -683,10 +731,6 @@ void Game::renderControls(int flags) {
 	Renderer::drawImage(sx2, sy1, "tc_select_tr");
 }
 
-// render the examine scene view
-void Game::renderExamineScene() {
-}
-
 // top right button was clicked
 void Game::onTopRightButtonClicked() {
 	// if the court record button is shown, activate evidence page
@@ -718,11 +762,15 @@ void Game::onBottomLeftButtonClicked() {
 	if (m_State.drawFlags & STATE_BACK_BTN) {
 		// if either evidence or profiles pages, or examination scene are shown, revert to main screen
 		if ((m_State.drawFlags & STATE_EVIDENCE_PAGE) || (m_State.drawFlags & STATE_PROFILES_PAGE)) {
-			
 			// if the previous screen is the examine screen, then draw it instead
 			if (m_State.prevScreen & SCREEN_EXAMINE) {
 				int flags=STATE_EXAMINE | STATE_COURT_REC_BTN | STATE_LOWER_BAR | STATE_BACK_BTN;
-				
+				toggle(flags);
+			}
+			
+			// if the previous screen is the move screen, then draw it
+			else if (m_State.prevScreen & SCREEN_MOVE) {
+				int flags=STATE_MOVE | STATE_COURT_REC_BTN | STATE_LOWER_BAR | STATE_BACK_BTN;
 				toggle(flags);
 			}
 			
@@ -741,8 +789,8 @@ void Game::onBottomLeftButtonClicked() {
 			}
 		}
 		
-		// if examine screen is show, revert back to main screen
-		else if (m_State.drawFlags & STATE_EXAMINE) {
+		// if examine or move screen is show, revert back to main screen
+		else if ((m_State.drawFlags & STATE_EXAMINE) || (m_State.drawFlags & STATE_MOVE)) {
 			m_State.prevScreen=SCREEN_MAIN;
 			
 			toggle(STATE_COURT_REC_BTN | STATE_CONTROLS);
@@ -758,6 +806,40 @@ void Game::onBottomLeftButtonClicked() {
 			
 			toggle(flags);
 		}
+	}
+}
+
+// click handler for move scene
+void Game::onMoveSceneClicked(int x, int y) {
+	if (!m_Case->getLocation(m_State.currentLocation))
+		return;
+	
+	// get our current location
+	Case::Location *location=m_Case->getLocation(m_State.currentLocation);
+	
+	// starting coordinates
+	int dx=256/3;
+	int dy=197+34+5;
+	
+	// iterate over drawn locations and see if one of them was clicked
+	for (int i=0; i<location->moveLocations.size(); i++) {
+		// see if this button was clicked
+		if ((x>=dx+1 && x<=dx+148) && (y>=dy+1 && y<=dy+18)) {
+			// set this as our selected location
+			m_State.selectedLocation=i;
+			
+			// set our new location
+			setLocation(location->moveLocations[i]);
+			
+			// once this is done, we need to revert back to main screen
+			m_State.prevScreen=SCREEN_MAIN;
+			toggle(STATE_CONTROLS | STATE_COURT_REC_BTN);
+			
+			break;
+		}
+		
+		// move on to next button
+		dy+=25;
 	}
 }
 
@@ -835,6 +917,11 @@ void Game::onExamineButtonActivated() {
 
 // move button activated handler
 void Game::onMoveButtonActivated() {
+	// toggle move scene
+	toggle(STATE_MOVE | STATE_COURT_REC_BTN | STATE_LOWER_BAR | STATE_BACK_BTN);
+	
+	// also set this as the previous page
+	m_State.prevScreen=SCREEN_MOVE;
 }
 
 // talk button activated handler
@@ -848,11 +935,13 @@ void Game::onPresentButtonActivated() {
 // examine the hotspot in provided coordinate range
 void Game::onExamineThing(int x, int y) {
 	// get our current location
-	Case::Location location=m_Case->getLocations()[m_State.currentLocation];
+	Case::Location *location=m_Case->getLocation(m_State.currentLocation);
+	if (!location)
+		return;
 	
 	// iterate over hotspots and see if one of them was clicked
-	for (int i=0; i<location.hotspots.size(); i++) {
-		Case::Hotspot hspot=location.hotspots[i];
+	for (int i=0; i<location->hotspots.size(); i++) {
+		Case::Hotspot hspot=location->hotspots[i];
 		
 		// see if the click occured in this area
 		if ((x>=hspot.x && x<=hspot.x+hspot.w) && (y>=197+hspot.y && y<=197+hspot.y+hspot.h)) {

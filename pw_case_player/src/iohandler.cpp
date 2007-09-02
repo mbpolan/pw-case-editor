@@ -21,6 +21,7 @@
 
 #include <cstdio>
 #include <iostream>
+#include "SDL_rotozoom.h"
 
 #include "iohandler.h"
 
@@ -179,6 +180,7 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 	// iterate over locations
 	for (int i=0; i<locationCount; i++) {
 		Case::Location location;
+		location.triggerBlock="null";
 		
 		// read id
 		location.id=readString(f);
@@ -188,6 +190,15 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 		
 		// read bg id
 		location.bg=readString(f);
+		
+		// get the background image in question
+		if (pcase.getBackground(location.bg)) {
+			Case::Background *bg=pcase.getBackground(location.bg);
+			
+			// scale it
+			location.bgScaled=zoomSurface(bg->texture, 0.3125, 0.3125, SMOOTHING_ON);
+			Textures::pushTexture("null", location.bgScaled);
+		}
 		
 		// read amount of hotspots
 		int hcount;

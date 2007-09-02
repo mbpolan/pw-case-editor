@@ -56,6 +56,9 @@ class TextParser {
 		void nextStep();
 		
 	private:
+		// split a command string into pieces based on commas
+		std::vector<std::string> splitCommand(const std::string &command);
+		
 		// execute a trigger
 		std::string doTrigger(const std::string &trigger, const std::string &command);
 		

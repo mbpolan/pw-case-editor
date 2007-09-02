@@ -57,6 +57,9 @@ void drawProfilesPage(int page);
 // draw the examination scene
 void drawExamineScene(SDL_Surface *background, int cursorX, int cursorY);
 
+// draw the movement scene
+void drawMoveScene(const std::vector<std::string> &locations, LocationMap lmap, int selected);
+
 }; // namespace Renderer
 
 #endif

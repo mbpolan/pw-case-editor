@@ -78,8 +78,11 @@ typedef struct _Hotspot Hotspot;
 struct _Location {
 	std::string id; // id referenced from within the script
 	std::string name; // name of this location
+	std::string triggerBlock; // block to execute upon next arrival at location
 	std::string bg; // background id referenced from within script
+	SDL_Surface *bgScaled; // scaled background image
 	std::vector<Hotspot> hotspots; // vector of examinable hotspots
+	std::vector<std::string> moveLocations; // ids of locations that player can move to from here
 };
 typedef struct _Location Location;
 
@@ -146,6 +149,18 @@ class Case {
 		
 		// add a text buffer
 		void addBuffer(const std::string &id, const std::string &contents);
+		
+		// get a character
+		Character* getCharacter(const std::string &id);
+		
+		// get a background
+		Background* getBackground(const std::string &id);
+		
+		// get a piece of evidence
+		Evidence* getEvidence(const std::string &id);
+		
+		// get a location
+		Location* getLocation(const std::string &id);
 		
 		// clear the entire case information
 		void clear();

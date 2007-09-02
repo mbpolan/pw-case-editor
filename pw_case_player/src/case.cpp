@@ -60,6 +60,38 @@ void Case::Case::addBuffer(const std::string &id, const std::string &contents) {
 	m_Buffers[id]=contents;
 }
 
+// get a character
+Character* Case::Case::getCharacter(const std::string &id) {
+	if (m_Characters.find(id)!=m_Characters.end())
+		return &m_Characters[id];
+	else
+		return NULL;
+}
+
+// get a background
+Case::Background* Case::Case::getBackground(const std::string &id) {
+	if (m_Backgrounds.find(id)!=m_Backgrounds.end())
+		return &m_Backgrounds[id];
+	else
+		return NULL;
+}
+
+// get a piece of evidence
+Case::Evidence* Case::Case::getEvidence(const std::string &id) {
+	if (m_Evidence.find(id)!=m_Evidence.end())
+		return &m_Evidence[id];
+	else
+		return NULL;
+}
+
+// get a location
+Case::Location* Case::Case::getLocation(const std::string &id) {
+	if (m_Locations.find(id)!=m_Locations.end())
+		return &m_Locations[id];
+	else
+		return NULL;
+}
+
 // clear the case information
 void Case::Case::clear() {
 	// clear out overview

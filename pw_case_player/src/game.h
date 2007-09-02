@@ -43,7 +43,8 @@ enum GameFlags {
 		 STATE_NEXT_BTN=1024,
 		 STATE_TEXT_BOX=2048,
 		 STATE_CONTROLS=4096,
-		 STATE_EXAMINE=8192 };
+		 STATE_EXAMINE=8192,
+		 STATE_MOVE=16384 };
 
 // menu controls to draw
 enum Controls {
@@ -61,7 +62,8 @@ enum Position {
 // screens to draw
 enum Screen {
 		SCREEN_MAIN=0,
-		SCREEN_EXAMINE=1 };
+		SCREEN_EXAMINE=1,
+		SCREEN_MOVE=2 };
 
 // struct that stores the current game state
 struct _GameState {
@@ -75,6 +77,7 @@ struct _GameState {
 	// selections
 	int selectedEvidence;
 	int selectedControl;
+	int selectedLocation;
 	
 	// x,y coordinates or examination cursor
 	int examineX, examineY;
@@ -151,14 +154,14 @@ class Game {
 		// render the controls (move, talk, etc)
 		void renderControls(int flags);
 		
-		// render the examine scene view
-		void renderExamineScene();
-		
 		// top right button was clicked
 		void onTopRightButtonClicked();
 		
 		// bottom left button was clicked
 		void onBottomLeftButtonClicked();
+		
+		// click handler for move scene
+		void onMoveSceneClicked(int x, int y);
 		
 		// evidence page click handler
 		void onEvidencePageClickEvent(int x, int y);
