@@ -25,6 +25,8 @@
 #include <iostream>
 #include "SDL.h"
 
+#include "sprite.h"
+
 // class representing a character and its associated sprites
 class Character {
 	public:
@@ -55,6 +57,12 @@ class Character {
 		
 		// get the description
 		std::string getDescription() const { return m_Description; }
+		
+		// set the sprite for this character
+		void setSprite(const Sprite &spr) { m_Sprite=spr; }
+		
+		// get the sprite for this animation
+		Sprite* getSprite() { return &m_Sprite; }
 		
 		// set sprite name
 		void setSpriteName(const std::string &name) { m_SpriteName=name; }
@@ -108,6 +116,9 @@ class Character {
 		// text box image
 		bool m_HasTextBoxTag;
 		SDL_Surface *m_TextBoxTag;
+		
+		// sprite
+		Sprite m_Sprite;
 		
 		// headshot image
 		bool m_HasHeadshot;

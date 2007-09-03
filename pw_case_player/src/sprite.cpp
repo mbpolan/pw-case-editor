@@ -17,39 +17,74 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-// iohandler.h: various I/O functions
+// sprite.cpp: implementation of Sprite class
 
-#ifndef IOHANDLER_H
-#define IOHANDLER_H
-
-#include <iostream>
-
-#include "case.h"
+#include "renderer.h"
 #include "sprite.h"
-#include "texture.h"
 
-namespace IO {
+// constructor
+Sprite::Sprite() {
+	reset();
+}
 
-// case file information
-const std::string FILE_MAGIC_NUM="PWT";
-const int FILE_VERSION=10;
+// animate the sprite
+void Sprite::animate(int x, int y) {
+	// get the animation
+	Animation *anim=getAnimation(m_CurAnim);
+	if (!anim) {
+		std::cout << "Sprite: current animation is nonexistant: " << m_CurAnim << std::endl;
+		return;
+	}
+	
+	// get the last frame time and compare it with now
+	int now=SDL_GetTicks();
+	if (now-m_LastFrame>=m_Speed) {
+		// save this time
+		m_LastFrame=now;
+		
+		// move on to the next frame
+		m_CurFrame++;
+		
+		// loop if needed
+		if (m_CurFrame>anim->frames.size()-1)
+			m_CurFrame=0;
+	}
+	
+	// draw the current frame
+	Renderer::drawImage(x, y, anim->frames[m_CurFrame]);
+}
 
-// sprite file information
-const std::string SPR_MAGIC_NUM="SPR";
-const int SPR_VERSION=10;
+// get an animation sequence
+Animation* Sprite::getAnimation(const std::string &id) {
+	if (m_Animations.find(id)!=m_Animations.end())
+		return &m_Animations[id];
+	else
+		return NULL;
+}
 
-// load a case from file
-bool loadCaseFromFile(const std::string &path, Case::Case &pcase);
+// get the current frame
+SDL_Surface* Sprite::getCurrentFrame() {
+	Animation *anim=getAnimation(m_CurAnim);
+	if (!anim)
+		return NULL;
+	
+	// return the frame
+	else
+		return anim->frames[m_CurFrame];
+}
 
-// load a sprite from file
-bool loadSpriteFromFile(const std::string &path, Sprite &sprite);
+// add a frame to an animation sequence
+void Sprite::addFrame(const std::string &id, SDL_Surface *frame) {
+	// get the target animation
+	Animation *anim=getAnimation(id);
+	if (anim)
+		anim->frames.push_back(frame);
+}
 
-// read image data from file
-Textures::Texture readImage(FILE *f);
-
-// read a string
-std::string readString(FILE *f);
-
-}; // namespace IO
-
-#endif
+// reset the sprite
+void Sprite::reset() {
+	m_CurFrame=0;
+	m_CurAnim="idle";
+	m_LastFrame=0;
+	m_Speed=200;
+}

@@ -79,6 +79,7 @@ struct _Location {
 	std::string id; // id referenced from within the script
 	std::string name; // name of this location
 	std::string triggerBlock; // block to execute upon next arrival at location
+	std::string character; // character located here
 	std::string bg; // background id referenced from within script
 	SDL_Surface *bgScaled; // scaled background image
 	std::vector<Hotspot> hotspots; // vector of examinable hotspots

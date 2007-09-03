@@ -167,6 +167,9 @@ void TextParser::nextStep() {
 		else
 			m_Game->toggle(STATE_COURT_REC_BTN | STATE_CONTROLS);
 		
+		// also, if there was a shown character talking, reset him
+		m_Game->m_State.displayChar="null";
+		
 		// flag that we are done
 		m_Done=true;
 	}
@@ -265,6 +268,24 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 			// set the trigger here
 			location->triggerBlock=block;
 		}
+	}
+	
+	// show a character in this dialog
+	else if (trigger=="show_character") {
+		// set the character to display for this dialog
+		m_Game->m_State.displayChar=command;
+	}
+	
+	// put a character at a location
+	else if (trigger=="put_character") {
+		// split this command string
+		std::vector<std::string> params=splitCommand(command);
+		std::string character=params[0];
+		std::string target=params[1];
+		
+		// get the target location
+		if (pcase->getLocation(target))
+			pcase->getLocation(target)->character=character;
 	}
 	
 	// set the current speaker

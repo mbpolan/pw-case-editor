@@ -17,39 +17,69 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-// iohandler.h: various I/O functions
+// sprite.h: the Sprite class
 
-#ifndef IOHANDLER_H
-#define IOHANDLER_H
+#ifndef SPRITE_H
+#define SPRITE_H
 
 #include <iostream>
+#include <map>
+#include <vector>
+#include "SDL.h"
 
-#include "case.h"
-#include "sprite.h"
-#include "texture.h"
+// struct representing a single animation
+struct _Animation {
+	std::string id;
+	std::vector<SDL_Surface*> frames;
+};
+typedef struct _Animation Animation;
 
-namespace IO {
+typedef std::map<std::string, Animation> AnimationMap;
+typedef std::map<std::string, Animation>::iterator AnimationMapIter;
 
-// case file information
-const std::string FILE_MAGIC_NUM="PWT";
-const int FILE_VERSION=10;
-
-// sprite file information
-const std::string SPR_MAGIC_NUM="SPR";
-const int SPR_VERSION=10;
-
-// load a case from file
-bool loadCaseFromFile(const std::string &path, Case::Case &pcase);
-
-// load a sprite from file
-bool loadSpriteFromFile(const std::string &path, Sprite &sprite);
-
-// read image data from file
-Textures::Texture readImage(FILE *f);
-
-// read a string
-std::string readString(FILE *f);
-
-}; // namespace IO
+// clss representing a sprite
+class Sprite {
+	public:
+		// constructor
+		Sprite();
+		
+		// set animation to play
+		void setAnimation(const std::string &anim) { m_CurAnim=anim; }
+		
+		// animate the sprite
+		void animate(int x, int y);
+		
+		// add an entire animation
+		void addAnimation(const Animation &anim) { m_Animations[anim.id]=anim; }
+		
+		// get an animation sequence
+		Animation* getAnimation(const std::string &id);
+		
+		// get full map of animations
+		AnimationMap getAnimations() const { return m_Animations; }
+		
+		// get the current frame
+		SDL_Surface* getCurrentFrame();
+		
+		// get the amount of animations in this sprite
+		int numAnimations() const { return m_Animations.size(); }
+		
+		// add a frame to an animation sequence
+		void addFrame(const std::string &id, SDL_Surface *frame);
+		
+		// reset the sprite
+		void reset();
+		
+	private:
+		// the current frame and animation
+		std::string m_CurAnim;
+		int m_CurFrame;
+		int m_LastFrame;
+		int m_Speed;
+		
+		// map of animations
+		AnimationMap m_Animations;
+};
 
 #endif
+

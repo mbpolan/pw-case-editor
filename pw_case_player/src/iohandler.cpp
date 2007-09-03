@@ -32,6 +32,10 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 	if (!f)
 		return false;
 	
+	// get the root path
+	int npos=path.rfind('/');
+	std::string root=path.substr(0, npos+1);
+	
 	// read magic number and verify it
 	std::string magicNum=readString(f);
 	if (magicNum!=FILE_MAGIC_NUM) {
@@ -88,6 +92,20 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 		// read sprite name
 		str=readString(f);
 		character.setSpriteName(str);
+		
+		// if the sprite name is not invalid, try loading said sprite
+		if (str!="null" && str!="") {
+			// the sprite should be in the /spr directory, extension .pws
+			std::string sprPath=root+"spr/"+str+".pws";
+			
+			// try to load it
+			Sprite sprite;
+			if (!IO::loadSpriteFromFile(sprPath, sprite))
+				std::cout << "Unable to load sprite for " << character.getInternalName() << ": " << sprPath << std::endl;
+			
+			else
+				character.setSprite(sprite);
+		}
 		
 		// see if this character has a text box tag
 		bool tag;
@@ -185,6 +203,7 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 	for (int i=0; i<locationCount; i++) {
 		Case::Location location;
 		location.triggerBlock="null";
+		location.character="null";
 		
 		// read id
 		location.id=readString(f);
@@ -248,6 +267,56 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 	// wrap up
 	fclose(f);
 	std::cout << "Done loading case\n";
+	return true;
+}
+
+// load a sprite from file
+bool IO::loadSpriteFromFile(const std::string &path, Sprite &sprite) {
+	// open the requested file
+	FILE *f=fopen(path.c_str(), "rb");
+	if (!f)
+		return false;
+	
+	// read file header 
+	if (fgetc(f)!=(char) 'P' || fgetc(f)!=(char) 'W' || fgetc(f)!=(char) 'S') {
+		fclose(f);
+		std::cout << "Incorrect magic number\n";
+		return false;
+	}
+	
+	int version;
+	fread(&version, sizeof(int), 1, f);
+	if (version!=10) {
+		fclose(f);
+		std::cout << "Incorrect version: " << version << std::endl;
+		return false;
+	}
+	
+	// read count of animations
+	int count;
+	fread(&count, sizeof(int), 1, f);
+	
+	// iterate over animations
+	for (int i=0; i<count; i++) {
+		Animation anim;
+		
+		// read id
+		anim.id=readString(f);
+		
+		// read amount of frames
+		int fcount;
+		fread(&fcount, sizeof(int), 1, f);
+		
+		// load over frames
+		for (int i=0; i<fcount; i++)
+			anim.frames.push_back(Textures::createTexture("null", readImage(f)));
+		
+		// add this animation
+		sprite.addAnimation(anim);
+	}
+	
+	// wrap up
+	fclose(f);
 	return true;
 }
 

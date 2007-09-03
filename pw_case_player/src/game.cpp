@@ -48,6 +48,9 @@ Game::Game(const std::string &rootPath, Case::Case *pcase): m_RootPath(rootPath)
 	// reset previous page
 	m_State.prevScreen=0;
 	
+	// reset displayed character
+	m_State.displayChar="null";
+	
 	// null out variables
 	m_State.currentLocation="null";
 	m_State.shownEvidence="null";
@@ -274,22 +277,47 @@ void Game::onKeyboardEvent(SDL_KeyboardEvent *e) {
 	
 	// if controls are drawn, change the selection
 	else if (flagged(STATE_CONTROLS)) {
+		Case::Location *location=m_Case->getLocation(m_State.currentLocation);
+		if (!location)
+			return;
+		
+		// check the character set here, if any
+		bool all=(location->character!="null");
+		
 		// select the right control
 		if (e->keysym.sym==SDLK_RIGHT) {
 			m_State.selectedControl+=1;
-			if (m_State.selectedControl>3)
-				m_State.selectedControl=0;
+			
+			// restrict selection based on controls drawn
+			if (all) {
+				if (m_State.selectedControl>3)
+					m_State.selectedControl=0;
+			}
+			
+			else {
+				if (m_State.selectedControl>1)
+					m_State.selectedControl=0;
+			}
 		}
 		
 		// select the left control
 		else if (e->keysym.sym==SDLK_LEFT) {
 			m_State.selectedControl-=1;
-			if (m_State.selectedControl<0)
-				m_State.selectedControl=3;
+			
+			// restrict selection based on controls drawn
+			if (all) {
+				if (m_State.selectedControl<0)
+					m_State.selectedControl=3;
+			}
+			
+			else {
+				if (m_State.selectedControl<0)
+					m_State.selectedControl=1;
+			}
 		}
 		
 		// select the upper control
-		else if (e->keysym.sym==SDLK_UP) {
+		else if (e->keysym.sym==SDLK_UP && all) {
 			if (m_State.selectedControl==2)
 				m_State.selectedControl=0;
 			
@@ -298,7 +326,7 @@ void Game::onKeyboardEvent(SDL_KeyboardEvent *e) {
 		}
 		
 		// select the lower control
-		else if (e->keysym.sym==SDLK_DOWN) {
+		else if (e->keysym.sym==SDLK_DOWN && all) {
 			if (m_State.selectedControl==0)
 				m_State.selectedControl=2;
 			
@@ -497,6 +525,18 @@ void Game::renderTopView() {
 		if (bg)
 			Renderer::drawImage(0, 0, bg);
 		
+		// if there is a character set here, draw him now
+		if (m_Case->getCharacter(location->character)) {
+			Sprite *sprite=m_Case->getCharacter(location->character)->getSprite();
+			
+			// calculate the x,y draw position
+			int x=(256/2)-(sprite->getCurrentFrame()->w/2);
+			int y=192-(sprite->getCurrentFrame()->h);
+			
+			// draw the sprite
+			sprite->animate(x, y);
+		}
+		
 		// if the examination scene is up, dim the upper screen
 		if (flagged(STATE_EXAMINE)) {
 			// get an opaque black surface
@@ -518,8 +558,23 @@ void Game::renderTopView() {
 	}
 	
 	// draw text box, if needed
-	if (flagged(STATE_TEXT_BOX))
+	if (flagged(STATE_TEXT_BOX)) {
+		// if there is a character to display, handle the request
+		if (m_State.displayChar!="null" && m_Case->getCharacter(m_State.displayChar)) {
+			// get the sprite
+			Sprite *sprite=m_Case->getCharacter(m_State.displayChar)->getSprite();
+			
+			// calculate the x,y draw position
+			int x=(256/2)-(sprite->getCurrentFrame()->w/2);
+			int y=192-(sprite->getCurrentFrame()->h);
+			
+			// animate the sprite
+			sprite->animate(x, y);
+		}
+		
+		// draw the text box over everything
 		renderTextBox();
+	}
 	
 	// if there is shown evidence, draw it as well
 	if (m_State.shownEvidence!="null") {
@@ -547,6 +602,10 @@ void Game::renderMenuView() {
 	if (flagged(STATE_EXAMINE)) {
 		// get the current background
 		Case::Location *location=m_Case->getLocation(m_State.currentLocation);
+		if (!location)
+			return;
+		
+		// get the background
 		Case::Background *bg=m_Case->getBackground(location->bg);
 		
 		Renderer::drawImage(0, 197, bg->texture);
@@ -594,8 +653,17 @@ void Game::renderMenuView() {
 	}
 	
 	// draw controls, if needed
-	else if (flagged(STATE_CONTROLS))
-		renderControls(CONTROLS_ALL);
+	else if (flagged(STATE_CONTROLS)) {
+		// get the character at this location, if any
+		if (m_Case->getLocation(m_State.currentLocation)) {
+			// if there is a character set, enable the talk and present controls
+			Case::Location *location=m_Case->getLocation(m_State.currentLocation);
+			if (location->character!="null")
+				renderControls(CONTROLS_ALL);
+			else
+				renderControls(CONTROLS_EXAMINE | CONTROLS_MOVE);
+		}
+	}
 	
 	// top everything off with scanlines
 	Renderer::drawImage(0, 197, "scanlines_overlay");
@@ -813,13 +881,13 @@ void Game::onBottomLeftButtonClicked() {
 		// if either evidence or profiles pages, or examination scene are shown, revert to main screen
 		if (flagged(STATE_EVIDENCE_PAGE) || flagged(STATE_PROFILES_PAGE)) {
 			// if the previous screen is the examine screen, then draw it instead
-			if (flagged(SCREEN_EXAMINE)) {
+			if (m_State.prevScreen==SCREEN_EXAMINE) {
 				int flags=STATE_EXAMINE | STATE_COURT_REC_BTN | STATE_LOWER_BAR | STATE_BACK_BTN;
 				toggle(flags);
 			}
 			
 			// if the previous screen is the move screen, then draw it
-			else if (flagged(SCREEN_MOVE)) {
+			else if (m_State.prevScreen==SCREEN_MOVE) {
 				int flags=STATE_MOVE | STATE_COURT_REC_BTN | STATE_LOWER_BAR | STATE_BACK_BTN;
 				toggle(flags);
 			}
