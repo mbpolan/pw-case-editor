@@ -160,7 +160,11 @@ void SpriteEditor::on_anim_cb_changed() {
 	// set the image frame to the first frame of this animation
 	m_CurFrame=1;
 	Glib::ustring id=m_AnimCB->get_active_text();
-	m_Image->set(m_Sprite.get_animation(id).frames[m_CurFrame-1].pixbuf);
+	
+	if (m_Sprite.get_animation(id).frames.empty())
+		m_Image->clear();
+	else
+		m_Image->set(m_Sprite.get_animation(id).frames[m_CurFrame-1].pixbuf);
 	
 	// update the progress label
 	update_progress_label();
