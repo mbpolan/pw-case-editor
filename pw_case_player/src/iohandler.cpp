@@ -308,8 +308,18 @@ bool IO::loadSpriteFromFile(const std::string &path, Sprite &sprite) {
 		fread(&fcount, sizeof(int), 1, f);
 		
 		// load over frames
-		for (int i=0; i<fcount; i++)
-			anim.frames.push_back(Textures::createTexture("null", readImage(f)));
+		for (int i=0; i<fcount; i++) {
+			Frame fr;
+			
+			// read time
+			fread(&fr.time, sizeof(int), 1, f);
+			
+			// read image
+			fr.image=Textures::createTexture("null", readImage(f));
+			
+			// add this frame
+			anim.frames.push_back(fr);
+		}
 		
 		// add this animation
 		sprite.addAnimation(anim);

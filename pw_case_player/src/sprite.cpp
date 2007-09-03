@@ -36,9 +36,14 @@ void Sprite::animate(int x, int y) {
 		return;
 	}
 	
+	// get current frame
+	Frame *frame=getCurrentFrame();
+	if (!frame)
+		return;
+	
 	// get the last frame time and compare it with now
 	int now=SDL_GetTicks();
-	if (now-m_LastFrame>=m_Speed) {
+	if (now-m_LastFrame>=frame->time) {
 		// save this time
 		m_LastFrame=now;
 		
@@ -51,7 +56,7 @@ void Sprite::animate(int x, int y) {
 	}
 	
 	// draw the current frame
-	Renderer::drawImage(x, y, anim->frames[m_CurFrame]);
+	Renderer::drawImage(x, y, frame->image);
 }
 
 // get an animation sequence
@@ -63,22 +68,28 @@ Animation* Sprite::getAnimation(const std::string &id) {
 }
 
 // get the current frame
-SDL_Surface* Sprite::getCurrentFrame() {
+Frame* Sprite::getCurrentFrame() {
 	Animation *anim=getAnimation(m_CurAnim);
 	if (!anim)
 		return NULL;
 	
 	// return the frame
 	else
-		return anim->frames[m_CurFrame];
+		return &anim->frames[m_CurFrame];
 }
 
 // add a frame to an animation sequence
-void Sprite::addFrame(const std::string &id, SDL_Surface *frame) {
+void Sprite::addFrame(const std::string &id, int time, SDL_Surface *frame) {
 	// get the target animation
 	Animation *anim=getAnimation(id);
-	if (anim)
-		anim->frames.push_back(frame);
+	if (anim) {
+		// fill in data
+		Frame fr;
+		fr.time=time;
+		fr.image=frame;
+		
+		anim->frames.push_back(fr);
+	}
 }
 
 // reset the sprite
@@ -86,5 +97,4 @@ void Sprite::reset() {
 	m_CurFrame=0;
 	m_CurAnim="idle";
 	m_LastFrame=0;
-	m_Speed=200;
 }

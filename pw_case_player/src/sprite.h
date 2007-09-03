@@ -27,10 +27,17 @@
 #include <vector>
 #include "SDL.h"
 
+// struct representing data about a frame
+struct _Frame {
+	int time;
+	SDL_Surface *image;
+};
+typedef struct _Frame Frame;
+
 // struct representing a single animation
 struct _Animation {
 	std::string id;
-	std::vector<SDL_Surface*> frames;
+	std::vector<Frame> frames;
 };
 typedef struct _Animation Animation;
 
@@ -59,13 +66,13 @@ class Sprite {
 		AnimationMap getAnimations() const { return m_Animations; }
 		
 		// get the current frame
-		SDL_Surface* getCurrentFrame();
+		Frame* getCurrentFrame();
 		
 		// get the amount of animations in this sprite
 		int numAnimations() const { return m_Animations.size(); }
 		
 		// add a frame to an animation sequence
-		void addFrame(const std::string &id, SDL_Surface *frame);
+		void addFrame(const std::string &id, int time, SDL_Surface *frame);
 		
 		// reset the sprite
 		void reset();
@@ -75,7 +82,6 @@ class Sprite {
 		std::string m_CurAnim;
 		int m_CurFrame;
 		int m_LastFrame;
-		int m_Speed;
 		
 		// map of animations
 		AnimationMap m_Animations;

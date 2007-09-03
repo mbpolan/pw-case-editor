@@ -530,8 +530,8 @@ void Game::renderTopView() {
 			Sprite *sprite=m_Case->getCharacter(location->character)->getSprite();
 			
 			// calculate the x,y draw position
-			int x=(256/2)-(sprite->getCurrentFrame()->w/2);
-			int y=192-(sprite->getCurrentFrame()->h);
+			int x=(256/2)-(sprite->getCurrentFrame()->image->w/2);
+			int y=192-(sprite->getCurrentFrame()->image->h);
 			
 			// draw the sprite
 			sprite->animate(x, y);
@@ -565,8 +565,8 @@ void Game::renderTopView() {
 			Sprite *sprite=m_Case->getCharacter(m_State.displayChar)->getSprite();
 			
 			// calculate the x,y draw position
-			int x=(256/2)-(sprite->getCurrentFrame()->w/2);
-			int y=192-(sprite->getCurrentFrame()->h);
+			int x=(256/2)-(sprite->getCurrentFrame()->image->w/2);
+			int y=192-(sprite->getCurrentFrame()->image->h);
 			
 			// animate the sprite
 			sprite->animate(x, y);
