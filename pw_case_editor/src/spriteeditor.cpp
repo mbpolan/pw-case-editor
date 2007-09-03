@@ -68,6 +68,11 @@ void SpriteEditor::construct() {
 	// allocate labels
 	m_AnimLabel=manage(new Gtk::Label("Animation"));
 	m_FrameLabel=manage(new Gtk::Label("1/0"));
+	m_TimeLabel=manage(new Gtk::Label("Time (ms)"));
+	
+	// allocate entries
+	m_TimeEntry=manage(new Gtk::Entry);
+	m_TimeEntry->set_text("200");
 	
 	// allocate image
 	m_Image=manage(new Gtk::Image);
@@ -79,6 +84,7 @@ void SpriteEditor::construct() {
 	m_DeleteFrameButton=manage(new Gtk::Button("Delete Frame"));
 	m_PrevFrameButton=manage(new Gtk::Button("<<"));
 	m_NextFrameButton=manage(new Gtk::Button(">>"));
+	m_AmendButton=manage(new Gtk::Button("Amend"));
 	
 	// connect the plethora of signals
 	m_NewAnimButton->signal_clicked().connect(sigc::mem_fun(*this, &SpriteEditor::on_new_animation_button_clicked));
@@ -87,6 +93,7 @@ void SpriteEditor::construct() {
 	m_DeleteFrameButton->signal_clicked().connect(sigc::mem_fun(*this, &SpriteEditor::on_delete_frame_button_clicked));
 	m_PrevFrameButton->signal_clicked().connect(sigc::mem_fun(*this, &SpriteEditor::on_prev_frame_button_clicked));
 	m_NextFrameButton->signal_clicked().connect(sigc::mem_fun(*this, &SpriteEditor::on_next_frame_button_clicked));
+	m_AmendButton->signal_clicked().connect(sigc::mem_fun(*this, &SpriteEditor::on_amend_button_clicked));
 	
 	// allocate combo box
 	m_AnimCB=manage(new Gtk::ComboBoxText);
@@ -99,6 +106,9 @@ void SpriteEditor::construct() {
 	Animation animation;
 	animation.id="idle";
 	m_Sprite.add_animation(animation);
+	
+	// connect signals
+	m_AnimCB->signal_changed().connect(sigc::mem_fun(*this, &SpriteEditor::on_anim_cb_changed));
 	
 	// attach options
 	Gtk::AttachOptions xops=Gtk::FILL | Gtk::EXPAND;
@@ -114,7 +124,10 @@ void SpriteEditor::construct() {
 	table->attach(*m_PrevFrameButton, 0, 1, 2, 3, xops, yops);
 	table->attach(*m_FrameLabel, 1, 3, 2, 3, xops, yops);
 	table->attach(*m_NextFrameButton, 3, 4, 2, 3, xops, yops);
-	table->attach(*m_Image, 1, 4, 3, 4);
+	table->attach(*m_Image, 0, 4, 3, 4);
+	table->attach(*m_TimeLabel, 0, 2, 4, 5, xops, yops);
+	table->attach(*m_TimeEntry, 2, 3, 4, 5, xops, yops);
+	table->attach(*m_AmendButton, 3, 4, 4, 5, xops, yops);
 	
 	vb->pack_start(*table, Gtk::PACK_SHRINK);
 	
@@ -135,6 +148,35 @@ void SpriteEditor::update_progress_label() {
 	
 	// set the label text
 	m_FrameLabel->set_text(ss.str());
+	
+	// also, set the time for this label in the appropriate entry
+	ss.str("");
+	ss << m_Sprite.get_animation(m_AnimCB->get_active_text()).frames[m_CurFrame-1].time;
+	m_TimeEntry->set_text(ss.str());
+}
+
+// handler for combo box changes
+void SpriteEditor::on_anim_cb_changed() {
+	// set the image frame to the first frame of this animation
+	m_CurFrame=1;
+	Glib::ustring id=m_AnimCB->get_active_text();
+	m_Image->set(m_Sprite.get_animation(id).frames[m_CurFrame-1].pixbuf);
+	
+	// update the progress label
+	update_progress_label();
+}
+
+// amend button handler
+void SpriteEditor::on_amend_button_clicked() {
+	// get our current frame
+	Glib::ustring id=m_AnimCB->get_active_text();
+	Frame &fr=m_Sprite.get_animation(id).frames[m_CurFrame-1];
+	
+	// get the current frame time
+	int time=atoi(m_TimeEntry->get_text().c_str());
+	
+	// update this frame
+	fr.time=time;
 }
 
 // new animation button click handler
@@ -197,15 +239,18 @@ void SpriteEditor::on_add_frame_button_clicked() {
 			// first, get the id of our current animation
 			Glib::ustring id=m_AnimCB->get_active_text();
 			
+			// now get the time for this frame
+			int time=atoi(m_TimeEntry->get_text().c_str());
+			
 			// add the frame
-			m_Sprite.add_frame(id, pixbuf);
+			m_Sprite.add_frame(id, time, pixbuf);
 			
 			// get the amount of frames in this animation now
 			int amount=m_Sprite.get_animation(id).frames.size();
 			m_CurFrame=amount;
 			
 			// set this new frame
-			m_Image->set(m_Sprite.get_animation(id).frames[m_CurFrame-1]);
+			m_Image->set(m_Sprite.get_animation(id).frames[m_CurFrame-1].pixbuf);
 			
 			update_progress_label();
 		}
@@ -227,7 +272,7 @@ void SpriteEditor::on_delete_frame_button_clicked() {
 	// see if there are any frames left
 	if (!m_Sprite.get_animation(id).frames.empty()) {
 		// then there should be a frame 0
-		m_Image->set(m_Sprite.get_animation(id).frames[0]);
+		m_Image->set(m_Sprite.get_animation(id).frames[0].pixbuf);
 		m_CurFrame=1;
 	}
 	
@@ -241,10 +286,11 @@ void SpriteEditor::on_delete_frame_button_clicked() {
 // previous frame button click handler
 void SpriteEditor::on_prev_frame_button_clicked() {
 	if (m_CurFrame>1) {
+		// move the the frame before this one
 		m_CurFrame-=1;
 		
 		// get the previous frame pixbuf
-		Glib::RefPtr<Gdk::Pixbuf> pixbuf=m_Sprite.get_animation(m_AnimCB->get_active_text()).frames[m_CurFrame-1];
+		Glib::RefPtr<Gdk::Pixbuf> pixbuf=m_Sprite.get_animation(m_AnimCB->get_active_text()).frames[m_CurFrame-1].pixbuf;
 		
 		// update image
 		m_Image->set(pixbuf);
@@ -261,7 +307,7 @@ void SpriteEditor::on_next_frame_button_clicked() {
 		m_CurFrame+=1;
 		
 		// get the previous frame pixbuf
-		Glib::RefPtr<Gdk::Pixbuf> pixbuf=m_Sprite.get_animation(m_AnimCB->get_active_text()).frames[m_CurFrame-1];
+		Glib::RefPtr<Gdk::Pixbuf> pixbuf=m_Sprite.get_animation(m_AnimCB->get_active_text()).frames[m_CurFrame-1].pixbuf;
 		
 		// update image
 		m_Image->set(pixbuf);

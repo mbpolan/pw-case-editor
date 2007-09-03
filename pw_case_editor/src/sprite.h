@@ -26,10 +26,17 @@
 #include <glibmm/ustring.h>
 #include <map>
 
+// struct representing a frame of animation
+struct _Frame {
+	int time;
+	Glib::RefPtr<Gdk::Pixbuf> pixbuf;
+};
+typedef struct _Frame Frame;
+
 // struct representing a single animation
 struct _Animation {
 	Glib::ustring id;
-	std::vector<Glib::RefPtr<Gdk::Pixbuf> > frames;
+	std::vector<Frame> frames;
 };
 typedef struct _Animation Animation;
 
@@ -58,16 +65,19 @@ class Sprite {
 		void remove_animation(const Glib::ustring &id) { m_Animations.erase(id); }
 		
 		// add a frame to an animation sequence
-		void add_frame(const Glib::ustring &id, const Glib::RefPtr<Gdk::Pixbuf> &pixbuf) {
-			m_Animations[id].frames.push_back(pixbuf);
+		void add_frame(const Glib::ustring &id, int time, const Glib::RefPtr<Gdk::Pixbuf> &pixbuf) {
+			Frame fr;
+			fr.time=time;
+			fr.pixbuf=pixbuf;
+			
+			m_Animations[id].frames.push_back(fr);
 		}
 		
 		// remove a frame from an animation sequence
 		void remove_frame(const Glib::ustring &id, int index) {
 			Animation &anim=m_Animations[id];
 			int c=0;
-			for (std::vector<Glib::RefPtr<Gdk::Pixbuf> >::iterator it=anim.frames.begin();
-						  it!=anim.frames.end(); ++it) {
+			for (std::vector<Frame>::iterator it=anim.frames.begin(); it!=anim.frames.end(); ++it) {
 				// erase this element if it matches the index
 				if (c==index) {
 					it=anim.frames.erase(it);

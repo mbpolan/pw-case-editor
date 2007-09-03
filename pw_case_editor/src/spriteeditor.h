@@ -25,6 +25,7 @@
 #include <gtkmm/button.h>
 #include <gtkmm/comboboxtext.h>
 #include <gtkmm/dialog.h>
+#include <gtkmm/entry.h>
 #include <gtkmm/label.h>
 #include <gtkmm/image.h>
 
@@ -49,6 +50,12 @@ class SpriteEditor: public Gtk::Dialog {
 		// update the progress label
 		void update_progress_label();
 		
+		// handler for combo box changes
+		void on_anim_cb_changed();
+		
+		// amend button handler
+		void on_amend_button_clicked();
+		
 		// new animation button click handler
 		void on_new_animation_button_clicked();
 		
@@ -70,6 +77,10 @@ class SpriteEditor: public Gtk::Dialog {
 		// labels
 		Gtk::Label *m_AnimLabel;
 		Gtk::Label *m_FrameLabel;
+		Gtk::Label *m_TimeLabel;
+		
+		// entries
+		Gtk::Entry *m_TimeEntry;
 		
 		// image for viewing frames
 		Gtk::Image *m_Image;
@@ -81,6 +92,7 @@ class SpriteEditor: public Gtk::Dialog {
 		Gtk::Button *m_DeleteFrameButton;
 		Gtk::Button *m_PrevFrameButton;
 		Gtk::Button *m_NextFrameButton;
+		Gtk::Button *m_AmendButton;
 		
 		// combo box
 		Gtk::ComboBoxText *m_AnimCB;
