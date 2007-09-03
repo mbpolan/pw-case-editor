@@ -56,6 +56,9 @@ bool load_case_from_file(const Glib::ustring &path, Case::Case &pcase,
 // save a sprite to file
 bool save_sprite_to_file(const Glib::ustring &path, const Sprite &spr);
 
+// export a sprite to file
+bool export_sprite_to_file(const Glib::ustring &path, const Sprite &spr);
+
 // load a sprite from file
 bool load_sprite_from_file(const Glib::ustring &path, Sprite &spr);
 

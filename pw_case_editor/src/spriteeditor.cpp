@@ -41,6 +41,8 @@ void SpriteEditor::set_sprite_data(const Sprite &spr) {
 	// copy sprite data
 	m_Sprite=spr;
 	
+	m_AnimCB->clear();
+	
 	// go over animations
 	AnimationMap animations=spr.get_animations();
 	for (AnimationMapIter it=animations.begin(); it!=animations.end(); ++it) {
@@ -118,6 +120,7 @@ void SpriteEditor::construct() {
 	
 	// add buttons
 	add_button("Save", Gtk::RESPONSE_OK);
+	add_button("Export", Gtk::RESPONSE_YES); // this shouldn't use RESPONSE_YES
 	add_button("Cancel", Gtk::RESPONSE_CANCEL);
 	
 	show_all_children();

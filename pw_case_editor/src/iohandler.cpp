@@ -576,6 +576,47 @@ bool IO::save_sprite_to_file(const Glib::ustring &path, const Sprite &spr) {
 		return false;
 	
 	// write file header
+	fputc('P', f);
+	fputc('W', f);
+	fputc('S', f);
+	fwrite(&SPR_VERSION, sizeof(int), 1, f);
+	
+	// get sprite animations
+	AnimationMap animations=spr.get_animations();
+	
+	// write count of animations
+	int count=animations.size();
+	fwrite(&count, sizeof(int), 1, f);
+	
+	// iterate over animations
+	for (AnimationMapIter it=animations.begin(); it!=animations.end(); ++it) {
+		Animation anim=(*it).second;
+		
+		// write id
+		write_string(f, anim.id);
+		
+		// write amount of frames
+		int fcount=anim.frames.size();
+		fwrite(&fcount, sizeof(int), 1, f);
+		
+		// iterate over frames
+		for (int i=0; i<fcount; i++)
+			write_bmp(f, anim.frames[i]);
+	}
+	
+	// wrap up
+	fclose(f);
+	return true;
+}
+
+// export a sprite to file
+bool IO::export_sprite_to_file(const Glib::ustring &path, const Sprite &spr) {
+	// open the requested file
+	FILE *f=fopen(path.c_str(), "wb");
+	if (!f)
+		return false;
+	
+	// write file header
 	write_string(f, SPR_MAGIC_NUM);
 	fwrite(&SPR_VERSION, sizeof(int), 1, f);
 	
