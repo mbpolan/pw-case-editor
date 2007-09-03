@@ -27,6 +27,18 @@ Sprite::Sprite() {
 	reset();
 }
 
+// set animation to play
+void Sprite::setAnimation(const std::string &anim) {
+	// don't bother reseting this animation if it's already
+	// being played
+	if (m_CurAnim==anim)
+		return;
+	
+	// set the animation to use and reset frames
+	m_CurAnim=anim;
+	m_CurFrame=0;
+}
+
 // animate the sprite
 void Sprite::animate(int x, int y) {
 	// get the animation
@@ -74,8 +86,12 @@ Frame* Sprite::getCurrentFrame() {
 		return NULL;
 	
 	// return the frame
-	else
+	else {
+		if (m_CurFrame>anim->frames.size()-1)
+			return NULL;
+		
 		return &anim->frames[m_CurFrame];
+	}
 }
 
 // add a frame to an animation sequence

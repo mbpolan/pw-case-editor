@@ -529,6 +529,9 @@ void Game::renderTopView() {
 		if (m_Case->getCharacter(location->character)) {
 			Sprite *sprite=m_Case->getCharacter(location->character)->getSprite();
 			
+			// reset animation
+			sprite->setAnimation("idle");
+			
 			// calculate the x,y draw position
 			int x=(256/2)-(sprite->getCurrentFrame()->image->w/2);
 			int y=192-(sprite->getCurrentFrame()->image->h);
@@ -563,6 +566,12 @@ void Game::renderTopView() {
 		if (m_State.displayChar!="null" && m_Case->getCharacter(m_State.displayChar)) {
 			// get the sprite
 			Sprite *sprite=m_Case->getCharacter(m_State.displayChar)->getSprite();
+			
+			// set talk animation if the dialogue is still being drawn
+			if (!m_Parser->dialogueDone() && m_Parser->getSpeaker()==m_State.displayChar)
+				sprite->setAnimation("talk");
+			else
+				sprite->setAnimation("idle");
 			
 			// calculate the x,y draw position
 			int x=(256/2)-(sprite->getCurrentFrame()->image->w/2);

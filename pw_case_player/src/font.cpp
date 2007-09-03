@@ -208,11 +208,11 @@ bool Fonts::willBreak(int x, int y, int rightClamp, const std::string &str, cons
 
 // draw a string on the screen
 int Fonts::drawString(int x, int y, const std::string &str, const std::string &fontId) {
-	drawString(x, y, -1, SDL_GetVideoSurface()->w, str, fontId);
+	drawString(x, y, str.size(), SDL_GetVideoSurface()->w, str, fontId);
 }
 
 // draw a string with clamped restrictions
-int Fonts::drawString(int x, int y, int tickBreak, int rightClamp, const std::string &str, const std::string &fontId) {
+int Fonts::drawString(int x, int y, int limit, int rightClamp, const std::string &str, const std::string &fontId) {
 	// check if the font exists
 	if (g_Fonts.find(fontId)==g_Fonts.end()) {
 		std::cout << "Fonts: font '" << fontId << "' not found in stack.\n";
@@ -238,7 +238,7 @@ int Fonts::drawString(int x, int y, int tickBreak, int rightClamp, const std::st
 	int breakCount=0;
 	
 	// iterate over string and draw each character
-	for (int i=0; i<str.size(); i++) {
+	for (int i=0; i<limit; i++) {
 		char ch=(char) str[i];
 		
 		// see if we should force a new line

@@ -26,7 +26,11 @@
 // constructor
 TextParser::TextParser(Game *game): m_Game(game) {
 	reset();
+	
+	// reset variables
+	m_Dialogue="";
 	m_Direct=false;
+	m_Speed=50;
 }
 
 // set the text block
@@ -53,12 +57,13 @@ void TextParser::reset() {
 	m_TagOpen=false;
 	m_CurTag="";
 	m_NextBlock="null";
+	
+	m_StrPos=1;
+	m_LastChar=0;
 }
 
 // parse the given control block
 std::string TextParser::parse() {
-	static std::string str="";
-	
 	if (m_Done)
 		return "end";
 	
@@ -67,7 +72,7 @@ std::string TextParser::parse() {
 		m_Block.erase(0, m_BreakPoint);
 		
 		// reset draw string
-		str="";
+		m_Dialogue="";
 		
 		// start going over block
 		while(1) {
@@ -120,15 +125,15 @@ std::string TextParser::parse() {
 				// make sure useless characters aren't dealt with
 				if (ch!='\n') {
 					// add this character to the draw string
-					str+=(char) ch;
+					m_Dialogue+=(char) ch;
 					
 					// see if we are over the text limit and need to break
-					if (Fonts::willBreak(4, 132, SDL_GetVideoSurface()->w, str, "white")) {
+					if (Fonts::willBreak(4, 132, SDL_GetVideoSurface()->w, m_Dialogue, "white")) {
 						m_Pause=true;
 						break;
 					}
 				}
-					
+				
 				// erase up to this point
 				m_Block.erase(0, 1);
 			}
@@ -148,8 +153,15 @@ std::string TextParser::parse() {
 	}
 	
 	else {
+		// see if we should draw the next character in the string
+		int now=SDL_GetTicks();
+		if (now-m_LastChar>m_Speed && m_StrPos<m_Dialogue.size()) {
+			m_LastChar=now;
+			m_StrPos++;
+		}
+		
 		// draw the string
-		Fonts::drawString(4, 132, 100, SDL_GetVideoSurface()->w, str, "white");
+		Fonts::drawString(4, 132, m_StrPos, SDL_GetVideoSurface()->w, m_Dialogue, "white");
 	}
 	
 	return "pause";
@@ -172,9 +184,24 @@ void TextParser::nextStep() {
 		
 		// flag that we are done
 		m_Done=true;
+		m_Pause=false;
+		
+		// also, make sure to end any talk animations
+		m_StrPos=m_Dialogue.size();
+		
+		return;
 	}
 	
-	m_Pause=false;
+	// if the dialogue string is still being drawn, display it all
+	if (m_Dialogue.size()!=m_StrPos && !m_Dialogue.empty())
+		m_StrPos=m_Dialogue.size();
+	
+	else {
+		// reset string position
+		m_StrPos=0;
+		m_Pause=false;
+	}
+	
 }
 
 // split a command string into pieces based on commas

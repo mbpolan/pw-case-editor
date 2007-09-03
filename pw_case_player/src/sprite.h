@@ -51,13 +51,16 @@ class Sprite {
 		Sprite();
 		
 		// set animation to play
-		void setAnimation(const std::string &anim) { m_CurAnim=anim; }
+		void setAnimation(const std::string &anim);
 		
 		// animate the sprite
 		void animate(int x, int y);
 		
 		// add an entire animation
 		void addAnimation(const Animation &anim) { m_Animations[anim.id]=anim; }
+		
+		// return the string of the current animation
+		std::string getCurrentAnimationId() const { return m_CurAnim; }
 		
 		// get an animation sequence
 		Animation* getAnimation(const std::string &id);

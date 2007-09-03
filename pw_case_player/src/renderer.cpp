@@ -235,7 +235,7 @@ void Renderer::drawEvidenceInfoPage(const std::vector<Case::Evidence> &evidence,
 	drawRect(screen, x+2, y+2+15, 144, 45, SDL_MapRGB(screen->format, 153, 192, 145));
 	
 	// draw evidence caption in this area
-	Fonts::drawString(x+4, y+2+16, -1, x+2+145, e.caption, "black");
+	Fonts::drawString(x+4, y+2+16, e.caption.size(), x+2+145, e.caption, "black");
 	
 	// moving right along...
 	x+=148;
@@ -390,7 +390,7 @@ void Renderer::drawProfileInfoPage(const std::vector<Character> &chars, int inde
 	drawRect(screen, x+2, y+2+15, 144, 45, SDL_MapRGB(screen->format, 153, 192, 145));
 	
 	// draw character caption in this area
-	Fonts::drawString(x+4, y+2+16, -1, x+2+145, c.getCaption(), "black");
+	Fonts::drawString(x+4, y+2+16, c.getCaption().size(), x+2+145, c.getCaption(), "black");
 	
 	// moving right along...
 	x+=148;

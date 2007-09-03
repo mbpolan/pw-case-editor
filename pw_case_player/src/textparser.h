@@ -44,6 +44,9 @@ class TextParser {
 		// see if this parser is done
 		bool done() const { return m_Done; }
 		
+		// see if the current dialogue string is still be drawn
+		bool dialogueDone() const { return (m_StrPos==m_Dialogue.size()); }
+		
 		// return the currently speaking character, if any
 		std::string getSpeaker() const { return m_Speaker; }
 		
@@ -73,7 +76,13 @@ class TextParser {
 		int m_BreakPoint;
 		bool m_Pause;
 		bool m_Done;
-		bool m_Direct;
+		bool m_Direct; // flag if the parser should go right to the next block
+		
+		// current dialog string data
+		std::string m_Dialogue;
+		int m_StrPos; // position in current dialogue
+		int m_LastChar; // last time the character was drawn
+		int m_Speed; // speed of font drawing
 		
 		// is a styling tag open?
 		bool m_TagOpen;

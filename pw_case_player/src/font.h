@@ -58,8 +58,8 @@ bool willBreak(int x, int y, int rightClamp, const std::string &str, const std::
 // draw a string on the screen
 int drawString(int x, int y, const std::string &str, const std::string &fontId);
 
-// draw a string with clamped restrictions
-int drawString(int x, int y, int tickPause, int rightClamp, const std::string &str, const std::string &fontId);
+// draw a string with clamped restrictions and delimiter
+int drawString(int x, int y, int delimiter, int rightClamp, const std::string &str, const std::string &fontId);
 
 // get the width of a string
 int getWidth(const std::string &id, const std::string &str);
