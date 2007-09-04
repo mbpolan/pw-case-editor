@@ -19,6 +19,8 @@
  ***************************************************************************/
 // glcontext.cpp: implementation of SDLContext class
 
+#include "SDL_mixer.h"
+
 #include "sdlcontext.h"
 #include "iohandler.h"
 #include "renderer.h"
@@ -37,14 +39,17 @@ SDLContext::~SDLContext() {
 	// delete the game engine
 	delete m_Game;
 	
+	// close audio channel
+	Mix_CloseAudio();
+	
 	// free the screen
-	SDL_FreeSurface(m_Screen);
+	SDL_FreeSurface(m_Screen);	
 }
 
 // initialize basic functionality
 bool SDLContext::init() {
 	// initialize SDL
-	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER)<0) {
+	if (SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_TIMER)<0) {
 		std::cout << "SDLContext: unable to intialize video: " << SDL_GetError() << std::endl;
 		return false;
 	}
@@ -90,6 +95,15 @@ bool SDLContext::initVideo(int width, int height) {
 
 // initialize audio output
 bool SDLContext::initAudio() {
+	// open an audio channel
+	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024)==-1) {
+		std::cout << "Unable to open audio! Reason: " << Mix_GetError() << std::endl;
+		
+		// normally, we should quit if audio wasn't opened, but the game is 
+		// still playable without sound
+		return true;
+	}
+	
 	return true;
 }
 

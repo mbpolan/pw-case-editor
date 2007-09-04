@@ -23,6 +23,7 @@
 #include <iostream>
 #include "SDL_rotozoom.h"
 
+#include "audio.h"
 #include "iohandler.h"
 
 // load a case from file
@@ -246,6 +247,25 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 		
 		// add this location
 		pcase.addLocation(location);
+	}
+	
+	// read amount of audio samples
+	int audioCount;
+	fread(&audioCount, sizeof(int), 1, f);
+	
+	// iterate over audio
+	for (int i=0; i<audioCount; i++) {
+		Audio::Sample audio;
+		
+		// read id
+		audio.id=readString(f);
+		
+		// read filename
+		std::string afile=readString(f);
+		
+		// form full string and load the audio sample
+		if (Audio::loadSample(root+"/audio/"+afile, audio))
+			Audio::pushAudio(audio.id, audio);
 	}
 	
 	// read amount of text blocks

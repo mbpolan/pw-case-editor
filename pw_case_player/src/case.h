@@ -25,6 +25,7 @@
 #include <map>
 #include <vector>
 #include "SDL.h"
+#include "SDL_mixer.h"
 
 #include "character.h"
 
@@ -86,12 +87,6 @@ struct _Location {
 	std::vector<std::string> moveLocations; // ids of locations that player can move to from here
 };
 typedef struct _Location Location;
-
-// audio data
-struct _Audio {
-	std::string id; // id referenced from within the script
-};
-typedef struct _Audio Audio;
 
 }; // namespace Case
 

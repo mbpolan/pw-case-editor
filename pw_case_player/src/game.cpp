@@ -21,6 +21,7 @@
 
 #include <cmath>
 
+#include "audio.h"
 #include "game.h"
 #include "font.h"
 #include "renderer.h"
@@ -66,6 +67,9 @@ Game::~Game() {
 	
 	// free fonts used
 	Fonts::clearFontStack();
+	
+	// free used audio
+	Audio::clearAudioStack();
 	
 	// delete case
 	delete m_Case;

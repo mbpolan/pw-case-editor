@@ -19,6 +19,7 @@
  ***************************************************************************/
 // textparser.cpp: implementation of TextParser class
 
+#include "audio.h"
 #include "font.h"
 #include "game.h"
 #include "textparser.h"
@@ -223,8 +224,8 @@ void TextParser::nextStep() {
 
 // parse a tag and apply styling
 void TextParser::parseTag(const std::string &tag) {
-	// thought tag -- set blue font
-	if (tag=="thought")
+	// blue color tag -- set blue font
+	if (tag=="blue")
 		m_FontColor="blue";
 }
 
@@ -343,6 +344,10 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		if (pcase->getLocation(target))
 			pcase->getLocation(target)->character=character;
 	}
+	
+	// play a sample of music
+	else if (trigger=="play_music")
+		Audio::playMusic(command);
 	
 	// set the current speaker
 	else if (trigger=="speaker")
