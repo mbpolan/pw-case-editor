@@ -171,7 +171,7 @@ std::string TextParser::parse() {
 void TextParser::nextStep() {
 	// if this block is empty and we didn't find the next one,
 	// then we flag that we're done
-	if (m_Block.empty() && m_NextBlock=="null") {
+	if (m_Block.empty() && m_NextBlock=="null" && m_StrPos==m_Dialogue.size()) {
 		// draw the previous screen
 		if (m_Game->m_State.prevScreen==SCREEN_EXAMINE)
 			m_Game->toggle(STATE_EXAMINE | STATE_COURT_REC_BTN | STATE_LOWER_BAR | STATE_BACK_BTN);
@@ -188,12 +188,13 @@ void TextParser::nextStep() {
 		
 		// also, make sure to end any talk animations
 		m_StrPos=m_Dialogue.size();
+		m_Dialogue="";
 		
 		return;
 	}
 	
 	// if the dialogue string is still being drawn, display it all
-	if (m_Dialogue.size()!=m_StrPos && !m_Dialogue.empty())
+	if (m_StrPos!=m_Dialogue.size() && !m_Dialogue.empty())
 		m_StrPos=m_Dialogue.size();
 	
 	else {
@@ -201,7 +202,6 @@ void TextParser::nextStep() {
 		m_StrPos=0;
 		m_Pause=false;
 	}
-	
 }
 
 // split a command string into pieces based on commas
