@@ -22,7 +22,9 @@
 #include <cstdio>
 #include <iostream>
 
+#include "iohandler.h"
 #include "font.h"
+#include "texture.h"
 
 // load a font from file
 bool Fonts::loadFont(const std::string &path, Fonts::Font &font) {
@@ -49,7 +51,7 @@ bool Fonts::loadFont(const std::string &path, Fonts::Font &font) {
 	int amount;
 	fread(&amount, sizeof(int), 1, f);
 	
-	// iterate over fonts
+	// iterate over glyphs
 	for (int i=0; i<amount; i++) {
 		// read character
 		char ch=fgetc(f);
@@ -80,7 +82,7 @@ bool Fonts::loadFont(const std::string &path, Fonts::Font &font) {
 }
 
 // create a font glyph
-SDL_Surface* Fonts::createSurface(char *pbuf) {	
+SDL_Surface* Fonts::createSurface(char *pbuf) {
 	// bmp data
 	int w, h;
 	short planes, bpp;
@@ -116,8 +118,7 @@ SDL_Surface* Fonts::createSurface(char *pbuf) {
 	memcpy(pixels, pbuf, realSize);
 	
 	// create a surface for this glyph
-	SDL_Surface *surface=SDL_CreateRGBSurface(SDL_SWSURFACE, w, h, bpp, 
-			255U << (0), 255 << (8), 255 << (16), 0);
+	SDL_Surface *surface=SDL_CreateRGBSurface(SDL_SWSURFACE, w, h, bpp, 255U << 16, 255 << 8, 255 << 0, 0);
 	
 	// now set the pixels
 	SDL_LockSurface(surface);
@@ -134,8 +135,7 @@ SDL_Surface* Fonts::createSurface(char *pbuf) {
 	// set transparent pixel
 	SDL_SetColorKey(surface, SDL_SRCCOLORKEY, SDL_MapRGB(surface->format, 0, 255, 0));
 	
-	return surface;
-	
+	return surface;	
 }
 
 // see if this string is too long and needs to be broken

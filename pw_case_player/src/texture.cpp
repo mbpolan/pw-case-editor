@@ -77,7 +77,7 @@ SDL_Surface* Textures::createTexture(const std::string &id, const std::string &s
 			pushTexture(ss.str(), surface);
 		}
 		
-		else
+		else if (id!="")
 			pushTexture(id, surface);
 		
 		// return this texture
@@ -102,10 +102,10 @@ SDL_Surface* Textures::createTexture(const std::string &id, const Textures::Text
 	// delete the unused pixels
 	delete [] tex.pixels;
 	
+	SDL_UnlockSurface(surface);
+	
 	// set the transparent key
 	SDL_SetColorKey(surface, SDL_SRCCOLORKEY, SDL_MapRGB(surface->format, 0, 255, 0));
-	
-	SDL_UnlockSurface(surface);
 	
 	// add this texture to the map
 	if (id=="null") {
@@ -116,7 +116,7 @@ SDL_Surface* Textures::createTexture(const std::string &id, const Textures::Text
 		pushTexture(ss.str(), surface);
 	}
 	
-	else
+	else if (id!="")
 		pushTexture(id, surface);
 	
 	return surface;

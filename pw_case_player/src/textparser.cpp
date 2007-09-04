@@ -25,7 +25,9 @@
 
 // constructor
 TextParser::TextParser(Game *game): m_Game(game) {
+	// reset and prepare the parser
 	reset();
+	clearFormatting();
 	
 	// reset variables
 	m_Dialogue="";
@@ -64,9 +66,11 @@ void TextParser::reset() {
 
 // parse the given control block
 std::string TextParser::parse() {
+	// if we are done parsing, return here
 	if (m_Done)
 		return "end";
 	
+	// if the parser is not paused, start parsing the set block
 	if (!m_Pause) {
 		// erase up to this point
 		m_Block.erase(0, m_BreakPoint);
@@ -83,14 +87,25 @@ std::string TextParser::parse() {
 				// if a tag is already open, this one must close it
 				if (m_TagOpen) {
 					int npos=m_Block.find(">");
+					
+					// erase up to this point
 					m_Block.erase(0, npos+1);
 					
 					m_TagOpen=false;
 				}
 				
 				else {
+					// find the closing tag
 					int npos=m_Block.find(">");
-					m_CurTag=m_Block.substr(0, npos);
+					m_TagOpen=true;
+					
+					// extract tag name and make it lowercase
+					m_CurTag=m_Block.substr(1, npos-1);
+					
+					// parse this tag
+					parseTag(m_CurTag);
+					
+					// erase up to this point
 					m_Block.erase(0, npos+1);
 				}
 				
@@ -161,7 +176,7 @@ std::string TextParser::parse() {
 		}
 		
 		// draw the string
-		Fonts::drawString(4, 132, m_StrPos, SDL_GetVideoSurface()->w, m_Dialogue, "white");
+		Fonts::drawString(4, 132, m_StrPos, SDL_GetVideoSurface()->w, m_Dialogue, m_FontColor);
 	}
 	
 	return "pause";
@@ -198,10 +213,24 @@ void TextParser::nextStep() {
 		m_StrPos=m_Dialogue.size();
 	
 	else {
-		// reset string position
+		// reset string position and clear previous formatting
 		m_StrPos=0;
+		clearFormatting();
+		
 		m_Pause=false;
 	}
+}
+
+// parse a tag and apply styling
+void TextParser::parseTag(const std::string &tag) {
+	// thought tag -- set blue font
+	if (tag=="thought")
+		m_FontColor="blue";
+}
+
+// clear current font formatting
+void TextParser::clearFormatting() {
+	m_FontColor="white";
 }
 
 // split a command string into pieces based on commas
@@ -259,7 +288,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		m_Game->setShownEvidence("null", POSITION_LEFT);
 	
 	// set a location
-	else if (trigger=="location")
+	else if (trigger=="set_location")
 		m_Game->setLocation(command);
 	
 	// make a location accessible
@@ -269,16 +298,16 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		std::string target=params[0];
 		std::string location=params[1];
 		
-		// add this location to the target, if the target exists
-		if (pcase->getLocation(target)) {
-			Case::Location *tloc=pcase->getLocation(target);
+		// add the target to the location, if the location exists
+		if (pcase->getLocation(location)) {
+			Case::Location *tloc=pcase->getLocation(location);
 			
 			// add the target as an id
-			tloc->moveLocations.push_back(location);
+			tloc->moveLocations.push_back(target);
 		}
 		
 		else
-			std::cout << "Warning: trying to add location " << location << " to non existant " << target << " target\n";
+			std::cout << "Warning: trying to add location " << target << " to non existant " << location << " target\n";
 	}
 	
 	// set a trigger block at a location

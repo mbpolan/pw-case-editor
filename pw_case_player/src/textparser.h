@@ -59,6 +59,12 @@ class TextParser {
 		void nextStep();
 		
 	private:
+		// parse a tag and apply styling
+		void parseTag(const std::string &tag);
+		
+		// clear current font formatting
+		void clearFormatting();
+		
 		// split a command string into pieces based on commas
 		std::vector<std::string> splitCommand(const std::string &command);
 		
@@ -87,6 +93,9 @@ class TextParser {
 		// is a styling tag open?
 		bool m_TagOpen;
 		std::string m_CurTag;
+		
+		// font formatting
+		std::string m_FontColor;
 		
 		// game engine pointer
 		Game *m_Game;
