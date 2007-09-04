@@ -374,6 +374,10 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	else if (trigger=="halt_music")
 		Audio::haltMusic();
 	
+	// play a sound effect
+	else if (trigger=="sfx")
+		Audio::playEffect(command);
+	
 	// set the current speaker
 	else if (trigger=="speaker")
 		m_Speaker=command;

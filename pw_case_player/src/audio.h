@@ -50,6 +50,9 @@ static AudioMap g_Audio;
 // load an audio sample from file
 bool loadSample(const std::string &path, Sample &sample);
 
+// play an effect sample
+void playEffect(const std::string &id);
+
 // play a music sample
 void playMusic(const std::string &id);
 
