@@ -80,6 +80,11 @@ void Case::Case::add_location(const Location &loc) {
 	m_Locations[loc.id]=loc;
 }
 
+// add an audio sample
+void Case::Case::add_audio(const Audio &audio) {
+	m_Audio[audio.id]=audio;
+}
+
 // remove a location based on id
 void Case::Case::remove_location(const Glib::ustring &id) {
 	m_Locations.erase(id);
@@ -129,6 +134,17 @@ StringVector Case::Case::get_location_ids() {
 	return vec;
 }
 
+// return a vector of audio internal ids
+StringVector Case::Case::get_audio_ids() {
+	StringVector vec;
+	
+	// add location ids to vector
+	for (AudioMapIter it=m_Audio.begin(); it!=m_Audio.end(); ++it)
+		vec.push_back((*it).second.id);
+	
+	return vec;
+}
+
 // clear the case information
 void Case::Case::clear() {
 	// clear out overview
@@ -143,6 +159,7 @@ void Case::Case::clear() {
 	clear_characters();
 	clear_evidence();
 	clear_locations();
+	clear_audio();
 }
 
 // set the case overview

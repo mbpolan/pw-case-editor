@@ -238,14 +238,59 @@ class TextInputDialog: public Gtk::Dialog {
 };
 
 /***************************************************************************/
-/*
+
 // dialog used to manage audio clips
 class AudioDialog: public Gtk::Dialog {
 	public:
 		// constructor
 		AudioDialog();
+		
+		// set audio to use
+		void set_audio(const AudioMap &audio);
+		
+		// return the list of audio
+		AudioMap get_audio_data();
+		
+	private:
+		// build the ui
+		void construct();
+		
+		// add button handler
+		void on_add_audio();
+		
+		// delete button handler
+		void on_remove_audio();
+		
+		// labels
+		Gtk::Label *m_AudioLabel;
+		
+		// containers
+		Gtk::ScrolledWindow *m_SWindow;
+		
+		// buttons
+		Gtk::Button *m_AddButton;
+		Gtk::Button *m_DeleteButton;
+		
+		// list of audio files
+		Glib::RefPtr<Gtk::ListStore> m_Model;
+		Gtk::TreeView *m_AudioList;
+		
+		// column record
+		class ColumnRec: public Gtk::TreeModel::ColumnRecord {
+			public:
+				ColumnRec() {
+					add(m_NameCol);
+					add(m_IdCol);
+				}
+				
+				// columns
+				Gtk::TreeModelColumn<Glib::ustring> m_NameCol;
+				Gtk::TreeModelColumn<Glib::ustring> m_IdCol;
+		};
+		
+		// column record instance
+		ColumnRec m_ColRec;
 };
-*/
 
 /***************************************************************************/
 

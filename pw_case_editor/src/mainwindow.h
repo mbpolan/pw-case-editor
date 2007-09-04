@@ -23,6 +23,7 @@
 #define MAINWINDOW_H
 
 #include <gtkmm/actiongroup.h>
+#include <gtkmm/statusbar.h>
 #include <gtkmm/window.h>
 #include <gtkmm/uimanager.h>
 
@@ -87,6 +88,9 @@ class MainWindow: public Gtk::Window {
 		// menu stuff
 		Glib::RefPtr<Gtk::ActionGroup> m_ActionGroup;
 		Glib::RefPtr<Gtk::UIManager> m_UIManager;
+		
+		// status bar
+		Gtk::Statusbar *m_Statusbar;
 		
 		// script widget
 		ScriptWidget *m_ScriptWidget;

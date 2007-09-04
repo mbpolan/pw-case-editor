@@ -146,8 +146,12 @@ void MainWindow::construct() {
 	// allocate script widget
 	m_ScriptWidget=manage(new ScriptWidget);
 	
+	// allocate status bar
+	m_Statusbar=manage(new Gtk::Statusbar);
+	
 	// pack widgets
 	vb->pack_start(*m_ScriptWidget);
+	vb->pack_start(*m_Statusbar, Gtk::PACK_SHRINK);
 	
 	// add the containers
 	add(*vb);
@@ -191,6 +195,8 @@ void MainWindow::on_new() {
 void MainWindow::on_save() {
 	// save automatically if we have a path set
 	if (m_Saved) {
+		m_Statusbar->push("Saving to "+m_SavePath);
+		
 		// save this case
 		std::map<Glib::ustring, Glib::ustring> bdescs=m_ScriptWidget->get_buffer_descriptions();
 		if (!IO::save_case_to_file(m_SavePath, m_Case, m_ScriptWidget->get_buffers(), bdescs)) {
@@ -200,6 +206,8 @@ void MainWindow::on_save() {
 			
 			return;
 		}
+		
+		m_Statusbar->push("Case saved successfully");
 		
 		return;
 	}
@@ -226,6 +234,8 @@ void MainWindow::on_save() {
 		if (ext!=".cprjt")
 			path+=".cprjt";
 		
+		m_Statusbar->push("Saving...");
+		
 		// save this case
 		std::map<Glib::ustring, Glib::ustring> bdescs=m_ScriptWidget->get_buffer_descriptions();
 		if (!IO::save_case_to_file(path, m_Case, m_ScriptWidget->get_buffers(), bdescs)) {
@@ -233,8 +243,12 @@ void MainWindow::on_save() {
 			Gtk::MessageDialog md(*this, "An error prevented a complete save of your case!", false, Gtk::MESSAGE_ERROR);
 			md.run();
 			
+			m_Statusbar->push("Unable to save file");
+			
 			return;
 		}
+		
+		m_Statusbar->push("File saved");
 		
 		// name this document
 		if (!m_Saved) {
@@ -272,12 +286,19 @@ void MainWindow::on_export() {
 		if (ext!=".pwt")
 			path+=".pwt";
 		
+		m_Statusbar->push("Exporting case to file...");
+		
 		// export this case
 		if (!IO::export_case_to_file(path, m_Case, m_ScriptWidget->get_buffers())) {
 			// TODO: more info has to be added here
 			Gtk::MessageDialog md(*this, "An error prevented an export of your case!", false, Gtk::MESSAGE_ERROR);
 			md.run();
+			
+			m_Statusbar->push("Unable to export case");
+			return;
 		}
+		
+		m_Statusbar->push("Exported case successfully");
 	}
 }
 
@@ -312,6 +333,8 @@ void MainWindow::on_open() {
 		// get pathname
 		Glib::ustring path=fcd.get_filename();
 		
+		m_Statusbar->push("Open file...");
+		
 		// load the case
 		BufferMap buffers;
 		std::map<Glib::ustring, Glib::ustring> bufferDescriptions;
@@ -319,6 +342,9 @@ void MainWindow::on_open() {
 			// gee, another vague error message; make it more detailed in the future
 			Gtk::MessageDialog md(*this, "Unable to load case due to an unknown error.", false, Gtk::MESSAGE_ERROR);
 			md.run();
+			
+			m_Statusbar->push("Unable to open case file");
+			return;
 		}
 		
 		// case information is set during load, but we need to make the rest of the widgets aware
@@ -342,6 +368,8 @@ void MainWindow::on_open() {
 			// now add the text block
 			m_ScriptWidget->add_text_block(parent, id, bufferDescriptions[id], (*it).second);
 		}
+		
+		m_Statusbar->push("Case opened successfully");
 		
 		// cache save path
 		m_Saved=true;
@@ -451,6 +479,23 @@ void MainWindow::on_case_change_initial_block() {
 
 // manage audio assets handler
 void MainWindow::on_assets_manage_audio() {
+	// prepare dialog
+	AudioDialog ad;
+	
+	// set previous audio data
+	ad.set_audio(m_Case.get_audio());
+	
+	// run the dialog
+	if (ad.run()==Gtk::RESPONSE_OK) {
+		AudioMap amap=ad.get_audio_data();
+		
+		// clear out previous audio map
+		m_Case.clear_audio();
+		
+		// iterate over audio map
+		for (AudioMapIter it=amap.begin(); it!=amap.end(); ++it)
+			m_Case.add_audio((*it).second);
+	}
 }
 
 // manage background assets handler

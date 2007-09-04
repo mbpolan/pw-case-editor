@@ -166,6 +166,22 @@ bool IO::save_case_to_file(const Glib::ustring &path, const Case::Case &pcase,
 		}
 	}
 	
+	// get audio map and write count of samples
+	AudioMap amap=pcase.get_audio();
+	int audioCount=amap.size();
+	fwrite(&audioCount, sizeof(int), 1, f);
+	
+	// iterate over audio
+	for (AudioMapIter it=amap.begin(); it!=amap.end(); ++it) {
+		Case::Audio audio=(*it).second;
+		
+		// write id
+		write_string(f, audio.id);
+		
+		// write file name
+		write_string(f, audio.name);
+	}
+	
 	// write count of blocks
 	int bufferCount=buffers.size();
 	fwrite(&bufferCount, sizeof(int), 1, f);
@@ -334,6 +350,20 @@ bool IO::export_case_to_file(const Glib::ustring &path, const Case::Case &pcase,
 			// write target block
 			write_string(f, hspot.block);
 		}
+	}
+	
+	// get audio map and write count of samples
+	AudioMap amap=pcase.get_audio();
+	int audioCount=amap.size();
+	fwrite(&audioCount, sizeof(int), 1, f);
+	
+	// iterate over audio
+	for (AudioMapIter it=amap.begin(); it!=amap.end(); ++it) {
+		// write id
+		write_string(f, (*it).second.id);
+		
+		// write file name
+		write_string(f, (*it).second.name);
 	}
 	
 	// write count of blocks
@@ -537,6 +567,24 @@ bool IO::load_case_from_file(const Glib::ustring &path, Case::Case &pcase,
 		
 		// add this location
 		pcase.add_location(location);
+	}
+	
+	// read amount of audio
+	int audioCount;
+	fread(&audioCount, sizeof(int), 1, f);
+	
+	// iterate over audio samples
+	for (int i=0; i<audioCount; i++) {
+		Case::Audio audio;
+		
+		// read id
+		audio.id=read_string(f);
+		
+		// read name
+		audio.name=read_string(f);
+		
+		// add this audio
+		pcase.add_audio(audio);
 	}
 	
 	// read amount of text blocks

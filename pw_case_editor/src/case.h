@@ -92,6 +92,7 @@ typedef struct _Location Location;
 // audio data
 struct _Audio {
 	Glib::ustring id; // id referenced from within the script
+	Glib::ustring name; // name of file
 };
 typedef struct _Audio Audio;
 
@@ -113,6 +114,10 @@ typedef std::map<Glib::ustring, Case::Evidence>::const_iterator EvidenceMapConst
 typedef std::map<Glib::ustring, Case::Location> LocationMap;
 typedef std::map<Glib::ustring, Case::Location>::iterator LocationMapIter;
 typedef std::map<Glib::ustring, Case::Location>::const_iterator LocationMapConstIter;
+
+typedef std::map<Glib::ustring, Case::Audio> AudioMap;
+typedef std::map<Glib::ustring, Case::Audio>::iterator AudioMapIter;
+typedef std::map<Glib::ustring, Case::Audio>::const_iterator AudioMapConstIter;
 
 typedef std::map<Glib::ustring, Glib::RefPtr<Gtk::TextBuffer> > BufferMap;
 typedef std::map<Glib::ustring, Glib::RefPtr<Gtk::TextBuffer> >::iterator BufferMapIter;
@@ -156,6 +161,9 @@ class Case {
 		// add a location
 		void add_location(const Location &loc);
 		
+		// add an audio sample
+		void add_audio(const Audio &audio);
+		
 		// remove a location based on id
 		void remove_location(const Glib::ustring &id);
 		
@@ -171,6 +179,9 @@ class Case {
 		// return a vector of location internal ids
 		StringVector get_location_ids();
 		
+		// return a vector of audio internal ids
+		StringVector get_audio_ids();
+		
 		// clear the entire case information
 		void clear();
 		
@@ -185,6 +196,9 @@ class Case {
 		
 		// clear location map
 		void clear_locations() { m_Locations.clear(); }
+		
+		// clear audio map
+		void clear_audio() { m_Audio.clear(); }
 		
 		// set the case overview
 		void set_overview(const Overview &overview);
@@ -203,6 +217,9 @@ class Case {
 		
 		// return full map of locations
 		LocationMap get_locations() const { return m_Locations; }
+		
+		// return a full of audio
+		AudioMap get_audio() const { return m_Audio; }
 	
 	private:
 		// general case data
@@ -222,6 +239,9 @@ class Case {
 		
 		// map of locations
 		LocationMap m_Locations;
+		
+		// map of audio
+		AudioMap m_Audio;
 		
 };
 

@@ -570,6 +570,128 @@ void TextInputDialog::construct(const Glib::ustring &label, const Glib::ustring 
 /***************************************************************************/
 
 // constructor
+AudioDialog::AudioDialog() {
+	construct();
+}
+
+// set audio to use
+void AudioDialog::set_audio(const AudioMap &audio) {
+	// clear out previously used list
+	m_Model->clear();
+	
+	// iterate over audio
+	for (AudioMapConstIter it=audio.begin(); it!=audio.end(); ++it) {
+		// append a new row
+		Gtk::TreeModel::Row row=*(m_Model->append());
+		
+		// set text
+		row[m_ColRec.m_IdCol]=(*it).second.id;
+		row[m_ColRec.m_NameCol]=(*it).second.name;
+	}
+}
+
+// return the list of audio
+AudioMap AudioDialog::get_audio_data() {
+	AudioMap audioMap;
+	
+	// iterate over rows
+	for (Gtk::TreeModel::Children::iterator it=m_Model->children().begin(); it!=m_Model->children().end(); ++it) {
+		Case::Audio audio;
+		
+		// fill in data
+		audio.id=(*it)[m_ColRec.m_IdCol];
+		audio.name=(*it)[m_ColRec.m_NameCol];
+		
+		// add this sample
+		audioMap[audio.id]=audio;
+	}
+	
+	return audioMap;
+}
+
+// build the ui
+void AudioDialog::construct() {
+	// get the vbox
+	Gtk::VBox *vb=get_vbox();
+	vb->set_border_width(10);
+	
+	// allocate layout table
+	Gtk::Table *table=manage(new Gtk::Table);
+	table->set_spacings(5);
+	
+	// allocate scrolled window
+	m_SWindow=manage(new Gtk::ScrolledWindow);
+	m_SWindow->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
+	m_SWindow->set_size_request(80, 100);
+	
+	// allocate labels
+	m_AudioLabel=manage(new Gtk::Label("Audio Assets"));
+	
+	// allocate buttons
+	m_AddButton=manage(new Gtk::Button("Add"));
+	m_DeleteButton=manage(new Gtk::Button("Remove"));
+	
+	// connect signals
+	m_AddButton->signal_clicked().connect(sigc::mem_fun(*this, &AudioDialog::on_add_audio));
+	m_DeleteButton->signal_clicked().connect(sigc::mem_fun(*this, &AudioDialog::on_remove_audio));
+	
+	// allocate list view
+	m_Model=Gtk::ListStore::create(m_ColRec);
+	m_AudioList=manage(new Gtk::TreeView(m_Model));
+	m_SWindow->add(*m_AudioList);
+	
+	// append columns
+	m_AudioList->append_column_editable("File Name", m_ColRec.m_NameCol);
+	m_AudioList->append_column("Id", m_ColRec.m_IdCol);
+	
+	// attach options
+	Gtk::AttachOptions xops=Gtk::FILL | Gtk::EXPAND;
+	Gtk::AttachOptions yops=Gtk::SHRINK | Gtk::SHRINK;
+	
+	// place widgets
+	table->attach(*m_AudioLabel, 0, 2, 0, 1, xops, yops);
+	table->attach(*m_AddButton, 0, 1, 1, 2, xops, yops);
+	table->attach(*m_DeleteButton, 1, 2, 1, 2, xops, yops);
+	table->attach(*m_SWindow, 0, 2, 2, 3);
+	
+	vb->pack_start(*table, Gtk::PACK_SHRINK);
+	
+	// add buttons
+	add_button("OK", Gtk::RESPONSE_OK);
+	add_button("Cancel", Gtk::RESPONSE_CANCEL);
+	
+	show_all_children();
+}
+
+// add button handler
+void AudioDialog::on_add_audio() {
+	// ask for internal id
+	TextInputDialog td("Internal Id");
+	if (td.run()==Gtk::RESPONSE_OK) {
+		std::string id=td.get_text();
+		
+		// add a new row
+		Gtk::TreeModel::Row row=*(m_Model->append());
+		row[m_ColRec.m_IdCol]=id;
+	}
+}
+
+// delete button handler
+void AudioDialog::on_remove_audio() {
+	// get selection
+	Glib::RefPtr<Gtk::TreeView::Selection> selection=m_AudioList->get_selection();
+	if (selection) {
+		Gtk::TreeModel::iterator it=selection->get_selected();
+		if (it) {
+			// remove this row
+			m_Model->erase(it);
+		}
+	}
+}
+
+/***************************************************************************/
+
+// constructor
 NewEvidenceDialog::NewEvidenceDialog(const StringVector &ids) {
 	construct();
 	
