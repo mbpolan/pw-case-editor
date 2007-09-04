@@ -205,6 +205,7 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 		Case::Location location;
 		location.triggerBlock="null";
 		location.character="null";
+		location.music="null";
 		
 		// read id
 		location.id=readString(f);

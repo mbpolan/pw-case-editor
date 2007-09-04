@@ -478,6 +478,13 @@ void Game::setLocation(const std::string &locationId) {
 	// set the new location
 	m_State.currentLocation=locationId;
 	
+	// fade out the current music, if any
+	Audio::haltMusic();
+	
+	// if this location has set music, then play it
+	if (location->music!="null")
+		Audio::playMusic(location->music);
+	
 	// if this location has a trigger block, execute it now
 	if (location->triggerBlock!="null") {
 		m_Parser->setBlock(m_Case->getBuffers()[location->triggerBlock]);

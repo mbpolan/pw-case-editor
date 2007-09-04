@@ -80,9 +80,13 @@ struct _Location {
 	std::string id; // id referenced from within the script
 	std::string name; // name of this location
 	std::string triggerBlock; // block to execute upon next arrival at location
+	
 	std::string character; // character located here
+	std::string music; // music being played at this location
+	
 	std::string bg; // background id referenced from within script
 	SDL_Surface *bgScaled; // scaled background image
+	
 	std::vector<Hotspot> hotspots; // vector of examinable hotspots
 	std::vector<std::string> moveLocations; // ids of locations that player can move to from here
 };

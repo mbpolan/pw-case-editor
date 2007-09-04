@@ -345,9 +345,34 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 			pcase->getLocation(target)->character=character;
 	}
 	
+	// set music to be played a location
+	else if (trigger=="set_location_music") {
+		// split this command string
+		std::vector<std::string> params=splitCommand(command);
+		std::string musicId=params[0];
+		std::string target=params[1];
+		
+		// get the target location
+		if (pcase->getLocation(target))
+			pcase->getLocation(target)->music=musicId;
+		else
+			std::cout << "Warning: setting music " << musicId << " at unknown location " << target << std::endl;
+	}
+	
+	// clear any music set at a location
+	else if (trigger=="clear_location_music") {
+		// get the target location
+		if (pcase->getLocation(command))
+			pcase->getLocation(command)->music="null";
+	}
+	
 	// play a sample of music
 	else if (trigger=="play_music")
 		Audio::playMusic(command);
+	
+	// halt the current music
+	else if (trigger=="halt_music")
+		Audio::haltMusic();
 	
 	// set the current speaker
 	else if (trigger=="speaker")
