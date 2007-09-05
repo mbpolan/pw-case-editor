@@ -351,8 +351,8 @@ bool IO::loadSpriteFromFile(const std::string &path, Sprite &sprite) {
 	return true;
 }
 
-// load stock texture config file
-bool IO::loadTextureFile(const std::string &path) {
+// load stock assets config file
+bool IO::loadStockFile(const std::string &path) {
 	// open the path
 	FILE *f=fopen(path.c_str(), "rb");
 	if (!f)
@@ -372,10 +372,31 @@ bool IO::loadTextureFile(const std::string &path) {
 		char id[256], file[256];
 		sscanf(line, "%s %s", id, file);
 		
-		// create a surface
-		SDL_Surface *surface=Textures::createTexture(id, file);
-		if (!surface)
-			return false;
+		// form a string objects
+		std::string sId(id);
+		std::string sFile(file);
+		
+		// see if this is a sound effect
+		if (sId.substr(0, 4)=="sfx:") {
+			// erase the identifier
+			sId.erase(0, 4);
+			
+			// try to load this sample
+			Audio::Sample sample;
+			if (!Audio::loadSample(sFile, sample))
+				return false;
+			
+			// add this sample
+			Audio::pushAudio(sId, sample);
+		}
+		
+		// must be a texture otherwise
+		else {
+			// create a surface
+			SDL_Surface *surface=Textures::createTexture(id, file);
+			if (!surface)
+				return false;
+		}
 	}
 	
 	// close the file

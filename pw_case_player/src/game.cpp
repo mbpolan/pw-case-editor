@@ -101,9 +101,9 @@ bool Game::loadStockTextures() {
 		Fonts::pushFont(fonts[i].first, font);
 	}
 	
-	// load stock textures
-	if (!IO::loadTextureFile("stock.cfg")) {
-		std::cout << "Unable to load stock textures from file\n";
+	// load stock assets
+	if (!IO::loadStockFile("stock.cfg")) {
+		std::cout << "Unable to load stock assets from file\n";
 		return false;
 	}
 	
@@ -364,8 +364,15 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 		}
 		
 		// see if the center button was clicked
-		if (flagged(STATE_NEXT_BTN) && ((e->x>=16 && e->x<=16+223) && (e->y>=242 && e->y<=242+111)))
+		if (flagged(STATE_NEXT_BTN) && ((e->x>=16 && e->x<=16+223) && (e->y>=242 && e->y<=242+111))) {
+			if (m_Parser->dialogueDone()) {
+				// play a sound effect
+				Audio::playEffect("sfx_next_part", GUI_SFX_CHANNEL);
+			}
+			
+			// proceed to the next block
 			m_Parser->nextStep();
+		}
 		
 		// if the controls are drawn, see if one was clicked
 		else if (flagged(STATE_CONTROLS))

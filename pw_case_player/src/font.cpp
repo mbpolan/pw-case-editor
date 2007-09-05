@@ -237,6 +237,10 @@ int Fonts::drawString(int x, int y, int limit, int rightClamp, const std::string
 	// count the amount of times we started a new line
 	int breakCount=0;
 	
+	// bounds check
+	if (limit>str.size())
+		limit=str.size();
+	
 	// iterate over string and draw each character
 	for (int i=0; i<limit; i++) {
 		char ch=(char) str[i];

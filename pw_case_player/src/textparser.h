@@ -26,6 +26,19 @@
 
 class Game;
 
+// define channels for playing scripted audio
+#define DIALOGUE_SFX_CHANNEL	0
+#define SCRIPT_SFX_CHANNEL 	1
+#define GUI_SFX_CHANNEL		2
+
+// struct that stores the current font style
+struct _FontStyle {
+	std::string type; // built-in types: date, etc
+	std::string color;
+	int speed;
+};
+typedef struct _FontStyle FontStyle;
+
 // class that parsers text blocks and executes them
 class TextParser {
 	public:
@@ -95,7 +108,7 @@ class TextParser {
 		std::string m_CurTag;
 		
 		// font formatting
-		std::string m_FontColor;
+		FontStyle m_FontStyle;
 		
 		// game engine pointer
 		Game *m_Game;

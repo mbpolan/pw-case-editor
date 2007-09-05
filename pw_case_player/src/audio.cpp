@@ -56,7 +56,7 @@ bool Audio::loadSample(const std::string &path, Audio::Sample &sample) {
 }
 
 // play an effect sample
-void Audio::playEffect(const std::string &id) {
+void Audio::playEffect(const std::string &id, int channel) {
 	// get the sample
 	Audio::Sample *audio=queryAudio(id);
 	if (!audio) {
@@ -66,7 +66,7 @@ void Audio::playEffect(const std::string &id) {
 	
 	// play this chunk once
 	if (audio->type==SAMPLE_EFFECT)
-		Mix_PlayChannel(-1, audio->effect, 0);
+		Mix_PlayChannel(channel, audio->effect, 0);
 }
 
 // play a music sample

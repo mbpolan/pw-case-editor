@@ -51,7 +51,7 @@ static AudioMap g_Audio;
 bool loadSample(const std::string &path, Sample &sample);
 
 // play an effect sample
-void playEffect(const std::string &id);
+void playEffect(const std::string &id, int channel=-1);
 
 // play a music sample
 void playMusic(const std::string &id);

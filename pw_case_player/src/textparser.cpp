@@ -171,13 +171,48 @@ std::string TextParser::parse() {
 	else {
 		// see if we should draw the next character in the string
 		int now=SDL_GetTicks();
-		if (now-m_LastChar>m_Speed && m_StrPos<m_Dialogue.size()) {
+		if (now-m_LastChar>m_FontStyle.speed && m_StrPos<m_Dialogue.size()) {
+			// set the last draw time, and increment string position
 			m_LastChar=now;
+			
+			// cache the current character
+			char curChar=m_Dialogue[m_StrPos-1];
+			
+			// play a sound effect if this next character is visible
+			if (curChar!=' ') {
+				// date string
+				if (m_FontStyle.type=="date")
+					Audio::playEffect("sfx_typewriter", DIALOGUE_SFX_CHANNEL);
+				
+				// TODO: differentiate between male and female speakers
+				else if (m_FontStyle.type=="plain")
+					Audio::playEffect("sfx_male_talk", DIALOGUE_SFX_CHANNEL);
+			}
+			
 			m_StrPos++;
 		}
 		
-		// draw the string
-		Fonts::drawString(4, 132, m_StrPos, SDL_GetVideoSurface()->w, m_Dialogue, m_FontColor);
+		// if we are formatted to display a date, center the string
+		if (m_FontStyle.type=="date") {
+			// date expects to be in two parts: date and location
+			std::string date=m_Dialogue.substr(0, m_Dialogue.find("\\n"));
+			std::string area=m_Dialogue.substr(m_Dialogue.find("\\n")+2, m_Dialogue.size());
+			
+			// calculate center x for date and location
+			int dx=(256/2)-(Fonts::getWidth(m_FontStyle.color, date)/2)-2;
+			int lx=(256/2)-(Fonts::getWidth(m_FontStyle.color, area)/2)-2;
+			
+			// draw date
+			Fonts::drawString(dx, 132, m_StrPos, SDL_GetVideoSurface()->w, date, m_FontStyle.color);
+			
+			// draw location is m_StrPos has surpassed length of date string
+			if (m_StrPos>date.size())
+				Fonts::drawString(lx, 132+15, m_StrPos-date.size(), SDL_GetVideoSurface()->w, area, m_FontStyle.color);
+		}
+		
+		// draw the string in plain formatting otherwise
+		else
+			Fonts::drawString(4, 132, m_StrPos, SDL_GetVideoSurface()->w, m_Dialogue, m_FontStyle.color);
 	}
 	
 	return "pause";
@@ -209,11 +244,12 @@ void TextParser::nextStep() {
 		return;
 	}
 	
-	// if the dialogue string is still being drawn, display it all
-	if (m_StrPos!=m_Dialogue.size() && !m_Dialogue.empty())
+	// if the dialogue string is still being drawn, display it all (unless it's a date/location string)
+	if (m_StrPos!=m_Dialogue.size() && !m_Dialogue.empty() && m_FontStyle.type!="date")
 		m_StrPos=m_Dialogue.size();
 	
-	else {
+	// once again, date/location strings have to be fully drawn
+	else if (m_FontStyle.type!="date" || (m_FontStyle.type=="date" && m_StrPos==m_Dialogue.size())) {
 		// reset string position and clear previous formatting
 		m_StrPos=0;
 		clearFormatting();
@@ -226,12 +262,22 @@ void TextParser::nextStep() {
 void TextParser::parseTag(const std::string &tag) {
 	// blue color tag -- set blue font
 	if (tag=="blue")
-		m_FontColor="blue";
+		m_FontStyle.color="blue";
+	
+	// date tag - set green font and slow down draw speed
+	else if (tag=="date") {
+		m_FontStyle.type=tag;
+		
+		m_FontStyle.color="green";
+		m_FontStyle.speed=150;
+	}
 }
 
 // clear current font formatting
 void TextParser::clearFormatting() {
-	m_FontColor="white";
+	m_FontStyle.type="plain";
+	m_FontStyle.color="white";
+	m_FontStyle.speed=50;
 }
 
 // split a command string into pieces based on commas
@@ -375,8 +421,10 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		Audio::haltMusic();
 	
 	// play a sound effect
-	else if (trigger=="sfx")
-		Audio::playEffect(command);
+	else if (trigger=="sfx") {
+		// always play sound effects on their own channel
+		Audio::playEffect(command, SCRIPT_SFX_CHANNEL);
+	}
 	
 	// set the current speaker
 	else if (trigger=="speaker")
