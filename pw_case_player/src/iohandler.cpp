@@ -351,6 +351,38 @@ bool IO::loadSpriteFromFile(const std::string &path, Sprite &sprite) {
 	return true;
 }
 
+// load stock texture config file
+bool IO::loadTextureFile(const std::string &path) {
+	// open the path
+	FILE *f=fopen(path.c_str(), "rb");
+	if (!f)
+		return false;
+	
+	// read the lines in the file
+	char line[256];
+	while(!feof(f)) {
+		// get this line
+		fgets(line, 256, f);
+		
+		// ignore useless lines
+		if (line[0]=='#')
+			continue;
+		
+		// extract id and path
+		char id[256], file[256];
+		sscanf(line, "%s %s", id, file);
+		
+		// create a surface
+		SDL_Surface *surface=Textures::createTexture(id, file);
+		if (!surface)
+			return false;
+	}
+	
+	// close the file
+	fclose(f);
+	return true;
+}
+
 // read image data from file
 Textures::Texture IO::readImage(FILE *f) {
 	Textures::Texture tex;

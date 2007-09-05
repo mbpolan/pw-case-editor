@@ -24,6 +24,7 @@
 #include "audio.h"
 #include "game.h"
 #include "font.h"
+#include "iohandler.h"
 #include "renderer.h"
 #include "texture.h"
 
@@ -100,49 +101,10 @@ bool Game::loadStockTextures() {
 		Fonts::pushFont(fonts[i].first, font);
 	}
 	
-	// vector of textures to load
-	std::vector<std::pair<std::string, std::string> > textures;
-	textures.push_back(std::make_pair<std::string, std::string>("court_overview", "data/stock/courtoverview.tga"));
-	textures.push_back(std::make_pair<std::string, std::string>("court_overview_g", "data/stock/courtoverview_g.tga"));
-	textures.push_back(std::make_pair<std::string, std::string>("scanlines_overlay", "data/stock/scanlines.tga"));
-	textures.push_back(std::make_pair<std::string, std::string>("tc_top_bar", "data/stock/touchscreen_topbar.tga"));
-	textures.push_back(std::make_pair<std::string, std::string>("tc_lower_bar", "data/stock/touchscreen_lowerbar.tga"));
-	textures.push_back(std::make_pair<std::string, std::string>("tc_text_box", "data/gui/textbox.tga"));
-	textures.push_back(std::make_pair<std::string, std::string>("tc_text_box_border", "data/gui/textbox_border.tga"));
-	textures.push_back(std::make_pair<std::string, std::string>("tc_court_rec_btn", "data/gui/court_record.tga"));
-	textures.push_back(std::make_pair<std::string, std::string>("tc_next_btn", "data/gui/button.tga"));
-	textures.push_back(std::make_pair<std::string, std::string>("tc_button_arrow_next", "data/gui/button_arrow_large.tga"));
-	textures.push_back(std::make_pair<std::string, std::string>("tc_profiles_btn", "data/gui/profiles.tga"));
-	textures.push_back(std::make_pair<std::string, std::string>("tc_evidence_btn", "data/gui/evidence.tga"));
-	textures.push_back(std::make_pair<std::string, std::string>("tc_profiles_bar", "data/gui/profiles_bar.tga"));
-	textures.push_back(std::make_pair<std::string, std::string>("tc_evidence_bar", "data/gui/evidence_bar.tga"));
-	textures.push_back(std::make_pair<std::string, std::string>("tc_back_btn", "data/gui/back.tga"));
-	textures.push_back(std::make_pair<std::string, std::string>("tc_large_btn_right", "data/gui/large_button_right.tga"));
-	textures.push_back(std::make_pair<std::string, std::string>("tc_large_btn_left", "data/gui/large_button_left.tga"));
-	textures.push_back(std::make_pair<std::string, std::string>("tc_small_btn_right", "data/gui/small_button_right.tga"));
-	textures.push_back(std::make_pair<std::string, std::string>("tc_small_btn_left", "data/gui/small_button_left.tga"));
-	textures.push_back(std::make_pair<std::string, std::string>("tc_button_arrow_right", "data/gui/button_arrow_right.tga"));
-	textures.push_back(std::make_pair<std::string, std::string>("tc_button_arrow_left", "data/gui/button_arrow_left.tga"));
-	textures.push_back(std::make_pair<std::string, std::string>("tc_examine_btn", "data/gui/examine.tga"));
-	textures.push_back(std::make_pair<std::string, std::string>("tc_move_btn", "data/gui/move.tga"));
-	textures.push_back(std::make_pair<std::string, std::string>("tc_talk_btn", "data/gui/talk.tga"));
-	textures.push_back(std::make_pair<std::string, std::string>("tc_present_btn", "data/gui/present.tga"));
-	textures.push_back(std::make_pair<std::string, std::string>("tc_select_tl", "data/gui/select_tl.tga"));
-	textures.push_back(std::make_pair<std::string, std::string>("tc_select_tr", "data/gui/select_tr.tga"));
-	textures.push_back(std::make_pair<std::string, std::string>("tc_select_br", "data/gui/select_br.tga"));
-	textures.push_back(std::make_pair<std::string, std::string>("tc_select_bl", "data/gui/select_bl.tga"));
-	textures.push_back(std::make_pair<std::string, std::string>("tc_top_bar_thin", "data/stock/topbar_thin.tga"));
-	textures.push_back(std::make_pair<std::string, std::string>("tc_lower_bar_thin", "data/stock/lowerbar_thin.tga"));
-	textures.push_back(std::make_pair<std::string, std::string>("tc_examine_bar", "data/stock/examine_bar.tga"));
-	textures.push_back(std::make_pair<std::string, std::string>("tc_court_rec_btn_thin", "data/gui/court_record_thin.tga"));
-	textures.push_back(std::make_pair<std::string, std::string>("tc_back_btn_thin", "data/gui/back_thin.tga"));
-	textures.push_back(std::make_pair<std::string, std::string>("tc_examine_btn_thin", "data/gui/examine_thin.tga"));
-	
-	// iterate over textures and load them
-	for (int i=0; i<textures.size(); i++) {
-		SDL_Surface *surface=Textures::createTexture(textures[i].first, textures[i].second);
-		if (!surface)
-			return false;
+	// load stock textures
+	if (!IO::loadTextureFile("stock.cfg")) {
+		std::cout << "Unable to load stock textures from file\n";
+		return false;
 	}
 	
 	// modify certain textures

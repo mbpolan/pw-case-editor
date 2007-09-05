@@ -44,6 +44,9 @@ bool loadCaseFromFile(const std::string &path, Case::Case &pcase);
 // load a sprite from file
 bool loadSpriteFromFile(const std::string &path, Sprite &sprite);
 
+// load stock texture config file
+bool loadTextureFile(const std::string &path);
+
 // read image data from file
 Textures::Texture readImage(FILE *f);
 
