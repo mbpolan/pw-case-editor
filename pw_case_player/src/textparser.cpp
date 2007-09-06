@@ -445,6 +445,54 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 			character->clearTalkOptions();
 	}
 	
+	// add a presentable piece of evidence/profile to a character
+	else if (trigger=="add_presentable") {
+		// split this command string
+		std::vector<std::string> params=splitCommand(command);
+		std::string charName=params[0];
+		std::string itemId=params[1];
+		std::string targetBlock=params[2];
+		
+		// get the character
+		Character *character=pcase->getCharacter(charName);
+		if (character)
+			character->addPresentable(itemId, targetBlock);
+	}
+	
+	// remove a piece of presentable evidence/profile
+	else if (trigger=="remove_presentable") {
+		// split this command string
+		std::vector<std::string> params=splitCommand(command);
+		std::string charName=params[0];
+		std::string itemId=params[1];
+		
+		// get the character and remove presentable item
+		Character *character=pcase->getCharacter(charName);
+		if (character)
+			character->removePresentable(itemId);
+	}
+	
+	// clear character's presentable items
+	else if (trigger=="clear_presentables") {
+		// get the character requested
+		Character *character=pcase->getCharacter(command);
+		if (character)
+			character->clearPresentableItems();
+	}
+	
+	// set the block to use when a useless item was presented
+	else if (trigger=="set_bad_presentable_block") {
+		// split this command string
+		std::vector<std::string> params=splitCommand(command);
+		std::string charName=params[0];
+		std::string target=params[1];
+		
+		// get the character
+		Character *character=pcase->getCharacter(charName);
+		if (character)
+			character->setBadPresentableBlock(target);
+	}
+	
 	// set music to be played a location
 	else if (trigger=="set_location_music") {
 		// split this command string

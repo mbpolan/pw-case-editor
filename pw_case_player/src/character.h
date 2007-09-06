@@ -50,6 +50,24 @@ class Character {
 		// return talk options
 		std::vector<StringPair> getTalkOptions() const { return m_TalkOptions; }
 		
+		// add a presentable piece of evidence/profile
+		void addPresentable(const std::string &id, const std::string &targetBlock);
+		
+		// remove presentable evidence/profile
+		void removePresentable(const std::string &id);
+		
+		// clear accepted evidence/profiles
+		void clearPresentableItems() { m_AcceptedItems.clear(); }
+		
+		// set the block id to use when a bad item is presented
+		void setBadPresentableBlock(const std::string &id) { m_BadPresentableBlock=id; }
+		
+		// set the block to use when a bad item is presented
+		std::string getBadPresentableBlock() const { return m_BadPresentableBlock; }
+		
+		// return evidence that can be presented
+		std::vector<StringPair> getPresentableItems() const { return m_AcceptedItems; }
+		
 		// set the internal character name
 		void setInternalName(const std::string &name) { m_InternalName=name; }
 		
@@ -147,6 +165,10 @@ class Character {
 		
 		// vector of talk options
 		std::vector<StringPair> m_TalkOptions;
+		
+		// vector of presentable evidence/profile ids and target blocks
+		std::vector<StringPair> m_AcceptedItems;
+		std::string m_BadPresentableBlock;
 		
 		// headshot image
 		bool m_HasHeadshot;

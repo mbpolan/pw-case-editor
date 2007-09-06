@@ -351,6 +351,15 @@ void Game::onKeyboardEvent(SDL_KeyboardEvent *e) {
 		// move down
 		else if (e->keysym.sym==SDLK_DOWN && m_State.selectedTalkOption<amount-1)
 			m_State.selectedTalkOption+=1;
+		
+		// select option
+		else if (e->keysym.sym==SDLK_RETURN) {// get the target block id
+			std::string target=character->getTalkOptions()[m_State.selectedTalkOption].second;
+			
+			// set this block
+			m_Parser->setBlock(m_Case->getBuffers()[target]);
+			m_Parser->nextStep();
+		}
 	}
 }
 
@@ -712,6 +721,8 @@ void Game::renderMenuView() {
 	// draw activated buttons
 	if (flagged(STATE_COURT_REC_BTN))
 		Renderer::drawImage(176, 197, "tc_court_rec_btn"+append);
+	else if (flagged(STATE_PRESENT_BTN))
+		Renderer::drawImage(176, 197, "tc_present_item_btn");
 	else if (flagged(STATE_EVIDENCE_BTN))
 		Renderer::drawImage(177, 197, "tc_evidence_btn");
 	else if (flagged(STATE_PROFILES_BTN))
@@ -856,6 +867,57 @@ void Game::onTopRightButtonClicked() {
 		toggle(flags);
 	}
 	
+	// if the present button is shown, present shown evidence
+	else if (flagged(STATE_PRESENT_BTN)) {
+		int flags=STATE_COURT_REC_BTN | STATE_CONTROLS;
+		
+		// get the current location
+		Case::Location *location=m_Case->getLocation(m_State.currentLocation);
+		if (!location)
+			return;
+		
+		// and get the character here
+		Character *character=m_Case->getCharacter(location->character);
+		if (!character)
+			return;
+		
+		// get the current evidence/profile
+		std::string id;
+		if (flagged(STATE_EVIDENCE_INFO_PAGE) && !m_State.visibleEvidence.empty())
+			id=m_State.visibleEvidence[m_State.evidencePage*8+m_State.selectedEvidence].id;
+		
+		else if (!m_State.visibleProfiles.empty())
+			id=m_State.visibleProfiles[m_State.profilesPage*8+m_State.selectedProfile].getInternalName();
+		
+		// see if this evidence/profile can be presented
+		bool found=false;
+		std::vector<StringPair> presentables=character->getPresentableItems();
+		for (int i=0; i<presentables.size(); i++) {
+			if (presentables[i].first==id) {
+				// set the block to use
+				m_Parser->setBlock(m_Case->getBuffers()[presentables[i].second]);
+				m_Parser->nextStep();
+				
+				found=true;
+			}
+		}
+		
+		// if the presentable evidence was not found, then fall back on appropriate block
+		if (!found && character->getBadPresentableBlock()!="null") {
+			m_Parser->setBlock(m_Case->getBuffers()[character->getBadPresentableBlock()]);
+			m_Parser->nextStep();
+		}
+		
+		// reset screen
+		m_State.prevScreen=SCREEN_MAIN;
+		
+		// if the text box is also present, draw it as well
+		if (flagged(STATE_TEXT_BOX))
+			flags |= STATE_TEXT_BOX;
+		
+		toggle(flags);
+	}
+	
 	// if the profiles button is shown, activate profiles page
 	else if (flagged(STATE_PROFILES_BTN) && !flagged(STATE_EVIDENCE_INFO_PAGE)) {
 		int flags=STATE_BACK_BTN | STATE_EVIDENCE_BTN | STATE_PROFILES_PAGE | STATE_LOWER_BAR;
@@ -880,7 +942,13 @@ void Game::onTopRightButtonClicked() {
 	
 	// if the profiles button is shown during evidence info screen, switch to profile info screen
 	else if (flagged(STATE_PROFILES_BTN) && flagged(STATE_EVIDENCE_INFO_PAGE)) {
-		int flags=STATE_BACK_BTN | STATE_EVIDENCE_BTN | STATE_PROFILE_INFO_PAGE | STATE_LOWER_BAR;
+		int flags=STATE_BACK_BTN | STATE_PROFILE_INFO_PAGE | STATE_LOWER_BAR;
+		
+		// if the previous screen was the present screen, then draw present button instead
+		if (m_State.prevScreen==SCREEN_PRESENT)
+			flags |= STATE_PRESENT_BTN;
+		else
+			flags |= STATE_EVIDENCE_BTN;
 		
 		// if the text box is also present, draw it as well
 		if (flagged(STATE_TEXT_BOX))
@@ -891,7 +959,13 @@ void Game::onTopRightButtonClicked() {
 	
 	// if the evidence button is shown during profile info screen, switch to evidence info screen
 	else if (flagged(STATE_EVIDENCE_BTN) && flagged(STATE_PROFILE_INFO_PAGE)) {
-		int flags=STATE_BACK_BTN | STATE_PROFILES_BTN | STATE_EVIDENCE_INFO_PAGE | STATE_LOWER_BAR;
+		int flags=STATE_BACK_BTN | STATE_EVIDENCE_INFO_PAGE | STATE_LOWER_BAR;
+		
+		// if the previous screen was the present screen, then draw present button instead
+		if (m_State.prevScreen==SCREEN_PRESENT)
+			flags |= STATE_PRESENT_BTN;
+		else
+			flags |= STATE_PROFILES_BTN;
 		
 		// if the text box is also present, draw it as well
 		if (flagged(STATE_TEXT_BOX))
@@ -1089,7 +1163,15 @@ void Game::onRecPageClickEvent(int x, int y) {
 				m_State.selectedEvidence=i;
 				
 				// and view the evidence info page
-				int flags=STATE_EVIDENCE_INFO_PAGE | STATE_LOWER_BAR | STATE_BACK_BTN | STATE_PROFILES_BTN;
+				int flags=STATE_EVIDENCE_INFO_PAGE | STATE_LOWER_BAR | STATE_BACK_BTN;
+				
+				// if the previous screen was the present screen, then draw present button instead
+				if (m_State.prevScreen==SCREEN_PRESENT)
+					flags |= STATE_PRESENT_BTN;
+				else
+					flags |= STATE_PROFILES_BTN;
+				
+				// account for text box
 				if (flagged(STATE_TEXT_BOX))
 					flags |= STATE_TEXT_BOX;
 				toggle(flags);
@@ -1107,6 +1189,14 @@ void Game::onRecPageClickEvent(int x, int y) {
 				
 				// and view the profile info page
 				int flags=STATE_PROFILE_INFO_PAGE | STATE_LOWER_BAR | STATE_BACK_BTN | STATE_EVIDENCE_BTN;
+				
+				// if the previous screen was the present screen, then draw present button instead
+				if (m_State.prevScreen==SCREEN_PRESENT)
+					flags |= STATE_PRESENT_BTN;
+				else
+					flags |= STATE_EVIDENCE_BTN;
+				
+				// also account for text box
 				if (flagged(STATE_TEXT_BOX))
 					flags |= STATE_TEXT_BOX;
 				toggle(flags);
@@ -1205,6 +1295,11 @@ void Game::onTalkButtonActivated() {
 
 // present button activated handler
 void Game::onPresentButtonActivated() {
+	// toggle present scene
+	toggle(STATE_EVIDENCE_PAGE | STATE_PROFILES_BTN | STATE_LOWER_BAR | STATE_BACK_BTN);
+	
+	// also, set this as the previous scene
+	m_State.prevScreen=SCREEN_PRESENT;
 }
 
 // examine the hotspot in provided coordinate range

@@ -27,6 +27,7 @@ Character::Character(const std::string &internal, const std::string &name, const
 	m_HasTextBoxTag=false;
 	m_HasHeadshot=false;
 	m_SpriteName="null";
+	m_BadPresentableBlock="null";
 	m_Gender=GENDER_MALE;
 }
 
@@ -41,6 +42,22 @@ void Character::removeTalkOption(const std::string &id) {
 	for (std::vector<StringPair>::iterator it=m_TalkOptions.begin(); it!=m_TalkOptions.end(); ++it) {
 		if ((*it).first==id) {
 			m_TalkOptions.erase(it);
+			return;
+		}
+	}
+}
+
+// add a presentable piece of evidence
+void Character::addPresentable(const std::string &id, const std::string &target) {
+	m_AcceptedItems.push_back(std::make_pair<std::string, std::string>(id, target));
+}
+
+// remove presentable evidence
+void Character::removePresentable(const std::string &id) {
+	// iterate over evidence
+	for (std::vector<StringPair>::iterator it=m_AcceptedItems.begin(); it!=m_AcceptedItems.end(); ++it) {
+		if ((*it).first==id) {
+			m_AcceptedItems.erase(it);
 			return;
 		}
 	}
