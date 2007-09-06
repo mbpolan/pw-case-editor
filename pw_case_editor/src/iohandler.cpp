@@ -65,6 +65,10 @@ bool IO::save_case_to_file(const Glib::ustring &path, const Case::Case &pcase,
 		// write displayed name
 		write_string(f, (*it).second.get_name());
 		
+		// write gender
+		int gender=(*it).second.get_gender();
+		fwrite(&gender, sizeof(int), 1, f);
+		
 		// write caption
 		write_string(f, (*it).second.get_caption());
 		
@@ -240,6 +244,10 @@ bool IO::export_case_to_file(const Glib::ustring &path, const Case::Case &pcase,
 		
 		// write displayed name
 		write_string(f, (*it).second.get_name());
+		
+		// write gender
+		int gender=(*it).second.get_gender();
+		fwrite(&gender, sizeof(int), 1, f);
 		
 		// write caption
 		write_string(f, (*it).second.get_caption());
@@ -442,6 +450,11 @@ bool IO::load_case_from_file(const Glib::ustring &path, Case::Case &pcase,
 		// read displayed name
 		str=read_string(f);
 		character.set_name(str);
+		
+		// read gender
+		int gender=0;
+		fread(&gender, sizeof(int), 1, f);
+		character.set_gender((gender==0 ? Character::GENDER_MALE : Character::GENDER_FEMALE));
 		
 		// read caption
 		str=read_string(f);

@@ -27,4 +27,5 @@ Character::Character(const Glib::ustring &internal, const Glib::ustring &name, c
 	m_SpriteName="null";
 	m_HasTextBoxTag=false;
 	m_HasHeadshot=false;
+	m_Gender=GENDER_MALE;
 }

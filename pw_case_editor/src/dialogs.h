@@ -633,6 +633,11 @@ class NewCharDialog: public Gtk::Dialog {
 		// build the graphics page
 		Gtk::Container* build_graphics_page();
 		
+		// radio buttons
+		Gtk::RadioButtonGroup m_Group;
+		Gtk::RadioButton *m_MaleRB;
+		Gtk::RadioButton *m_FemaleRB;
+		
 		// check buttons
 		Gtk::CheckButton *m_HasTagCB;
 		Gtk::CheckButton *m_HasHeadshotCB;
@@ -648,6 +653,7 @@ class NewCharDialog: public Gtk::Dialog {
 		// labels
 		Gtk::Label *m_CodeNameLabel;
 		Gtk::Label *m_NameLabel;
+		Gtk::Label *m_GenderLabel;
 		Gtk::Label *m_CapLabel;
 		Gtk::Label *m_DescLabel;
 		Gtk::Label *m_SpriteLabel;

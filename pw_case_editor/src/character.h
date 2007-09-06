@@ -28,6 +28,9 @@
 // class representing a character and its associated sprites
 class Character {
 	public:
+		// gender
+		enum Gender { GENDER_MALE=0, GENDER_FEMALE };
+		
 		// constructor
 		Character(const Glib::ustring &internal="", const Glib::ustring &name="", 
 			  const Glib::ustring &caption="", const Glib::ustring &description="");
@@ -43,6 +46,12 @@ class Character {
 		
 		// get the displayed name
 		Glib::ustring get_name() const { return m_Name; }
+		
+		// set gender of this character
+		void set_gender(const Gender &g) { m_Gender=g; }
+		
+		// get the gender of this character
+		Gender get_gender() const { return m_Gender; }
 		
 		// set the caption
 		void set_caption(const Glib::ustring &cap) { m_Caption=cap; }
@@ -101,6 +110,9 @@ class Character {
 		
 		// sprite name
 		Glib::ustring m_SpriteName;
+		
+		// character gender
+		Gender m_Gender;
 		
 		// text box tag image
 		bool m_HasTextBoxTag;

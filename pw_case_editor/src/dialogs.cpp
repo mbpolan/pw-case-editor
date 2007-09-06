@@ -1443,6 +1443,11 @@ void NewCharDialog::set_character_data(const Character &ch) {
 	m_DescEntry->set_text(ch.get_description());
 	m_SpriteEntry->set_text(ch.get_sprite_name());
 	
+	if (ch.get_gender()==Character::GENDER_MALE)
+		m_MaleRB->set_active(true);
+	else
+		m_FemaleRB->set_active(true);
+	
 	m_HasTagCB->set_active(ch.has_text_box_tag());
 	if (m_HasTagCB->get_active())
 		m_TextBoxImage->set(ch.get_text_box_tag());
@@ -1464,6 +1469,7 @@ Character NewCharDialog::get_character_data() {
 	// fill in data
 	character.set_internal_name(m_CodeNameEntry->get_text());
 	character.set_name(m_NameEntry->get_text());
+	character.set_gender((m_MaleRB->get_active() ? Character::GENDER_MALE : Character::GENDER_FEMALE));
 	character.set_caption(m_CapEntry->get_text());
 	character.set_description(m_DescEntry->get_text());
 	character.set_sprite_name(m_SpriteEntry->get_text());
@@ -1594,9 +1600,15 @@ Gtk::Container* NewCharDialog::build_general_page() {
 	// allocate labels
 	m_CodeNameLabel=manage(new Gtk::Label("Internal Code Name"));
 	m_NameLabel=manage(new Gtk::Label("Name"));
+	m_GenderLabel=manage(new Gtk::Label("Gender"));
 	m_CapLabel=manage(new Gtk::Label("Caption"));
 	m_DescLabel=manage(new Gtk::Label("Description"));
 	m_SpriteLabel=manage(new Gtk::Label("Sprite Name"));
+	
+	// allocate radio buttons
+	m_MaleRB=manage(new Gtk::RadioButton(m_Group, "Male"));
+	m_FemaleRB=manage(new Gtk::RadioButton(m_Group, "Female"));
+	m_MaleRB->set_active(true);
 	
 	// allocate entries
 	m_CodeNameEntry=manage(new Gtk::Entry);
@@ -1607,15 +1619,18 @@ Gtk::Container* NewCharDialog::build_general_page() {
 	
 	// attach widgets
 	table->attach(*m_CodeNameLabel, 0, 1, 0, 1, xops, yops);
-	table->attach(*m_CodeNameEntry, 1, 2, 0, 1, xops, yops);
+	table->attach(*m_CodeNameEntry, 1, 3, 0, 1, xops, yops);
 	table->attach(*m_NameLabel, 0, 1, 1, 2, xops, yops);
-	table->attach(*m_NameEntry, 1, 2, 1, 2, xops, yops);
-	table->attach(*m_CapLabel, 0, 1, 2, 3, xops, yops);
-	table->attach(*m_CapEntry, 1, 2, 2, 3, xops, yops);
-	table->attach(*m_DescLabel, 0, 1, 3, 4, xops, yops);
-	table->attach(*m_DescEntry, 1, 2, 3, 4, xops, yops);
-	table->attach(*m_SpriteLabel, 0, 1, 4, 5, xops, yops);
-	table->attach(*m_SpriteEntry, 1, 2, 4, 5, xops, yops);
+	table->attach(*m_NameEntry, 1, 3, 1, 2, xops, yops);
+	table->attach(*m_GenderLabel, 0, 1, 2, 3, xops, yops);
+	table->attach(*m_MaleRB, 1, 2, 2, 3, xops, yops);
+	table->attach(*m_FemaleRB, 2, 3, 2, 3, xops, yops);
+	table->attach(*m_CapLabel, 0, 1, 3, 4, xops, yops);
+	table->attach(*m_CapEntry, 1, 3, 3, 4, xops, yops);
+	table->attach(*m_DescLabel, 0, 1, 4, 5, xops, yops);
+	table->attach(*m_DescEntry, 1, 3, 4, 5, xops, yops);
+	table->attach(*m_SpriteLabel, 0, 1, 5, 6, xops, yops);
+	table->attach(*m_SpriteEntry, 1, 3, 5, 6, xops, yops);
 	
 	// connect signals
 	m_CodeNameEntry->signal_changed().connect(sigc::mem_fun(*this, &NewCharDialog::on_internal_name_changed));
