@@ -90,6 +90,7 @@ class TextParser {
 		
 		// current speaking character (internal name)
 		std::string m_Speaker;
+		Character::Gender m_SpeakerGender;
 		
 		// position in block where execution stopped
 		int m_BreakPoint;

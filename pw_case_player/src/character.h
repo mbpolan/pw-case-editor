@@ -30,6 +30,9 @@
 // class representing a character and its associated sprites
 class Character {
 	public:
+		// character gender
+		enum Gender { GENDER_MALE=0, GENDER_FEMALE };
+		
 		// constructor
 		Character(const std::string &internal="", const std::string &name="", 
 			  const std::string &caption="", const std::string &description="");
@@ -45,6 +48,12 @@ class Character {
 		
 		// get the displayed name
 		std::string getName() const { return m_Name; }
+		
+		// set the character's gender
+		void setGender(const Gender &g) { m_Gender=g; }
+		
+		// get the character's gender
+		Gender getGender() const { return m_Gender; }
 		
 		// set the caption
 		void setCaption(const std::string &caption) { m_Caption=caption; }
@@ -119,6 +128,9 @@ class Character {
 		
 		// sprite
 		Sprite m_Sprite;
+		
+		// character gender
+		Gender m_Gender;
 		
 		// headshot image
 		bool m_HasHeadshot;

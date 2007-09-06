@@ -31,6 +31,7 @@ TextParser::TextParser(Game *game): m_Game(game) {
 	clearFormatting();
 	
 	// reset variables
+	m_SpeakerGender=Character::GENDER_MALE;
 	m_Dialogue="";
 	m_Direct=false;
 	m_Speed=50;
@@ -184,9 +185,17 @@ std::string TextParser::parse() {
 				if (m_FontStyle.type=="date")
 					Audio::playEffect("sfx_typewriter", DIALOGUE_SFX_CHANNEL);
 				
-				// TODO: differentiate between male and female speakers
-				else if (m_FontStyle.type=="plain")
-					Audio::playEffect("sfx_male_talk", DIALOGUE_SFX_CHANNEL);
+				// differentiate between male and female speakers
+				else if (m_FontStyle.type=="plain") {
+					std::string gtype="";
+					if (m_SpeakerGender==Character::GENDER_MALE)
+						gtype="sfx_male_talk";
+					else
+						gtype="sfx_female_talk";
+					
+					// play this sound
+					Audio::playEffect(gtype, DIALOGUE_SFX_CHANNEL);
+				}
 			}
 			
 			m_StrPos++;
@@ -427,8 +436,14 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	}
 	
 	// set the current speaker
-	else if (trigger=="speaker")
+	else if (trigger=="speaker") {
+		// copy speaker id
 		m_Speaker=command;
+		
+		// get character gender
+		if (pcase->getCharacter(m_Speaker))
+			m_SpeakerGender=pcase->getCharacter(m_Speaker)->getGender();
+	}
 	
 	// end the current dialog
 	else if (trigger=="end_dialogue")

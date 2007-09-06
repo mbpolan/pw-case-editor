@@ -82,6 +82,11 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 		str=readString(f);
 		character.setName(str);
 		
+		// read gender
+		int gender;
+		fread(&gender, sizeof(int), 1, f);
+		character.setGender((gender==0 ? Character::GENDER_MALE : Character::GENDER_FEMALE));
+		
 		// read caption
 		str=readString(f);
 		character.setCaption(str);
