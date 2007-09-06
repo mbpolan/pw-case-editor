@@ -467,3 +467,36 @@ void Renderer::drawMoveScene(const std::vector<std::string> &locations, Location
 		y+=25;
 	}
 }
+
+// draw talk scene
+void Renderer::drawTalkScene(const std::vector<StringPair> &options, int selected) {
+	// get pointer to screen surface
+	SDL_Surface *screen=SDL_GetVideoSurface();
+	if (!screen)
+		return;
+	
+	// keep track of drawing
+	int x=5;
+	int y=197+34+5;
+	
+	// iterate over options
+	for (int i=0; i<options.size(); i++) {
+		// if this is the selected option, draw a gold border around it
+		if (selected==i)
+			Renderer::drawRect(screen, x, y, 200, 20, SDL_MapRGB(screen->format, 255, 148, 57));
+			
+		// otherwise, draw a white border
+		else
+			Renderer::drawRect(screen, x, y, 200, 20, SDL_MapRGB(screen->format, 189, 148, 132));
+		
+		// draw the button
+		Renderer::drawRect(screen, x+1, y+1, 200-2, 18, SDL_MapRGB(screen->format, 255, 255, 255));
+		
+		// draw the text, centered
+		int centerx=100-(Fonts::getWidth("black", options[i].first)/2);
+		Fonts::drawString(centerx, y+4, options[i].first, "black");
+		
+		// move down to next slot
+		y+=25;
+	}
+}

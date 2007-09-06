@@ -29,3 +29,19 @@ Character::Character(const std::string &internal, const std::string &name, const
 	m_SpriteName="null";
 	m_Gender=GENDER_MALE;
 }
+
+// add a talk option
+void Character::addTalkOption(const std::string &viewStr, const std::string &block) {
+	m_TalkOptions.push_back(std::make_pair<std::string, std::string>(viewStr, block));
+}
+
+// remove a talk option
+void Character::removeTalkOption(const std::string &id) {
+	// iterate over talk options
+	for (std::vector<StringPair>::iterator it=m_TalkOptions.begin(); it!=m_TalkOptions.end(); ++it) {
+		if ((*it).first==id) {
+			m_TalkOptions.erase(it);
+			return;
+		}
+	}
+}

@@ -44,7 +44,8 @@ enum GameFlags {
 		 STATE_TEXT_BOX=2048,
 		 STATE_CONTROLS=4096,
 		 STATE_EXAMINE=8192,
-		 STATE_MOVE=16384 };
+		 STATE_MOVE=16384,
+		 STATE_TALK=32768 };
 
 // menu controls to draw
 enum Controls {
@@ -52,7 +53,7 @@ enum Controls {
 		CONTROLS_EXAMINE=2,
 		CONTROLS_MOVE=4,
 		CONTROLS_TALK=8,
-		CONTROLS_PRESENT=16 };
+		CONTROLS_PRESENT=16};
 
 // position on screen
 enum Position {
@@ -63,7 +64,8 @@ enum Position {
 enum Screen {
 		SCREEN_MAIN=0,
 		SCREEN_EXAMINE=1,
-		SCREEN_MOVE=2 };
+		SCREEN_MOVE=2,
+		SCREEN_TALK=3 };
 
 // struct that stores the current game state
 struct _GameState {
@@ -79,6 +81,7 @@ struct _GameState {
 	int selectedProfile;
 	int selectedControl;
 	int selectedLocation;
+	int selectedTalkOption;
 	
 	// x,y coordinates or examination cursor
 	int examineX, examineY;
@@ -172,6 +175,9 @@ class Game {
 		
 		// click handler for move scene
 		void onMoveSceneClicked(int x, int y);
+		
+		// click handler for talk scene
+		void onTalkSceneClicked(int x, int y);
 		
 		// court record page click handler
 		void onRecPageClickEvent(int x, int y);

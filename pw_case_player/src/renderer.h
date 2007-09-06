@@ -65,6 +65,9 @@ void drawExamineScene(SDL_Surface *background, int cursorX, int cursorY);
 // draw the movement scene
 void drawMoveScene(const std::vector<std::string> &locations, LocationMap lmap, int selected);
 
+// draw talk scene
+void drawTalkScene(const std::vector<StringPair> &options, int selected);
+
 }; // namespace Renderer
 
 #endif

@@ -291,15 +291,25 @@ void TextParser::clearFormatting() {
 
 // split a command string into pieces based on commas
 std::vector<std::string> TextParser::splitCommand(const std::string &command) {
+	std::string str=command;
 	std::vector<std::string> params;
 	
-	// for now, there can only be two parameters
-	// find the separator comma
-	int npos=command.find(",");
-	
-	// break the string apart
-	params.push_back(command.substr(0, npos));
-	params.push_back(command.substr(npos+1, command.size()-1));
+	while(1) {
+		// find next separator
+		int npos=str.find(',');
+		if (npos==-1) {
+			// erase to end for last parameter
+			params.push_back(str.substr(0, str.size()));
+			
+			break;
+		}
+		
+		// get the parameter
+		std::string param=str.substr(0, npos);
+		params.push_back(param);
+		
+		str.erase(0, npos+1);
+	}
 	
 	return params;
 }
@@ -398,6 +408,41 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		// get the target location
 		if (pcase->getLocation(target))
 			pcase->getLocation(target)->character=character;
+	}
+	
+	// add a talk option to a character
+	else if (trigger=="add_talk_option") {
+		// split this command string
+		std::vector<std::string> params=splitCommand(command);
+		std::string charName=params[0];
+		std::string viewString=params[1];
+		std::string blockId=params[2];
+		
+		// get the target character
+		Character *character=pcase->getCharacter(charName);
+		if (character)
+			character->addTalkOption(viewString, blockId);
+	}
+	
+	// remove a talk option
+	else if (trigger=="remove_talk_option") {
+		// split this command string
+		std::vector<std::string> params=splitCommand(command);
+		std::string charName=params[0];
+		std::string viewString=params[1];
+		
+		// get the target character
+		Character *character=pcase->getCharacter(charName);
+		if (character)
+			character->removeTalkOption(viewString);
+	}
+	
+	// clear talk options
+	else if (trigger=="clear_talk_options") {
+		// get character
+		Character *character=pcase->getCharacter(command);
+		if (character)
+			character->clearTalkOptions();
 	}
 	
 	// set music to be played a location

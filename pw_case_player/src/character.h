@@ -25,6 +25,7 @@
 #include <iostream>
 #include "SDL.h"
 
+#include "common.h"
 #include "sprite.h"
 
 // class representing a character and its associated sprites
@@ -36,6 +37,18 @@ class Character {
 		// constructor
 		Character(const std::string &internal="", const std::string &name="", 
 			  const std::string &caption="", const std::string &description="");
+		
+		// add a talk option
+		void addTalkOption(const std::string &viewStr, const std::string &block);
+		
+		// remove a talk option
+		void removeTalkOption(const std::string &id);
+		
+		// clear talk options
+		void clearTalkOptions() { m_TalkOptions.clear(); }
+		
+		// return talk options
+		std::vector<StringPair> getTalkOptions() const { return m_TalkOptions; }
 		
 		// set the internal character name
 		void setInternalName(const std::string &name) { m_InternalName=name; }
@@ -131,6 +144,9 @@ class Character {
 		
 		// character gender
 		Gender m_Gender;
+		
+		// vector of talk options
+		std::vector<StringPair> m_TalkOptions;
 		
 		// headshot image
 		bool m_HasHeadshot;

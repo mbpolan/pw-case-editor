@@ -42,6 +42,7 @@ Game::Game(const std::string &rootPath, Case::Case *pcase): m_RootPath(rootPath)
 	m_State.selectedProfile=0;
 	m_State.selectedControl=0;
 	m_State.selectedLocation=0;
+	m_State.selectedTalkOption=0;
 	
 	// reset examination cursor position
 	m_State.examineX=256/2;
@@ -327,6 +328,30 @@ void Game::onKeyboardEvent(SDL_KeyboardEvent *e) {
 		else if (e->keysym.sym==SDLK_DOWN && m_State.selectedLocation<location->moveLocations.size()-1)
 			m_State.selectedLocation+=1;
 	}
+	
+	// if the talk menu view is drawn, change selection
+	else if (flagged(STATE_TALK)) {
+		// get the current location
+		Case::Location *location=m_Case->getLocation(m_State.currentLocation);
+		if (!location)
+			return;
+		
+		// and get the character
+		Character *character=m_Case->getCharacter(location->character);
+		if (!character)
+			return;
+		
+		// get a count of how many talk options he has
+		int amount=character->getTalkOptions().size();
+		
+		// move up
+		if (e->keysym.sym==SDLK_UP && m_State.selectedTalkOption>0)
+			m_State.selectedTalkOption-=1;
+		
+		// move down
+		else if (e->keysym.sym==SDLK_DOWN && m_State.selectedTalkOption<amount-1)
+			m_State.selectedTalkOption+=1;
+	}
 }
 
 // handle mouse click event
@@ -377,6 +402,10 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 		// if the controls are drawn, see if one was clicked
 		else if (flagged(STATE_CONTROLS))
 			onControlsClicked(e->x, e->y);
+		
+		// if talk scene is drawn, see if one option was clicked
+		else if (flagged(STATE_TALK))
+			onTalkSceneClicked(e->x, e->y);
 		
 		// if the court record page is up, see if anything was clicked
 		if (flagged(STATE_EVIDENCE_PAGE) || flagged(STATE_PROFILES_PAGE))
@@ -635,6 +664,15 @@ void Game::renderMenuView() {
 		Renderer::drawMoveScene(location->moveLocations, m_Case->getLocations(), m_State.selectedLocation);
 	}
 	
+	// draw talk scene
+	else if (flagged(STATE_TALK)) {
+		// get current character at location
+		Case::Location *location=m_Case->getLocation(m_State.currentLocation);
+		Character *character=m_Case->getCharacter(location->character);
+		if (character)
+			Renderer::drawTalkScene(character->getTalkOptions(), m_State.selectedTalkOption);
+	}
+	
 	// draw next button in case of dialog
 	else if (flagged(STATE_NEXT_BTN)) {
 		Renderer::drawImage(16, 242, "tc_next_btn");
@@ -881,6 +919,12 @@ void Game::onBottomLeftButtonClicked() {
 				toggle(flags);
 			}
 			
+			// if the previous screen is the talk screen, then draw it
+			else if (m_State.prevScreen==SCREEN_TALK) {
+				int flags=STATE_TALK | STATE_COURT_REC_BTN | STATE_LOWER_BAR | STATE_BACK_BTN;
+				toggle(flags);
+			}
+			
 			// must be the main screen
 			else {
 				int flags=STATE_COURT_REC_BTN | STATE_CONTROLS;
@@ -896,8 +940,8 @@ void Game::onBottomLeftButtonClicked() {
 			}
 		}
 		
-		// if examine or move screen is show, revert back to main screen
-		else if (flagged(STATE_EXAMINE) || flagged(STATE_MOVE)) {
+		// if examine, talk, or move screen is show, revert back to main screen
+		else if (flagged(STATE_EXAMINE) || flagged(STATE_MOVE) || flagged(STATE_TALK)) {
 			m_State.prevScreen=SCREEN_MAIN;
 			
 			toggle(STATE_COURT_REC_BTN | STATE_CONTROLS);
@@ -987,6 +1031,41 @@ void Game::onMoveSceneClicked(int x, int y) {
 		}
 		
 		// move on to next button
+		dy+=25;
+	}
+}
+
+// click handler for talk scene
+void Game::onTalkSceneClicked(int x, int y) {
+	// get current location
+	Case::Location *location=m_Case->getLocation(m_State.currentLocation);
+	if (!location)
+		return;
+	
+	// get character
+	Character *character=m_Case->getCharacter(location->character);
+	if (!character)
+		return;
+	
+	// keep track of x,y changes
+	int dx=5;
+	int dy=197+34+5;
+	
+	// iterate over options
+	for (int i=0; i<character->getTalkOptions().size(); i++) {
+		// see if this one was clicked
+		if ((x>=dx && x<=dx+200) && (y>=dy && y<=dy+20)) {
+			m_State.selectedTalkOption=i;
+			
+			// get the target block id
+			std::string target=character->getTalkOptions()[i].second;
+			
+			// set this block
+			m_Parser->setBlock(m_Case->getBuffers()[target]);
+			m_Parser->nextStep();
+		}
+		
+		// move down to next slot
 		dy+=25;
 	}
 }
@@ -1117,6 +1196,11 @@ void Game::onMoveButtonActivated() {
 
 // talk button activated handler
 void Game::onTalkButtonActivated() {
+	// toggle talk scene
+	toggle(STATE_TALK | STATE_COURT_REC_BTN | STATE_LOWER_BAR | STATE_BACK_BTN);
+	
+	// also, set this as the previous scene
+	m_State.prevScreen=SCREEN_TALK;
 }
 
 // present button activated handler
