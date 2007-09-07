@@ -164,7 +164,7 @@ void Game::render() {
 	std::string status=m_Parser->parse();
 	
 	// new block ready for parsing
-	if (status!="null" && status!="pause" && status!="end") {
+	if (status!="null") {
 		m_Parser->setBlock(m_Case->getBuffers()[status]);
 	}
 		
@@ -504,10 +504,17 @@ void Game::setLocation(const std::string &locationId) {
 
 // set the evidence to draw on top screen
 void Game::setShownEvidence(const std::string &id, const Position &pos) {
-	if (id=="null")
+	if (id=="null") {
+		// play hide effect
+		Audio::playEffect("sfx_hide_item", GUI_SFX_CHANNEL);
+		
 		m_State.shownEvidence="null";
+	}
 	
 	else {
+		// play show effect
+		Audio::playEffect("sfx_show_item", GUI_SFX_CHANNEL);
+		
 		m_State.shownEvidence=id;
 		m_State.shownEvidencePos=pos;
 	}
@@ -973,6 +980,9 @@ void Game::onTopRightButtonClicked() {
 		
 		toggle(flags);
 	}
+	
+	// play a sound effect
+	Audio::playEffect("sfx_click", GUI_SFX_CHANNEL);
 }
 
 // bottom left button was clicked
@@ -1042,6 +1052,9 @@ void Game::onBottomLeftButtonClicked() {
 			
 			toggle(flags);
 		}
+		
+		// play a sound effect
+		Audio::playEffect("sfx_return", GUI_SFX_CHANNEL);
 	}
 }
 
@@ -1176,6 +1189,9 @@ void Game::onRecPageClickEvent(int x, int y) {
 					flags |= STATE_TEXT_BOX;
 				toggle(flags);
 				
+				// play sound effect
+				Audio::playEffect("sfx_click", GUI_SFX_CHANNEL);
+				
 				return;
 			}
 		}
@@ -1200,6 +1216,9 @@ void Game::onRecPageClickEvent(int x, int y) {
 				if (flagged(STATE_TEXT_BOX))
 					flags |= STATE_TEXT_BOX;
 				toggle(flags);
+				
+				// play sound effect
+				Audio::playEffect("sfx_click", GUI_SFX_CHANNEL);
 				
 				return;
 			}
@@ -1231,6 +1250,9 @@ void Game::onRecPageClickEvent(int x, int y) {
 			if (m_State.profilesPage<0)
 				m_State.profilesPage=(int) ceil(m_State.visibleProfiles.size()/8);
 		}
+		
+		// play sound effect
+		Audio::playEffect("sfx_return", GUI_SFX_CHANNEL);
 	}
 	
 	// right button
@@ -1248,6 +1270,9 @@ void Game::onRecPageClickEvent(int x, int y) {
 			if (m_State.profilesPage>ceil(m_State.visibleProfiles.size()/8))
 				m_State.profilesPage=0;
 		}
+		
+		// play sound effect
+		Audio::playEffect("sfx_return", GUI_SFX_CHANNEL);
 	}
 }
 

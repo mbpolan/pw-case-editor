@@ -70,7 +70,7 @@ void TextParser::reset() {
 std::string TextParser::parse() {
 	// if we are done parsing, return here
 	if (m_Done)
-		return "end";
+		return "null";
 	
 	// if the parser is not paused, start parsing the set block
 	if (!m_Pause) {
@@ -145,7 +145,7 @@ std::string TextParser::parse() {
 					m_Dialogue+=(char) ch;
 					
 					// see if we are over the text limit and need to break
-					if (Fonts::willBreak(4, 132, SDL_GetVideoSurface()->w, m_Dialogue, "white")) {
+					if (Fonts::lineWillBreak(8, 134, SDL_GetVideoSurface()->w-8, m_Dialogue, m_FontStyle.color)) {
 						m_Pause=true;
 						break;
 					}
@@ -158,7 +158,7 @@ std::string TextParser::parse() {
 			// if we are done parsing, end this loop
 			if (m_Done) {
 				m_Pause=true;
-				return "end";
+				return "null";
 			}
 			
 			// we have completely parsed this block
@@ -212,19 +212,20 @@ std::string TextParser::parse() {
 			int lx=(256/2)-(Fonts::getWidth(m_FontStyle.color, area)/2)-2;
 			
 			// draw date
-			Fonts::drawString(dx, 132, m_StrPos, SDL_GetVideoSurface()->w, date, m_FontStyle.color);
+			Fonts::drawString(dx, 134, m_StrPos, SDL_GetVideoSurface()->w-8, date, m_FontStyle.color);
 			
 			// draw location is m_StrPos has surpassed length of date string
 			if (m_StrPos>date.size())
-				Fonts::drawString(lx, 132+15, m_StrPos-date.size(), SDL_GetVideoSurface()->w, area, m_FontStyle.color);
+				Fonts::drawString(lx, 134+Fonts::g_LineBreakSize, m_StrPos-date.size(),
+						  SDL_GetVideoSurface()->w-8, area, m_FontStyle.color);
 		}
 		
 		// draw the string in plain formatting otherwise
 		else
-			Fonts::drawString(4, 132, m_StrPos, SDL_GetVideoSurface()->w, m_Dialogue, m_FontStyle.color);
+			Fonts::drawString(8, 134, m_StrPos, SDL_GetVideoSurface()->w-8, m_Dialogue, m_FontStyle.color);
 	}
 	
-	return "pause";
+	return "null";
 }
 
 // move on to the next break point
@@ -289,31 +290,6 @@ void TextParser::clearFormatting() {
 	m_FontStyle.speed=50;
 }
 
-// split a command string into pieces based on commas
-std::vector<std::string> TextParser::splitCommand(const std::string &command) {
-	std::string str=command;
-	std::vector<std::string> params;
-	
-	while(1) {
-		// find next separator
-		int npos=str.find(',');
-		if (npos==-1) {
-			// erase to end for last parameter
-			params.push_back(str.substr(0, str.size()));
-			
-			break;
-		}
-		
-		// get the parameter
-		std::string param=str.substr(0, npos);
-		params.push_back(param);
-		
-		str.erase(0, npos+1);
-	}
-	
-	return params;
-}
-
 // execute a trigger
 std::string TextParser::doTrigger(const std::string &trigger, const std::string &command) {
 	Case::Case *pcase=m_Game->m_Case;
@@ -360,7 +336,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	// make a location accessible
 	else if (trigger=="add_location") {
 		// split this command string
-		std::vector<std::string> params=splitCommand(command);
+		std::vector<std::string> params=Fonts::explodeString(',', command);
 		std::string target=params[0];
 		std::string location=params[1];
 		
@@ -379,7 +355,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	// set a trigger block at a location
 	else if (trigger=="set_location_trigger") {
 		// split this command string
-		std::vector<std::string> params=splitCommand(command);
+		std::vector<std::string> params=Fonts::explodeString(',', command);
 		std::string target=params[0];
 		std::string block=params[1];
 		
@@ -401,7 +377,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	// put a character at a location
 	else if (trigger=="put_character") {
 		// split this command string
-		std::vector<std::string> params=splitCommand(command);
+		std::vector<std::string> params=Fonts::explodeString(',', command);
 		std::string character=params[0];
 		std::string target=params[1];
 		
@@ -413,7 +389,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	// add a talk option to a character
 	else if (trigger=="add_talk_option") {
 		// split this command string
-		std::vector<std::string> params=splitCommand(command);
+		std::vector<std::string> params=Fonts::explodeString(',', command);
 		std::string charName=params[0];
 		std::string viewString=params[1];
 		std::string blockId=params[2];
@@ -427,7 +403,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	// remove a talk option
 	else if (trigger=="remove_talk_option") {
 		// split this command string
-		std::vector<std::string> params=splitCommand(command);
+		std::vector<std::string> params=Fonts::explodeString(',', command);
 		std::string charName=params[0];
 		std::string viewString=params[1];
 		
@@ -448,7 +424,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	// add a presentable piece of evidence/profile to a character
 	else if (trigger=="add_presentable") {
 		// split this command string
-		std::vector<std::string> params=splitCommand(command);
+		std::vector<std::string> params=Fonts::explodeString(',', command);
 		std::string charName=params[0];
 		std::string itemId=params[1];
 		std::string targetBlock=params[2];
@@ -462,7 +438,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	// remove a piece of presentable evidence/profile
 	else if (trigger=="remove_presentable") {
 		// split this command string
-		std::vector<std::string> params=splitCommand(command);
+		std::vector<std::string> params=Fonts::explodeString(',', command);
 		std::string charName=params[0];
 		std::string itemId=params[1];
 		
@@ -483,7 +459,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	// set the block to use when a useless item was presented
 	else if (trigger=="set_bad_presentable_block") {
 		// split this command string
-		std::vector<std::string> params=splitCommand(command);
+		std::vector<std::string> params=Fonts::explodeString(',', command);
 		std::string charName=params[0];
 		std::string target=params[1];
 		
@@ -496,7 +472,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	// set music to be played a location
 	else if (trigger=="set_location_music") {
 		// split this command string
-		std::vector<std::string> params=splitCommand(command);
+		std::vector<std::string> params=Fonts::explodeString(',', command);
 		std::string musicId=params[0];
 		std::string target=params[1];
 		

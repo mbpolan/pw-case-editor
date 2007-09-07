@@ -26,7 +26,12 @@
 #include <SDL/SDL.h>
 #include <map>
 
+#include "case.h"
+
 namespace Fonts {
+
+// amount of pixels to skip following a line break
+const int g_LineBreakSize=17;
 
 // a single glyph
 struct _Glyph {
@@ -52,8 +57,14 @@ bool loadFont(const std::string &path, Fonts::Font &font);
 // create a font glyph
 SDL_Surface* createSurface(char *buffer);
 
+// break a string apart based on a delimiting character
+StringVector explodeString(char delimiter, const std::string &str);
+
 // see if this string is too long and needs to be broken
-bool willBreak(int x, int y, int rightClamp, const std::string &str, const std::string &fontId);
+bool lineWillBreak(int x, int y, int rightClamp, const std::string &str, const std::string &fontId);
+
+// see if a word is too long to fit in this line
+bool wordWillBreak(int x, int rightClamp, const std::string &word, const std::string &fontId);
 
 // draw a string on the screen
 int drawString(int x, int y, const std::string &str, const std::string &fontId);

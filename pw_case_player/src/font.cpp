@@ -138,8 +138,33 @@ SDL_Surface* Fonts::createSurface(char *pbuf) {
 	return surface;	
 }
 
+// break a string apart based on a delimiting character
+StringVector Fonts::explodeString(char delimiter, const std::string &strc) {
+	std::string str=strc;
+	std::vector<std::string> split;
+	
+	while(1) {
+		// find next separator
+		int npos=str.find(delimiter);
+		if (npos==-1) {
+			// erase to end for last parameter
+			split.push_back(str.substr(0, str.size()));
+			
+			break;
+		}
+		
+		// get the string
+		std::string s=str.substr(0, npos);
+		split.push_back(s);
+		
+		str.erase(0, npos+1);
+	}
+	
+	return split;
+}
+
 // see if this string is too long and needs to be broken
-bool Fonts::willBreak(int x, int y, int rightClamp, const std::string &str, const std::string &fontId) {
+bool Fonts::lineWillBreak(int x, int y, int rightClamp, const std::string &str, const std::string &fontId) {
 	Font font=g_Fonts[fontId];
 	int breakCount=0;
 	int ex=x;
@@ -150,7 +175,7 @@ bool Fonts::willBreak(int x, int y, int rightClamp, const std::string &str, cons
 		// see if we should force a new line
 		if (ch=='\n') {
 			// check if we already have three lines
-			if (breakCount==3)
+			if (breakCount==2)
 				return true;
 			
 			ex=x;
@@ -186,7 +211,7 @@ bool Fonts::willBreak(int x, int y, int rightClamp, const std::string &str, cons
 		int width=font.glyphs[ch].w+font.glyphs[str[i+1]].w+2;
 		if ((ex+width)>=rightClamp) {
 			// check if we already have three lines
-			if (breakCount==3)
+			if (breakCount==2)
 				return true;
 			
 			// reset for next row
@@ -204,6 +229,17 @@ bool Fonts::willBreak(int x, int y, int rightClamp, const std::string &str, cons
 	}
 	
 	return false;
+}
+
+// see if a word is too long to fit in this line
+bool Fonts::wordWillBreak(int x, int rightClamp, const std::string &word, const std::string &fontId) {
+	Fonts::Font font=queryFont(fontId);
+	
+	// calculate the length of this word
+	int length=getWidth(fontId, word);
+	
+	// combine given x with length and see if we crossed the right most limit
+	return (x+length>rightClamp);
 }
 
 // draw a string on the screen
@@ -248,11 +284,11 @@ int Fonts::drawString(int x, int y, int limit, int rightClamp, const std::string
 		// see if we should force a new line
 		if (ch=='\n') {
 			// check if we already have three lines
-			if (breakCount==3)
+			if (breakCount==2)
 				return i;
 			
 			drect.x=x;
-			drect.y+=15;
+			drect.y+=g_LineBreakSize;
 			
 			breakCount++;
 			continue;
@@ -261,11 +297,11 @@ int Fonts::drawString(int x, int y, int limit, int rightClamp, const std::string
 		// see if this is a literal new line character
 		if (ch=='\\' && str[i+1]=='n') {
 			// make sure we don't make any extra lines
-			if (breakCount==3)
+			if (breakCount==2)
 				return i;
 			
 			drect.x=x;
-			drect.y+=15;
+			drect.y+=g_LineBreakSize;
 			
 			breakCount++;
 			
@@ -286,7 +322,7 @@ int Fonts::drawString(int x, int y, int limit, int rightClamp, const std::string
 		int width=font.glyphs[ch].w+font.glyphs[str[i+1]].w+2;
 		if ((drect.x+width)>=rightClamp) {
 			// check if we already have three lines
-			if (breakCount==3)
+			if (breakCount==2)
 				return i;
 			
 			// blit a hyphen, if needed
@@ -295,7 +331,7 @@ int Fonts::drawString(int x, int y, int limit, int rightClamp, const std::string
 			
 			// reset for next row
 			drect.x=x;
-			drect.y+=15;
+			drect.y+=g_LineBreakSize;
 			
 			// blit the character that was supposed to be here
 			SDL_BlitSurface(font.glyphs[ch].surface, NULL, screen, &drect);
