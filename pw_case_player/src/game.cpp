@@ -50,10 +50,7 @@ Game::Game(const std::string &rootPath, Case::Case *pcase): m_RootPath(rootPath)
 	
 	// reset previous page
 	m_State.prevScreen=0;
-	
-	// reset displayed character
-	m_State.displayChar="null";
-	
+		
 	// null out variables
 	m_State.currentLocation="null";
 	m_State.shownEvidence="null";
@@ -552,13 +549,20 @@ void Game::renderTopView() {
 		
 		// if there is a character set here, draw him now
 		if (m_Case->getCharacter(location->character)) {
-			Sprite *sprite=m_Case->getCharacter(location->character)->getSprite();
+			Character *character=m_Case->getCharacter(location->character);
+			Sprite *sprite=character->getSprite();
 			
-			// reset animation
-			sprite->setAnimation("idle");
+			// get character's current animation
+			std::string root=character->getRootAnimation();
+			
+			// set talk animation if the dialogue is still being drawn
+			if (!m_Parser->dialogueDone() && m_Parser->getSpeaker()==character->getInternalName())
+				sprite->setAnimation(character->getRootAnimation()+"_talk");
+			else
+				sprite->setAnimation(character->getRootAnimation()+"_idle");
 			
 			// calculate the x,y draw position
-			int x=(256/2)-(sprite->getCurrentFrame()->image->w/2);
+			int x=(256/2)-(sprite->getCurrentFrame()->image->w/2)+10;
 			int y=192-(sprite->getCurrentFrame()->image->h);
 			
 			// draw the sprite
@@ -587,25 +591,6 @@ void Game::renderTopView() {
 	
 	// draw text box, if needed
 	if (flagged(STATE_TEXT_BOX)) {
-		// if there is a character to display, handle the request
-		if (m_State.displayChar!="null" && m_Case->getCharacter(m_State.displayChar)) {
-			// get the sprite
-			Sprite *sprite=m_Case->getCharacter(m_State.displayChar)->getSprite();
-			
-			// set talk animation if the dialogue is still being drawn
-			if (!m_Parser->dialogueDone() && m_Parser->getSpeaker()==m_State.displayChar)
-				sprite->setAnimation("talk");
-			else
-				sprite->setAnimation("idle");
-			
-			// calculate the x,y draw position
-			int x=(256/2)-(sprite->getCurrentFrame()->image->w/2);
-			int y=192-(sprite->getCurrentFrame()->image->h);
-			
-			// animate the sprite
-			sprite->animate(x, y);
-		}
-		
 		// draw the text box over everything
 		renderTextBox();
 	}

@@ -27,6 +27,7 @@ Character::Character(const std::string &internal, const std::string &name, const
 	m_HasTextBoxTag=false;
 	m_HasHeadshot=false;
 	m_SpriteName="null";
+	m_RootAnim="normal";
 	m_BadPresentableBlock="null";
 	m_Gender=GENDER_MALE;
 }

@@ -137,6 +137,14 @@ std::string TextParser::parse() {
 				continue;
 			}
 			
+			// dialogue break
+			else if (ch=='\\' && m_Block[1]=='b') {
+				m_Pause=true;
+				m_Block.erase(0, 2);
+				
+				break;
+			}
+			
 			// normal character
 			else {
 				// make sure useless characters aren't dealt with
@@ -240,9 +248,6 @@ void TextParser::nextStep() {
 		else
 			m_Game->toggle(STATE_COURT_REC_BTN | STATE_CONTROLS);
 		
-		// also, if there was a shown character talking, reset him
-		m_Game->m_State.displayChar="null";
-		
 		// flag that we are done
 		m_Done=true;
 		m_Pause=false;
@@ -250,6 +255,7 @@ void TextParser::nextStep() {
 		// also, make sure to end any talk animations
 		m_StrPos=m_Dialogue.size();
 		m_Dialogue="";
+		m_Speaker="none";
 		
 		return;
 	}
@@ -368,10 +374,17 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		}
 	}
 	
-	// show a character in this dialog
-	else if (trigger=="show_character") {
-		// set the character to display for this dialog
-		m_Game->m_State.displayChar=command;
+	// set a character's animation
+	else if (trigger=="set_animation") {
+		// split this command string
+		std::vector<std::string> params=Fonts::explodeString(',', command);
+		std::string charName=params[0];
+		std::string anim=params[1];
+		
+		// get the character
+		Character *character=pcase->getCharacter(charName);
+		if (character)
+			character->setRootAnimation(anim);
 	}
 	
 	// put a character at a location

@@ -91,9 +91,6 @@ struct _GameState {
 	// the previous screen displayed
 	int prevScreen;
 	
-	// current character to display
-	std::string displayChar;
-	
 	// the current evidence being shown
 	std::string shownEvidence;
 	Position shownEvidencePos;

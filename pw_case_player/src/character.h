@@ -110,6 +110,12 @@ class Character {
 		// get sprite name
 		std::string getSpriteName() const { return m_SpriteName; }
 		
+		// set the root sprite animation (normal, smirk, etc)
+		void setRootAnimation(const std::string &anim) { m_RootAnim=anim; }
+		
+		// get the root sprite animation
+		std::string getRootAnimation() const { return m_RootAnim; }
+		
 		// set if this character has a text box tag
 		void setHasTextBoxTag(bool b) { m_HasTextBoxTag=b; }
 		
@@ -152,6 +158,7 @@ class Character {
 		
 		// sprite name
 		std::string m_SpriteName;
+		std::string m_RootAnim;
 		
 		// text box image
 		bool m_HasTextBoxTag;
