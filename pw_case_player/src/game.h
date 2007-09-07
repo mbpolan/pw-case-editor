@@ -28,6 +28,7 @@
 #include "case.h"
 #include "common.h"
 #include "textparser.h"
+#include "uimanager.h"
 
 // game state flags
 enum GameFlags { 
@@ -133,6 +134,9 @@ class Game {
 		void onMouseEvent(SDL_MouseButtonEvent *e);
 		
 	private:
+		// register default animations for ui elements
+		void registerAnimations();
+		
 		// check the current input device state
 		void checkInputState();
 		
@@ -204,6 +208,9 @@ class Game {
 		
 		// text parser instance
 		TextParser *m_Parser;
+		
+		// uimanager instance
+		UI::Manager *m_UI;
 		
 		// current text block being executed
 		std::string m_CurBlock;

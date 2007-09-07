@@ -17,37 +17,73 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-// common.h: various, shared structs
+// uimanager.h: the UIManager class
 
-#ifndef COMMON_H
-#define COMMON_H
+#ifndef UIMANAGER_H
+#define UIMANAGER_H
 
 #include <iostream>
+#include <map>
+#include "SDL.h"
 
-// a value,key string pair
-typedef std::pair<std::string, std::string> StringPair;
+#include "common.h"
 
-// a point
-class Point {
+// the UI namespace
+namespace UI {
+
+// animation types
+enum AnimType { ANIM_SIDE_HBOUNCE=0,
+		ANIM_SIDE_VBOUNCE };
+
+// a struct containing animation data
+struct _Animation {
+	// texture image associated with this animation
+	std::string texture;
+	
+	// current position of element
+	Point current;
+	
+	// type of animation
+	AnimType type;
+	
+	// for sideways bounce limitations
+	int leftLimit;
+	int rightLimit;
+	int topLimit;
+	int bottomLimit;
+	
+	// the velocity of the animation
+	int velocity;
+	
+	// speed of the animation in milliseconds
+	int speed;
+	int lastDraw;
+};
+typedef struct _Animation Animation;
+
+// class that manages ui state
+class Manager {
 	public:
 		// constructor
-		Point(int x=0, int y=0) {
-			m_X=x;
-			m_Y=y;
-		}
+		Manager();
 		
-		// set coordinates
-		void setX(int x) { m_X=x; }
-		void setY(int y) { m_Y=y; }
+		// reverse the velocity of a registered animation
+		void reverseVelocity(const std::string &id);
 		
-		// get coordinates
-		int x() const { return m_X; }
-		int y() const { return m_Y; }
+		// register a ui animation that bounces the image from side to side
+		// limits are relative to origin; that is, if origin is (100, 100), and if the animation
+		// should bounce sideways 10 pixels in each direction, limits should be -10 and 10, respectively
+		void registerSideBounceAnimation(const std::string &id, const std::string &texture, bool horizontal, 
+						 const Point &origin, int limitA, int limitB, int speed);
+		
+		// draw an animation
+		void drawAnimation(const std::string &id);
 		
 	private:
-		// x,y pair
-		int m_X;
-		int m_Y;
+		// map of registered animations
+		std::map<std::string, Animation> m_Animations;
 };
+
+}; // namespace UI
 
 #endif

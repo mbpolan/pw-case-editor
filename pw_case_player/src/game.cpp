@@ -57,6 +57,9 @@ Game::Game(const std::string &rootPath, Case::Case *pcase): m_RootPath(rootPath)
 	
 	// allocate text parser
 	m_Parser=new TextParser(this);
+	
+	// allocate ui manager
+	m_UI=new UI::Manager;
 }
 
 // destructor
@@ -75,6 +78,9 @@ Game::~Game() {
 	
 	// delete parser
 	delete m_Parser;
+	
+	// delete ui manager
+	delete m_UI;
 }
 
 // load stock textures
@@ -140,6 +146,9 @@ bool Game::loadStockTextures() {
 	
 	// modify surfaces
 	SDL_SetColorKey(Textures::queryTexture("transparent"), SDL_SRCCOLORKEY, 0);
+	
+	// register stock texture animations
+	registerAnimations();
 	
 	// begin parsing the game script
 	BufferMap bmap=m_Case->getBuffers();
@@ -423,6 +432,17 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 	}
 }
 
+// register default animations for ui elements
+void Game::registerAnimations() {
+	// register some default animations
+	m_UI->registerSideBounceAnimation("an_button_arrow_next", "tc_button_arrow_next", true, Point(110, 284), -2, 2, 25);
+	m_UI->registerSideBounceAnimation("an_info_page_button_left", "tc_button_arrow_left", true, Point(3, 263), -2, 2, 25);
+	m_UI->registerSideBounceAnimation("an_info_page_button_right", "tc_button_arrow_right", true, Point(247, 263), -2, 2, 25);
+	
+	// flip velocities on certain animations to reverse them
+	m_UI->reverseVelocity("an_info_page_button_left");
+}
+
 // check input device state
 void Game::checkInputState() {
 	// if the examination scene is shown, move the crosshairs
@@ -570,7 +590,7 @@ void Game::renderTopView() {
 		}
 		
 		// if the examination scene is up, dim the upper screen
-		if (flagged(STATE_EXAMINE)) {
+		if (flagged(STATE_EXAMINE) || m_State.prevScreen==SCREEN_EXAMINE) {
 			// get an opaque black surface
 			SDL_Surface *opaque=Textures::queryTexture("opaque_black");
 			SDL_SetAlpha(opaque, SDL_SRCALPHA, 128);
@@ -642,11 +662,11 @@ void Game::renderMenuView() {
 	
 	// draw the evidence info page
 	else if (flagged(STATE_EVIDENCE_INFO_PAGE))
-		Renderer::drawEvidenceInfoPage(m_State.visibleEvidence, m_State.evidencePage*8+m_State.selectedEvidence);
+		Renderer::drawEvidenceInfoPage(m_UI, m_State.visibleEvidence, m_State.evidencePage*8+m_State.selectedEvidence);
 	
 	// draw the profile info page
 	else if (flagged(STATE_PROFILE_INFO_PAGE))
-		Renderer::drawProfileInfoPage(m_State.visibleProfiles, m_State.profilesPage*8+m_State.selectedProfile);
+		Renderer::drawProfileInfoPage(m_UI, m_State.visibleProfiles, m_State.profilesPage*8+m_State.selectedProfile);
 	
 	// draw the examination scene
 	else if (flagged(STATE_EXAMINE)) {
@@ -677,7 +697,7 @@ void Game::renderMenuView() {
 	// draw next button in case of dialog
 	else if (flagged(STATE_NEXT_BTN)) {
 		Renderer::drawImage(16, 242, "tc_next_btn");
-		Renderer::drawImage(16+94, 242+42, "tc_button_arrow_next");
+		m_UI->drawAnimation("an_button_arrow_next");
 	}
 	
 	// draw controls, if needed

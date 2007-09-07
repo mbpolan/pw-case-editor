@@ -183,7 +183,7 @@ void Renderer::drawEvidencePage(const std::vector<Case::Evidence> &evidence, int
 }
 
 // draw evidence information page
-void Renderer::drawEvidenceInfoPage(const std::vector<Case::Evidence> &evidence, int index) {
+void Renderer::drawEvidenceInfoPage(UI::Manager *manager, const std::vector<Case::Evidence> &evidence, int index) {
 	// get pointer to screen surface
 	SDL_Surface *screen=SDL_GetVideoSurface();
 	if (!screen)
@@ -213,7 +213,7 @@ void Renderer::drawEvidenceInfoPage(const std::vector<Case::Evidence> &evidence,
 	
 	// draw button on left
 	drawImage(0, y, "tc_small_btn_left");
-	drawImage(3, y+26, "tc_button_arrow_left");
+	manager->drawAnimation("an_info_page_button_left");
 	
 	// draw the evidence
 	drawImage(19, y, e.texture);
@@ -242,7 +242,7 @@ void Renderer::drawEvidenceInfoPage(const std::vector<Case::Evidence> &evidence,
 	
 	// draw button with arrow on right
 	drawImage(x+3, y, "tc_small_btn_right");
-	drawImage(x+7, y+26, "tc_button_arrow_right");
+	manager->drawAnimation("an_info_page_button_right");
 	
 	// draw lower border
 	drawRect(screen, 0, 301, 256, 6, SDL_MapRGB(screen->format, 218, 218, 218));
@@ -338,7 +338,7 @@ void Renderer::drawProfilesPage(const std::vector<Character> &chars, int page, i
 }
 
 // draw the profile info page
-void Renderer::drawProfileInfoPage(const std::vector<Character> &chars, int index) {
+void Renderer::drawProfileInfoPage(UI::Manager *manager, const std::vector<Character> &chars, int index) {
 	// get pointer to screen surface
 	SDL_Surface *screen=SDL_GetVideoSurface();
 	if (!screen)
@@ -368,7 +368,7 @@ void Renderer::drawProfileInfoPage(const std::vector<Character> &chars, int inde
 	
 	// draw button on left
 	drawImage(0, y, "tc_small_btn_left");
-	drawImage(3, y+26, "tc_button_arrow_left");
+	manager->drawAnimation("an_info_page_button_left");
 	
 	// draw the profile
 	drawImage(19, y, c.getHeadshot());
@@ -397,7 +397,7 @@ void Renderer::drawProfileInfoPage(const std::vector<Character> &chars, int inde
 	
 	// draw button with arrow on right
 	drawImage(x+3, y, "tc_small_btn_right");
-	drawImage(x+7, y+26, "tc_button_arrow_right");
+	manager->drawAnimation("an_info_page_button_right");
 	
 	// draw lower border
 	drawRect(screen, 0, 301, 256, 6, SDL_MapRGB(screen->format, 218, 218, 218));
