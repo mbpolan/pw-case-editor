@@ -50,7 +50,10 @@ Game::Game(const std::string &rootPath, Case::Case *pcase): m_RootPath(rootPath)
 	
 	// reset previous page
 	m_State.prevScreen=0;
-		
+	
+	// reset special effects
+	m_State.fadeOut="none";
+	
 	// null out variables
 	m_State.currentLocation="null";
 	m_State.shownEvidence="null";
@@ -165,6 +168,16 @@ void Game::render() {
 	
 	// render lower screen
 	renderMenuView();
+	
+	// if we are still fading out, don't parse the text
+	if (m_State.fadeOut!="none") {
+		// see if we are done fading
+		bool ret=m_UI->fadeOut("an_next_location_fade_"+m_State.fadeOut);
+		if (!ret)
+			m_State.fadeOut="none";
+		
+		return;
+	}
 	
 	// once everything static is drawn, parse the block
 	std::string status=m_Parser->parse();
@@ -372,7 +385,7 @@ void Game::onKeyboardEvent(SDL_KeyboardEvent *e) {
 // handle mouse click event
 void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 	// button pressed down
-	if (e->type==SDL_MOUSEBUTTONDOWN) {
+	if (e->type==SDL_MOUSEBUTTONDOWN && m_State.fadeOut=="none") {
 		// check for clicks on locations in move scene
 		if (flagged(STATE_MOVE))
 			onMoveSceneClicked(e->x, e->y);
@@ -415,12 +428,20 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 		}
 		
 		// if the controls are drawn, see if one was clicked
-		else if (flagged(STATE_CONTROLS))
+		else if (flagged(STATE_CONTROLS)) {
+			// play a sound effect
+			Audio::playEffect("sfx_click");
+			
 			onControlsClicked(e->x, e->y);
+		}
 		
 		// if talk scene is drawn, see if one option was clicked
-		else if (flagged(STATE_TALK))
+		else if (flagged(STATE_TALK)) {
+			// play a sound effect
+			Audio::playEffect("sfx_click");
+			
 			onTalkSceneClicked(e->x, e->y);
+		}
 		
 		// if the court record page is up, see if anything was clicked
 		if (flagged(STATE_EVIDENCE_PAGE) || flagged(STATE_PROFILES_PAGE))
@@ -436,8 +457,13 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 void Game::registerAnimations() {
 	// register some default animations
 	m_UI->registerSideBounceAnimation("an_button_arrow_next", "tc_button_arrow_next", true, Point(110, 284), -2, 2, 25);
-	m_UI->registerSideBounceAnimation("an_info_page_button_left", "tc_button_arrow_left", true, Point(3, 263), -2, 2, 25);
-	m_UI->registerSideBounceAnimation("an_info_page_button_right", "tc_button_arrow_right", true, Point(247, 263), -2, 2, 25);
+	m_UI->registerSideBounceAnimation("an_info_page_button_left", "tc_button_arrow_left", true, Point(3, 267), -2, 2, 25);
+	m_UI->registerSideBounceAnimation("an_info_page_button_right", "tc_button_arrow_right", true, Point(247, 267), -2, 2, 25);
+	
+	// register fade effects
+	m_UI->registerFadeOut("an_next_location_fade_top", 1, UI::ANIM_FADE_OUT_TOP);
+	m_UI->registerFadeOut("an_next_location_fade_bottom", 1, UI::ANIM_FADE_OUT_BOTTOM);
+	m_UI->registerFadeOut("an_next_location_fade_both", 1, UI::ANIM_FADE_OUT_BOTH);
 	
 	// flip velocities on certain animations to reverse them
 	m_UI->reverseVelocity("an_info_page_button_left");
@@ -590,7 +616,7 @@ void Game::renderTopView() {
 		}
 		
 		// if the examination scene is up, dim the upper screen
-		if (flagged(STATE_EXAMINE) || m_State.prevScreen==SCREEN_EXAMINE) {
+		if (flagged(STATE_EXAMINE) || (m_State.prevScreen==SCREEN_EXAMINE && !flagged(STATE_TEXT_BOX))) {
 			// get an opaque black surface
 			SDL_Surface *opaque=Textures::queryTexture("opaque_black");
 			SDL_SetAlpha(opaque, SDL_SRCALPHA, 128);

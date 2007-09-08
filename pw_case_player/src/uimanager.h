@@ -33,7 +33,10 @@ namespace UI {
 
 // animation types
 enum AnimType { ANIM_SIDE_HBOUNCE=0,
-		ANIM_SIDE_VBOUNCE };
+		ANIM_SIDE_VBOUNCE,
+		ANIM_FADE_OUT_TOP,
+		ANIM_FADE_OUT_BOTTOM,
+		ANIM_FADE_OUT_BOTH };
 
 // a struct containing animation data
 struct _Animation {
@@ -54,6 +57,9 @@ struct _Animation {
 	
 	// the velocity of the animation
 	int velocity;
+	
+	// current alpha value
+	int alpha;
 	
 	// speed of the animation in milliseconds
 	int speed;
@@ -76,8 +82,15 @@ class Manager {
 		void registerSideBounceAnimation(const std::string &id, const std::string &texture, bool horizontal, 
 						 const Point &origin, int limitA, int limitB, int speed);
 		
+		// register a fade out effect
+		void registerFadeOut(const std::string &id, int speed, const AnimType &type);
+		
 		// draw an animation
 		void drawAnimation(const std::string &id);
+		
+		// fade out the current scene to black
+		// returns true if fade out is done, false otherwise
+		bool fadeOut(const std::string &id);
 		
 	private:
 		// map of registered animations

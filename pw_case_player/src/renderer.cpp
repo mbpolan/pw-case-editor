@@ -205,14 +205,14 @@ void Renderer::drawEvidenceInfoPage(UI::Manager *manager, const std::vector<Case
 	drawImage(0, 197, opaqueBlack);
 	
 	// draw info strip background
-	drawRect(screen, 0, y+25, 256, 70+6, SDL_MapRGB(screen->format, 111, 86, 56));
+	drawRect(screen, 0, y+25, 256, 76, SDL_MapRGB(screen->format, 111, 86, 56));
 	
 	// draw upper border
 	drawRect(screen, 0, y+25, 256, 6, SDL_MapRGB(screen->format, 218, 218, 218));
 	y+=25+6;
 	
 	// draw button on left
-	drawImage(0, y, "tc_small_btn_left");
+	drawImage(0, y+4, "tc_small_btn_left");
 	manager->drawAnimation("an_info_page_button_left");
 	
 	// draw the evidence
@@ -232,23 +232,23 @@ void Renderer::drawEvidenceInfoPage(UI::Manager *manager, const std::vector<Case
 	Fonts::drawString(centerx, y+4, e.name, "orange");
 	
 	// draw info box body
-	drawRect(screen, x+2, y+2+15, 144, 45, SDL_MapRGB(screen->format, 153, 192, 145));
+	drawRect(screen, x+2, y+17, 144, 51, SDL_MapRGB(screen->format, 153, 192, 145));
 	
 	// draw evidence caption in this area
-	Fonts::drawString(x+4, y+2+16, e.caption.size(), x+2+145, e.caption, "black");
+	Fonts::drawString(x+4, y+18, e.caption.size(), x+2+145, e.caption, "black");
 	
 	// moving right along...
 	x+=148;
 	
 	// draw button with arrow on right
-	drawImage(x+3, y, "tc_small_btn_right");
+	drawImage(x+3, y+4, "tc_small_btn_right");
 	manager->drawAnimation("an_info_page_button_right");
 	
 	// draw lower border
-	drawRect(screen, 0, 301, 256, 6, SDL_MapRGB(screen->format, 218, 218, 218));
+	drawRect(screen, 0, 308, 256, 6, SDL_MapRGB(screen->format, 218, 218, 218));
 	
 	// draw evidence description in bottom area
-	Fonts::drawString(20, y+75, e.description, "white");
+	Fonts::drawString(20, y+81, e.description, "white");
 }
 
 // draw the profiles page
@@ -367,7 +367,7 @@ void Renderer::drawProfileInfoPage(UI::Manager *manager, const std::vector<Chara
 	y+=25+6;
 	
 	// draw button on left
-	drawImage(0, y, "tc_small_btn_left");
+	drawImage(0, y+4, "tc_small_btn_left");
 	manager->drawAnimation("an_info_page_button_left");
 	
 	// draw the profile
@@ -387,23 +387,23 @@ void Renderer::drawProfileInfoPage(UI::Manager *manager, const std::vector<Chara
 	Fonts::drawString(centerx, y+4, c.getName(), "orange");
 	
 	// draw info box body
-	drawRect(screen, x+2, y+2+15, 144, 45, SDL_MapRGB(screen->format, 153, 192, 145));
+	drawRect(screen, x+2, y+17, 144, 51, SDL_MapRGB(screen->format, 153, 192, 145));
 	
 	// draw character caption in this area
-	Fonts::drawString(x+4, y+2+16, c.getCaption().size(), x+2+145, c.getCaption(), "black");
+	Fonts::drawString(x+4, y+18, c.getCaption().size(), x+2+145, c.getCaption(), "black");
 	
 	// moving right along...
 	x+=148;
 	
 	// draw button with arrow on right
-	drawImage(x+3, y, "tc_small_btn_right");
+	drawImage(x+3, y+4, "tc_small_btn_right");
 	manager->drawAnimation("an_info_page_button_right");
 	
 	// draw lower border
-	drawRect(screen, 0, 301, 256, 6, SDL_MapRGB(screen->format, 218, 218, 218));
+	drawRect(screen, 0, 308, 256, 6, SDL_MapRGB(screen->format, 218, 218, 218));
 	
-	// draw character description in bottom area
-	Fonts::drawString(20, y+75, c.getDescription(), "white");
+	// draw evidence description in bottom area
+	Fonts::drawString(20, y+81, c.getDescription(), "white");
 }
 
 // draw the examination scene

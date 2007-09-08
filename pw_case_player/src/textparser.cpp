@@ -33,6 +33,7 @@ TextParser::TextParser(Game *game): m_Game(game) {
 	// reset variables
 	m_SpeakerGender=Character::GENDER_MALE;
 	m_Dialogue="";
+	m_QueuedFade="null";
 	m_Direct=false;
 	m_Speed=50;
 }
@@ -269,6 +270,13 @@ void TextParser::nextStep() {
 		// reset string position and clear previous formatting
 		m_StrPos=0;
 		clearFormatting();
+		
+		// if we have queued effects, execute them now
+		// set fade effect
+		if (m_QueuedFade!="null") {
+			m_Game->m_State.fadeOut=m_QueuedFade;
+			m_QueuedFade="null";
+		}
 		
 		m_Pause=false;
 	}
@@ -515,6 +523,12 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	else if (trigger=="sfx") {
 		// always play sound effects on their own channel
 		Audio::playEffect(command, SCRIPT_SFX_CHANNEL);
+	}
+	
+	// schedule a fade effect with given speed
+	else if (trigger=="fade_out") {
+		// queue this fade effect
+		m_QueuedFade=command;
 	}
 	
 	// set the current speaker

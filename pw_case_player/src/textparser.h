@@ -108,6 +108,9 @@ class TextParser {
 		// font formatting
 		FontStyle m_FontStyle;
 		
+		// queued special effects
+		std::string m_QueuedFade;
+		
 		// game engine pointer
 		Game *m_Game;
 };

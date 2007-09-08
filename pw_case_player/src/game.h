@@ -92,6 +92,9 @@ struct _GameState {
 	// the previous screen displayed
 	int prevScreen;
 	
+	// special effects
+	std::string fadeOut;
+	
 	// the current evidence being shown
 	std::string shownEvidence;
 	Position shownEvidencePos;

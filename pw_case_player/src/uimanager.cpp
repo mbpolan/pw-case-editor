@@ -20,6 +20,7 @@
 // uimanager.cpp: implementations of UI namespace
 
 #include "renderer.h"
+#include "texture.h"
 #include "uimanager.h"
 
 // constructor
@@ -72,6 +73,20 @@ void UI::Manager::registerSideBounceAnimation(const std::string &id, const std::
 	m_Animations[id]=anim;
 }
 
+// register a fade out effect
+void UI::Manager::registerFadeOut(const std::string &id, int speed, const AnimType &type) {
+	Animation anim;
+	
+	// fill in values
+	anim.alpha=0;
+	anim.speed=speed;
+	anim.lastDraw=0;
+	anim.type=type;
+	
+	// add animatiom
+	m_Animations[id]=anim;
+}
+
 // draw an animation
 void UI::Manager::drawAnimation(const std::string &id) {
 	// get the requested animation
@@ -105,4 +120,47 @@ void UI::Manager::drawAnimation(const std::string &id) {
 	
 	// draw the texture
 	Renderer::drawImage(anim.current.x(), anim.current.y(), anim.texture);
+}
+
+// fade out the current scene to black
+bool UI::Manager::fadeOut(const std::string &id) {
+	if (m_Animations.find(id)==m_Animations.end()) {
+		std::cout << "UIManager: animation '" << id << "' not registered\n";
+		return true;
+	}
+	
+	// get the animation
+	UI::Animation &anim=m_Animations[id];
+	
+	// if the alpha is 255, then we're done
+	if (anim.alpha>=255) {
+		// reset for next time this function is called
+		anim.alpha=0;
+		return false;
+	}
+	
+	// see if it's time to increase the alpha
+	int now=SDL_GetTicks();
+	if (now-anim.lastDraw>=anim.speed) {
+		anim.lastDraw=now;
+		
+		// increment the alpha value by 1
+		anim.alpha+=1;
+	}
+	
+	// get the opaque surface
+	SDL_Surface *opaque=Textures::queryTexture("opaque_black");
+	SDL_SetAlpha(opaque, SDL_SRCALPHA, anim.alpha);
+	
+	// draw this surface, depending on screen
+	switch(anim.type) {
+		case UI::ANIM_FADE_OUT_TOP: Renderer::drawImage(0, 0, opaque); break;
+		case UI::ANIM_FADE_OUT_BOTTOM: Renderer::drawImage(0, 197, opaque); break;
+		case UI::ANIM_FADE_OUT_BOTH: {
+			Renderer::drawImage(0, 0, opaque);
+			Renderer::drawImage(0, 197, opaque);
+		} break;
+	}
+	
+	return true;
 }
