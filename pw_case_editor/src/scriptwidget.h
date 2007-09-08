@@ -54,6 +54,9 @@ class ScriptWidget: public Gtk::VBox {
 		
 		// return buffer descriptions
 		std::map<Glib::ustring, Glib::ustring> get_buffer_descriptions() { return m_TreeView->get_buffer_descriptions(); }
+		
+		// return the currently displayed buffer
+		Glib::RefPtr<Gtk::TextBuffer> get_current_buffer() { return m_TextView->get_buffer(); }
 	
 	private:
 		// build the ui

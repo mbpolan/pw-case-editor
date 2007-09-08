@@ -229,34 +229,34 @@ void SpriteEditor::on_delete_animation_button_clicked() {
 void SpriteEditor::on_add_frame_button_clicked() {
 	// prepare file chooser
 	Gtk::FileChooserDialog fcd(*this, "Open Frame Image", Gtk::FILE_CHOOSER_ACTION_OPEN);
+	fcd.set_select_multiple(true);
 	fcd.add_button("Open", Gtk::RESPONSE_OK);
 	fcd.add_button("Cancel", Gtk::RESPONSE_CANCEL);
 	
 	// run the dialog
 	if (fcd.run()==Gtk::RESPONSE_OK) {
-		// get the selected image
-		Glib::ustring path=fcd.get_filename();
+		std::vector<Glib::ustring> filenames=fcd.get_filenames();
 		
-		// create a pixbuf from the file
-		Glib::RefPtr<Gdk::Pixbuf> pixbuf=Gdk::Pixbuf::create_from_file(path);
-		if (pixbuf) {
-			// first, get the id of our current animation
-			Glib::ustring id=m_AnimCB->get_active_text();
-			
-			// now get the time for this frame
-			int time=atoi(m_TimeEntry->get_text().c_str());
-			
-			// add the frame
-			m_Sprite.add_frame(id, time, pixbuf);
-			
-			// get the amount of frames in this animation now
-			int amount=m_Sprite.get_animation(id).frames.size();
-			m_CurFrame=amount;
-			
-			// set this new frame
-			m_Image->set(m_Sprite.get_animation(id).frames[m_CurFrame-1].pixbuf);
-			
-			update_progress_label();
+		// iterate over filenames
+		for (int i=0; i<filenames.size(); i++) {
+			// create a pixbuf from the file
+			Glib::RefPtr<Gdk::Pixbuf> pixbuf=Gdk::Pixbuf::create_from_file(filenames[i]);
+			if (pixbuf) {
+				// first, get the id of our current animation
+				Glib::ustring id=m_AnimCB->get_active_text();
+				
+				// add the frame
+				m_Sprite.add_frame(id, 200, pixbuf);
+				
+				// get the amount of frames in this animation now
+				int amount=m_Sprite.get_animation(id).frames.size();
+				m_CurFrame=amount;
+				
+				// set this new frame
+				m_Image->set(m_Sprite.get_animation(id).frames[m_CurFrame-1].pixbuf);
+				
+				update_progress_label();
+			}
 		}
 	}
 }

@@ -55,6 +55,9 @@ class MainWindow: public Gtk::Window {
 		// quit handler
 		void on_quit();
 		
+		// add a formatted dialogue to script
+		void on_script_insert_dialogue();
+		
 		// add character
 		void on_case_add_char();
 		

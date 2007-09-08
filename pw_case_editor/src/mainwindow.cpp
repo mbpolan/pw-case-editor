@@ -29,6 +29,7 @@
 #include "iohandler.h"
 #include "mainwindow.h"
 #include "spriteeditor.h"
+#include "textboxdialog.h"
 
 // constructor
 MainWindow::MainWindow() {
@@ -63,6 +64,9 @@ void MainWindow::construct() {
 	m_ActionGroup->add(Gtk::Action::create("FileQuit", Gtk::Stock::QUIT, "_Quit"),
 			   sigc::mem_fun(*this, &MainWindow::on_quit));
 	
+	m_ActionGroup->add(Gtk::Action::create("ScriptInsertDialogue", "_Insert Dialogue"),
+			   sigc::mem_fun(*this, &MainWindow::on_script_insert_dialogue));
+	
 	m_ActionGroup->add(Gtk::Action::create("CaseAddChar", "_Add Character"),
 			   sigc::mem_fun(*this, &MainWindow::on_case_add_char));
 	m_ActionGroup->add(Gtk::Action::create("CaseBrowseChar", "_Browse Characters"),
@@ -88,6 +92,7 @@ void MainWindow::construct() {
 			   sigc::mem_fun(*this, &MainWindow::on_help_about));
 	
 	m_ActionGroup->add(Gtk::Action::create("FileMenu", "_File"));
+	m_ActionGroup->add(Gtk::Action::create("ScriptMenu", "_Script"));
 	m_ActionGroup->add(Gtk::Action::create("CaseMenu", "_Case"));
 	m_ActionGroup->add(Gtk::Action::create("AssetsMenu", "_Assets"));
 	m_ActionGroup->add(Gtk::Action::create("ToolsMenu", "_Tools"));
@@ -112,6 +117,9 @@ void MainWindow::construct() {
 			"		<menuitem action='FileExport'/>"
 			"		<separator/>"
 			"		<menuitem action='FileQuit'/>"
+			"	</menu>"
+			"	<menu action='ScriptMenu'>"
+			"		<menuitem action='ScriptInsertDialogue'/>"
 			"	</menu>"
 			"	<menu action='CaseMenu'>"
 			"		<menuitem action='CaseAddChar'/>"
@@ -391,6 +399,23 @@ void MainWindow::on_quit() {
 		on_save();
 	
 	hide();
+}
+
+// add a formatted dialogue to script
+void MainWindow::on_script_insert_dialogue() {
+	// run the dialog
+	TextBoxDialog tbd;
+	
+	// if the user clicked ok, insert the text
+	if (tbd.run()==Gtk::RESPONSE_OK) {
+		// get the text
+		Glib::ustring text=tbd.get_text();
+		
+		// get the current buffer
+		Glib::RefPtr<Gtk::TextBuffer> buffer=m_ScriptWidget->get_current_buffer();
+		if (buffer)
+			buffer->insert_at_cursor(text);
+	}
 }
 
 // add character
