@@ -60,17 +60,6 @@ void ScriptWidget::add_text_block(const Glib::ustring &parent, const Glib::ustri
 	
 	// append this text
 	m_TreeView->append_child_text(parent, blockName, str, buffer);
-	
-	// connect signals
-	buffer->signal_changed().connect(sigc::bind(sigc::mem_fun(*this, 
-					 &ScriptWidget::on_buffer_changed), buffer));
-	
-	// tag used to style {* ... *} text
-	Glib::RefPtr<Gtk::TextBuffer::Tag> triggerTag=buffer->create_tag("triggerTag");
-	
-	// style this tag
-	triggerTag->property_background()="lightblue";
-	triggerTag->property_style()=Pango::STYLE_ITALIC;
 }
 
 // build the ui
@@ -141,29 +130,4 @@ void ScriptWidget::on_display_buffer(Glib::ustring id, Glib::RefPtr<Gtk::TextBuf
 // select a row
 void ScriptWidget::on_select_row(Gtk::TreeModel::iterator it) {
 	m_TreeView->get_selection()->select(it);
-}
-
-// parse changed text buffer and apply tags
-void ScriptWidget::on_buffer_changed(Glib::RefPtr<Gtk::TextBuffer> buffer) {
-	/*
-	if (!buffer)
-		return;
-	
-	// iterate over text
-	bool begin=false;
-	Gtk::TextBuffer::iterator itb;
-	for (Gtk::TextBuffer::iterator it=buffer->begin(); it!=buffer->end(); ++it) {
-		if ((*it)=='{') {
-			itb=it;
-			begin=true;
-		}
-		
-		else if ((*it)=='}' && begin) {
-			++it;
-			buffer->apply_tag(buffer->get_tag_table()->lookup("triggerTag"), itb, it);
-			begin=false;
-			--it;
-		}
-	}
-	*/
 }

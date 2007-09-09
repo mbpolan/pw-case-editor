@@ -68,9 +68,6 @@ class ScriptWidget: public Gtk::VBox {
 		// select a row
 		void on_select_row(Gtk::TreeModel::iterator it);
 		
-		// parse changed text buffer and apply tags
-		void on_buffer_changed(Glib::RefPtr<Gtk::TextBuffer> buffer);
-		
 		// labels
 		Gtk::Label *m_CurBlockLabel;
 		

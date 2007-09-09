@@ -209,8 +209,12 @@ void CListView::on_add_text_block() {
 				// internal name is encased in ()
 				int npos1=str.find("(");
 				Glib::ustring iname;
-				if (npos1==-1)
+				bool character=true;
+				if (npos1==-1) {
 					iname=str;
+					character=false;
+				}
+				
 				else {
 					int npos2=str.find(")");
 					iname=str.substr(npos1+1, str.size()-1);
@@ -231,8 +235,20 @@ void CListView::on_add_text_block() {
 				Gtk::TreeModel::Row nrow=*(m_Model->append(row.children()));
 				nrow[m_ColumnRec.m_Column]=ss.str();
 				
+				// create a buffer
+				Glib::RefPtr<Gtk::TextBuffer> buffer=Gtk::TextBuffer::create();
+				
+				// create tags
+				Glib::RefPtr<Gtk::TextBuffer::Tag> tag=buffer->create_tag("trigger_tag");
+				tag->property_background()="lightblue";
+				tag->property_style()=Pango::STYLE_OBLIQUE;
+				
+				// if this is a character, add a speaker trigger
+				if (character)
+					buffer->insert(buffer->begin(), "{*speaker:"+iname+";*}\n");
+				
 				// add this text block to the buffer map
-				m_Buffers[Utils::extract_block_id(ss.str())]=Gtk::TextBuffer::create();
+				m_Buffers[Utils::extract_block_id(ss.str())]=buffer;
 			}
 		}
 	}
