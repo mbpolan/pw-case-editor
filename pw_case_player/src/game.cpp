@@ -53,6 +53,7 @@ Game::Game(const std::string &rootPath, Case::Case *pcase): m_RootPath(rootPath)
 	
 	// reset special effects
 	m_State.fadeOut="none";
+	m_State.flash="none";
 	
 	// null out variables
 	m_State.currentLocation="null";
@@ -169,15 +170,9 @@ void Game::render() {
 	// render lower screen
 	renderMenuView();
 	
-	// if we are still fading out, don't parse the text
-	if (m_State.fadeOut!="none") {
-		// see if we are done fading
-		bool ret=m_UI->fadeOut("an_next_location_fade_"+m_State.fadeOut);
-		if (!ret)
-			m_State.fadeOut="none";
-		
+	// render special effects now
+	if (!renderSpecialEffects())
 		return;
-	}
 	
 	// once everything static is drawn, parse the block
 	std::string status=m_Parser->parse();
@@ -464,6 +459,9 @@ void Game::registerAnimations() {
 	m_UI->registerFadeOut("an_next_location_fade_top", 1, UI::ANIM_FADE_OUT_TOP);
 	m_UI->registerFadeOut("an_next_location_fade_bottom", 1, UI::ANIM_FADE_OUT_BOTTOM);
 	m_UI->registerFadeOut("an_next_location_fade_both", 1, UI::ANIM_FADE_OUT_BOTH);
+	
+	// register flash effects
+	m_UI->registerFlash("an_flash", 2);
 	
 	// flip velocities on certain animations to reverse them
 	m_UI->reverseVelocity("an_info_page_button_left");
@@ -780,6 +778,28 @@ void Game::renderMenuView() {
 		// draw the button
 		Renderer::drawImage(0, y, "tc_back_btn"+append);
 	}
+}
+
+// render special effects
+bool Game::renderSpecialEffects() {
+	// if we are still fading out, don't parse the text
+	if (m_State.fadeOut!="none") {
+		// see if we are done fading
+		bool ret=m_UI->fadeOut("an_next_location_fade_"+m_State.fadeOut);
+		if (!ret)
+			m_State.fadeOut="none";
+		
+		return false;
+	}
+	
+	// render flash now, if requested
+	else if (m_State.flash!="none") {
+		bool ret=m_UI->flash("an_flash");
+		if (!ret)
+			m_State.flash="none";
+	}
+	
+	return true;
 }
 
 // render the text box

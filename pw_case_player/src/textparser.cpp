@@ -531,6 +531,10 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		m_QueuedFade=command;
 	}
 	
+	// schedule a flash effect
+	else if (trigger=="flash")
+		m_Game->m_State.flash="top";
+	
 	// set the current speaker
 	else if (trigger=="speaker") {
 		// copy speaker id

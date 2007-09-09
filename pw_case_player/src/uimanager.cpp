@@ -19,6 +19,8 @@
  ***************************************************************************/
 // uimanager.cpp: implementations of UI namespace
 
+#include "SDL_gfxPrimitives.h"
+
 #include "renderer.h"
 #include "texture.h"
 #include "uimanager.h"
@@ -84,6 +86,19 @@ void UI::Manager::registerFadeOut(const std::string &id, int speed, const AnimTy
 	anim.type=type;
 	
 	// add animatiom
+	m_Animations[id]=anim;
+}
+
+// register a flash effect
+void UI::Manager::registerFlash(const std::string &id, int speed) {
+	Animation anim;
+	
+	// fill in values
+	anim.speed=speed;
+	anim.lastDraw=0;
+	anim.ticks=0;
+	
+	// add animation
 	m_Animations[id]=anim;
 }
 
@@ -163,4 +178,35 @@ bool UI::Manager::fadeOut(const std::string &id) {
 	}
 	
 	return true;
+}
+
+// perform a flash effect
+bool UI::Manager::flash(const std::string &id) {
+	// get the animation
+	if (m_Animations.find(id)==m_Animations.end()) {
+		std::cout << "UIManager: animation '" << id << "' not registered\n";
+		return false;
+	}
+	Animation &anim=m_Animations[id];
+	bool ret;
+	
+	// increment tick count
+	anim.ticks++;
+	
+	// we're done
+	if (anim.ticks>=anim.speed) {
+		anim.ticks=0;
+		anim.alpha=0;
+		ret=false;
+	}
+	else {
+		anim.alpha=255;
+		ret=true;
+	}
+	
+	// only draw the filled in rectangle if this animation isn't complete
+	if (anim.alpha!=0)
+		boxRGBA(SDL_GetVideoSurface(), 0, 0, 256, 192, 255, 255, 255, anim.alpha);
+	
+	return ret;
 }

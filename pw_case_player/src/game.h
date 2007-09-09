@@ -94,6 +94,7 @@ struct _GameState {
 	
 	// special effects
 	std::string fadeOut;
+	std::string flash;
 	
 	// the current evidence being shown
 	std::string shownEvidence;
@@ -163,6 +164,9 @@ class Game {
 		
 		// render the menu view (lower screen)
 		void renderMenuView();
+		
+		// render special effects
+		bool renderSpecialEffects();
 		
 		// render the text box
 		void renderTextBox();

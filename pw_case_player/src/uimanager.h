@@ -36,7 +36,8 @@ enum AnimType { ANIM_SIDE_HBOUNCE=0,
 		ANIM_SIDE_VBOUNCE,
 		ANIM_FADE_OUT_TOP,
 		ANIM_FADE_OUT_BOTTOM,
-		ANIM_FADE_OUT_BOTH };
+		ANIM_FADE_OUT_BOTH,
+		ANIM_FLASH };
 
 // a struct containing animation data
 struct _Animation {
@@ -60,6 +61,9 @@ struct _Animation {
 	
 	// current alpha value
 	int alpha;
+	
+	// internal tick counter
+	int ticks;
 	
 	// speed of the animation in milliseconds
 	int speed;
@@ -85,12 +89,18 @@ class Manager {
 		// register a fade out effect
 		void registerFadeOut(const std::string &id, int speed, const AnimType &type);
 		
+		// register a flash effect
+		void registerFlash(const std::string &id, int speed);
+		
 		// draw an animation
 		void drawAnimation(const std::string &id);
 		
 		// fade out the current scene to black
 		// returns true if fade out is done, false otherwise
 		bool fadeOut(const std::string &id);
+		
+		// perform a flash effect
+		bool flash(const std::string &id);
 		
 	private:
 		// map of registered animations
