@@ -34,21 +34,33 @@ TextBoxDialog::TextBoxDialog() {
 Glib::ustring TextBoxDialog::get_text() const {
 	Glib::ustring final="";
 	
+	// mark whether we should append a \b to end of string
+	bool insertBreak=m_BreakCB->get_active();
+	
 	// combine text from lines
 	final+=m_Line1Entry->get_text();
-	if (m_Line2Entry->get_text().empty())
-		final+="\\b";
+	if (m_Line2Entry->get_text().empty()) {
+		if (insertBreak)
+			final+="\\b";
+	}
 	
 	else {
+		// line 2
 		final+="\\n\n";
 		final+=m_Line2Entry->get_text();
 		
-		if (m_Line3Entry->get_text().empty())
-			final+="\\b";
+		if (m_Line3Entry->get_text().empty()) {
+			if (insertBreak)
+				final+="\\b";
+		}
 		
 		else {
+			// line 3
 			final+="\\n\n";
-			final+=m_Line3Entry->get_text()+"\\b\n";
+			final+=m_Line3Entry->get_text();
+			
+			if (insertBreak)
+				final+="\\b";
 		}
 	}
 	
@@ -60,6 +72,9 @@ void TextBoxDialog::construct() {
 	// get default vbox
 	Gtk::VBox *vb=get_vbox();
 	vb->set_border_width(10);
+	
+	// allocate check button
+	m_BreakCB=manage(new Gtk::CheckButton("Insert break (\\b) after this dialogue"));
 	
 	// allocate labels
 	m_IntroLabel=manage(new Gtk::Label("Format character dialogue by entering\ntext into the following entries."));
@@ -95,7 +110,8 @@ void TextBoxDialog::construct() {
 	table->attach(*m_Line2Entry, 1, 2, 2, 3, xops, yops);
 	table->attach(*m_Line3Label, 0, 1, 3, 4, xops, yops);
 	table->attach(*m_Line3Entry, 1, 2, 3, 4, xops, yops);
-	table->attach(*m_TextBox, 0, 2, 4, 5, yops, yops);
+	table->attach(*m_BreakCB, 0, 2, 4, 5, xops, yops);
+	table->attach(*m_TextBox, 0, 2, 5, 6, yops, yops);
 	
 	vb->pack_start(*table, Gtk::PACK_SHRINK);
 	

@@ -22,6 +22,7 @@
 #ifndef TEXTBOXDIALOG_H
 #define TEXTBOXDIALOG_H
 
+#include <gtkmm/checkbutton.h>
 #include <gtkmm/dialog.h>
 #include <gtkmm/entry.h>
 #include <gtkmm/label.h>
@@ -43,6 +44,9 @@ class TextBoxDialog: public Gtk::Dialog {
 		
 		// entry change handler
 		void on_entry_changed(int line);
+		
+		// check button
+		Gtk::CheckButton *m_BreakCB;
 		
 		// labels
 		Gtk::Label *m_IntroLabel;
