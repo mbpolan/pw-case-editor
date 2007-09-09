@@ -34,6 +34,9 @@ class CListView: public Gtk::TreeView {
 		// constructor
 		CListView();
 		
+		// create a buffer ready for use in this list
+		static Glib::RefPtr<Gtk::TextBuffer> create_buffer();
+		
 		// clear all data
 		void clear();
 		

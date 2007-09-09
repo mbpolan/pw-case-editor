@@ -21,6 +21,7 @@
 
 #include <cstdio>
 
+#include "clistview.h"
 #include "iohandler.h"
 
 // save a case and its associated data to file
@@ -617,7 +618,7 @@ bool IO::load_case_from_file(const Glib::ustring &path, Case::Case &pcase,
 		Glib::ustring contents=read_string(f);
 		
 		// allocate new text buffer and set the text contents
-		Glib::RefPtr<Gtk::TextBuffer> tbuffer=Gtk::TextBuffer::create();
+		Glib::RefPtr<Gtk::TextBuffer> tbuffer=CListView::create_buffer();
 		tbuffer->set_text(contents);
 		
 		// append this text buffer to the map

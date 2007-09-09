@@ -27,6 +27,66 @@
 #include "dialogs.h"
 #include "utilities.h"
 
+// handle highlighting text in a changed buffer
+void on_buffer_changed(Glib::RefPtr<Gtk::TextBuffer> buffer) {
+	if (!buffer)
+		return;
+	
+	// iterate over text
+	bool begin=false;
+	Gtk::TextBuffer::iterator itb;
+	for (Gtk::TextBuffer::iterator it=buffer->begin(); it!=buffer->end(); ++it) {
+		// dialogue control character
+		if ((*it)=='\\') {
+			Gtk::TextIter end=buffer->get_iter_at_offset(it.get_offset()+2);
+			
+			// see if the next character is recognized
+			end--;
+			if ((*end)=='b' || (*end)=='n') {
+				end++;
+				
+				// apply the tag
+				buffer->apply_tag(buffer->get_tag_table()->lookup("dialogue_control"), it, end);
+			}
+		}
+		
+		// if we have hit a trigger, mark it
+		else if ((*it)=='{') {
+			itb=it;
+			begin=true;
+		}
+		
+		// end trigger character -- we should apply the tag
+		else if ((*it)=='}' && begin) {
+			// increment to incorporate ending bracket
+			++it;
+			
+			// get the range we are in
+			Glib::ustring contents=buffer->get_slice(itb, it);
+			
+			// find the first position of trigger name
+			Gtk::TextIter nBegin=buffer->get_iter_at_offset(itb.get_offset()+2); // begining of name
+			
+			// if we have found the delimiting : character, apply the tag
+			if (contents.find(':')!=-1) {
+				Gtk::TextIter nEnd=buffer->get_iter_at_offset(itb.get_offset()+contents.find(':'));
+				
+				// apply specific tag
+				buffer->apply_tag(buffer->get_tag_table()->lookup("trigger_name"), nBegin, nEnd);
+			}
+			
+			// apply the trigger tags to this range
+			buffer->apply_tag(buffer->get_tag_table()->lookup("trigger"), itb, it);
+			
+			// and reset
+			begin=false;
+			
+			// backtrack a character
+			--it;
+		}
+	}
+}
+
 // constructor
 CListView::CListView() {
 	// allocate and set model
@@ -57,6 +117,32 @@ CListView::CListView() {
 	// connect selection change signal
 	Glib::RefPtr<Gtk::TreeView::Selection> selection=get_selection();
 	selection->signal_changed().connect(sigc::mem_fun(*this, &CListView::on_selection_changed));
+}
+
+// create a buffer ready for use in this list
+Glib::RefPtr<Gtk::TextBuffer> CListView::create_buffer() {
+	Glib::RefPtr<Gtk::TextBuffer> buffer=Gtk::TextBuffer::create();
+	
+	// font descriptors
+	Pango::FontDescription tname;
+	
+	// create tags
+	Glib::RefPtr<Gtk::TextBuffer::Tag> tag=buffer->create_tag("trigger");
+	tag->property_foreground().set_value("darkgreen");
+	tag->property_style().set_value(Pango::STYLE_OBLIQUE);
+	
+	tag=buffer->create_tag("trigger_name");
+	
+	tname.set_weight(Pango::WEIGHT_BOLD);
+	tag->property_font_desc().set_value(tname);
+	
+	tag=buffer->create_tag("dialogue_control");
+	tag->property_foreground().set_value("red");
+	
+	// connect signals
+	buffer->signal_changed().connect(sigc::bind(sigc::ptr_fun(on_buffer_changed), buffer));
+	
+	return buffer;
 }
 
 // clear all data
@@ -236,12 +322,7 @@ void CListView::on_add_text_block() {
 				nrow[m_ColumnRec.m_Column]=ss.str();
 				
 				// create a buffer
-				Glib::RefPtr<Gtk::TextBuffer> buffer=Gtk::TextBuffer::create();
-				
-				// create tags
-				Glib::RefPtr<Gtk::TextBuffer::Tag> tag=buffer->create_tag("trigger_tag");
-				tag->property_background()="lightblue";
-				tag->property_style()=Pango::STYLE_OBLIQUE;
+				Glib::RefPtr<Gtk::TextBuffer> buffer=create_buffer();
 				
 				// if this is a character, add a speaker trigger
 				if (character)
