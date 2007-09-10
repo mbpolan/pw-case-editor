@@ -71,6 +71,9 @@ class SDLContext {
 		// dimensions of drawing area
 		static int m_Width, m_Height;
 		
+		// flags passed to set the video mode
+		int m_VFlags;
+		
 		// game engine
 		Game *m_Game;
 		

@@ -185,11 +185,13 @@ std::string TextParser::parse() {
 			// set the last draw time, and increment string position
 			m_LastChar=now;
 			
-			// cache the current character
+			// cache the current, previous, and next characters
+			char prevChar=(m_StrPos>1 ? m_Dialogue[m_StrPos-2] : '0');
 			char curChar=m_Dialogue[m_StrPos-1];
+			char nextChar=m_Dialogue[m_StrPos];
 			
 			// play a sound effect if this next character is visible
-			if (curChar!=' ') {
+			if (shouldPlayDialogueEffect(prevChar, curChar, nextChar)) {
 				// date string
 				if (m_FontStyle.type=="date")
 					Audio::playEffect("sfx_typewriter", DIALOGUE_SFX_CHANNEL);
@@ -280,6 +282,27 @@ void TextParser::nextStep() {
 		
 		m_Pause=false;
 	}
+}
+
+// see if a dialogue sound effect should be played for a given character
+bool TextParser::shouldPlayDialogueEffect(char prev, char ch, char next) {
+	// spaces are never played
+	if (ch==' ')
+		return false;
+	
+	// same applies for other script characters
+	else if (ch=='}' || ch=='{')
+		return false;
+	
+	// literal new lines
+	else if (ch=='\\' && next=='n')
+		return false;
+	
+	// more literal new lines
+	else if (ch=='n' && prev=='\\')
+		return false;
+	
+	return true;
 }
 
 // parse a tag and apply styling

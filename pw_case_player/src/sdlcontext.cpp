@@ -60,8 +60,8 @@ bool SDLContext::init() {
 
 // initialize video output
 bool SDLContext::initVideo(int width, int height) {
-	int flags=SDL_HWPALETTE;
-	flags |= SDL_DOUBLEBUF;
+	m_VFlags=SDL_HWPALETTE;
+	m_VFlags |= SDL_DOUBLEBUF;
 	
 	// get video hardware information
 	const SDL_VideoInfo *vInfo=SDL_GetVideoInfo();
@@ -70,17 +70,17 @@ bool SDLContext::initVideo(int width, int height) {
 	else {
 		// hardware acceleration
 		if (vInfo->blit_hw)
-			flags |= SDL_HWACCEL;
+			m_VFlags |= SDL_HWACCEL;
 		
 		// surface storage location
 		if (vInfo->hw_available)
-			flags |= SDL_HWSURFACE;
+			m_VFlags |= SDL_HWSURFACE;
 		else
-			flags |= SDL_SWSURFACE;
+			m_VFlags |= SDL_SWSURFACE;
 	}
 	
 	// try to initialize video
-	m_Screen=SDL_SetVideoMode(width, height, 32, flags);
+	m_Screen=SDL_SetVideoMode(width, height, 32, m_VFlags);
 	if (!m_Screen) {
 		std::cout << "SDLContext: unable to set " << width << "x" << height << " video mode: " << SDL_GetError() << std::endl;
 		return false;
@@ -143,6 +143,18 @@ void SDLContext::render() {
 
 // handle keyboard event
 void SDLContext::onKeyboardEvent(SDL_KeyboardEvent *e) {
+	// handle video specific keys
+	if (e->keysym.sym==SDLK_F1) {
+		// see if we're already in fullscreen mode
+		if (m_VFlags & SDL_FULLSCREEN)
+			m_VFlags &= ~SDL_FULLSCREEN;
+		else
+			m_VFlags |= SDL_FULLSCREEN;
+		
+		// set full screen mode
+		m_Screen=SDL_SetVideoMode(m_Width, m_Height, 32, m_VFlags);
+	}
+	
 	m_Game->onKeyboardEvent(e);
 }
 

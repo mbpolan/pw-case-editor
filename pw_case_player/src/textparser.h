@@ -72,6 +72,9 @@ class TextParser {
 		void nextStep();
 		
 	private:
+		// see if a dialogue sound effect should be played for a given character
+		bool shouldPlayDialogueEffect(char prev, char ch, char next);
+		
 		// parse a tag and apply styling
 		void parseTag(const std::string &tag);
 		
