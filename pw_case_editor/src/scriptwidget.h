@@ -72,6 +72,12 @@ class ScriptWidget: public Gtk::VBox {
 		// get the current tree view
 		CListView* get_current_list();
 		
+		// get a unique id for a text block
+		Glib::ustring unique_id(const Glib::ustring &rootString);
+		
+		// clistview handler to add a new text block
+		void on_list_add_text_block(const Glib::ustring &root, bool isCharacter, CListView *list);
+		
 		// reset the combo box
 		void reset_combo_box();
 		

@@ -62,6 +62,9 @@ class CListView: public Gtk::TreeView {
 		sigc::signal<void, Glib::ustring, Glib::RefPtr<Gtk::TextBuffer> > 
 				signal_display_buffer() const { return m_DisplayBufferSignal; }
 		
+		// signal to request adding a new text block
+		sigc::signal<void, Glib::ustring, bool, CListView*> signal_add_text_block() const { return m_AddBlockSignal; }
+		
 		// signal to request a selection
 		sigc::signal<void, Gtk::TreeModel::iterator> signal_select() const { return m_SelectSignal; }
 		
@@ -71,6 +74,9 @@ class CListView: public Gtk::TreeView {
 		
 		// signal to request a row be selected
 		sigc::signal<void, Gtk::TreeModel::iterator> m_SelectSignal;
+		
+		// signal to request adding a new text block
+		sigc::signal<void, Glib::ustring, bool, CListView*> m_AddBlockSignal;
 		
 		// handle selection changes
 		void on_selection_changed();

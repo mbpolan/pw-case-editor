@@ -310,26 +310,8 @@ void CListView::on_add_text_block() {
 						iname.erase(iname.size()-1, iname.size());
 				}
 				
-				// get a count of how many child rows there are
-				int children=row.children().size();
-				
-				// form a new string
-				std::stringstream ss;
-				ss << iname << "_" << children+1 << " ()";
-				
-				// append a row
-				Gtk::TreeModel::Row nrow=*(m_Model->append(row.children()));
-				nrow[m_ColumnRec.m_Column]=ss.str();
-				
-				// create a buffer
-				Glib::RefPtr<Gtk::TextBuffer> buffer=create_buffer();
-				
-				// if this is a character, add a speaker trigger
-				if (character)
-					buffer->insert(buffer->begin(), "{*speaker:"+iname+";*}\n");
-				
-				// add this text block to the buffer map
-				m_Buffers[Utils::extract_block_id(ss.str())]=buffer;
+				// emit signal
+				m_AddBlockSignal.emit(iname, character, this);
 			}
 		}
 	}

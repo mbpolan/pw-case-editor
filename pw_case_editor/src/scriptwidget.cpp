@@ -199,6 +199,7 @@ void ScriptWidget::construct() {
 		// connect treeview signals
 		view->signal_display_buffer().connect(sigc::mem_fun(*this, &ScriptWidget::on_display_buffer));
 		view->signal_select().connect(sigc::mem_fun(*this, &ScriptWidget::on_select_row));
+		view->signal_add_text_block().connect(sigc::mem_fun(*this, &ScriptWidget::on_list_add_text_block));
 		
 		m_TreeViews.push_back(view);
 	}
@@ -259,6 +260,47 @@ CListView* ScriptWidget::get_current_list() {
 	
 	// return the appropriate lis
 	return m_TreeViews[item*2+m_StageNB->get_current_page()];
+}
+
+// get a unique id for a text block
+Glib::ustring ScriptWidget::unique_id(const Glib::ustring &rootString) {
+	std::stringstream ss;
+	
+	// always start counter with 1
+	int count=1;
+	
+	// iterate over map and increment counter
+	for (int i=0; i<6; i++) {
+		CListView *list=m_TreeViews[i];
+		
+		// now iterate over buffers
+		BufferMap buffers=list->get_buffers();
+		for (BufferMapIter it=buffers.begin(); it!=buffers.end(); ++it) {
+			Glib::ustring id=(*it).first;
+			if (id.find(rootString)!=-1)
+				count++;
+		}
+	}
+	
+	// form a string that is the collective of all ids
+	ss << rootString << "_" << count;
+	return ss.str();
+}
+
+// clistview handler to add a new text block
+void ScriptWidget::on_list_add_text_block(const Glib::ustring &root, bool isCharacter, CListView *list) {
+	// first, generate a unique id
+	Glib::ustring unique=unique_id(root);
+	
+	// create a new text buffer
+	Glib::RefPtr<Gtk::TextBuffer> buffer=CListView::create_buffer();
+	
+	// if this buffer is for a character, then automatically append the speaker tag
+	if (isCharacter)
+		buffer->set_text("{*speaker:"+root+";*}\n");
+	
+	// add this block
+	list->append_child_text(root, unique, unique+" ()", buffer);
 }
 
 // reset the combo box
