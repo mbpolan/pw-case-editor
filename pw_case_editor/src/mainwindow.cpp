@@ -57,6 +57,8 @@ void MainWindow::construct() {
 			   sigc::mem_fun(*this, &MainWindow::on_new));
 	m_ActionGroup->add(Gtk::Action::create("FileSave", Gtk::Stock::SAVE, "_Save"),
 			   sigc::mem_fun(*this, &MainWindow::on_save));
+	m_ActionGroup->add(Gtk::Action::create("FileSaveAs", Gtk::Stock::SAVE_AS, "_Save As"),
+			   sigc::mem_fun(*this, &MainWindow::on_save_as));
 	m_ActionGroup->add(Gtk::Action::create("FileOpen", Gtk::Stock::OPEN, "_Open"),
 			   sigc::mem_fun(*this, &MainWindow::on_open));
 	m_ActionGroup->add(Gtk::Action::create("FileExport", "_Export"),
@@ -112,6 +114,7 @@ void MainWindow::construct() {
 			"	<menu action='FileMenu'>"
 			"		<menuitem action='FileNew'/>"
 			"		<menuitem action='FileSave'/>"
+			"		<menuitem action='FileSaveAs'/>"
 			"		<menuitem action='FileOpen'/>"
 			"		<separator/>"
 			"		<menuitem action='FileExport'/>"
@@ -180,10 +183,6 @@ void MainWindow::on_new() {
 	// display new case dialog
 	NewDialog nd;
 	if (nd.run()==Gtk::RESPONSE_OK) {
-		// clear out any previous case data
-		m_Case.clear();
-		m_ScriptWidget->clear();
-		
 		// reset save variables
 		m_Saved=false;
 		m_SavePath="";
@@ -193,6 +192,10 @@ void MainWindow::on_new() {
 		
 		// get the updated case overview
 		Case::Overview overview=nd.get_overview();
+		
+		// clear out any previous case data
+		m_Case.clear();
+		m_ScriptWidget->clear(overview.lawSys);
 		
 		// and apply this new overview
 		m_Case.set_overview(overview);
@@ -270,6 +273,15 @@ void MainWindow::on_save() {
 	}
 }
 
+// save as handler
+void MainWindow::on_save_as() {
+	// remove the saved flag
+	m_Saved=false;
+	
+	// save the case
+	on_save();
+}
+
 // export case handler
 void MainWindow::on_export() {
 	// prepare file chooser dialog
@@ -321,10 +333,6 @@ void MainWindow::on_open() {
 			on_save();
 	}
 	
-	// clear out the current case
-	m_Case.clear();
-	m_ScriptWidget->clear();
-	
 	// prepare file chooser dialog
 	Gtk::FileChooserDialog fcd(*this, "Open Case", Gtk::FILE_CHOOSER_ACTION_OPEN);
 	fcd.add_button("Open", Gtk::RESPONSE_OK);
@@ -341,6 +349,9 @@ void MainWindow::on_open() {
 		// get pathname
 		Glib::ustring path=fcd.get_filename();
 		
+		// clear the case out
+		m_Case.clear();
+		
 		m_Statusbar->push("Open file...");
 		
 		// load the case
@@ -355,26 +366,40 @@ void MainWindow::on_open() {
 			return;
 		}
 		
+		// clear out the current case
+		m_ScriptWidget->clear(m_Case.get_overview().lawSys);
+		
 		// case information is set during load, but we need to make the rest of the widgets aware
 		// first, add characters to the list view
 		std::map<Glib::ustring, Character> characters=m_Case.get_characters();
 		for (CharacterMapIter it=characters.begin(); it!=characters.end(); ++it)
-			m_ScriptWidget->add_character((*it).first, (*it).second.get_internal_name());
+			m_ScriptWidget->add_character(-1, -1, (*it).first, (*it).second.get_internal_name());
 		
 		// now add buffers
-		int i=0;
 		for (BufferMap::iterator it=buffers.begin(); it!=buffers.end(); ++it) {
 			// we have the block id, and we can use that to map it to a parent node
 			Glib::ustring id=(*it).first;
 			
+			// extract the real id
+			Glib::ustring realId=id.substr(0, id.rfind("_"));
+			
 			// find the first underscore from the right
 			int npos=id.rfind("_");
+			Glib::ustring rootId=id.substr(npos+1, id.size()-npos);
+			id.erase(npos, id.size()-npos);
+			
+			// get the stage and day identifiers
+			int stage=(rootId[0]==(char) 'i' ? 0 : 1);
+			int day=atoi(rootId.substr(1, rootId.size()).c_str());
+			
+			// find the first underscore from the right
+			npos=id.rfind("_");
 			
 			// everything before the first underscore is the id of the parent
 			Glib::ustring parent=id.substr(0, npos);
 			
 			// now add the text block
-			m_ScriptWidget->add_text_block(parent, id, bufferDescriptions[id], (*it).second);
+			m_ScriptWidget->add_text_block(stage, day, parent, id, bufferDescriptions[realId], (*it).second);
 		}
 		
 		m_Statusbar->push("Case opened successfully");
@@ -430,7 +455,7 @@ void MainWindow::on_case_add_char() {
 		m_Case.add_character(newChar);
 		
 		// and also add it to the script widget
-		m_ScriptWidget->add_character(newChar.get_name(), newChar.get_internal_name());
+		m_ScriptWidget->add_character(-1, -1, newChar.get_name(), newChar.get_internal_name());
 	}
 }
 

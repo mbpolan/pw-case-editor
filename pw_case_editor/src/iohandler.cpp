@@ -197,8 +197,11 @@ bool IO::save_case_to_file(const Glib::ustring &path, const Case::Case &pcase,
 		// write buffer id
 		write_string(f, (*it).first);
 		
+		// find the real id
+		Glib::ustring realId=(*it).first.substr(0, (*it).first.rfind("_"));
+		
 		// write mapped buffer description
-		Glib::ustring bd=bufferDescriptions[(*it).first];
+		Glib::ustring bd=bufferDescriptions[realId];
 		write_string(f, bd);
 		
 		// get text and write it to file
@@ -382,8 +385,12 @@ bool IO::export_case_to_file(const Glib::ustring &path, const Case::Case &pcase,
 	// iterate over text blocks
 	int i=0;
 	for (BufferMap::const_iterator it=buffers.begin(); it!=buffers.end(); ++it) {
+		// find the real id
+		Glib::ustring id=(*it).first;
+		Glib::ustring realId=id.substr(0, id.rfind("_"));
+		
 		// write buffer id
-		write_string(f, (*it).first);
+		write_string(f, realId);
 		
 		// get text for this buffer
 		Glib::ustring bufText=(*it).second->get_text(true);
@@ -610,9 +617,12 @@ bool IO::load_case_from_file(const Glib::ustring &path, Case::Case &pcase,
 		// read id
 		Glib::ustring bufferId=read_string(f);
 		
+		// find real id
+		Glib::ustring realId=bufferId.substr(0, bufferId.rfind("_"));
+		
 		// read description
 		Glib::ustring bufferDescription=read_string(f);
-		bufferDescriptions[bufferId]=bufferDescription;
+		bufferDescriptions[realId]=bufferDescription;
 		
 		// read text contents
 		Glib::ustring contents=read_string(f);

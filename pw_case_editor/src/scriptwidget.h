@@ -23,7 +23,9 @@
 #define SCRIPTWIDGET_H
 
 #include <gtkmm/box.h>
+#include <gtkmm/comboboxtext.h>
 #include <gtkmm/label.h>
+#include <gtkmm/notebook.h>
 #include <gtkmm/paned.h>
 #include <gtkmm/scrolledwindow.h>
 #include <gtkmm/textview.h>
@@ -34,26 +36,31 @@
 class ScriptWidget: public Gtk::VBox {
 	public:
 		// constructor
-		ScriptWidget();
+		ScriptWidget(Case::LawSystem system=Case::TWO_DAY);
+		
+		// destructor
+		~ScriptWidget();
 		
 		// clear all data
-		void clear();
+		void clear(Case::LawSystem system);
 		
 		// add a character to the list
-		void add_character(const Glib::ustring &name, const Glib::ustring &internal);
+		// passing -1 for both day and stage will add this character to all lists
+		void add_character(int day, int stage, const Glib::ustring &name, const Glib::ustring &internal);
 		
 		// remove a character from the list based on name (either displayed or internal)
 		void remove_character(const Glib::ustring &name);
 		
 		// add a text block under an exiting category
-		void add_text_block(const Glib::ustring &parent, const Glib::ustring &blockName, const Glib::ustring &desc,
+		void add_text_block(int day, int stage, const Glib::ustring &parent,
+				    const Glib::ustring &blockName, const Glib::ustring &desc,
 				    const Glib::RefPtr<Gtk::TextBuffer> &buffer);
 		
 		// return buffers used in internal list
-		BufferMap get_buffers() const { return m_TreeView->get_buffers(); }
+		BufferMap get_buffers() const;
 		
 		// return buffer descriptions
-		std::map<Glib::ustring, Glib::ustring> get_buffer_descriptions() { return m_TreeView->get_buffer_descriptions(); }
+		std::map<Glib::ustring, Glib::ustring> get_buffer_descriptions();
 		
 		// return the currently displayed buffer
 		Glib::RefPtr<Gtk::TextBuffer> get_current_buffer() { return m_TextView->get_buffer(); }
@@ -62,16 +69,29 @@ class ScriptWidget: public Gtk::VBox {
 		// build the ui
 		void construct();
 		
+		// get the current tree view
+		CListView* get_current_list();
+		
+		// reset the combo box
+		void reset_combo_box();
+		
+		// combo box selection handler
+		void on_combo_box_changed();
+		
 		// display buffer handler
 		void on_display_buffer(Glib::ustring id, Glib::RefPtr<Gtk::TextBuffer> buffer);
 		
 		// select a row
 		void on_select_row(Gtk::TreeModel::iterator it);
 		
+		// combo box
+		Gtk::ComboBoxText *m_DayCB;
+		
 		// labels
 		Gtk::Label *m_CurBlockLabel;
 		
 		// container widgets
+		Gtk::Notebook *m_StageNB;
 		Gtk::ScrolledWindow *m_TextSWindow;
 		Gtk::ScrolledWindow *m_TreeSWindow;
 		Gtk::HPaned *m_HPane;
@@ -79,8 +99,11 @@ class ScriptWidget: public Gtk::VBox {
 		// the text view for editing the script
 		Gtk::TextView *m_TextView;
 		
-		// list view
-		CListView *m_TreeView;
+		// list views
+		std::vector<CListView*> m_TreeViews;
+		
+		// keep track of law system
+		Case::LawSystem m_LawSystem;
 };
 
 #endif

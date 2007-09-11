@@ -341,8 +341,12 @@ void CListView::on_delete_text_block() {
 	Glib::RefPtr<Gtk::TreeView::Selection> selection=get_selection();
 	if (selection) {
 		Gtk::TreeModel::iterator it=selection->get_selected();
-		if (it && (*it)->parent())
+		if (it && (*it)->parent()) {
+			Glib::ustring id=Utils::extract_block_id((*it)[m_ColumnRec.m_Column]);
+			
+			m_Buffers.erase(id);
 			m_Model->erase(it);
+		}
 	}
 }
 

@@ -46,6 +46,9 @@ class MainWindow: public Gtk::Window {
 		// save case handler
 		void on_save();
 		
+		// save as handler
+		void on_save_as();
+		
 		// export case handler
 		void on_export();
 		
