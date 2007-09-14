@@ -190,24 +190,24 @@ std::string TextParser::parse() {
 			char curChar=m_Dialogue[m_StrPos-1];
 			char nextChar=m_Dialogue[m_StrPos];
 			
-			// play a sound effect if this next character is visible
-			if (shouldPlayDialogueEffect(prevChar, curChar, nextChar)) {
-				// date string
-				if (m_FontStyle.type=="date")
-					Audio::playEffect("sfx_typewriter", DIALOGUE_SFX_CHANNEL);
+			// prepare the sound effect to potentially play
+			std::string sfx="";
+			
+			// date string
+			if (m_FontStyle.type=="date")
+				sfx="sfx_typewriter";
 				
-				// differentiate between male and female speakers
-				else if (m_FontStyle.type=="plain") {
-					std::string gtype="";
-					if (m_SpeakerGender==Character::GENDER_MALE)
-						gtype="sfx_male_talk";
-					else
-						gtype="sfx_female_talk";
-					
-					// play this sound
-					Audio::playEffect(gtype, DIALOGUE_SFX_CHANNEL);
-				}
+			// differentiate between male and female speakers
+			else if (m_FontStyle.type=="plain") {
+				if (m_SpeakerGender==Character::GENDER_MALE)
+					sfx="sfx_male_talk";
+				else
+					sfx="sfx_female_talk";
 			}
+			
+			// play a sound effect if this next character is visible
+			if (shouldPlayDialogueEffect(prevChar, curChar, nextChar))
+				Audio::playEffect(sfx, DIALOGUE_SFX_CHANNEL);
 			
 			m_StrPos++;
 		}

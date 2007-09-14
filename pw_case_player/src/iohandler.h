@@ -45,7 +45,7 @@ bool loadCaseFromFile(const std::string &path, Case::Case &pcase);
 bool loadSpriteFromFile(const std::string &path, Sprite &sprite);
 
 // load stock assets config file
-bool loadStockFile(const std::string &path);
+bool loadStockFile(const std::string &path, Case::Case *pcase);
 
 // read image data from file
 Textures::Texture readImage(FILE *f);

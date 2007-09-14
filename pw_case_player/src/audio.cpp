@@ -65,8 +65,10 @@ void Audio::playEffect(const std::string &id, int channel) {
 	}
 	
 	// play this chunk once
-	if (audio->type==SAMPLE_EFFECT)
+	if (audio->type==SAMPLE_EFFECT) {
+		Mix_HaltChannel(channel);
 		Mix_PlayChannel(channel, audio->effect, 0);
+	}
 }
 
 // play a music sample

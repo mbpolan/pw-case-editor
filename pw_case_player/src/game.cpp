@@ -110,7 +110,7 @@ bool Game::loadStockTextures() {
 	}
 	
 	// load stock assets
-	if (!IO::loadStockFile("stock.cfg")) {
+	if (!IO::loadStockFile("stock.cfg", m_Case)) {
 		std::cout << "Unable to load stock assets from file\n";
 		return false;
 	}

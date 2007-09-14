@@ -357,7 +357,7 @@ bool IO::loadSpriteFromFile(const std::string &path, Sprite &sprite) {
 }
 
 // load stock assets config file
-bool IO::loadStockFile(const std::string &path) {
+bool IO::loadStockFile(const std::string &path, Case::Case *pcase) {
 	// open the path
 	FILE *f=fopen(path.c_str(), "rb");
 	if (!f)
@@ -393,6 +393,27 @@ bool IO::loadStockFile(const std::string &path) {
 			
 			// add this sample
 			Audio::pushAudio(sId, sample);
+		}
+		
+		// sprite
+		else if (sId.substr(0, 4)=="spr:") {
+			// erase the identifier
+			sId.erase(0, 4);
+			
+			// try to load the sprite
+			Sprite sprite;
+			if (!IO::loadSpriteFromFile(sFile, sprite))
+				return false;
+			
+			// extract data from string
+			char internalId[256], name[256], caption[256], desc[256];
+			sscanf(sId.c_str(), "%s,%s,%s,%s", internalId, name, caption, desc);
+			
+			// create character struct
+			Character character(internalId, name, caption, desc);
+			
+			// add this sprite
+			pcase->addCharacter(character);
 		}
 		
 		// must be a texture otherwise
