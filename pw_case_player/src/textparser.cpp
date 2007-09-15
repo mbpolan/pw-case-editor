@@ -568,6 +568,24 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 			m_SpeakerGender=pcase->getCharacter(m_Speaker)->getGender();
 	}
 	
+	// set images for courtroom overview
+	else if (trigger=="set_court_overview_image") {
+		// split the command string
+		std::vector<std::string> params=Fonts::explodeString(',', command);
+		std::string area=params[0];
+		std::string image=params[1];
+		
+		// depending on area, set image
+		if (area=="defense")
+			m_Game->m_State.crOverviewDefense=image;
+		else if (area=="prosecutor")
+			m_Game->m_State.crOverviewProsecutor=image;
+		else if (area=="witness")
+			m_Game->m_State.crOverviewWitness=image;
+		else
+			std::cout << "No such area in courtroom overview: '" << area << "'\n";
+	}
+	
 	// end the current dialog
 	else if (trigger=="end_dialogue")
 		m_Done=true;

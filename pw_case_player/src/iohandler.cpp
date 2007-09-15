@@ -24,6 +24,7 @@
 #include "SDL_rotozoom.h"
 
 #include "audio.h"
+#include "font.h"
 #include "iohandler.h"
 
 // load a case from file
@@ -199,6 +200,24 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 		
 		// add this evidence
 		pcase.addEvidence(evidence);
+	}
+	
+	// read amount of images
+	int imageCount;
+	fread(&imageCount, sizeof(int), 1, f);
+	
+	// iterate over images
+	for (int i=0; i<imageCount; i++) {
+		Case::Image img;
+		
+		// read id
+		img.id=readString(f);
+		
+		// read image
+		img.texture=Textures::createTexture("null", readImage(f));
+		
+		// add this image
+		pcase.addImage(img);
 	}
 	
 	// read amount of locations
@@ -402,26 +421,70 @@ bool IO::loadStockFile(const std::string &path, Case::Case *pcase) {
 			
 			// try to load the sprite
 			Sprite sprite;
-			if (!IO::loadSpriteFromFile(sFile, sprite))
+			if (!IO::loadSpriteFromFile(sFile, sprite)) {
+				std::cout << "Unable to load sprite: " << sFile << std::endl;
 				return false;
+			}
+			
+			// set defaults
+			sprite.setAnimation("normal_idle");
 			
 			// extract data from string
-			char internalId[256], name[256], caption[256], desc[256];
-			sscanf(sId.c_str(), "%s,%s,%s,%s", internalId, name, caption, desc);
+			StringVector vec=Fonts::explodeString(',', sId);
 			
 			// create character struct
-			Character character(internalId, name, caption, desc);
+			Character character(vec[0], vec[1], vec[2], vec[3]);
+			character.setSprite(sprite);
 			
 			// add this sprite
 			pcase->addCharacter(character);
 		}
 		
+		// location
+		else if (sId.substr(0, 4)=="loc:") {
+			// erase identifier
+			sId.erase(0, 4);
+			
+			// create location struct
+			Case::Location location;
+			location.id=sId;
+			location.bg=sFile;
+			location.triggerBlock="null";
+			location.character="null";
+			location.music="null";
+			
+			// add this location
+			pcase->addLocation(location);
+		}
+		
 		// must be a texture otherwise
 		else {
+			// see if we should also add this as a background
+			bool bg=false;
+			if (sId[0]=='*') {
+				bg=true;
+				
+				// erase the asterisk
+				sId.erase(0, 1);
+			}
+			
 			// create a surface
 			SDL_Surface *surface=Textures::createTexture(id, file);
 			if (!surface)
 				return false;
+			
+			// add a background if needed
+			if (bg) {
+				Case::Background background;
+				
+				// fill in data
+				background.id=sId;
+				background.type=Case::BG_SINGLE_SCREEN;
+				background.texture=surface;
+				
+				// and add it
+				pcase->addBackground(background);
+			}
 		}
 	}
 	

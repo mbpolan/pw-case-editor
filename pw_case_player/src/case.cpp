@@ -31,6 +31,7 @@ Case::Case::Case() {
 Case::Case::~Case() {
 	m_Characters.clear();
 	m_Evidence.clear();
+	m_Images.clear();
 	m_Backgrounds.clear();
 	m_Locations.clear();
 }
@@ -48,6 +49,11 @@ void Case::Case::addEvidence(const Evidence &evidence) {
 // add a background
 void Case::Case::addBackground(const Background &bg) {
 	m_Backgrounds[bg.id]=bg;
+}
+
+// add an image
+void Case::Case::addImage(const Image &img) {
+	m_Images[img.id]=img;
 }
 
 // add a location
@@ -80,6 +86,14 @@ Case::Background* Case::Case::getBackground(const std::string &id) {
 Case::Evidence* Case::Case::getEvidence(const std::string &id) {
 	if (m_Evidence.find(id)!=m_Evidence.end())
 		return &m_Evidence[id];
+	else
+		return NULL;
+}
+
+// get an image
+Case::Image* Case::Case::getImage(const std::string &id) {
+	if (m_Images.find(id)!=m_Images.end())
+		return &m_Images[id];
 	else
 		return NULL;
 }

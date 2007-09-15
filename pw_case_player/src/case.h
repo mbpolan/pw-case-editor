@@ -92,6 +92,13 @@ struct _Location {
 };
 typedef struct _Location Location;
 
+// arbitrary image
+struct _Image {
+	std::string id; // id referenced from within the script
+	SDL_Surface *texture; // texture image itself
+};
+typedef struct _Image Image;
+
 }; // namespace Case
 
 // typedefs for cleaner code
@@ -106,6 +113,10 @@ typedef std::map<std::string, Case::Background>::const_iterator BackgroundMapCon
 typedef std::map<std::string, Case::Evidence> EvidenceMap;
 typedef std::map<std::string, Case::Evidence>::iterator EvidenceMapIter;
 typedef std::map<std::string, Case::Evidence>::const_iterator EvidenceMapConstIter;
+
+typedef std::map<std::string, Case::Image> ImageMap;
+typedef std::map<std::string, Case::Image>::iterator ImageMapIter;
+typedef std::map<std::string, Case::Image>::const_iterator ImageMapConstIter;
 
 typedef std::map<std::string, Case::Location> LocationMap;
 typedef std::map<std::string, Case::Location>::iterator LocationMapIter;
@@ -144,6 +155,9 @@ class Case {
 		// add a piece of evidence
 		void addEvidence(const Evidence &evidence);
 		
+		// add an image
+		void addImage(const Image &image);
+		
 		// add a location
 		void addLocation(const Location &loc);
 		
@@ -158,6 +172,9 @@ class Case {
 		
 		// get a piece of evidence
 		Evidence* getEvidence(const std::string &id);
+		
+		// get an image
+		Image* getImage(const std::string &id);
 		
 		// get a location
 		Location* getLocation(const std::string &id);
@@ -180,6 +197,9 @@ class Case {
 		// return full map of evidence
 		EvidenceMap getEvidence() const { return m_Evidence; }
 		
+		// return full map of images
+		ImageMap getImages() const { return m_Images; }
+		
 		// return a full map of locations
 		LocationMap getLocations() const { return m_Locations; }
 		
@@ -201,6 +221,9 @@ class Case {
 		
 		// map of evidence
 		EvidenceMap m_Evidence;
+		
+		// map of images
+		ImageMap m_Images;
 		
 		// map of locations
 		LocationMap m_Locations;

@@ -100,6 +100,11 @@ struct _GameState {
 	std::string shownEvidence;
 	Position shownEvidencePos;
 	
+	// images to display for various parts of the courtroom
+	std::string crOverviewDefense;
+	std::string crOverviewProsecutor;
+	std::string crOverviewWitness;
+	
 	// our current location
 	std::string currentLocation;
 	
@@ -173,6 +178,9 @@ class Game {
 		
 		// render the controls (move, talk, etc)
 		void renderControls(int flags);
+		
+		// render the courtroom overview
+		void renderCourtroomOverview();
 		
 		// top right button was clicked
 		void onTopRightButtonClicked();

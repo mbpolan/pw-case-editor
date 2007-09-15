@@ -48,6 +48,11 @@ Game::Game(const std::string &rootPath, Case::Case *pcase): m_RootPath(rootPath)
 	m_State.examineX=256/2;
 	m_State.examineY=192/2;
 	
+	// reset courtroom sprites
+	m_State.crOverviewDefense="null";
+	m_State.crOverviewProsecutor="null";
+	m_State.crOverviewWitness="null";
+	
 	// reset previous page
 	m_State.prevScreen=0;
 	
@@ -423,20 +428,12 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 		}
 		
 		// if the controls are drawn, see if one was clicked
-		else if (flagged(STATE_CONTROLS)) {
-			// play a sound effect
-			Audio::playEffect("sfx_click");
-			
+		else if (flagged(STATE_CONTROLS))
 			onControlsClicked(e->x, e->y);
-		}
 		
 		// if talk scene is drawn, see if one option was clicked
-		else if (flagged(STATE_TALK)) {
-			// play a sound effect
-			Audio::playEffect("sfx_click");
-			
+		else if (flagged(STATE_TALK))
 			onTalkSceneClicked(e->x, e->y);
-		}
 		
 		// if the court record page is up, see if anything was clicked
 		if (flagged(STATE_EVIDENCE_PAGE) || flagged(STATE_PROFILES_PAGE))
@@ -517,8 +514,10 @@ bool Game::flagged(int flag) {
 
 // set the current backdrop location
 void Game::setLocation(const std::string &locationId) {
-	if (!m_Case->getLocation(locationId))
+	if (!m_Case->getLocation(locationId)) {
+		std::cout << "Game: no such location: '" << locationId << "'\n";
 		return;
+	}
 	
 	// get the location
 	Case::Location *location=m_Case->getLocation(locationId);
@@ -585,11 +584,11 @@ void Game::renderTopView() {
 	if (m_State.currentLocation!="null" && m_Case->getLocation(m_State.currentLocation)) {
 		// get the background surface
 		Case::Location *location=m_Case->getLocation(m_State.currentLocation);
-		SDL_Surface *bg=m_Case->getBackground(location->bg)->texture;
+		Case::Background *bg=m_Case->getBackground(location->bg);
 		
 		// and draw it
 		if (bg)
-			Renderer::drawImage(0, 0, bg);
+			Renderer::drawImage(0, 0, bg->texture);
 		
 		// if there is a character set here, draw him now
 		if (m_Case->getCharacter(location->character)) {
@@ -612,6 +611,10 @@ void Game::renderTopView() {
 			// draw the sprite
 			sprite->animate(x, y);
 		}
+		
+		// handle special locations
+		if (m_State.currentLocation=="courtroom")
+			renderCourtroomOverview();
 		
 		// if the examination scene is up, dim the upper screen
 		if (flagged(STATE_EXAMINE) || (m_State.prevScreen==SCREEN_EXAMINE && !flagged(STATE_TEXT_BOX))) {
@@ -912,6 +915,41 @@ void Game::renderControls(int flags) {
 	Renderer::drawImage(sx2, sy1, "tc_select_tr");
 }
 
+// render the courtroom overview
+void Game::renderCourtroomOverview() {
+	// here's the situation:
+	// the courtroom overview can contain any of three images, if not all at once
+	// there's the defense and prosecutor images, in addition to the witness
+	// we need to draw any specified images from the GameState at this point
+	
+	// first, we check to see if there are any defense stand images
+	if (m_State.crOverviewDefense!="null") {
+		// get the image
+		Case::Image *image=m_Case->getImage(m_State.crOverviewDefense);
+		if (image)
+			Renderer::drawImage(179, 90, image->texture);
+		else
+			std::cout << "Game: courtroom overview image '" << m_State.crOverviewDefense << "' not found\n";
+	}
+	
+	// draw prosecutor image
+	if (m_State.crOverviewProsecutor!="null") {
+		// get the image
+		Case::Image *image=m_Case->getImage(m_State.crOverviewProsecutor);
+		if (image)
+			Renderer::drawImage(48, 91, image->texture);
+		else
+			std::cout << "Game: courtroom overview image '" << m_State.crOverviewDefense << "' not found\n";
+	}
+	
+	// draw the judge
+	Renderer::drawImage(121, 68, "overview_judge");
+	
+	// draw jury
+	m_Case->getCharacter("jury_left")->getSprite()->animate(0, 59);
+	m_Case->getCharacter("jury_right")->getSprite()->animate(215, 59);
+}
+
 // top right button was clicked
 void Game::onTopRightButtonClicked() {
 	// if the court record button is shown, activate evidence page
@@ -1112,31 +1150,40 @@ void Game::onBottomLeftButtonClicked() {
 // click handler for controls
 void Game::onControlsClicked(int x, int y) {
 	// 8, 134
+	bool clicked=false;
 	int dy=197+20+34;
 	
 	// examine control
 	if ((x>=8 && x<=118) && (y>=dy && y<=dy+26)) {
 		onExamineButtonActivated();
 		m_State.selectedControl=0;
+		clicked=true;
 	}
 	
 	// move control
 	else if ((x>=134 && x<=244) && (y>=dy && y<=dy+26)) {
 		onMoveButtonActivated();
 		m_State.selectedControl=1;
+		clicked=true;
 	}
 	
 	// talk control
 	else if ((x>=8 && x<=118) && (y>=dy+62 && y<=dy+88)) {
 		onTalkButtonActivated();
 		m_State.selectedControl=2;
+		clicked=true;
 	}
 	
 	// present control
 	else if ((x>=134 && x<=244) && (y>=dy+62 && y<=dy+88)) {
 		onPresentButtonActivated();
 		m_State.selectedControl=3;
+		clicked=true;
 	}
+	
+	// play a sound effect if something was clicked
+	if (clicked)
+		Audio::playEffect("sfx_click");
 }
 
 // click handler for move scene
@@ -1157,6 +1204,9 @@ void Game::onMoveSceneClicked(int x, int y) {
 		if ((x>=dx+1 && x<=dx+148) && (y>=dy+1 && y<=dy+18)) {
 			// set this as our selected location
 			m_State.selectedLocation=i;
+			
+			// play a sound effect
+			Audio::playEffect("sfx_click");
 			
 			// set our new location
 			setLocation(location->moveLocations[i]);
@@ -1195,12 +1245,17 @@ void Game::onTalkSceneClicked(int x, int y) {
 		if ((x>=dx && x<=dx+200) && (y>=dy && y<=dy+20)) {
 			m_State.selectedTalkOption=i;
 			
+			// play a sound effect
+			Audio::playEffect("sfx_click");
+			
 			// get the target block id
 			std::string target=character->getTalkOptions()[i].second;
 			
 			// set this block
 			m_Parser->setBlock(m_Case->getBuffers()[target]);
 			m_Parser->nextStep();
+			
+			break;
 		}
 		
 		// move down to next slot
