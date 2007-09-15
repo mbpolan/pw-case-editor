@@ -43,6 +43,22 @@ void Case::Case::remove_character(const Glib::ustring &name) {
 	}
 }
 
+// add an image
+void Case::Case::add_image(const Image &image) {
+	m_Images[image.id]=image;
+}
+
+// remove an image
+void Case::Case::remove_image(const Glib::ustring &id) {
+	// iterate over images and find the requested one
+	for (ImageMapIter it=m_Images.begin(); it!=m_Images.end(); ++it) {
+		if ((*it).first==id) {
+			m_Images.erase(it);
+			return;
+		}
+	}
+}
+
 // add a piece of evidence
 void Case::Case::add_evidence(const Evidence &evidence) {
 	m_Evidence[evidence.id]=evidence;
@@ -97,6 +113,17 @@ StringVector Case::Case::get_character_names() {
 	// simply add names to the vector
 	for (CharacterMapIter it=m_Characters.begin(); it!=m_Characters.end(); ++it)
 		vec.push_back((*it).second.get_internal_name());
+	
+	return vec;
+}
+
+// return a vector of image internal ids
+StringVector Case::Case::get_image_ids() {
+	StringVector vec;
+	
+	// simply add ids to the vector
+	for (ImageMapIter it=m_Images.begin(); it!=m_Images.end(); ++it)
+		vec.push_back((*it).first);
 	
 	return vec;
 }
@@ -157,6 +184,7 @@ void Case::Case::clear() {
 	// clear out the rest of the pertinent stuff
 	clear_backgrounds();
 	clear_characters();
+	clear_images();
 	clear_evidence();
 	clear_locations();
 	clear_audio();

@@ -96,6 +96,13 @@ struct _Audio {
 };
 typedef struct _Audio Audio;
 
+// misc image
+struct _Image {
+	Glib::ustring id; // id referenced from within the script
+	Glib::RefPtr<Gdk::Pixbuf> pixbuf; // image data
+};
+typedef struct _Image Image;
+
 }; // namespace Case
 
 // typedefs for cleaner code
@@ -118,6 +125,10 @@ typedef std::map<Glib::ustring, Case::Location>::const_iterator LocationMapConst
 typedef std::map<Glib::ustring, Case::Audio> AudioMap;
 typedef std::map<Glib::ustring, Case::Audio>::iterator AudioMapIter;
 typedef std::map<Glib::ustring, Case::Audio>::const_iterator AudioMapConstIter;
+
+typedef std::map<Glib::ustring, Case::Image> ImageMap;
+typedef std::map<Glib::ustring, Case::Image>::iterator ImageMapIter;
+typedef std::map<Glib::ustring, Case::Image>::const_iterator ImageMapConstIter;
 
 typedef std::map<Glib::ustring, Glib::RefPtr<Gtk::TextBuffer> > BufferMap;
 typedef std::map<Glib::ustring, Glib::RefPtr<Gtk::TextBuffer> >::iterator BufferMapIter;
@@ -146,6 +157,12 @@ class Case {
 		// remove a character based on name
 		void remove_character(const Glib::ustring &name);
 		
+		// add an image
+		void add_image(const Image &image);
+		
+		// remove an image
+		void remove_image(const Glib::ustring &id);
+		
 		// add a background
 		void add_background(const Background &bg);
 		
@@ -170,6 +187,9 @@ class Case {
 		// return a vector of character internal names
 		StringVector get_character_names();
 		
+		// return a vector of image internal ids
+		StringVector get_image_ids();
+		
 		// return a vector of background internal ids
 		StringVector get_background_ids();
 		
@@ -187,6 +207,9 @@ class Case {
 		
 		// clear backgrounds
 		void clear_backgrounds() { m_Backgrounds.clear(); }
+		
+		// clear images
+		void clear_images() { m_Images.clear(); }
 		
 		// clear characters
 		void clear_characters() { m_Characters.clear(); }
@@ -209,6 +232,9 @@ class Case {
 		// return full map of characters
 		CharacterMap get_characters() const { return m_Characters; }
 		
+		// return full map of images
+		ImageMap get_images() const { return m_Images; }
+		
 		// return full map of backgrounds
 		BackgroundMap get_backgrounds() const { return m_Backgrounds; }
 		
@@ -230,6 +256,9 @@ class Case {
 		
 		// map of characters
 		CharacterMap m_Characters;
+		
+		// map of images
+		ImageMap m_Images;
 		
 		// map of backgrounds
 		BackgroundMap m_Backgrounds;

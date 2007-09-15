@@ -136,6 +136,20 @@ bool IO::save_case_to_file(const Glib::ustring &path, const Case::Case &pcase,
 		write_pixbuf(f, (*it).second.pixbuf);
 	}
 	
+	// get image map and write amount of objects
+	ImageMap images=pcase.get_images();
+	int imageCount=images.size();
+	fwrite(&imageCount, sizeof(int), 1, f);
+	
+	// iterate over images
+	for (ImageMapIter it=images.begin(); it!=images.end(); ++it) {
+		// write id
+		write_string(f, (*it).second.id);
+		
+		// write image data
+		write_pixbuf(f, (*it).second.pixbuf);
+	}
+	
 	// get location map and write amount of objects
 	LocationMap locations=pcase.get_locations();
 	int locationCount=locations.size();
@@ -327,6 +341,20 @@ bool IO::export_case_to_file(const Glib::ustring &path, const Case::Case &pcase,
 		// create a scaled thumbnail and write it as well
 		Glib::RefPtr<Gdk::Pixbuf> thumb=(*it).second.pixbuf->scale_simple(40, 40, Gdk::INTERP_HYPER);
 		write_bmp(f, thumb);
+	}
+	
+	// get image map and write amount of objects
+	ImageMap images=pcase.get_images();
+	int imageCount=images.size();
+	fwrite(&imageCount, sizeof(int), 1, f);
+	
+	// iterate over images
+	for (ImageMapIter it=images.begin(); it!=images.end(); ++it) {
+		// write id
+		write_string(f, (*it).second.id);
+		
+		// write image data
+		write_bmp(f, (*it).second.pixbuf);
 	}
 	
 	// get location map and write amount of objects
@@ -546,6 +574,24 @@ bool IO::load_case_from_file(const Glib::ustring &path, Case::Case &pcase,
 		
 		// add this evidence
 		pcase.add_evidence(evidence);
+	}
+	
+	// read amount of images
+	int imageCount;
+	fread(&imageCount, sizeof(int), 1, f);
+	
+	// iterate over images
+	for (int i=0; i<imageCount; i++) {
+		Case::Image img;
+		
+		// read id
+		img.id=read_string(f);
+		
+		// read image data
+		img.pixbuf=read_pixbuf(f);
+		
+		// add this image
+		pcase.add_image(img);
 	}
 	
 	// read amount of locations

@@ -28,6 +28,148 @@
 #include "dialogs.h"
 
 // constructor
+ImageDialog::ImageDialog(const ImageMap &imap, const StringVector &imgIds) {
+	construct();
+	
+	// copy ids and map
+	m_ImageIds=imgIds;
+	m_Images=imap;
+	
+	// append rows
+	for (int i=0; i<m_ImageIds.size(); i++)
+		m_ImageList->append_text(m_ImageIds[i]);
+}
+
+// build the ui
+void ImageDialog::construct() {
+	// get vbox
+	Gtk::VBox *vb=get_vbox();
+	vb->set_border_width(10);
+	
+	// allocate layout table
+	Gtk::Table *table=manage(new Gtk::Table);
+	table->set_spacings(5);
+	
+	// allocate labels
+	m_ImageLabel=manage(new Gtk::Label("Image Assets"));
+	m_PreviewLabel=manage(new Gtk::Label("Preview"));
+	
+	// allocate buttons
+	m_AddButton=manage(new Gtk::Button("Add"));
+	m_DeleteButton=manage(new Gtk::Button("Delete"));
+	
+	// connect signals
+	m_AddButton->signal_clicked().connect(sigc::mem_fun(*this, &ImageDialog::on_add_clicked));
+	m_DeleteButton->signal_clicked().connect(sigc::mem_fun(*this, &ImageDialog::on_delete_clicked));
+	
+	// allocate list and its container
+	m_SWindow=manage(new Gtk::ScrolledWindow);
+	m_SWindow->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
+	m_SWindow->set_size_request(100, 150);
+	
+	m_ImageList=manage(new Gtk::ListViewText(1));
+	m_ImageList->set_column_title(0, "Internal Id");
+	m_SWindow->add(*m_ImageList);
+	
+	// connect signals
+	m_ImageList->get_selection()->signal_changed().connect(sigc::mem_fun(*this, &ImageDialog::on_selection_changed));
+	
+	// allocate image
+	m_Image=manage(new Gtk::Image);
+	
+	// attach options
+	Gtk::AttachOptions xops=Gtk::FILL | Gtk::EXPAND;
+	Gtk::AttachOptions yops=Gtk::SHRINK | Gtk::SHRINK;
+	
+	// place widgets
+	table->attach(*m_ImageLabel, 0, 2, 0, 1, xops, yops);
+	table->attach(*m_AddButton, 0, 1, 1, 2, xops, yops);
+	table->attach(*m_DeleteButton, 1, 2, 1, 2, xops, yops);
+	table->attach(*m_SWindow, 0, 2, 2, 3);
+	table->attach(*m_PreviewLabel, 2, 3, 0, 1, xops, yops);
+	table->attach(*m_Image, 2, 3, 1, 3, xops, yops);
+	
+	vb->pack_start(*table);
+	
+	// add buttons
+	add_button("OK", Gtk::RESPONSE_OK);
+	add_button("Cancel", Gtk::RESPONSE_CANCEL);
+	
+	show_all_children();
+}
+
+// add an image
+void ImageDialog::on_add_clicked() {
+	// prepare file chooser dialog
+	Gtk::FileChooserDialog fcd(*this, "Open Image", Gtk::FILE_CHOOSER_ACTION_OPEN);
+	fcd.add_button("Open", Gtk::RESPONSE_OK);
+	fcd.add_button("Cancel", Gtk::RESPONSE_CANCEL);
+	
+	// run it
+	if (fcd.run()==Gtk::RESPONSE_OK) {
+		// get the path
+		Glib::ustring path=fcd.get_filename();
+		
+		// create a pixbuf
+		Glib::RefPtr<Gdk::Pixbuf> pixbuf=Gdk::Pixbuf::create_from_file(path);
+		if (pixbuf) {
+			// ask for id
+			TextInputDialog td("Internal Id");
+			if (td.run()==Gtk::RESPONSE_OK) {
+				Glib::ustring id=td.get_text();
+				
+				// append a new row
+				m_ImageList->append_text(id);
+				
+				// and add it to the map
+				Case::Image img;
+				img.id=id;
+				img.pixbuf=pixbuf;
+				m_Images[id]=img;
+			}
+		}
+	}
+}
+
+// remove an image
+void ImageDialog::on_delete_clicked() {
+	int selected=m_ImageList->get_selected()[0];
+	StringVector vec;
+	
+	// iterate over rows, and append text to temp vector for unselected rows
+	for (int i=0; i<m_ImageList->size(); i++) {
+		if (i!=selected)
+			vec.push_back(m_ImageList->get_text(i, 0));
+	}
+	
+	// now clear all rows
+	m_ImageList->clear_items();
+	
+	// append the rows that were previously unselected
+	for (int i=0; i<vec.size(); i++)
+		m_ImageList->append_text(vec[i]);
+}
+
+// row changes handler
+void ImageDialog::on_selection_changed() {
+	// get our selected row
+	int selected=m_ImageList->get_selected()[0];
+	
+	// iterate over rows
+	for (int i=0; i<m_ImageList->size(); i++) {
+		if (i==selected) {
+			// get the id
+			Glib::ustring text=m_ImageList->get_text(i, 0);
+			
+			// grab the pixbuf from map and display it
+			m_Image->set(m_Images[text].pixbuf);
+		}
+	}
+}
+
+/***************************************************************************/
+
+// constructor
 NewHotspotDialog::NewHotspotDialog() {
 	construct();
 }

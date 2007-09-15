@@ -82,11 +82,14 @@ class MainWindow: public Gtk::Window {
 		// manage background assets handler
 		void on_assets_manage_bg();
 		
-		// display sprite editor handler
-		void on_tools_sprite_editor();
-		
 		// manage evidence assets handler
 		void on_assets_manage_evidence();
+		
+		// manage images assets handler
+		void on_assets_manage_images();
+		
+		// display sprite editor handler
+		void on_tools_sprite_editor();
 		
 		// display info about this application
 		void on_help_about();

@@ -39,6 +39,52 @@
 #include "character.h"
 #include "hotspotwidget.h"
 
+// dialog used to manage images
+class ImageDialog: public Gtk::Dialog {
+	public:
+		// constructor
+		ImageDialog(const ImageMap &imap, const StringVector &imgIds);
+		
+		// return map of images
+		ImageMap get_images() const { return m_Images; }
+		
+	private:
+		// build the ui
+		void construct();
+		
+		// add image handler
+		void on_add_clicked();
+		
+		// remove image handler
+		void on_delete_clicked();
+		
+		// selection change handler
+		void on_selection_changed();
+		
+		// labels
+		Gtk::Label *m_ImageLabel;
+		Gtk::Label *m_PreviewLabel;
+		
+		// buttons
+		Gtk::Button *m_AddButton;
+		Gtk::Button *m_DeleteButton;
+		
+		// scrolled window container
+		Gtk::ScrolledWindow *m_SWindow;
+		
+		// list of images
+		Gtk::ListViewText *m_ImageList;
+		
+		// preview image
+		Gtk::Image *m_Image;
+		
+		// record of images
+		ImageMap m_Images;
+		StringVector m_ImageIds;
+};
+
+/***************************************************************************/
+
 // dialog used to add a hotspot to a location
 class NewHotspotDialog: public Gtk::Dialog {
 	public:

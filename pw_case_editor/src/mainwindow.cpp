@@ -86,6 +86,8 @@ void MainWindow::construct() {
 			   sigc::mem_fun(*this, &MainWindow::on_assets_manage_bg));
 	m_ActionGroup->add(Gtk::Action::create("AssetsManageEvidence", "Manage _Evidence"),
 			   sigc::mem_fun(*this, &MainWindow::on_assets_manage_evidence));
+	m_ActionGroup->add(Gtk::Action::create("AssetsManageImages", "Manage _Images"),
+			   sigc::mem_fun(*this, &MainWindow::on_assets_manage_images));
 	
 	m_ActionGroup->add(Gtk::Action::create("ToolsSpriteEditor", "_Sprite Editor"),
 			   sigc::mem_fun(*this, &MainWindow::on_tools_sprite_editor));
@@ -136,6 +138,7 @@ void MainWindow::construct() {
 			"		<menuitem action='AssetsManageAudio'/>"
 			"		<menuitem action='AssetsManageBG'/>"
 			"		<menuitem action='AssetsManageEvidence'/>"
+			"		<menuitem action='AssetsManageImages'/>"
 			"	</menu>"
 			"	<menu action='ToolsMenu'>"
 			"		<menuitem action='ToolsSpriteEditor'/>"
@@ -584,6 +587,25 @@ void MainWindow::on_assets_manage_evidence() {
 		for (EvidenceMapIter it=evidence.begin(); it!=evidence.end(); ++it)
 			m_Case.add_evidence((*it).second);
 		
+	}
+}
+
+// manage images assets handler
+void MainWindow::on_assets_manage_images() {
+	// prepare dialog
+	ImageDialog diag(m_Case.get_images(), m_Case.get_image_ids());
+	
+	// run the dialog
+	if (diag.run()==Gtk::RESPONSE_OK) {
+		// get updated map of images
+		ImageMap imap=diag.get_images();
+		
+		// clear out any previous images
+		m_Case.clear_images();
+		
+		// now add these
+		for (ImageMapIter it=imap.begin(); it!=imap.end(); ++it)
+			m_Case.add_image((*it).second);
 	}
 }
 
