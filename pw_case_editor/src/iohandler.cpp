@@ -807,7 +807,7 @@ bool IO::load_sprite_from_file(const Glib::ustring &path, Sprite &spr) {
 		fread(&fcount, sizeof(int), 1, f);
 		
 		// read in frames
-		for (int fr=0; fr<fcount; fr++) {
+		for (int j=0; j<fcount; j++) {
 			Frame fr;
 			
 			// read time
@@ -888,13 +888,15 @@ void IO::write_pixbuf(FILE *f, const Glib::RefPtr<Gdk::Pixbuf> &pixbuf) {
 	fwrite((int*) &bps, sizeof(int), 1, f);
 	fwrite((int*) &rs, sizeof(int), 1, f);
 	fwrite((int*) &alpha, sizeof(int), 1, f);
-	fwrite((guint8*) pixels, w*h*bps, 1, f);
+	
+	fwrite((guint8*) pixels, rs*h, 1, f);
 }
 
 // read a pixbuf from file
 Glib::RefPtr<Gdk::Pixbuf> IO::read_pixbuf(FILE *f) {
 	// buffer attributes
 	int w, h, bps, rs, alpha;
+	size_t size;
 	guint8 *pixels;
 	
 	// read attributes
@@ -905,7 +907,7 @@ Glib::RefPtr<Gdk::Pixbuf> IO::read_pixbuf(FILE *f) {
 	fread((int*) &alpha, sizeof(int), 1, f);
 	
 	// calculate buffer length
-	long buflen=w*h*bps;
+	long buflen=rs*h;
 	pixels=(guint8*) malloc(buflen);
 	
 	// read in the buffer
