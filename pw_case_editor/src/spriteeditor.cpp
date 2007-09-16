@@ -19,6 +19,7 @@
  ***************************************************************************/
 // spriteeditor.cpp: implementation of SpriteEditor class
 
+#include <Magick++.h>
 #include <gtkmm/filechooserdialog.h>
 #include <gtkmm/messagedialog.h>
 #include <sstream>
@@ -80,7 +81,7 @@ void SpriteEditor::construct() {
 	// allocate buttons
 	m_NewAnimButton=manage(new Gtk::Button("New Animation"));
 	m_DeleteAnimButton=manage(new Gtk::Button("Delete Animation"));
-	m_AddFrameButton=manage(new Gtk::Button("Add Frame"));
+	m_AddFrameButton=manage(new Gtk::Button("Add Frames"));
 	m_DeleteFrameButton=manage(new Gtk::Button("Delete Frame"));
 	m_PrevFrameButton=manage(new Gtk::Button("<<"));
 	m_NextFrameButton=manage(new Gtk::Button(">>"));
@@ -99,12 +100,12 @@ void SpriteEditor::construct() {
 	m_AnimCB=manage(new Gtk::ComboBoxText);
 	
 	// append default animation
-	m_AnimCB->append_text("idle");
+	m_AnimCB->append_text("normal_idle");
 	m_AnimCB->set_active(0);
 	
 	// also add default animation
 	Animation animation;
-	animation.id="idle";
+	animation.id="normal_idle";
 	m_Sprite.add_animation(animation);
 	
 	// connect signals
@@ -236,6 +237,53 @@ void SpriteEditor::on_add_frame_button_clicked() {
 	// run the dialog
 	if (fcd.run()==Gtk::RESPONSE_OK) {
 		std::vector<Glib::ustring> filenames=fcd.get_filenames();
+		
+		// check for gifs
+		if (filenames.size()==1 && filenames[0].substr(filenames[0].size()-4, 4)==".gif") {
+			// first, get the id of our current animation
+			Glib::ustring id=m_AnimCB->get_active_text();
+			
+			// vector of frames in this animation
+			std::vector<Magick::Image> frames;
+			
+			// read in the frames
+			Magick::readImages(&frames, filenames[0]);
+			
+			// iterate over each frame and process it
+			for (int i=0; i<frames.size(); i++) {
+				Magick::Image frame=frames[i];
+				
+				// get the delay for this frame
+				int delay=frame.animationDelay()*10;
+				
+				// set the image to png
+				frame.magick("png");
+				
+				// dump this image to file
+				frame.write("tmp.png");
+				
+				// and create a pixbuf from it
+				Glib::RefPtr<Gdk::Pixbuf> pixbuf=Gdk::Pixbuf::create_from_file("tmp.png");
+				
+				// once we are through with this file, get rid of it
+				::remove("tmp.png");
+				
+				// add this frame
+				m_Sprite.add_frame(id, delay, pixbuf);
+				
+				// get the amount of frames in this animation now
+				int amount=m_Sprite.get_animation(id).frames.size();
+				m_CurFrame=amount;
+				
+				// set this new frame
+				m_Image->set(m_Sprite.get_animation(id).frames[m_CurFrame-1].pixbuf);
+				
+				update_progress_label();
+			}
+			
+			// we don't need to deal with this image anymore
+			return;
+		}
 		
 		// iterate over filenames
 		for (int i=0; i<filenames.size(); i++) {

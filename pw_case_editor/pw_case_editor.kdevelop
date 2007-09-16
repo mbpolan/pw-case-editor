@@ -22,6 +22,15 @@
     </general>
     <run>
       <mainprogram>src/pw_case_editor</mainprogram>
+      <runarguments>
+        <pw_case_editor></pw_case_editor>
+      </runarguments>
+      <debugarguments>
+        <pw_case_editor></pw_case_editor>
+      </debugarguments>
+      <cwd>
+        <pw_case_editor>/home/mike/Documents/programming/pw_case_editor/./src</pw_case_editor>
+      </cwd>
     </run>
     <configurations>
       <optimized>

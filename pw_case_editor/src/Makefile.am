@@ -4,7 +4,7 @@ bin_PROGRAMS = pw_case_editor
 
 AM_CXXFLAGS = @CXXFLAGS@ @GTKMM_CFLAGS@ 
 
-pw_case_editor_LDADD = @LIBS@ @GTKMM_LIBS@ 
+pw_case_editor_LDADD = -lMagick++ -lWand -lMagick @GTKMM_LIBS@ @LIBS@
 pw_case_editor_SOURCES = case.cpp character.cpp clistview.cpp dialogs.cpp \
 	hotspotwidget.cpp iohandler.cpp main.cpp mainwindow.cpp scriptwidget.cpp spriteeditor.cpp \
 	textboxdialog.cpp textboxeditor.cpp utilities.cpp
