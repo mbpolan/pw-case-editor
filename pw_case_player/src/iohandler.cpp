@@ -436,6 +436,22 @@ bool IO::loadStockFile(const std::string &path, Case::Case *pcase) {
 			Character character(vec[0], vec[1], vec[2], vec[3]);
 			character.setSprite(sprite);
 			
+			// see if a text box tag is present
+			if (vec[4]!="null") {
+				SDL_Surface *tag=Textures::createTexture("null", "data/stock/"+vec[4]);
+				if (tag) {
+					// set this tag
+					character.setHasTextBoxTag(true);
+					character.setTextBoxTag(tag);
+					
+					// along with its alpha
+					SDL_SetAlpha(tag, SDL_SRCALPHA, 165);
+				}
+				
+				else
+					std::cout << "Unable to load text box tag for character '" << vec[0] << "': " << vec[4] << std::endl;
+			}
+			
 			// add this sprite
 			pcase->addCharacter(character);
 		}

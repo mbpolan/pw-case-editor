@@ -589,6 +589,8 @@ void Game::renderTopView() {
 		// and draw it
 		if (bg)
 			Renderer::drawImage(0, 0, bg->texture);
+		else
+			std::cout << "Game: background for location '" << m_State.currentLocation << " not found\n";
 		
 		// if there is a character set here, draw him now
 		if (m_Case->getCharacter(location->character)) {
@@ -604,12 +606,8 @@ void Game::renderTopView() {
 			else
 				sprite->setAnimation(character->getRootAnimation()+"_idle");
 			
-			// calculate the x,y draw position
-			int x=(256/2)-(sprite->getCurrentFrame()->image->w/2)+10;
-			int y=192-(sprite->getCurrentFrame()->image->h);
-			
 			// draw the sprite
-			sprite->animate(x, y);
+			sprite->animate(0, 0);
 		}
 		
 		// handle special locations

@@ -36,6 +36,7 @@ TextParser::TextParser(Game *game): m_Game(game) {
 	m_QueuedFade="null";
 	m_Direct=false;
 	m_Speed=50;
+	m_TimedGoto=0;
 }
 
 // set the text block
@@ -72,6 +73,12 @@ std::string TextParser::parse() {
 	// if we are done parsing, return here
 	if (m_Done)
 		return "null";
+	
+	// if there is a timed paused, wait it out
+	if (m_TimedGoto!=0) {
+		m_TimedGoto-=1;
+		return "null";
+	}
 	
 	// if the parser is not paused, start parsing the set block
 	if (!m_Pause) {
@@ -341,6 +348,20 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		m_Direct=true;
 	}
 	
+	// go to another block following a pause
+	else if (trigger=="timed_goto") {
+		// split this command string
+		std::vector<std::string> params=Fonts::explodeString(',', command);
+		std::string nextBlock=params[0];
+		int pause=atoi(params[1].c_str());
+		
+		// set the timing
+		m_TimedGoto=pause;
+		m_NextBlock=nextBlock;
+		
+		m_Direct=true;
+	}
+	
 	// add evidence to court record
 	else if (trigger=="add_evidence") {
 		// make sure this evidence exists at all
@@ -428,6 +449,8 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		// get the target location
 		if (pcase->getLocation(target))
 			pcase->getLocation(target)->character=character;
+		else
+			std::cout << "Unable to put character at nonexistant location '" << target << "'\n";
 	}
 	
 	// add a talk option to a character

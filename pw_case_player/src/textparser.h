@@ -114,6 +114,9 @@ class TextParser {
 		// queued special effects
 		std::string m_QueuedFade;
 		
+		// wait times before parsing block
+		int m_TimedGoto;
+		
 		// game engine pointer
 		Game *m_Game;
 };
