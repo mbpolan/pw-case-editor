@@ -796,7 +796,7 @@ void AudioDialog::construct() {
 	table->attach(*m_DeleteButton, 1, 2, 1, 2, xops, yops);
 	table->attach(*m_SWindow, 0, 2, 2, 3);
 	
-	vb->pack_start(*table, Gtk::PACK_SHRINK);
+	vb->pack_start(*table);
 	
 	// add buttons
 	add_button("OK", Gtk::RESPONSE_OK);
@@ -1883,7 +1883,15 @@ Gtk::Container* NewCharDialog::build_graphics_page() {
 
 // constructor
 InitialBlockDialog::InitialBlockDialog(const Glib::ustring &id, BufferMap blocks) {
-	m_Blocks=blocks;
+	// iterate over blocks and remove the list ids
+	for (BufferMapIter it=blocks.begin(); it!=blocks.end(); ++it) {
+		// remove list id
+		Glib::ustring id=(*it).first;
+		id.erase(id.rfind('_'), id.size());
+		
+		// add the block
+		m_Blocks[id]=(*it).second;
+	}
 	
 	construct();
 	
@@ -1915,7 +1923,9 @@ void InitialBlockDialog::construct() {
 	// append the names of the text blocks
 	for (BufferMap::iterator it=m_Blocks.begin();
 	     it!=m_Blocks.end(); ++it) {
-		m_BlocksCB->append_text((*it).first);
+		// trim the end of the string
+		Glib::ustring str=(*it).first;
+		m_BlocksCB->append_text(str);
 	}
 	
 	// allocate text view
