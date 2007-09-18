@@ -96,6 +96,13 @@ void SpriteEditor::construct() {
 	m_NextFrameButton->signal_clicked().connect(sigc::mem_fun(*this, &SpriteEditor::on_next_frame_button_clicked));
 	m_AmendButton->signal_clicked().connect(sigc::mem_fun(*this, &SpriteEditor::on_amend_button_clicked));
 	
+	// allocate check button
+	m_LoopCB=manage(new Gtk::CheckButton("Loop Animation"));
+	m_LoopCB->set_active(true);
+	
+	// connect signal
+	m_LoopCB->signal_toggled().connect(sigc::mem_fun(*this, &SpriteEditor::on_loop_cb_toggled));
+	
 	// allocate combo box
 	m_AnimCB=manage(new Gtk::ComboBoxText);
 	
@@ -126,7 +133,8 @@ void SpriteEditor::construct() {
 	table->attach(*m_FrameLabel, 1, 3, 2, 3, xops, yops);
 	table->attach(*m_NextFrameButton, 3, 4, 2, 3, xops, yops);
 	table->attach(*m_Image, 0, 4, 3, 4);
-	table->attach(*m_TimeLabel, 0, 2, 4, 5, xops, yops);
+	table->attach(*m_LoopCB, 0, 1, 4, 5, xops, yops);
+	table->attach(*m_TimeLabel, 1, 2, 4, 5, xops, yops);
 	table->attach(*m_TimeEntry, 2, 3, 4, 5, xops, yops);
 	table->attach(*m_AmendButton, 3, 4, 4, 5, xops, yops);
 	
@@ -140,44 +148,35 @@ void SpriteEditor::construct() {
 	show_all_children();
 }
 
-// create a blank image for removing alpha channels
-Magick::Image SpriteEditor::create_image(int width, int height) {
-	Magick::Image image;
-	Magick::Geometry size;
-	
-	size.width(width);
-	size.height(height);
-	
-	image.size(size);
-	
-	Magick::PixelPacket *pixels=image.getPixels(0, 0, width, height);
-	
-	for (int i=0; i<width; i++) {
-		for (int j=0; j<height; j++) {
-			Magick::PixelPacket *pixel=pixels+i*j*sizeof(Magick::PixelPacket)+j;
-			*pixel=Magick::ColorRGB(0, 255, 0);
-		}
-	}
-	
-	image.syncPixels();
-	
-	return image;
-}
-
 // update the progress label
 void SpriteEditor::update_progress_label() {
 	std::stringstream ss;
 	
+	// get our animation
+	Animation anim=m_Sprite.get_animation(m_AnimCB->get_active_text());
+	
 	// current frame followed by max frames
-	ss << m_CurFrame << "/" << m_Sprite.get_animation(m_AnimCB->get_active_text()).frames.size();
+	ss << m_CurFrame << "/" << anim.frames.size();
 	
 	// set the label text
 	m_FrameLabel->set_text(ss.str());
 	
 	// also, set the time for this label in the appropriate entry
 	ss.str("");
-	ss << m_Sprite.get_animation(m_AnimCB->get_active_text()).frames[m_CurFrame-1].time;
+	ss << anim.frames[m_CurFrame-1].time;
 	m_TimeEntry->set_text(ss.str());
+	
+	// and update check button
+	m_LoopCB->set_active(anim.loop);
+}
+
+// handler for loop check button toggle
+void SpriteEditor::on_loop_cb_toggled() {
+	// get our animation
+	Animation &anim=m_Sprite.get_animation(m_AnimCB->get_active_text());
+	
+	// update loop variable
+	anim.loop=m_LoopCB->get_active();
 }
 
 // handler for combo box changes
@@ -222,6 +221,7 @@ void SpriteEditor::on_new_animation_button_clicked() {
 		// create a new Animation
 		Animation anim;
 		anim.id=id;
+		anim.loop=true;
 		
 		// add it to the sprite
 		m_Sprite.add_animation(anim);

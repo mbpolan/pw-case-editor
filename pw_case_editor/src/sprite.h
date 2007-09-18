@@ -36,6 +36,7 @@ typedef struct _Frame Frame;
 // struct representing a single animation
 struct _Animation {
 	Glib::ustring id;
+	bool loop;
 	std::vector<Frame> frames;
 };
 typedef struct _Animation Animation;

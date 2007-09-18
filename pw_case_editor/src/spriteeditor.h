@@ -22,8 +22,8 @@
 #ifndef SPRITEEDITOR_H
 #define SPRITEEDITOR_H
 
-#include <Magick++.h>
 #include <gtkmm/button.h>
+#include <gtkmm/checkbutton.h>
 #include <gtkmm/comboboxtext.h>
 #include <gtkmm/dialog.h>
 #include <gtkmm/entry.h>
@@ -48,11 +48,11 @@ class SpriteEditor: public Gtk::Dialog {
 		// build the ui
 		void construct();
 		
-		// create a blank image for removing alpha channels
-		Magick::Image create_image(int width, int height);
-		
 		// update the progress label
 		void update_progress_label();
+		
+		// handler for loop check button toggle
+		void on_loop_cb_toggled();
 		
 		// handler for combo box changes
 		void on_anim_cb_changed();
@@ -82,6 +82,9 @@ class SpriteEditor: public Gtk::Dialog {
 		Gtk::Label *m_AnimLabel;
 		Gtk::Label *m_FrameLabel;
 		Gtk::Label *m_TimeLabel;
+		
+		// check buttons
+		Gtk::CheckButton *m_LoopCB;
 		
 		// entries
 		Gtk::Entry *m_TimeEntry;

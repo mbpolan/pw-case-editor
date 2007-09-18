@@ -711,6 +711,9 @@ bool IO::save_sprite_to_file(const Glib::ustring &path, const Sprite &spr) {
 		// write id
 		write_string(f, anim.id);
 		
+		// write looping value
+		fwrite(&anim.loop, sizeof(bool), 1, f);
+		
 		// write amount of frames
 		int fcount=anim.frames.size();
 		fwrite(&fcount, sizeof(int), 1, f);
@@ -753,6 +756,9 @@ bool IO::export_sprite_to_file(const Glib::ustring &path, const Sprite &spr) {
 		
 		// write id
 		write_string(f, anim.id);
+		
+		// write looping value
+		fwrite(&anim.loop, sizeof(bool), 1, f);
 		
 		// write amount of frames
 		int fcount=anim.frames.size();
@@ -801,6 +807,9 @@ bool IO::load_sprite_from_file(const Glib::ustring &path, Sprite &spr) {
 		
 		// read id
 		anim.id=read_string(f);
+		
+		// read looping value
+		fread(&anim.loop, sizeof(bool), 1, f);
 		
 		// read amount of frames
 		int fcount;
