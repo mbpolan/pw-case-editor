@@ -485,7 +485,7 @@ bool IO::loadStockFile(const std::string &path, Case::Case *pcase) {
 			}
 			
 			// create a surface
-			SDL_Surface *surface=Textures::createTexture(id, file);
+			SDL_Surface *surface=Textures::createTexture(sId, file);
 			if (!surface)
 				return false;
 			

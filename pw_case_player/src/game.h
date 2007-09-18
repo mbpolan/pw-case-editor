@@ -182,6 +182,9 @@ class Game {
 		// render the courtroom overview
 		void renderCourtroomOverview();
 		
+		// render the attorney's stand
+		void renderStand(bool prosecutor);
+		
 		// top right button was clicked
 		void onTopRightButtonClicked();
 		

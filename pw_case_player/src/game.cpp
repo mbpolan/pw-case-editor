@@ -614,6 +614,12 @@ void Game::renderTopView() {
 		if (m_State.currentLocation=="courtroom")
 			renderCourtroomOverview();
 		
+		else if (m_State.currentLocation=="prosecutor_stand")
+			renderStand(true);
+		
+		else if (m_State.currentLocation=="defense_stand")
+			renderStand(false);
+		
 		// if the examination scene is up, dim the upper screen
 		if (flagged(STATE_EXAMINE) || (m_State.prevScreen==SCREEN_EXAMINE && !flagged(STATE_TEXT_BOX))) {
 			// get an opaque black surface
@@ -946,6 +952,16 @@ void Game::renderCourtroomOverview() {
 	// draw jury
 	m_Case->getCharacter("jury_left")->getSprite()->animate(0, 59);
 	m_Case->getCharacter("jury_right")->getSprite()->animate(215, 59);
+}
+
+// render the attorney's stand
+void Game::renderStand(bool prosecutor) {
+	// the background and sprite should be drawn by this point
+	// we just need to superimpose the bench seen ingame over the sprite
+	if (prosecutor)
+		Renderer::drawImage(0, 0, "prosecutor_bench");
+	else
+		Renderer::drawImage(0, 0, "defense_bench");
 }
 
 // top right button was clicked
