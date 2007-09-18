@@ -140,6 +140,30 @@ void SpriteEditor::construct() {
 	show_all_children();
 }
 
+// create a blank image for removing alpha channels
+Magick::Image SpriteEditor::create_image(int width, int height) {
+	Magick::Image image;
+	Magick::Geometry size;
+	
+	size.width(width);
+	size.height(height);
+	
+	image.size(size);
+	
+	Magick::PixelPacket *pixels=image.getPixels(0, 0, width, height);
+	
+	for (int i=0; i<width; i++) {
+		for (int j=0; j<height; j++) {
+			Magick::PixelPacket *pixel=pixels+i*j*sizeof(Magick::PixelPacket)+j;
+			*pixel=Magick::ColorRGB(0, 255, 0);
+		}
+	}
+	
+	image.syncPixels();
+	
+	return image;
+}
+
 // update the progress label
 void SpriteEditor::update_progress_label() {
 	std::stringstream ss;
@@ -256,8 +280,18 @@ void SpriteEditor::on_add_frame_button_clicked() {
 				// get the delay for this frame
 				int delay=frame.animationDelay()*10;
 				
-				// set the image to png
-				frame.magick("png");
+				// if this image has transparency, flatten it
+				if (frame.matte()) {
+					// vector of layers
+					std::vector<Magick::Image> flatten;
+					
+					// we add a new, blank image that is completely green
+					flatten.push_back(Magick::Image(frame.size(), Magick::ColorRGB(0, 255, 0)));
+					flatten.push_back(frame);
+					
+					// flatten these images
+					Magick::flattenImages(&frame, flatten.begin(), flatten.end());
+				}
 				
 				// dump this image to file
 				frame.write("tmp.png");

@@ -22,6 +22,7 @@
 #ifndef SPRITEEDITOR_H
 #define SPRITEEDITOR_H
 
+#include <Magick++.h>
 #include <gtkmm/button.h>
 #include <gtkmm/comboboxtext.h>
 #include <gtkmm/dialog.h>
@@ -46,6 +47,9 @@ class SpriteEditor: public Gtk::Dialog {
 	private:
 		// build the ui
 		void construct();
+		
+		// create a blank image for removing alpha channels
+		Magick::Image create_image(int width, int height);
 		
 		// update the progress label
 		void update_progress_label();
