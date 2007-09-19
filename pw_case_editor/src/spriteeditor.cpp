@@ -20,6 +20,7 @@
 // spriteeditor.cpp: implementation of SpriteEditor class
 
 #include <Magick++.h>
+#include <gtkmm/frame.h>
 #include <gtkmm/filechooserdialog.h>
 #include <gtkmm/messagedialog.h>
 #include <sstream>
@@ -65,18 +66,22 @@ void SpriteEditor::construct() {
 	// allocate table
 	Gtk::Table *table=manage(new Gtk::Table);
 	table->set_spacings(5);
+	table->set_homogeneous(false);
 	
 	// allocate labels
 	m_AnimLabel=manage(new Gtk::Label("Animation"));
 	m_FrameLabel=manage(new Gtk::Label("1/0"));
-	m_TimeLabel=manage(new Gtk::Label("Time (ms)"));
+	m_TimeLabel=manage(new Gtk::Label("Time Delay (in milliseconds)"));
+	m_SfxLabel=manage(new Gtk::Label("Sound Effect"));
 	
 	// allocate entries
 	m_TimeEntry=manage(new Gtk::Entry);
+	m_SfxEntry=manage(new Gtk::Entry);
 	m_TimeEntry->set_text("200");
 	
 	// allocate image
 	m_Image=manage(new Gtk::Image);
+	m_Image->set_size_request(256, 192);
 	
 	// allocate buttons
 	m_NewAnimButton=manage(new Gtk::Button("New Animation"));
@@ -97,7 +102,7 @@ void SpriteEditor::construct() {
 	m_AmendButton->signal_clicked().connect(sigc::mem_fun(*this, &SpriteEditor::on_amend_button_clicked));
 	
 	// allocate check button
-	m_LoopCB=manage(new Gtk::CheckButton("Loop Animation"));
+	m_LoopCB=manage(new Gtk::CheckButton("Loop Animation Upon Completion"));
 	m_LoopCB->set_active(true);
 	
 	// connect signal
@@ -122,9 +127,22 @@ void SpriteEditor::construct() {
 	Gtk::AttachOptions xops=Gtk::FILL | Gtk::EXPAND;
 	Gtk::AttachOptions yops=Gtk::SHRINK | Gtk::SHRINK;
 	
+	// create container frame and its table for frame options
+	Gtk::Frame *frame=manage(new Gtk::Frame("Frame Options"));
+	Gtk::Table *ftable=manage(new Gtk::Table);
+	ftable->set_spacings(5);
+	
+	// place widgets in frame
+	ftable->attach(*m_SfxLabel, 0, 1, 0, 1, xops, yops);
+	ftable->attach(*m_SfxEntry, 1, 2, 0, 1, xops, yops);
+	ftable->attach(*m_TimeLabel, 0, 1, 1, 2, xops, yops);
+	ftable->attach(*m_TimeEntry, 1, 2, 1, 2, xops, yops);
+	ftable->attach(*m_AmendButton, 0, 1, 2, 3, xops, yops);
+	frame->add(*ftable);
+	
 	// place widgets
 	table->attach(*m_AnimLabel, 0, 1, 0, 1, xops, yops);
-	table->attach(*m_AnimCB, 1, 3, 0, 1, xops, yops);
+	table->attach(*m_AnimCB, 1, 4, 0, 1, xops, yops);
 	table->attach(*m_NewAnimButton, 0, 1, 1, 2, xops, yops);
 	table->attach(*m_DeleteAnimButton, 1, 2, 1, 2, xops, yops);
 	table->attach(*m_AddFrameButton, 2, 3, 1, 2, xops, yops);
@@ -133,10 +151,8 @@ void SpriteEditor::construct() {
 	table->attach(*m_FrameLabel, 1, 3, 2, 3, xops, yops);
 	table->attach(*m_NextFrameButton, 3, 4, 2, 3, xops, yops);
 	table->attach(*m_Image, 0, 4, 3, 4);
-	table->attach(*m_LoopCB, 0, 1, 4, 5, xops, yops);
-	table->attach(*m_TimeLabel, 1, 2, 4, 5, xops, yops);
-	table->attach(*m_TimeEntry, 2, 3, 4, 5, xops, yops);
-	table->attach(*m_AmendButton, 3, 4, 4, 5, xops, yops);
+	table->attach(*m_LoopCB, 0, 4, 4, 5, xops, yops);
+	table->attach(*frame, 0, 4, 5, 6, xops, yops);
 	
 	vb->pack_start(*table, Gtk::PACK_SHRINK);
 	
@@ -165,6 +181,9 @@ void SpriteEditor::update_progress_label() {
 	ss.str("");
 	ss << anim.frames[m_CurFrame-1].time;
 	m_TimeEntry->set_text(ss.str());
+	
+	// and set the sound effect
+	m_SfxEntry->set_text(anim.frames[m_CurFrame-1].sfx);
 	
 	// and update check button
 	m_LoopCB->set_active(anim.loop);
@@ -202,6 +221,9 @@ void SpriteEditor::on_amend_button_clicked() {
 	
 	// get the current frame time
 	int time=atoi(m_TimeEntry->get_text().c_str());
+	
+	// get sound effect
+	fr.sfx=m_SfxEntry->get_text();
 	
 	// update this frame
 	fr.time=time;

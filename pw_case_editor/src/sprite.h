@@ -29,6 +29,7 @@
 // struct representing a frame of animation
 struct _Frame {
 	int time;
+	Glib::ustring sfx;
 	Glib::RefPtr<Gdk::Pixbuf> pixbuf;
 };
 typedef struct _Frame Frame;

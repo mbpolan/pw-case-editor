@@ -614,9 +614,6 @@ void MainWindow::on_tools_sprite_editor() {
 	// first, run the sprite chooser dialog
 	SpriteChooserDialog scd;
 	if (scd.run()==Gtk::RESPONSE_OK) {
-		// this dialog is not needed anymore
-		scd.hide();
-		
 		// get sprite mode
 		SpriteChooserDialog::SpriteMode mode=scd.get_sprite_mode();
 		

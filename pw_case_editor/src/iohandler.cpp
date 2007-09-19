@@ -720,7 +720,13 @@ bool IO::save_sprite_to_file(const Glib::ustring &path, const Sprite &spr) {
 		
 		// iterate over frames
 		for (int i=0; i<fcount; i++) {
+			// write time delay
 			fwrite(&anim.frames[i].time, sizeof(int), 1, f);
+			
+			// write sound effect
+			write_string(f, anim.frames[i].sfx);
+			
+			// write pixbuf
 			write_pixbuf(f, anim.frames[i].pixbuf);
 		}
 	}
@@ -768,6 +774,9 @@ bool IO::export_sprite_to_file(const Glib::ustring &path, const Sprite &spr) {
 		for (int i=0; i<fcount; i++) {
 			// write frame time
 			fwrite(&anim.frames[i].time, sizeof(int), 1, f);
+			
+			// write sound effect
+			write_string(f, anim.frames[i].sfx);
 			
 			// write image
 			write_bmp(f, anim.frames[i].pixbuf);
@@ -821,6 +830,9 @@ bool IO::load_sprite_from_file(const Glib::ustring &path, Sprite &spr) {
 			
 			// read time
 			fread(&fr.time, sizeof(int), 1, f);
+			
+			// read sound effect
+			fr.sfx=read_string(f);
 			
 			// read pixbuf
 			fr.pixbuf=read_pixbuf(f);

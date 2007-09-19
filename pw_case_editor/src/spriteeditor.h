@@ -82,12 +82,14 @@ class SpriteEditor: public Gtk::Dialog {
 		Gtk::Label *m_AnimLabel;
 		Gtk::Label *m_FrameLabel;
 		Gtk::Label *m_TimeLabel;
+		Gtk::Label *m_SfxLabel;
 		
 		// check buttons
 		Gtk::CheckButton *m_LoopCB;
 		
 		// entries
 		Gtk::Entry *m_TimeEntry;
+		Gtk::Entry *m_SfxEntry;
 		
 		// image for viewing frames
 		Gtk::Image *m_Image;
