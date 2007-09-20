@@ -59,6 +59,7 @@ Game::Game(const std::string &rootPath, Case::Case *pcase): m_RootPath(rootPath)
 	// reset special effects
 	m_State.fadeOut="none";
 	m_State.flash="none";
+	m_State.gavel="none";
 	
 	// null out variables
 	m_State.currentLocation="null";
@@ -795,6 +796,19 @@ bool Game::renderSpecialEffects() {
 		bool ret=m_UI->fadeOut("an_next_location_fade_"+m_State.fadeOut);
 		if (!ret)
 			m_State.fadeOut="none";
+		
+		return false;
+	}
+	
+	// draw the gavel animation
+	if (m_State.gavel!="none") {
+		// animate the gavel
+		Sprite *spr=m_Case->getCharacter("gavel")->getSprite();
+		spr->animate(0, 0);
+		
+		// if we're done, reset the special effect
+		if (spr->done())
+			m_State.gavel="none";
 		
 		return false;
 	}

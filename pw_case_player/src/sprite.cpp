@@ -19,23 +19,53 @@
  ***************************************************************************/
 // sprite.cpp: implementation of Sprite class
 
+#include "audio.h"
 #include "renderer.h"
 #include "sprite.h"
+#include "textparser.h"
 
 // constructor
 Sprite::Sprite() {
 	reset();
 }
 
+// toggle loop animation
+void Sprite::toggleLoop(bool b) {
+	// set looping for current animation
+	if (getAnimation(m_CurAnim))
+		getAnimation(m_CurAnim)->loop=b;
+}
+
+// see if looping is enabled
+bool Sprite::loop() {
+	if (!getAnimation(m_CurAnim))
+		return getAnimation(m_CurAnim)->loop;
+	else
+		return false;
+}
+
+// see if this sprite has finished playing
+bool Sprite::done() {
+	if (!getAnimation(m_CurAnim) || getAnimation(m_CurAnim)->loop)
+		return false;
+	
+	else
+		return m_CurFrame>=getAnimation(m_CurAnim)->frames.size()-1;
+}
+
 // set animation to play
-void Sprite::setAnimation(const std::string &anim) {
+void Sprite::setAnimation(const std::string &animation) {
+	Animation *anim=getAnimation(animation);
+	if (!anim)
+		return;
+	
 	// don't bother reseting this animation if it's already
 	// being played
-	if (m_CurAnim==anim)
+	else if (m_CurAnim==animation && anim->loop)
 		return;
 	
 	// set the animation to use and reset frames
-	m_CurAnim=anim;
+	m_CurAnim=animation;
 	m_CurFrame=0;
 }
 
@@ -63,8 +93,12 @@ void Sprite::animate(int x, int y) {
 		m_CurFrame++;
 		
 		// loop if needed
-		if (m_CurFrame>anim->frames.size()-1)
+		if (m_CurFrame>anim->frames.size()-1 && anim->loop)
 			m_CurFrame=0;
+		
+		// if this frame has a sound effect requested, play it now
+		if (frame->sfx!="")
+			Audio::playEffect(frame->sfx, SCRIPT_SFX_CHANNEL);
 	}
 	
 	// draw the current frame

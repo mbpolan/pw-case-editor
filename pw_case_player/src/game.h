@@ -95,6 +95,7 @@ struct _GameState {
 	// special effects
 	std::string fadeOut;
 	std::string flash;
+	std::string gavel;
 	
 	// the current evidence being shown
 	std::string shownEvidence;

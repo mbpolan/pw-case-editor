@@ -581,6 +581,18 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	else if (trigger=="flash")
 		m_Game->m_State.flash="top";
 	
+	// schedule a special effect
+	else if (trigger=="special_effect") {
+		if (command=="gavel") {
+			// make sure to reset the animation
+			pcase->getCharacter("gavel")->getSprite()->reset();
+			pcase->getCharacter("gavel")->getSprite()->setAnimation("normal_idle");
+			
+			// and schedule the event
+			m_Game->m_State.gavel="1";
+		}
+	}
+	
 	// set the current speaker
 	else if (trigger=="speaker") {
 		// copy speaker id

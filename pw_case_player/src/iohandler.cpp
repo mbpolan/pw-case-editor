@@ -348,6 +348,9 @@ bool IO::loadSpriteFromFile(const std::string &path, Sprite &sprite) {
 		// read id
 		anim.id=readString(f);
 		
+		// read looping value
+		fread(&anim.loop, sizeof(bool), 1, f);
+		
 		// read amount of frames
 		int fcount;
 		fread(&fcount, sizeof(int), 1, f);
@@ -358,6 +361,9 @@ bool IO::loadSpriteFromFile(const std::string &path, Sprite &sprite) {
 			
 			// read time
 			fread(&fr.time, sizeof(int), 1, f);
+			
+			// read sound effect
+			fr.sfx=readString(f);
 			
 			// read image
 			fr.image=Textures::createTexture("null", readImage(f));

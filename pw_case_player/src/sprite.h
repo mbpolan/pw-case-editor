@@ -30,6 +30,7 @@
 // struct representing data about a frame
 struct _Frame {
 	int time;
+	std::string sfx;
 	SDL_Surface *image;
 };
 typedef struct _Frame Frame;
@@ -37,6 +38,7 @@ typedef struct _Frame Frame;
 // struct representing a single animation
 struct _Animation {
 	std::string id;
+	bool loop;
 	std::vector<Frame> frames;
 };
 typedef struct _Animation Animation;
@@ -49,6 +51,15 @@ class Sprite {
 	public:
 		// constructor
 		Sprite();
+		
+		// toggle loop animation
+		void toggleLoop(bool b);
+		
+		// see if looping is enabled
+		bool loop();
+		
+		// see if this sprite has finished playing
+		bool done();
 		
 		// set animation to play
 		void setAnimation(const std::string &anim);
