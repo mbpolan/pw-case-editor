@@ -149,7 +149,7 @@ void UI::Manager::drawAnimation(const std::string &id) {
 	}
 	
 	// draw the texture
-	Renderer::drawImage(anim.current.x(), anim.current.y(), anim.texture);
+	Renderer::drawImage(anim.current, anim.texture);
 }
 
 // fade out the current scene to black
@@ -184,11 +184,11 @@ bool UI::Manager::fadeOut(const std::string &id) {
 	
 	// draw this surface, depending on screen
 	switch(anim.type) {
-		case UI::ANIM_FADE_OUT_TOP: Renderer::drawImage(0, 0, opaque); break;
-		case UI::ANIM_FADE_OUT_BOTTOM: Renderer::drawImage(0, 197, opaque); break;
+		case UI::ANIM_FADE_OUT_TOP: Renderer::drawImage(Point(0, 0), opaque); break;
+		case UI::ANIM_FADE_OUT_BOTTOM: Renderer::drawImage(Point(0, 197), opaque); break;
 		case UI::ANIM_FADE_OUT_BOTH: {
-			Renderer::drawImage(0, 0, opaque);
-			Renderer::drawImage(0, 197, opaque);
+			Renderer::drawImage(Point(0, 0), opaque);
+			Renderer::drawImage(Point(0, 197), opaque);
 		} break;
 	}
 	
@@ -313,7 +313,7 @@ bool UI::Manager::moveCourtCamera(const std::string &id, SDL_Surface *panorama, 
 	}
 	
 	// draw the panorama
-	Renderer::drawImage(cur.x(), 0, 256, 192, panorama, SDL_GetVideoSurface());
+	Renderer::drawImage(Point(cur.x(), 0), 256, 192, panorama, SDL_GetVideoSurface());
 	
 	return false;
 }

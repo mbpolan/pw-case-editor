@@ -20,6 +20,7 @@
 // sprite.cpp: implementation of Sprite class
 
 #include "audio.h"
+#include "common.h"
 #include "renderer.h"
 #include "sprite.h"
 #include "textparser.h"
@@ -102,7 +103,7 @@ void Sprite::animate(int x, int y) {
 	}
 	
 	// draw the current frame
-	Renderer::drawImage(x, y, frame->image);
+	Renderer::drawImage(Point(x, y), frame->image);
 }
 
 // render a single frame of current animation
@@ -121,7 +122,7 @@ void Sprite::renderFrame(int x, int y, int frame) {
 		return;
 	
 	// draw the requested frame
-	Renderer::drawImage(x, y, anim->frames[frame].image);
+	Renderer::drawImage(Point(x, y), anim->frames[frame].image);
 }
 
 // get an animation sequence

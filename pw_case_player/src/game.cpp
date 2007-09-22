@@ -597,7 +597,7 @@ void Game::renderTopView() {
 		
 		// and draw it
 		if (bg)
-			Renderer::drawImage(0, 0, bg->texture);
+			Renderer::drawImage(Point(0, 0), bg->texture);
 		else
 			std::cout << "Game: background for location '" << m_State.currentLocation << " not found\n";
 		
@@ -636,7 +636,7 @@ void Game::renderTopView() {
 			SDL_SetAlpha(opaque, SDL_SRCALPHA, 128);
 			
 			// draw it over the location
-			Renderer::drawImage(0, 0, opaque);
+			Renderer::drawImage(Point(0, 0), opaque);
 		}
 	}
 	
@@ -646,7 +646,7 @@ void Game::renderTopView() {
 		SDL_SetAlpha(opaque, SDL_SRCALPHA, 255);
 		
 		// draw it as the background
-		Renderer::drawImage(0, 0, opaque);
+		Renderer::drawImage(Point(0, 0), opaque);
 	}
 	
 	// draw text box, if needed
@@ -663,9 +663,9 @@ void Game::renderTopView() {
 		
 		// draw the evidence depending on position
 		if (m_State.shownEvidencePos==POSITION_LEFT)
-			Renderer::drawImage(20, 20, ev->texture);
+			Renderer::drawImage(Point(20, 20), ev->texture);
 		else
-			Renderer::drawImage(166, 20, ev->texture);
+			Renderer::drawImage(Point(166, 20), ev->texture);
 	}
 }
 
@@ -687,10 +687,10 @@ void Game::renderMenuView() {
 		// get the background
 		Case::Background *bg=m_Case->getBackground(location->bg);
 		
-		Renderer::drawImage(0, 197, bg->texture);
+		Renderer::drawImage(Point(0, 197), bg->texture);
 	}
 	else
-		Renderer::drawImage(0, 197, "court_overview_g");
+		Renderer::drawImage(Point(0, 197), "court_overview_g");
 	
 	// draw the evidence page
 	if (flagged(STATE_EVIDENCE_PAGE))
@@ -736,7 +736,7 @@ void Game::renderMenuView() {
 	
 	// draw next button in case of dialog
 	else if (flagged(STATE_NEXT_BTN)) {
-		Renderer::drawImage(16, 242, "tc_next_btn");
+		Renderer::drawImage(Point(16, 242), "tc_next_btn");
 		m_UI->drawAnimation("an_button_arrow_next");
 	}
 	
@@ -754,10 +754,10 @@ void Game::renderMenuView() {
 	}
 	
 	// top everything off with scanlines
-	Renderer::drawImage(0, 197, "scanlines_overlay");
+	Renderer::drawImage(Point(0, 197), "scanlines_overlay");
 	
 	// draw the top border bar
-	Renderer::drawImage(0, 197, "tc_top_bar"+append);
+	Renderer::drawImage(Point(0, 197), "tc_top_bar"+append);
 	
 	// draw border bars
 	if (flagged(STATE_LOWER_BAR)) {
@@ -767,22 +767,22 @@ void Game::renderMenuView() {
 			y+=10;
 		
 		// draw this lower bar border
-		Renderer::drawImage(0, y, "tc_lower_bar"+append);
+		Renderer::drawImage(Point(0, y), "tc_lower_bar"+append);
 	}
 	
 	// draw activated buttons
 	if (flagged(STATE_COURT_REC_BTN))
-		Renderer::drawImage(176, 197, "tc_court_rec_btn"+append);
+		Renderer::drawImage(Point(176, 197), "tc_court_rec_btn"+append);
 	else if (flagged(STATE_PRESENT_BTN))
-		Renderer::drawImage(176, 197, "tc_present_item_btn");
+		Renderer::drawImage(Point(176, 197), "tc_present_item_btn");
 	else if (flagged(STATE_EVIDENCE_BTN))
-		Renderer::drawImage(177, 197, "tc_evidence_btn");
+		Renderer::drawImage(Point(177, 197), "tc_evidence_btn");
 	else if (flagged(STATE_PROFILES_BTN))
-		Renderer::drawImage(177, 197, "tc_profiles_btn");
+		Renderer::drawImage(Point(177, 197), "tc_profiles_btn");
 	
 	// draw examine button if needed
 	if (flagged(STATE_EXAMINE))
-		Renderer::drawImage(256-79, 369, "tc_examine_btn_thin");
+		Renderer::drawImage(Point(256-79, 369), "tc_examine_btn_thin");
 	
 	// draw the back button
 	if (flagged(STATE_BACK_BTN)) {
@@ -792,7 +792,7 @@ void Game::renderMenuView() {
 			y+=10;
 		
 		// draw the button
-		Renderer::drawImage(0, y, "tc_back_btn"+append);
+		Renderer::drawImage(Point(0, y), "tc_back_btn"+append);
 	}
 }
 
@@ -872,7 +872,7 @@ void Game::renderTextBox() {
 	static std::string speaker="";
 	
 	// draw the actual text box body
-	Renderer::drawImage(0, 128, "tc_text_box");
+	Renderer::drawImage(Point(0, 128), "tc_text_box");
 	
 	// character speaking
 	if (speaker!="none" && speaker!="" && m_Case->getCharacter(speaker)) {
@@ -880,12 +880,12 @@ void Game::renderTextBox() {
 		SDL_Surface *tag=m_Case->getCharacter(speaker)->getTextBoxTag();
 		
 		// and draw it
-		Renderer::drawImage(0, 118, tag);
+		Renderer::drawImage(Point(0, 118), tag);
 	}
 	
 	// narration or no one speaking
 	else
-		Renderer::drawImage(0, 128, Textures::queryTexture("tc_text_box_border"));
+		Renderer::drawImage(Point(0, 128), Textures::queryTexture("tc_text_box_border"));
 	
 	// see if the two speakers vary
 	if (m_Parser->getSpeaker()!=speaker)
@@ -922,7 +922,7 @@ void Game::renderControls(int flags) {
 	int sy1=y, sy2=y+14;
 	
 	if ((flags & CONTROLS_EXAMINE) || (flags & CONTROLS_ALL)) {
-		Renderer::drawImage(8, y, "tc_examine_btn");
+		Renderer::drawImage(Point(8, y), "tc_examine_btn");
 		
 		// set high light coordinates if this is selected
 		if (m_State.selectedControl==0) {
@@ -934,7 +934,7 @@ void Game::renderControls(int flags) {
 	}
 	
 	if ((flags & CONTROLS_MOVE) || (flags & CONTROLS_ALL)) {
-		Renderer::drawImage(134, y, "tc_move_btn");
+		Renderer::drawImage(Point(134, y), "tc_move_btn");
 		
 		// set high light coordinates if this is selected
 		if (m_State.selectedControl==1) {
@@ -946,7 +946,7 @@ void Game::renderControls(int flags) {
 	}
 	
 	if ((flags & CONTROLS_TALK) || (flags & CONTROLS_ALL)) {
-		Renderer::drawImage(8, y+26+36, "tc_talk_btn");
+		Renderer::drawImage(Point(8, y+26+36), "tc_talk_btn");
 		
 		// set high light coordinates if this is selected
 		if (m_State.selectedControl==2) {
@@ -958,7 +958,7 @@ void Game::renderControls(int flags) {
 	}
 	
 	if ((flags & CONTROLS_PRESENT) || (flags & CONTROLS_ALL)) {
-		Renderer::drawImage(134, y+26+36, "tc_present_btn");
+		Renderer::drawImage(Point(134, y+26+36), "tc_present_btn");
 		
 		// set high light coordinates if this is selected
 		if (m_State.selectedControl==3) {
@@ -970,10 +970,10 @@ void Game::renderControls(int flags) {
 	}
 	
 	// draw selection box
-	Renderer::drawImage(sx1, sy1, "tc_select_tl");
-	Renderer::drawImage(sx1, sy2, "tc_select_bl");
-	Renderer::drawImage(sx2, sy2, "tc_select_br");
-	Renderer::drawImage(sx2, sy1, "tc_select_tr");
+	Renderer::drawImage(Point(sx1, sy1), "tc_select_tl");
+	Renderer::drawImage(Point(sx1, sy2), "tc_select_bl");
+	Renderer::drawImage(Point(sx2, sy2), "tc_select_br");
+	Renderer::drawImage(Point(sx2, sy1), "tc_select_tr");
 }
 
 // render the courtroom overview
@@ -988,7 +988,7 @@ void Game::renderCourtroomOverview() {
 		// get the image
 		Case::Image *image=m_Case->getImage(m_State.crOverviewDefense);
 		if (image)
-			Renderer::drawImage(179, 90, image->texture);
+			Renderer::drawImage(Point(179, 90), image->texture);
 		else
 			std::cout << "Game: courtroom overview image '" << m_State.crOverviewDefense << "' not found\n";
 	}
@@ -998,13 +998,13 @@ void Game::renderCourtroomOverview() {
 		// get the image
 		Case::Image *image=m_Case->getImage(m_State.crOverviewProsecutor);
 		if (image)
-			Renderer::drawImage(48, 91, image->texture);
+			Renderer::drawImage(Point(48, 91), image->texture);
 		else
 			std::cout << "Game: courtroom overview image '" << m_State.crOverviewDefense << "' not found\n";
 	}
 	
 	// draw the judge
-	Renderer::drawImage(121, 68, "overview_judge");
+	Renderer::drawImage(Point(121, 68), "overview_judge");
 	
 	// draw jury
 	m_Case->getCharacter("jury_left")->getSprite()->animate(0, 59);
@@ -1016,9 +1016,9 @@ void Game::renderStand(bool prosecutor) {
 	// the background and sprite should be drawn by this point
 	// we just need to superimpose the bench seen ingame over the sprite
 	if (prosecutor)
-		Renderer::drawImage(0, 0, "prosecutor_bench");
+		Renderer::drawImage(Point(0, 0), "prosecutor_bench");
 	else
-		Renderer::drawImage(0, 0, "defense_bench");
+		Renderer::drawImage(Point(0, 0), "defense_bench");
 }
 
 // top right button was clicked
