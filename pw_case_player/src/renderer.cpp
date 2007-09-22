@@ -25,6 +25,7 @@
 #include "font.h"
 #include "renderer.h"
 #include "texture.h"
+#include "utilities.h"
 
 // draw a colored rectangle
 void Renderer::drawRect(SDL_Surface *surface, int x, int y, int w, int h, Uint32 color) {
@@ -66,6 +67,18 @@ void Renderer::drawImage(int x, int y, SDL_Surface *texture) {
 	SDL_BlitSurface(texture, NULL, screen, &destRect);
 }
 
+// draw a part of an image onto another
+void Renderer::drawImage(int x, int y, int w, int h, SDL_Surface *src, SDL_Surface *dest) {
+	// define our region
+	SDL_Rect rect;
+	rect.x=x;
+	rect.y=y;
+	rect.w=w;
+	rect.h=h;
+	
+	SDL_BlitSurface(src, &rect, dest, NULL);
+}
+
 // draw a textured quad
 void Renderer::drawImage(int x1, int y1, int w, int h, int x2, int y2, const std::string &texId) {
 	// get pointer to screen surface
@@ -94,6 +107,63 @@ void Renderer::drawImage(int x1, int y1, int w, int h, int x2, int y2, const std
 	
 	// blit the image
 	SDL_BlitSurface(tex, &srcRect, screen, &destRect);
+}
+
+// generate a correctly rendered court panorama based on shown sprites
+SDL_Surface* Renderer::generateCourtPanorama(Case::Case *pcase, const std::string &prosecutor, 
+					     const std::string &defense, const std::string &witness) {
+	// get the base panorama
+	SDL_Surface *bg=Textures::queryTexture("court_panorama");
+	if (!bg)
+		return NULL;
+	
+	// first, create a new surface
+	SDL_Surface *panorama=Textures::queryTexture("court_panorama_filled");
+	
+	// clear the image
+	SDL_FillRect(panorama, NULL, 0);
+	
+	// draw the panorama onto the blank
+	Renderer::drawImage(0, 0, bg->w, bg->h, bg, panorama);
+	
+	// now draw the sprites themselves, if they are requested
+	if (prosecutor!="null" && pcase->getCharacter(prosecutor)) {
+		// get the character's sprite
+		Sprite *sProsecutor=pcase->getCharacter(prosecutor)->getSprite();
+		
+		// draw the prosecutor on the right
+		SDL_Surface *image=sProsecutor->getCurrentFrame()->image;
+		Renderer::drawImage(bg->w-256, 0, image->w, image->h, image, panorama);
+		
+		// draw prosecuter side bench
+		SDL_Surface *pb=Textures::queryTexture("prosecutor_bench");
+		Renderer::drawImage(bg->w-256, 0, pb->w, pb->h, pb, panorama);
+	}
+	
+	if (defense!="null" && pcase->getCharacter(defense)) {
+		// get the character's sprite
+		Sprite *sDefense=pcase->getCharacter(defense)->getSprite();
+		
+		// draw the defense attorney on the left
+		SDL_Surface *image=sDefense->getCurrentFrame()->image;
+		Renderer::drawImage(0, 0, image->w, image->h, image, panorama);
+		
+		// draw defense side bench
+		SDL_Surface *db=Textures::queryTexture("defense_bench");
+		Renderer::drawImage(0, 0, db->w, db->h, db, panorama);
+	}
+	
+	/*
+	if (witness!="null" && pcase->getCharacter(witness)) {
+		// get the character's sprite
+		Sprite *sDefense=pcase->getCharacter(witness)->getSprite();
+		
+		// draw the defense attorney on the left
+		sDefense->renderFrame(0, 0);
+	}
+	*/
+	
+	return panorama;
 }
 
 // draw the evidence page

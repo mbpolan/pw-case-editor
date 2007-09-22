@@ -31,18 +31,28 @@
 // the UI namespace
 namespace UI {
 
+// define limits for special animations
+enum Limit { LIMIT_NONE=0,
+             LIMIT_DEFENSE_STAND,
+             LIMIT_PROSECUTOR_STAND,
+             LIMIT_WITNESS_STAND };
+
 // animation types
 enum AnimType { ANIM_SIDE_HBOUNCE=0,
 		ANIM_SIDE_VBOUNCE,
 		ANIM_FADE_OUT_TOP,
 		ANIM_FADE_OUT_BOTTOM,
 		ANIM_FADE_OUT_BOTH,
-		ANIM_FLASH };
+		ANIM_FLASH,
+		ANIM_COURT_CAMERA };
 
-// a struct containing animation data
+// a struct containing animation data (not all variables pertinent)
 struct _Animation {
 	// texture image associated with this animation
 	std::string texture;
+	
+	// direct pointer to texture
+	SDL_Surface *surface;
 	
 	// current position of element
 	Point current;
@@ -56,8 +66,9 @@ struct _Animation {
 	int topLimit;
 	int bottomLimit;
 	
-	// the velocity of the animation
+	// the velocity and its speed multiplier of the animation
 	int velocity;
+	int multiplier;
 	
 	// current alpha value
 	int alpha;
@@ -92,6 +103,9 @@ class Manager {
 		// register a flash effect
 		void registerFlash(const std::string &id, int speed);
 		
+		// register a court camera effect
+		void registerCourtCameraMovement(const std::string &id);
+		
 		// draw an animation
 		void drawAnimation(const std::string &id);
 		
@@ -101,6 +115,9 @@ class Manager {
 		
 		// perform a flash effect
 		bool flash(const std::string &id);
+		
+		// perform a court camera movement
+		bool moveCourtCamera(const std::string &id, SDL_Surface *panorama, Limit start, Limit end);
 		
 	private:
 		// map of registered animations

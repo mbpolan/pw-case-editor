@@ -27,6 +27,7 @@
 #include "iohandler.h"
 #include "renderer.h"
 #include "texture.h"
+#include "utilities.h"
 
 // constructor
 Game::Game(const std::string &rootPath, Case::Case *pcase): m_RootPath(rootPath), m_Case(pcase) {
@@ -60,6 +61,7 @@ Game::Game(const std::string &rootPath, Case::Case *pcase): m_RootPath(rootPath)
 	m_State.fadeOut="none";
 	m_State.flash="none";
 	m_State.gavel="none";
+	m_State.courtCamera="none";
 	
 	// null out variables
 	m_State.currentLocation="null";
@@ -156,6 +158,9 @@ bool Game::loadStockTextures() {
 	
 	// modify surfaces
 	SDL_SetColorKey(Textures::queryTexture("transparent"), SDL_SRCCOLORKEY, 0);
+	
+	// add other surfaces
+	Textures::pushTexture("court_panorama_filled", Utils::createSurface(1296, 192));
 	
 	// register stock texture animations
 	registerAnimations();
@@ -457,6 +462,9 @@ void Game::registerAnimations() {
 	m_UI->registerFadeOut("an_next_location_fade_top", 1, UI::ANIM_FADE_OUT_TOP);
 	m_UI->registerFadeOut("an_next_location_fade_bottom", 1, UI::ANIM_FADE_OUT_BOTTOM);
 	m_UI->registerFadeOut("an_next_location_fade_both", 1, UI::ANIM_FADE_OUT_BOTH);
+	
+	// register court camera effect
+	m_UI->registerCourtCameraMovement("an_court_camera");
 	
 	// register flash effects
 	m_UI->registerFlash("an_flash", 2);
@@ -801,7 +809,7 @@ bool Game::renderSpecialEffects() {
 	}
 	
 	// draw the gavel animation
-	if (m_State.gavel!="none") {
+	else if (m_State.gavel!="none") {
 		// animate the gavel
 		Sprite *spr=m_Case->getCharacter("gavel")->getSprite();
 		spr->animate(0, 0);
@@ -811,6 +819,41 @@ bool Game::renderSpecialEffects() {
 			m_State.gavel="none";
 		
 		return false;
+	}
+	
+	// draw court room camera movement
+	else if (m_State.courtCamera!="none") {
+		// convert the string to limits
+		UI::Limit start, end;
+		Utils::scriptToLimits(m_State.courtCamera, start, end);
+		
+		// get locations
+		Case::Location *pStand=m_Case->getLocation("prosecutor_stand");
+		Case::Location *dStand=m_Case->getLocation("defense_stand");
+		Case::Location *wStand=m_Case->getLocation("witness_stand");
+		
+		// verify locations
+		if (!pStand || !dStand || !wStand) {
+			std::cout << "Unable to get needed locations for court camera movement!\n";
+			return true;
+		}
+		
+		// get a new panorama
+		SDL_Surface *panorama=Renderer::generateCourtPanorama(m_Case, pStand->character, dStand->character, wStand->character);
+		
+		// animate the camera
+		if (m_UI->moveCourtCamera("an_court_camera", Textures::queryTexture("court_panorama_filled"), start, end)) {
+			// flag that we're done
+			m_State.courtCamera="none";
+			
+			// also, reset the animation for future use
+			m_UI->registerCourtCameraMovement("an_court_camera");
+			
+			return true;
+		}
+		
+		else
+			return false;
 	}
 	
 	// render flash now, if requested

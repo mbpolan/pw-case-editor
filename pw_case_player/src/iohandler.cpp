@@ -26,6 +26,7 @@
 #include "audio.h"
 #include "font.h"
 #include "iohandler.h"
+#include "utilities.h"
 
 // load a case from file
 bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
@@ -436,7 +437,7 @@ bool IO::loadStockFile(const std::string &path, Case::Case *pcase) {
 			sprite.setAnimation("normal_idle");
 			
 			// extract data from string
-			StringVector vec=Fonts::explodeString(',', sId);
+			StringVector vec=Utils::explodeString(',', sId);
 			
 			// create character struct
 			Character character(vec[0], vec[1], vec[2], vec[3]);

@@ -105,6 +105,25 @@ void Sprite::animate(int x, int y) {
 	Renderer::drawImage(x, y, frame->image);
 }
 
+// render a single frame of current animation
+void Sprite::renderFrame(int x, int y, int frame) {
+	// get the current animation
+	Animation *anim=getAnimation(m_CurAnim);
+	if (!anim)
+		return;
+	
+	// default to first frame if unavailable
+	if (anim->frames.empty())
+		 frame=0;
+	
+	// don't draw anything if this frame is nonexistant
+	if (frame>=anim->frames.size()-1)
+		return;
+	
+	// draw the requested frame
+	Renderer::drawImage(x, y, anim->frames[frame].image);
+}
+
 // get an animation sequence
 Animation* Sprite::getAnimation(const std::string &id) {
 	if (m_Animations.find(id)!=m_Animations.end())

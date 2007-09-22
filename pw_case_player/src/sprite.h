@@ -67,6 +67,9 @@ class Sprite {
 		// animate the sprite
 		void animate(int x, int y);
 		
+		// render a single frame of current animation
+		void renderFrame(int x, int y, int frame=0);
+		
 		// add an entire animation
 		void addAnimation(const Animation &anim) { m_Animations[anim.id]=anim; }
 		

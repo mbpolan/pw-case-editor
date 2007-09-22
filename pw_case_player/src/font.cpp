@@ -138,31 +138,6 @@ SDL_Surface* Fonts::createSurface(char *pbuf) {
 	return surface;	
 }
 
-// break a string apart based on a delimiting character
-StringVector Fonts::explodeString(char delimiter, const std::string &strc) {
-	std::string str=strc;
-	std::vector<std::string> split;
-	
-	while(1) {
-		// find next separator
-		int npos=str.find(delimiter);
-		if (npos==-1) {
-			// erase to end for last parameter
-			split.push_back(str.substr(0, str.size()));
-			
-			break;
-		}
-		
-		// get the string
-		std::string s=str.substr(0, npos);
-		split.push_back(s);
-		
-		str.erase(0, npos+1);
-	}
-	
-	return split;
-}
-
 // see if this string is too long and needs to be broken
 bool Fonts::lineWillBreak(int x, int y, int rightClamp, const std::string &str, const std::string &fontId) {
 	Font font=g_Fonts[fontId];

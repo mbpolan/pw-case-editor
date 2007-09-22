@@ -23,6 +23,7 @@
 #include "font.h"
 #include "game.h"
 #include "textparser.h"
+#include "utilities.h"
 
 // constructor
 TextParser::TextParser(Game *game): m_Game(game) {
@@ -351,7 +352,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	// go to another block following a pause
 	else if (trigger=="timed_goto") {
 		// split this command string
-		std::vector<std::string> params=Fonts::explodeString(',', command);
+		std::vector<std::string> params=Utils::explodeString(',', command);
 		std::string nextBlock=params[0];
 		int pause=atoi(params[1].c_str());
 		
@@ -394,7 +395,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	// make a location accessible
 	else if (trigger=="add_location") {
 		// split this command string
-		std::vector<std::string> params=Fonts::explodeString(',', command);
+		std::vector<std::string> params=Utils::explodeString(',', command);
 		std::string target=params[0];
 		std::string location=params[1];
 		
@@ -413,7 +414,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	// set a trigger block at a location
 	else if (trigger=="set_location_trigger") {
 		// split this command string
-		std::vector<std::string> params=Fonts::explodeString(',', command);
+		std::vector<std::string> params=Utils::explodeString(',', command);
 		std::string target=params[0];
 		std::string block=params[1];
 		
@@ -429,7 +430,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	// set a character's animation
 	else if (trigger=="set_animation") {
 		// split this command string
-		std::vector<std::string> params=Fonts::explodeString(',', command);
+		std::vector<std::string> params=Utils::explodeString(',', command);
 		std::string charName=params[0];
 		std::string anim=params[1];
 		
@@ -442,7 +443,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	// put a character at a location
 	else if (trigger=="put_character") {
 		// split this command string
-		std::vector<std::string> params=Fonts::explodeString(',', command);
+		std::vector<std::string> params=Utils::explodeString(',', command);
 		std::string character=params[0];
 		std::string target=params[1];
 		
@@ -456,7 +457,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	// add a talk option to a character
 	else if (trigger=="add_talk_option") {
 		// split this command string
-		std::vector<std::string> params=Fonts::explodeString(',', command);
+		std::vector<std::string> params=Utils::explodeString(',', command);
 		std::string charName=params[0];
 		std::string viewString=params[1];
 		std::string blockId=params[2];
@@ -470,7 +471,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	// remove a talk option
 	else if (trigger=="remove_talk_option") {
 		// split this command string
-		std::vector<std::string> params=Fonts::explodeString(',', command);
+		std::vector<std::string> params=Utils::explodeString(',', command);
 		std::string charName=params[0];
 		std::string viewString=params[1];
 		
@@ -491,7 +492,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	// add a presentable piece of evidence/profile to a character
 	else if (trigger=="add_presentable") {
 		// split this command string
-		std::vector<std::string> params=Fonts::explodeString(',', command);
+		std::vector<std::string> params=Utils::explodeString(',', command);
 		std::string charName=params[0];
 		std::string itemId=params[1];
 		std::string targetBlock=params[2];
@@ -505,7 +506,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	// remove a piece of presentable evidence/profile
 	else if (trigger=="remove_presentable") {
 		// split this command string
-		std::vector<std::string> params=Fonts::explodeString(',', command);
+		std::vector<std::string> params=Utils::explodeString(',', command);
 		std::string charName=params[0];
 		std::string itemId=params[1];
 		
@@ -526,7 +527,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	// set the block to use when a useless item was presented
 	else if (trigger=="set_bad_presentable_block") {
 		// split this command string
-		std::vector<std::string> params=Fonts::explodeString(',', command);
+		std::vector<std::string> params=Utils::explodeString(',', command);
 		std::string charName=params[0];
 		std::string target=params[1];
 		
@@ -539,7 +540,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	// set music to be played a location
 	else if (trigger=="set_location_music") {
 		// split this command string
-		std::vector<std::string> params=Fonts::explodeString(',', command);
+		std::vector<std::string> params=Utils::explodeString(',', command);
 		std::string musicId=params[0];
 		std::string target=params[1];
 		
@@ -593,6 +594,10 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		}
 	}
 	
+	// schedule a court camera event
+	else if (trigger=="move_court_camera")
+		m_Game->m_State.courtCamera=command;
+	
 	// set the current speaker
 	else if (trigger=="speaker") {
 		// copy speaker id
@@ -606,7 +611,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	// set images for courtroom overview
 	else if (trigger=="set_court_overview_image") {
 		// split the command string
-		std::vector<std::string> params=Fonts::explodeString(',', command);
+		std::vector<std::string> params=Utils::explodeString(',', command);
 		std::string area=params[0];
 		std::string image=params[1];
 		

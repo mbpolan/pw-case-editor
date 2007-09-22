@@ -40,9 +40,16 @@ void drawImage(int x, int y, const std::string &texId);
 // draw a full image at a point
 void drawImage(int x, int y, SDL_Surface *texture);
 
+// draw a part of an image onto another
+void drawImage(int x, int y, int w, int h, SDL_Surface *src, SDL_Surface *dest);
+
 // draw an image
 // (x1,y1) are source coordinate pair; (x2,y2) are destination
 void drawImage(int x1, int y1, int w, int h, int x2, int y2, const std::string &texId);
+
+// generate a correctly rendered court panorama based on shown sprites
+SDL_Surface* generateCourtPanorama(Case::Case *pcase, const std::string &prosecutor, 
+				   const std::string &attorney, const std::string &witness);
 
 // draw the evidence page
 // page should be based on index 0, and selected should be an index between 0 and 7

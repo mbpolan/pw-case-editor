@@ -102,6 +102,21 @@ void UI::Manager::registerFlash(const std::string &id, int speed) {
 	m_Animations[id]=anim;
 }
 
+// register a court camera effect
+void UI::Manager::registerCourtCameraMovement(const std::string &id) {
+	Animation anim;
+	
+	// fill in values
+	anim.speed=1;
+	anim.lastDraw=0;
+	anim.velocity=0;
+	anim.multiplier=85;
+	anim.current=Point(0, 0);
+	
+	// add animation
+	m_Animations[id]=anim;
+}
+
 // draw an animation
 void UI::Manager::drawAnimation(const std::string &id) {
 	// get the requested animation
@@ -209,4 +224,96 @@ bool UI::Manager::flash(const std::string &id) {
 		boxRGBA(SDL_GetVideoSurface(), 0, 0, 256, 192, 255, 255, 255, anim.alpha);
 	
 	return ret;
+}
+
+// perform a court camera movement
+bool UI::Manager::moveCourtCamera(const std::string &id, SDL_Surface *panorama, UI::Limit start, UI::Limit end) {
+	// make sure the animation is valid
+	if (m_Animations.find(id)==m_Animations.end()) {
+		std::cout << "UIManager: animation '" << id << "' not registered\n";
+		return true;
+	}
+	
+	// make sure the panorama is valid
+	if (!panorama) {
+		std::cout << "UIMananger: supplied panorama is invalid!\n";
+		return true;
+	}
+	
+	// get the animation
+	Animation &anim=m_Animations[id];
+	Point &cur=anim.current;
+	
+	// modify velocity based on direction once
+	if (anim.velocity==0) {
+		// we're starting from the prosecutor stand
+		if (start==UI::LIMIT_PROSECUTOR_STAND) {
+			anim.velocity=-1;
+			anim.current.setX(panorama->w-256);
+		}
+		
+		// starting from defense stand
+		else if (start==UI::LIMIT_DEFENSE_STAND) {
+			anim.velocity=1;
+			anim.current.setX(0);
+		}
+	}
+	
+	// move the panorama
+	int now=SDL_GetTicks();
+	if (now-anim.lastDraw>1) {
+		anim.lastDraw=now;
+		
+		// calculate real velocity based on multiplier value
+		int velocity=anim.velocity*anim.multiplier;
+		
+		// calculate the end point
+		int endPt;
+		if (end==UI::LIMIT_DEFENSE_STAND)
+			endPt=0;
+		else if (end==UI::LIMIT_PROSECUTOR_STAND)
+			endPt=panorama->w-256;
+		
+		// cache our x coordinate
+		int x=cur.x();
+		
+		//std::cout << "Current: " << x << ", end: " << end << ", vel: " << velocity << std::endl;
+		
+		// moving the camera to the left
+		if (velocity<0) {
+			// if we are still not done, move the camera
+			if (x>endPt) {
+				// make sure not to overshoot the end point
+				if (x+velocity<=endPt)
+					cur.setX(endPt);
+				else
+					cur.setX(x+velocity);
+			}
+			
+			// we're reached the end point
+			else
+				return true;
+		}
+		
+		// moving camera to the right
+		else if (velocity>0) {
+			// if we are still not done, move the camera
+			if (x<endPt) {
+				// once again, make sure not to overshoot the far right point
+				if (x+velocity>=endPt)
+					cur.setX(endPt);
+				else
+					cur.setX(x+velocity);
+			}
+			
+			// we're done
+			else
+				return true;
+		}
+	}
+	
+	// draw the panorama
+	Renderer::drawImage(cur.x(), 0, 256, 192, panorama, SDL_GetVideoSurface());
+	
+	return false;
 }
