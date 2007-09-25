@@ -57,6 +57,9 @@ Game::Game(const std::string &rootPath, Case::Case *pcase): m_RootPath(rootPath)
 	// reset previous page
 	m_State.prevScreen=0;
 	
+	// reset music variables
+	m_State.continueMusic=false;
+	
 	// reset special effects
 	m_State.fadeOut="none";
 	m_State.flash="none";
@@ -531,15 +534,15 @@ void Game::setLocation(const std::string &locationId) {
 	// get the location
 	Case::Location *location=m_Case->getLocation(locationId);
 	
-	// set the new location
-	m_State.currentLocation=locationId;
-	
-	// fade out the current music, if any
-	Audio::haltMusic();
-	
-	// if this location has set music, then play it
-	if (location->music!="null")
-		Audio::playMusic(location->music);
+	// don't play new music if requested
+	if (!m_State.continueMusic || !Audio::isMusicPlaying()) {
+		// fade out the current music, if any
+		Audio::haltMusic();
+		
+		// if this location has set music, then play it
+		if (location->music!="null")
+			Audio::playMusic(location->music);
+	}
 	
 	// if this location has a trigger block, execute it now
 	if (location->triggerBlock!="null") {
@@ -549,6 +552,9 @@ void Game::setLocation(const std::string &locationId) {
 		// clear the trigger
 		location->triggerBlock="null";
 	}
+	
+	// set the new location
+	m_State.currentLocation=locationId;
 }
 
 // set the evidence to draw on top screen
@@ -585,6 +591,17 @@ void Game::selectEvidence(bool increment) {
 		if (m_State.selectedEvidence<0)
 			m_State.selectedEvidence=amount-1;
 	}
+}
+
+// see if a location is a court location
+bool Game::isCourtLocation(const std::string &id) {
+	// test the string
+	if (id=="prosecutor_stand" || id=="defense_stand" || 
+	    id=="defense_helper_stand" || id=="witness_stand" ||
+	    id=="judge_stand" || id=="courtroom")
+		return true;
+	else
+		return false;
 }
 
 // render the game view (top screen)
@@ -624,10 +641,13 @@ void Game::renderTopView() {
 			renderCourtroomOverview();
 		
 		else if (m_State.currentLocation=="prosecutor_stand")
-			renderStand(true);
+			renderStand(COURT_PROSECUTOR_STAND);
 		
 		else if (m_State.currentLocation=="defense_stand")
-			renderStand(false);
+			renderStand(COURT_DEFENSE_STAND);
+		
+		else if (m_State.currentLocation=="witness_stand")
+			renderStand(COURT_WITNESS_STAND);
 		
 		// if the examination scene is up, dim the upper screen
 		if (flagged(STATE_EXAMINE) || (m_State.prevScreen==SCREEN_EXAMINE && !flagged(STATE_TEXT_BOX))) {
@@ -1012,13 +1032,20 @@ void Game::renderCourtroomOverview() {
 }
 
 // render the attorney's stand
-void Game::renderStand(bool prosecutor) {
+void Game::renderStand(const Stand stand) {
 	// the background and sprite should be drawn by this point
 	// we just need to superimpose the bench seen ingame over the sprite
-	if (prosecutor)
-		Renderer::drawImage(Point(0, 0), "prosecutor_bench");
-	else
-		Renderer::drawImage(Point(0, 0), "defense_bench");
+	std::string sId="null";
+	switch(stand) {
+		case COURT_PROSECUTOR_STAND: sId="prosecutor_bench"; break;
+		case COURT_DEFENSE_STAND: sId="defense_bench"; break;
+		case COURT_WITNESS_STAND: sId="witness_bench"; break;
+		
+		default: break;
+	}
+	
+	// draw the image
+	Renderer::drawImage(Point(0, 0), sId);
 }
 
 // top right button was clicked

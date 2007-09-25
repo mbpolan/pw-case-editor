@@ -56,6 +56,9 @@ void playEffect(const std::string &id, int channel=-1);
 // play a music sample
 void playMusic(const std::string &id);
 
+// see if music is playing
+bool isMusicPlaying();
+
 // halt music playback
 void haltMusic();
 

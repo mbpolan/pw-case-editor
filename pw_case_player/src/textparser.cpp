@@ -544,9 +544,21 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		std::string musicId=params[0];
 		std::string target=params[1];
 		
+		// if the court was requested, set all court locations to play the same music
+		if (target=="court") {
+			m_Game->m_State.continueMusic=true;
+			pcase->getLocation("prosecutor_stand")->music=musicId;
+			pcase->getLocation("defense_stand")->music=musicId;
+			pcase->getLocation("defense_helper_stand")->music=musicId;
+			pcase->getLocation("witness_stand")->music=musicId;
+			pcase->getLocation("courtroom")->music=musicId;
+			pcase->getLocation("judge_stand")->music=musicId;
+		}
+		
 		// get the target location
-		if (pcase->getLocation(target))
+		else if (pcase->getLocation(target))
 			pcase->getLocation(target)->music=musicId;
+		
 		else
 			std::cout << "Warning: setting music " << musicId << " at unknown location " << target << std::endl;
 	}

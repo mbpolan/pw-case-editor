@@ -85,6 +85,11 @@ void Audio::playMusic(const std::string &id) {
 		Mix_PlayMusic(audio->music, -1);
 }
 
+// see if music is playing
+bool Audio::isMusicPlaying() {
+	return Mix_PlayingMusic();
+}
+
 // halt music playback
 void Audio::haltMusic() {
 	Mix_HaltMusic();

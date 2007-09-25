@@ -90,6 +90,9 @@ bool SDLContext::initVideo(int width, int height) {
 	SDLContext::m_Width=width;
 	SDLContext::m_Height=height;
 	
+	// set tentative window manager title
+	SDL_WM_SetCaption("Loading case...", 0);
+	
 	return true;
 }
 

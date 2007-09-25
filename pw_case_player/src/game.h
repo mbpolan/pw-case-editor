@@ -70,6 +70,12 @@ enum Screen {
 		SCREEN_TALK=3,
 		SCREEN_PRESENT=4 };
 
+// court location stand
+enum Stand {
+		COURT_PROSECUTOR_STAND=0,
+		COURT_DEFENSE_STAND,
+		COURT_WITNESS_STAND };
+
 // struct that stores the current game state
 struct _GameState {
 	// flags that toggle what to draw
@@ -91,6 +97,9 @@ struct _GameState {
 	
 	// the previous screen displayed
 	int prevScreen;
+	
+	// music variables
+	bool continueMusic;
 	
 	// special effects
 	std::string fadeOut;
@@ -166,6 +175,9 @@ class Game {
 		// change the selected evidence
 		void selectEvidence(bool increment=true);
 		
+		// see if a location is a court location
+		bool isCourtLocation(const std::string &id);
+		
 		// render the game view (top screen)
 		void renderTopView();
 		
@@ -185,7 +197,7 @@ class Game {
 		void renderCourtroomOverview();
 		
 		// render the attorney's stand
-		void renderStand(bool prosecutor);
+		void renderStand(const Stand stand);
 		
 		// top right button was clicked
 		void onTopRightButtonClicked();
