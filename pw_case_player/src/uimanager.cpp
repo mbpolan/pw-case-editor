@@ -257,6 +257,17 @@ bool UI::Manager::moveCourtCamera(const std::string &id, SDL_Surface *panorama, 
 			anim.velocity=1;
 			anim.current.setX(0);
 		}
+		
+		// starting from witness stand
+		else if (start==UI::LIMIT_WITNESS_STAND) {
+			anim.current.setX(472);
+			
+			// see where we are going
+			if (end==UI::LIMIT_PROSECUTOR_STAND)
+				anim.velocity=1;
+			else if (end==UI::LIMIT_DEFENSE_STAND)
+				anim.velocity=-1;
+		}
 	}
 	
 	// move the panorama
@@ -273,11 +284,11 @@ bool UI::Manager::moveCourtCamera(const std::string &id, SDL_Surface *panorama, 
 			endPt=0;
 		else if (end==UI::LIMIT_PROSECUTOR_STAND)
 			endPt=panorama->w-256;
+		else if (end==UI::LIMIT_WITNESS_STAND)
+			endPt=472;
 		
 		// cache our x coordinate
 		int x=cur.x();
-		
-		//std::cout << "Current: " << x << ", end: " << end << ", vel: " << velocity << std::endl;
 		
 		// moving the camera to the left
 		if (velocity<0) {
