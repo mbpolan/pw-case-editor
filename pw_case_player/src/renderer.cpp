@@ -145,15 +145,14 @@ SDL_Surface* Renderer::generateCourtPanorama(Case::Case *pcase, const std::strin
 		Renderer::drawImage(Point(0, 0), image->w, image->h, image, panorama);
 	}
 	
-	/*
 	if (witness!="null" && pcase->getCharacter(witness)) {
 		// get the character's sprite
 		Sprite *sDefense=pcase->getCharacter(witness)->getSprite();
 		
-		// draw the defense attorney on the left
-		sDefense->renderFrame(0, 0);
+		// draw the witness in the center
+		SDL_Surface *image=sDefense->getCurrentFrame()->image;
+		Renderer::drawImage(Point(520, 0), image->w, image->h, image, panorama);
 	}
-	*/
 	
 	// draw prosecuter side bench
 	SDL_Surface *pb=Textures::queryTexture("prosecutor_bench");

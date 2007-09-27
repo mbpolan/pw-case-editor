@@ -47,7 +47,8 @@ enum GameFlags {
 	STATE_CONTROLS=			0x2000,
 	STATE_EXAMINE=			0x4000,
 	STATE_MOVE=			0x8000,
-	STATE_TALK=			0x10000 };
+	STATE_TALK=			0x10000,
+	STATE_PRESENT_TOP_BTN=		0x20000 };
 
 // menu controls to draw
 enum Controls {
@@ -91,6 +92,10 @@ struct _GameState {
 	int selectedControl;
 	int selectedLocation;
 	int selectedTalkOption;
+	
+	// trial variables
+	bool requestingEvidence;
+	std::string requestedEvidenceParams;
 	
 	// x,y coordinates or examination cursor
 	int examineX, examineY;
@@ -172,8 +177,8 @@ class Game {
 		// set the evidence to draw on top screen
 		void setShownEvidence(const std::string &id, const Position &pos);
 		
-		// change the selected evidence
-		void selectEvidence(bool increment=true);
+		// change the selected evidence/profile
+		void selectEvidence(bool evidence=true, bool increment=true);
 		
 		// see if a location is a court location
 		bool isCourtLocation(const std::string &id);
@@ -204,6 +209,9 @@ class Game {
 		
 		// bottom left button was clicked
 		void onBottomLeftButtonClicked();
+		
+		// centered present button clicked
+		void onPresentCenterClicked();
 		
 		// click handler for controls
 		void onControlsClicked(int x, int y);

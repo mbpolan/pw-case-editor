@@ -114,6 +114,10 @@ class TextParser {
 		// queued special effects
 		std::string m_QueuedFade;
 		
+		// generic events to perform
+		std::string m_QueuedEvent;
+		std::string m_QueuedEventArgs;
+		
 		// wait times before parsing block
 		int m_TimedGoto;
 		

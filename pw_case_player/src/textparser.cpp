@@ -35,6 +35,7 @@ TextParser::TextParser(Game *game): m_Game(game) {
 	m_SpeakerGender=Character::GENDER_MALE;
 	m_Dialogue="";
 	m_QueuedFade="null";
+	m_QueuedEvent="null";
 	m_Direct=false;
 	m_Speed=50;
 	m_TimedGoto=0;
@@ -175,6 +176,7 @@ std::string TextParser::parse() {
 			// if we are done parsing, end this loop
 			if (m_Done) {
 				m_Pause=true;
+				
 				return "null";
 			}
 			
@@ -187,6 +189,11 @@ std::string TextParser::parse() {
 	}
 	
 	else {
+		// shift the drawing of the string based on state
+		int shift=0;
+		if (m_Game->m_State.requestingEvidence)
+			shift=-32;
+		
 		// see if we should draw the next character in the string
 		int now=SDL_GetTicks();
 		if (now-m_LastChar>m_FontStyle.speed && m_StrPos<m_Dialogue.size()) {
@@ -231,17 +238,35 @@ std::string TextParser::parse() {
 			int lx=(256/2)-(Fonts::getWidth(m_FontStyle.color, area)/2)-2;
 			
 			// draw date
-			Fonts::drawString(dx, 134, m_StrPos, SDL_GetVideoSurface()->w-8, date, m_FontStyle.color);
+			Fonts::drawString(dx, 134+shift, m_StrPos, SDL_GetVideoSurface()->w-8, date, m_FontStyle.color);
 			
 			// draw location is m_StrPos has surpassed length of date string
 			if (m_StrPos>date.size())
-				Fonts::drawString(lx, 134+Fonts::g_LineBreakSize, m_StrPos-date.size(),
+				Fonts::drawString(lx, 134+shift+Fonts::g_LineBreakSize, m_StrPos-date.size(),
 						  SDL_GetVideoSurface()->w-8, area, m_FontStyle.color);
 		}
 		
 		// draw the string in plain formatting otherwise
-		else
-			Fonts::drawString(8, 134, m_StrPos, SDL_GetVideoSurface()->w-8, m_Dialogue, m_FontStyle.color);
+		else {
+			// draw the string
+			Fonts::drawString(8, 134+shift, m_StrPos, SDL_GetVideoSurface()->w-8, m_Dialogue, m_FontStyle.color);
+			
+			// since the dialog is done, execute queued events
+			if (m_QueuedEvent!="null" && dialogueDone()) {
+				// request evidence
+				if (m_QueuedEvent=="request_evidence") {
+					// set the variable in the game state
+					m_Game->m_State.requestingEvidence=true;
+					m_Game->m_State.requestedEvidenceParams=m_QueuedEventArgs;
+					
+					// now, we also need to go directly to the evidence page
+					int flags=STATE_TEXT_BOX | STATE_LOWER_BAR | STATE_EVIDENCE_PAGE | STATE_PROFILES_PAGE;
+					m_Game->m_State.drawFlags=flags;
+				}
+				
+				m_QueuedEvent="null";
+			}
+		}
 	}
 	
 	return "null";
@@ -318,6 +343,10 @@ void TextParser::parseTag(const std::string &tag) {
 	// blue color tag -- set blue font
 	if (tag=="blue")
 		m_FontStyle.color="blue";
+	
+	// green color tag -- set green font
+	else if (tag=="green")
+		m_FontStyle.color="green";
 	
 	// date tag - set green font and slow down draw speed
 	else if (tag=="date") {
@@ -568,6 +597,12 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		// get the target location
 		if (pcase->getLocation(command))
 			pcase->getLocation(command)->music="null";
+	}
+	
+	// flag that requires player to present evidence
+	else if (trigger=="request_evidence") {
+		m_QueuedEvent=trigger;
+		m_QueuedEventArgs=command;
 	}
 	
 	// play a sample of music

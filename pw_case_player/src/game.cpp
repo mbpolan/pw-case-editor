@@ -45,6 +45,10 @@ Game::Game(const std::string &rootPath, Case::Case *pcase): m_RootPath(rootPath)
 	m_State.selectedLocation=0;
 	m_State.selectedTalkOption=0;
 	
+	// reset trial variables
+	m_State.requestingEvidence=false;
+	m_State.requestedEvidenceParams="null";
+	
 	// reset examination cursor position
 	m_State.examineX=256/2;
 	m_State.examineY=192/2;
@@ -237,6 +241,17 @@ void Game::render() {
 		else {
 			flags |= STATE_COURT_REC_BTN;
 			flags |= STATE_NEXT_BTN;
+		}
+		
+		// remove certain flags in specific situations
+		if (m_State.requestingEvidence) {
+			// back button should not be shown when record pages are shown
+			if (flags & STATE_EVIDENCE_PAGE || flags & STATE_PROFILES_PAGE)
+				flags &= ~STATE_BACK_BTN;
+			
+			// add the present top button
+			if (flags & STATE_EVIDENCE_INFO_PAGE || flags & STATE_PROFILE_INFO_PAGE)
+				flags |= STATE_PRESENT_TOP_BTN;
 		}
 		
 		toggle(flags);
@@ -436,6 +451,10 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 			m_Parser->nextStep();
 		}
 		
+		// check if the centered, present button was clicked
+		if (flagged(STATE_PRESENT_TOP_BTN) && ((e->x>=89 && e->x<=167) && (e->y>=197 && e->y<=229)))
+			onPresentCenterClicked();
+		
 		// if the controls are drawn, see if one was clicked
 		else if (flagged(STATE_CONTROLS))
 			onControlsClicked(e->x, e->y);
@@ -576,20 +595,39 @@ void Game::setShownEvidence(const std::string &id, const Position &pos) {
 }
 
 // change the selected evidence
-void Game::selectEvidence(bool increment) {
-	// calculate amount of evidence on this page
-	int amount=m_State.visibleEvidence.size()-(m_State.evidencePage*8);
-	
-	if (increment) {
-		m_State.selectedEvidence++;
-		if (m_State.selectedEvidence>amount-1)
-			m_State.selectedEvidence=0;
+void Game::selectEvidence(bool evidence, bool increment) {
+	if (evidence) {
+		// calculate amount of evidence on this page
+		int amount=m_State.visibleEvidence.size()-(m_State.evidencePage*8);
+		
+		if (increment) {
+			m_State.selectedEvidence++;
+			if (m_State.selectedEvidence>amount-1)
+				m_State.selectedEvidence=0;
+		}
+		
+		else {
+			m_State.selectedEvidence--;
+			if (m_State.selectedEvidence<0)
+				m_State.selectedEvidence=amount-1;
+		}
 	}
 	
 	else {
-		m_State.selectedEvidence--;
-		if (m_State.selectedEvidence<0)
-			m_State.selectedEvidence=amount-1;
+		// calculate amount of profiles on this page
+		int amount=m_State.visibleProfiles.size()-(m_State.profilesPage*8);
+		
+		if (increment) {
+			m_State.selectedProfile++;
+			if (m_State.selectedProfile>amount-1)
+				m_State.selectedProfile=0;
+		}
+		
+		else {
+			m_State.selectedProfile--;
+			if (m_State.selectedProfile<0)
+				m_State.selectedProfile=amount-1;
+		}
 	}
 }
 
@@ -650,7 +688,7 @@ void Game::renderTopView() {
 			renderStand(COURT_WITNESS_STAND);
 		
 		// if the examination scene is up, dim the upper screen
-		if (flagged(STATE_EXAMINE) || (m_State.prevScreen==SCREEN_EXAMINE && !flagged(STATE_TEXT_BOX))) {
+		if (flagged(STATE_EXAMINE) || (m_State.prevScreen==SCREEN_EXAMINE && !flagged(STATE_TEXT_BOX)) || m_State.requestingEvidence) {
 			// get an opaque black surface
 			SDL_Surface *opaque=Textures::queryTexture("opaque_black");
 			SDL_SetAlpha(opaque, SDL_SRCALPHA, 128);
@@ -674,6 +712,10 @@ void Game::renderTopView() {
 		// draw the text box over everything
 		renderTextBox();
 	}
+	
+	// if we are required to present evidence, draw elements now
+	if (m_State.requestingEvidence)
+		Renderer::drawImage(Point(0, 168), "tc_answer_bar");
 	
 	// if there is shown evidence, draw it as well
 	if (m_State.shownEvidence!="null") {
@@ -800,6 +842,10 @@ void Game::renderMenuView() {
 	else if (flagged(STATE_PROFILES_BTN))
 		Renderer::drawImage(Point(177, 197), "tc_profiles_btn");
 	
+	// draw the present evidence button, centered on the upper portion of the lower screen
+	if (flagged(STATE_PRESENT_TOP_BTN))
+		Renderer::drawImage(Point(89, 197), "tc_present_top_btn");
+	
 	// draw examine button if needed
 	if (flagged(STATE_EXAMINE))
 		Renderer::drawImage(Point(256-79, 369), "tc_examine_btn_thin");
@@ -891,8 +937,13 @@ void Game::renderTextBox() {
 	static bool speakerChecked=false;
 	static std::string speaker="";
 	
+	// if there is evidence to present, shift the text box up
+	int shift=0;
+	if (m_State.requestingEvidence)
+		shift=-32;
+	
 	// draw the actual text box body
-	Renderer::drawImage(Point(0, 128), "tc_text_box");
+	Renderer::drawImage(Point(0, 128+shift), "tc_text_box");
 	
 	// character speaking
 	if (speaker!="none" && speaker!="" && m_Case->getCharacter(speaker)) {
@@ -900,12 +951,12 @@ void Game::renderTextBox() {
 		SDL_Surface *tag=m_Case->getCharacter(speaker)->getTextBoxTag();
 		
 		// and draw it
-		Renderer::drawImage(Point(0, 118), tag);
+		Renderer::drawImage(Point(0, 118+shift), tag);
 	}
 	
 	// narration or no one speaking
 	else
-		Renderer::drawImage(Point(0, 128), Textures::queryTexture("tc_text_box_border"));
+		Renderer::drawImage(Point(0, 128+shift), Textures::queryTexture("tc_text_box_border"));
 	
 	// see if the two speakers vary
 	if (m_Parser->getSpeaker()!=speaker)
@@ -1120,6 +1171,10 @@ void Game::onTopRightButtonClicked() {
 		if (flagged(STATE_TEXT_BOX))
 			flags |= STATE_TEXT_BOX;
 		
+		// remove back button on certain ocassions
+		if (m_State.requestingEvidence)
+			flags &= ~STATE_BACK_BTN;
+		
 		toggle(flags);
 	}
 	
@@ -1130,6 +1185,10 @@ void Game::onTopRightButtonClicked() {
 		// if the text box is also present, draw it as well
 		if (flagged(STATE_TEXT_BOX))
 			flags |= STATE_TEXT_BOX;
+		
+		// remove back button on certain ocassions
+		if (m_State.requestingEvidence)
+			flags &= ~STATE_BACK_BTN;
 		
 		toggle(flags);
 	}
@@ -1242,6 +1301,48 @@ void Game::onBottomLeftButtonClicked() {
 		
 		// play a sound effect
 		Audio::playEffect("sfx_return", GUI_SFX_CHANNEL);
+	}
+}
+
+// centered present button clicked
+void Game::onPresentCenterClicked() {
+	// we are presenting evidence
+	if (m_State.requestingEvidence) {
+		// disable the requesting evidence mode
+		m_State.requestingEvidence=false;
+		
+		// get the current evidence/profile
+		std::string id="null";
+		if (flagged(STATE_EVIDENCE_INFO_PAGE) && !m_State.visibleEvidence.empty())
+			id=m_State.visibleEvidence[m_State.evidencePage*8+m_State.selectedEvidence].id;
+		
+		else if (!m_State.visibleProfiles.empty())
+			id=m_State.visibleProfiles[m_State.profilesPage*8+m_State.selectedProfile].getInternalName();
+		
+		// split the parameter string up
+		StringVector vec=Utils::explodeString(',', m_State.requestedEvidenceParams);
+		
+		// first, end the current block
+		m_Parser->nextStep();
+		
+		// now, we compare the correct evidence with what is presented
+		if (id==vec[0]) {
+			// set the next block to follow the correct choice
+			m_Parser->setBlock(m_Case->getBuffers()[vec[1]]);
+		}
+		
+		// otherwise, the player screwed up
+		else
+			m_Parser->setBlock(m_Case->getBuffers()[vec[2]]);
+		
+		// move along to set block
+		m_Parser->nextStep();
+		
+		// clear variables
+		m_State.requestedEvidenceParams="null";
+		
+		// and toggle flags
+		toggle(STATE_COURT_REC_BTN | STATE_NEXT_BTN | STATE_LOWER_BAR);
 	}
 }
 
@@ -1488,11 +1589,11 @@ void Game::onRecInfoPageClickEvent(int x, int y) {
 	// see if one of the buttons was clicked
 	// left button
 	if ((x>=ex && x<=ex+16) && (y>=ey && y<=ey+63))
-		selectEvidence(false);
+		selectEvidence(!flagged(STATE_PROFILE_INFO_PAGE), false);
 	
 	// right button
 	else if ((x>=240 && x<=240+16) && (y>=ey && y<=ey+63))
-		selectEvidence(true);
+		selectEvidence(!flagged(STATE_PROFILE_INFO_PAGE), true);
 }
 
 // examine button activated handler
