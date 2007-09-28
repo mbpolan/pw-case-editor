@@ -151,7 +151,7 @@ SDL_Surface* Renderer::generateCourtPanorama(Case::Case *pcase, const std::strin
 		
 		// draw the witness in the center
 		SDL_Surface *image=sDefense->getCurrentFrame()->image;
-		Renderer::drawImage(Point(520, 0), image->w, image->h, image, panorama);
+		Renderer::drawImage(Point(472, 0), image->w, image->h, image, panorama);
 	}
 	
 	// draw prosecuter side bench
@@ -164,7 +164,7 @@ SDL_Surface* Renderer::generateCourtPanorama(Case::Case *pcase, const std::strin
 	
 	// draw witness bench
 	SDL_Surface *wb=Textures::queryTexture("witness_bench");
-	Renderer::drawImage(Point(520, 0), wb->w, wb->h, wb, panorama);
+	Renderer::drawImage(Point(472, 0), wb->w, wb->h, wb, panorama);
 	
 	return panorama;
 }
@@ -542,7 +542,7 @@ void Renderer::drawMoveScene(const std::vector<std::string> &locations, Location
 }
 
 // draw talk scene
-void Renderer::drawTalkScene(const std::vector<StringPair> &options, int selected) {
+void Renderer::drawTalkScene(const std::vector<StringPair> &options, int selected, bool centered) {
 	// get pointer to screen surface
 	SDL_Surface *screen=SDL_GetVideoSurface();
 	if (!screen)
@@ -550,7 +550,11 @@ void Renderer::drawTalkScene(const std::vector<StringPair> &options, int selecte
 	
 	// keep track of drawing
 	int x=5;
-	int y=197+34+5;
+	int y=236;
+	
+	// if centering was requested, set a center x point
+	if (centered)
+		x=28;
 	
 	// iterate over options
 	for (int i=0; i<options.size(); i++) {
@@ -565,8 +569,16 @@ void Renderer::drawTalkScene(const std::vector<StringPair> &options, int selecte
 		// draw the button
 		Renderer::drawRect(screen, Point(x+1, y+1), 200-2, 18, SDL_MapRGB(screen->format, 255, 255, 255));
 		
-		// draw the text, centered
-		int centerx=100-(Fonts::getWidth("black", options[i].first)/2);
+		// calculate length of string
+		int length=Fonts::getWidth("black", options[i].first);
+		
+		// draw the text, centered on the button
+		int centerx;
+		if (centered)
+			centerx=128-(length/2);
+		else
+			centerx=100-(length/2);
+		
 		Fonts::drawString(centerx, y+4, options[i].first, "black");
 		
 		// move down to next slot

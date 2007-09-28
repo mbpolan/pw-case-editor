@@ -57,6 +57,9 @@ class TextParser {
 		// see if this parser is done
 		bool done() const { return m_Done; }
 		
+		// see if this block's dialogue can't be skipped
+		bool isBlocking() const { return m_BlockDiag; }
+		
 		// see if the current dialogue string is still be drawn
 		bool dialogueDone() const { return (m_StrPos==m_Dialogue.size()); }
 		
@@ -97,6 +100,7 @@ class TextParser {
 		bool m_Pause;
 		bool m_Done;
 		bool m_Direct; // flag if the parser should go right to the next block
+		bool m_BlockDiag; // flag if the dialogue should be blocked from being skipped
 		
 		// current dialog string data
 		std::string m_Dialogue;

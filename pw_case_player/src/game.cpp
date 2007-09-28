@@ -47,7 +47,9 @@ Game::Game(const std::string &rootPath, Case::Case *pcase): m_RootPath(rootPath)
 	
 	// reset trial variables
 	m_State.requestingEvidence=false;
+	m_State.requestingAnswer=false;
 	m_State.requestedEvidenceParams="null";
+	m_State.requestedAnswerParams="null";
 	
 	// reset examination cursor position
 	m_State.examineX=256/2;
@@ -254,6 +256,10 @@ void Game::render() {
 				flags |= STATE_PRESENT_TOP_BTN;
 		}
 		
+		// toggle certain flags if there is an answer requested
+		if (m_State.requestingAnswer)
+			flags |= STATE_TALK;
+		
 		toggle(flags);
 	}
 	
@@ -441,14 +447,22 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 		}
 		
 		// see if the center button was clicked
-		if (flagged(STATE_NEXT_BTN) && ((e->x>=16 && e->x<=16+223) && (e->y>=242 && e->y<=242+111))) {
-			if (m_Parser->dialogueDone()) {
+		if (flagged(STATE_NEXT_BTN) && ((e->x>=16 && e->x<=16+223) && (e->y>=242 && e->y<=242+111)) &&
+		    !m_State.requestingAnswer && !m_State.requestingEvidence) {
+			// if the parser is blocking the dialogue, don't skip
+			if (!m_Parser->dialogueDone() && m_Parser->isBlocking())
+				return;
+			
+			// play a sound effect if done
+			else if (m_Parser->dialogueDone()) {
 				// play a sound effect
 				Audio::playEffect("sfx_next_part", GUI_SFX_CHANNEL);
 			}
 			
 			// proceed to the next block
 			m_Parser->nextStep();
+			
+			return;
 		}
 		
 		// check if the centered, present button was clicked
@@ -688,7 +702,8 @@ void Game::renderTopView() {
 			renderStand(COURT_WITNESS_STAND);
 		
 		// if the examination scene is up, dim the upper screen
-		if (flagged(STATE_EXAMINE) || (m_State.prevScreen==SCREEN_EXAMINE && !flagged(STATE_TEXT_BOX)) || m_State.requestingEvidence) {
+		if (flagged(STATE_EXAMINE) || (m_State.prevScreen==SCREEN_EXAMINE && !flagged(STATE_TEXT_BOX)) ||
+		    m_State.requestingEvidence || m_State.requestingAnswer) {
 			// get an opaque black surface
 			SDL_Surface *opaque=Textures::queryTexture("opaque_black");
 			SDL_SetAlpha(opaque, SDL_SRCALPHA, 128);
@@ -714,7 +729,7 @@ void Game::renderTopView() {
 	}
 	
 	// if we are required to present evidence, draw elements now
-	if (m_State.requestingEvidence)
+	if (m_State.requestingEvidence || m_State.requestingAnswer)
 		Renderer::drawImage(Point(0, 168), "tc_answer_bar");
 	
 	// if there is shown evidence, draw it as well
@@ -789,17 +804,35 @@ void Game::renderMenuView() {
 	
 	// draw talk scene
 	else if (flagged(STATE_TALK)) {
-		// get current character at location
-		Case::Location *location=m_Case->getLocation(m_State.currentLocation);
-		Character *character=m_Case->getCharacter(location->character);
-		if (character)
-			Renderer::drawTalkScene(character->getTalkOptions(), m_State.selectedTalkOption);
+		// check if we are requiring the player to select an answer
+		if (m_State.requestingAnswer)
+			Renderer::drawTalkScene(m_State.talkOptions, 0, true);
+		
+		else {
+			// get current character at location
+			Case::Location *location=m_Case->getLocation(m_State.currentLocation);
+			Character *character=m_Case->getCharacter(location->character);
+			
+			// draw the talk scene
+			if (character)
+				Renderer::drawTalkScene(character->getTalkOptions(), m_State.selectedTalkOption);
+		}
 	}
 	
 	// draw next button in case of dialog
 	else if (flagged(STATE_NEXT_BTN)) {
 		Renderer::drawImage(Point(16, 242), "tc_next_btn");
-		m_UI->drawAnimation("an_button_arrow_next");
+		
+		// only animate the arrow if the dialogue is done, or if the dialogue
+		// can be skipped
+		bool draw=true;
+		if (m_Parser->isBlocking()) {
+			if (!m_Parser->dialogueDone())
+				draw=false;
+		}
+		
+		if (draw)
+			m_UI->drawAnimation("an_button_arrow_next");
 	}
 	
 	// draw controls, if needed
@@ -939,8 +972,8 @@ void Game::renderTextBox() {
 	
 	// if there is evidence to present, shift the text box up
 	int shift=0;
-	if (m_State.requestingEvidence)
-		shift=-32;
+	if (m_State.requestingEvidence || m_State.requestingAnswer)
+		shift=-24;
 	
 	// draw the actual text box body
 	Renderer::drawImage(Point(0, 128+shift), "tc_text_box");
@@ -1343,6 +1376,9 @@ void Game::onPresentCenterClicked() {
 		
 		// and toggle flags
 		toggle(STATE_COURT_REC_BTN | STATE_NEXT_BTN | STATE_LOWER_BAR);
+		
+		// play sound effect
+		Audio::playEffect("sfx_click", GUI_SFX_CHANNEL);
 	}
 }
 
@@ -1431,15 +1467,18 @@ void Game::onTalkSceneClicked(int x, int y) {
 	
 	// get character
 	Character *character=m_Case->getCharacter(location->character);
-	if (!character)
+	if (!character && !m_State.requestingAnswer)
 		return;
 	
 	// keep track of x,y changes
 	int dx=5;
 	int dy=197+34+5;
 	
+	// find amount of talk options
+	int amount=(m_State.requestingAnswer? m_State.talkOptions.size() : character->getTalkOptions().size());
+	
 	// iterate over options
-	for (int i=0; i<character->getTalkOptions().size(); i++) {
+	for (int i=0; i<amount; i++) {
 		// see if this one was clicked
 		if ((x>=dx && x<=dx+200) && (y>=dy && y<=dy+20)) {
 			m_State.selectedTalkOption=i;
@@ -1448,7 +1487,20 @@ void Game::onTalkSceneClicked(int x, int y) {
 			Audio::playEffect("sfx_click");
 			
 			// get the target block id
-			std::string target=character->getTalkOptions()[i].second;
+			std::string target;
+			if (m_State.requestingAnswer) {
+				target=m_State.talkOptions[i].second;
+				
+				// also, reset the request answer flag
+				m_State.requestingAnswer=false;
+				m_State.talkOptions.clear();
+				
+				// we need to skip the current block
+				m_Parser->nextStep();
+			}
+			
+			else
+				target=character->getTalkOptions()[i].second;
 			
 			// set this block
 			m_Parser->setBlock(m_Case->getBuffers()[target]);

@@ -95,7 +95,9 @@ struct _GameState {
 	
 	// trial variables
 	bool requestingEvidence;
+	bool requestingAnswer;
 	std::string requestedEvidenceParams;
+	std::string requestedAnswerParams;
 	
 	// x,y coordinates or examination cursor
 	int examineX, examineY;
@@ -125,6 +127,9 @@ struct _GameState {
 	std::string currentLocation;
 	
 	std::vector<StringPair> custom; // user defined flags
+	
+	// vector of current talk options
+	std::vector<StringPair> talkOptions;
 	
 	// list of visible evidence (evidence that can be seen in court record)
 	std::vector<Case::Evidence> visibleEvidence;

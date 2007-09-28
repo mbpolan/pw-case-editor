@@ -37,6 +37,7 @@ TextParser::TextParser(Game *game): m_Game(game) {
 	m_QueuedFade="null";
 	m_QueuedEvent="null";
 	m_Direct=false;
+	m_BlockDiag=false;
 	m_Speed=50;
 	m_TimedGoto=0;
 }
@@ -87,8 +88,9 @@ std::string TextParser::parse() {
 		// erase up to this point
 		m_Block.erase(0, m_BreakPoint);
 		
-		// reset draw string
+		// reset variables
 		m_Dialogue="";
+		m_BlockDiag=false;
 		
 		// start going over block
 		while(1) {
@@ -147,12 +149,25 @@ std::string TextParser::parse() {
 				continue;
 			}
 			
-			// dialogue break
-			else if (ch=='\\' && m_Block[1]=='b') {
-				m_Pause=true;
-				m_Block.erase(0, 2);
+			// dialogue control
+			else if (ch=='\\' && m_Block[1]!='n') {
+				// check the next character
+				switch(m_Block[1]) {
+					// dialogue break
+					case 'b': {
+						m_Pause=true;
+						m_Block.erase(0, 2);
+						return "null";
+					}; break;
+					
+					// set blocking flag
+					case 'd': {
+						m_BlockDiag=true;
+					}; break;
+				}
 				
-				break;
+				// always erase this character
+				m_Block.erase(0, 2);
 			}
 			
 			// normal character
@@ -191,8 +206,8 @@ std::string TextParser::parse() {
 	else {
 		// shift the drawing of the string based on state
 		int shift=0;
-		if (m_Game->m_State.requestingEvidence)
-			shift=-32;
+		if (m_Game->m_State.requestingEvidence || m_Game->m_State.requestingAnswer)
+			shift=-24;
 		
 		// see if we should draw the next character in the string
 		int now=SDL_GetTicks();
@@ -234,8 +249,8 @@ std::string TextParser::parse() {
 			std::string area=m_Dialogue.substr(m_Dialogue.find("\\n")+2, m_Dialogue.size());
 			
 			// calculate center x for date and location
-			int dx=(256/2)-(Fonts::getWidth(m_FontStyle.color, date)/2)-2;
-			int lx=(256/2)-(Fonts::getWidth(m_FontStyle.color, area)/2)-2;
+			int dx=128-(Fonts::getWidth(m_FontStyle.color, date)/2)-2;
+			int lx=128-(Fonts::getWidth(m_FontStyle.color, area)/2)-2;
 			
 			// draw date
 			Fonts::drawString(dx, 134+shift, m_StrPos, SDL_GetVideoSurface()->w-8, date, m_FontStyle.color);
@@ -262,6 +277,37 @@ std::string TextParser::parse() {
 					// now, we also need to go directly to the evidence page
 					int flags=STATE_TEXT_BOX | STATE_LOWER_BAR | STATE_EVIDENCE_PAGE | STATE_PROFILES_PAGE;
 					m_Game->m_State.drawFlags=flags;
+				}
+				
+				// request an answer
+				if (m_QueuedEvent=="request_answer") {
+					// set the variable in the game state
+					m_Game->m_State.requestingAnswer=true;
+					
+					StringVector vec=Utils::explodeString(')', m_QueuedEventArgs);
+					for (int i=0; i<vec.size(); i++) {
+						// these strings have extra characters, so erase them first
+						int npos=vec[i].find('(');
+						if (npos!=-1)
+							vec[i].erase(0, npos+1);
+						
+						// properly formatted strings always have a leading '(' character
+						else
+							continue;
+						
+						// now we have a string in the form of a,b
+						// explode it once more to get the talk option name and target
+						StringVector talkOp=Utils::explodeString(',', vec[i]);
+						
+						// add this pair to the state talk op vector
+						m_Game->m_State.talkOptions.push_back(std::make_pair<std::string, std::string>(talkOp[0], talkOp[1]));
+					}
+					
+					// now modify flags
+					int flags=STATE_TEXT_BOX | STATE_LOWER_BAR | STATE_TALK;
+					m_Game->m_State.drawFlags=flags;
+					
+					Audio::playEffect("sfx_return", GUI_SFX_CHANNEL);
 				}
 				
 				m_QueuedEvent="null";
@@ -297,11 +343,11 @@ void TextParser::nextStep() {
 	}
 	
 	// if the dialogue string is still being drawn, display it all (unless it's a date/location string)
-	if (m_StrPos!=m_Dialogue.size() && !m_Dialogue.empty() && m_FontStyle.type!="date")
+	if (m_StrPos!=m_Dialogue.size() && !m_Dialogue.empty())
 		m_StrPos=m_Dialogue.size();
 	
 	// once again, date/location strings have to be fully drawn
-	else if (m_FontStyle.type!="date" || (m_FontStyle.type=="date" && m_StrPos==m_Dialogue.size())) {
+	else {
 		// reset string position and clear previous formatting
 		m_StrPos=0;
 		clearFormatting();
@@ -354,6 +400,8 @@ void TextParser::parseTag(const std::string &tag) {
 		
 		m_FontStyle.color="green";
 		m_FontStyle.speed=150;
+		
+		m_BlockDiag=true;
 	}
 }
 
@@ -599,8 +647,8 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 			pcase->getLocation(command)->music="null";
 	}
 	
-	// flag that requires player to present evidence
-	else if (trigger=="request_evidence") {
+	// flag that requires player to present evidence or answer
+	else if (trigger=="request_evidence" || trigger=="request_answer") {
 		m_QueuedEvent=trigger;
 		m_QueuedEventArgs=command;
 	}
