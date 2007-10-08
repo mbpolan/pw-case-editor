@@ -107,7 +107,7 @@ BufferMap ScriptWidget::get_buffers() const {
 		BufferMap tmpMap=m_TreeViews[i]->get_buffers();
 		
 		// iterate over this buffer map
-		for (BufferMapIter it=tmpMap.begin(); it!=tmpMap.end(); ++it) {
+		for (BufferMap::iterator it=tmpMap.begin(); it!=tmpMap.end(); ++it) {
 			Glib::ustring id=(*it).first;
 			
 			// preprend an identifier for the day and stage of this buffer
@@ -275,7 +275,7 @@ Glib::ustring ScriptWidget::unique_id(const Glib::ustring &rootString) {
 		
 		// now iterate over buffers
 		BufferMap buffers=list->get_buffers();
-		for (BufferMapIter it=buffers.begin(); it!=buffers.end(); ++it) {
+		for (BufferMap::iterator it=buffers.begin(); it!=buffers.end(); ++it) {
 			Glib::ustring id=(*it).first;
 			if (id.find(rootString)!=-1)
 				count++;

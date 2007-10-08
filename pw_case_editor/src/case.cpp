@@ -35,7 +35,7 @@ void Case::Case::add_character(const Character &character) {
 // remove a character based on name
 void Case::Case::remove_character(const Glib::ustring &name) {
 	// iterate over characters and find the requested one
-	for (CharacterMapIter it=m_Characters.begin(); it!=m_Characters.end(); ++it) {
+	for (CharacterMap::iterator it=m_Characters.begin(); it!=m_Characters.end(); ++it) {
 		if ((*it).first==name) {
 			m_Characters.erase(it);
 			return;
@@ -51,7 +51,7 @@ void Case::Case::add_image(const Image &image) {
 // remove an image
 void Case::Case::remove_image(const Glib::ustring &id) {
 	// iterate over images and find the requested one
-	for (ImageMapIter it=m_Images.begin(); it!=m_Images.end(); ++it) {
+	for (ImageMap::iterator it=m_Images.begin(); it!=m_Images.end(); ++it) {
 		if ((*it).first==id) {
 			m_Images.erase(it);
 			return;
@@ -70,6 +70,22 @@ void Case::Case::remove_evidence(const Glib::ustring &id) {
 	for (std::map<Glib::ustring, Evidence>::iterator it=m_Evidence.begin(); it!=m_Evidence.end(); ++it) {
 		if ((*it).first==id) {
 			m_Evidence.erase(it);
+			return;
+		}
+	}
+}
+
+// add testimony
+void Case::Case::add_testimony(const Testimony &testimony) {
+	m_Testimonies[testimony.id]=testimony;
+}
+
+// remove testimony
+void Case::Case::remove_testimony(const Glib::ustring &id) {
+	// iterate over testimony and find the requested one
+	for (std::map<Glib::ustring, Testimony>::iterator it=m_Testimonies.begin(); it!=m_Testimonies.end(); ++it) {
+		if ((*it).first==id) {
+			m_Testimonies.erase(it);
 			return;
 		}
 	}
@@ -111,7 +127,7 @@ StringVector Case::Case::get_character_names() {
 	StringVector vec;
 	
 	// simply add names to the vector
-	for (CharacterMapIter it=m_Characters.begin(); it!=m_Characters.end(); ++it)
+	for (CharacterMap::iterator it=m_Characters.begin(); it!=m_Characters.end(); ++it)
 		vec.push_back((*it).second.get_internal_name());
 	
 	return vec;
@@ -122,7 +138,7 @@ StringVector Case::Case::get_image_ids() {
 	StringVector vec;
 	
 	// simply add ids to the vector
-	for (ImageMapIter it=m_Images.begin(); it!=m_Images.end(); ++it)
+	for (ImageMap::iterator it=m_Images.begin(); it!=m_Images.end(); ++it)
 		vec.push_back((*it).first);
 	
 	return vec;
@@ -133,7 +149,7 @@ StringVector Case::Case::get_background_ids() {
 	StringVector vec;
 	
 	// add background ids to vector
-	for (BackgroundMapIter it=m_Backgrounds.begin(); it!=m_Backgrounds.end(); ++it)
+	for (BackgroundMap::iterator it=m_Backgrounds.begin(); it!=m_Backgrounds.end(); ++it)
 		vec.push_back((*it).second.id);
 	
 	return vec;
@@ -144,7 +160,7 @@ StringVector Case::Case::get_evidence_ids() {
 	StringVector vec;
 	
 	// add evidence ids to vector
-	for (EvidenceMapIter it=m_Evidence.begin(); it!=m_Evidence.end(); ++it)
+	for (EvidenceMap::iterator it=m_Evidence.begin(); it!=m_Evidence.end(); ++it)
 		vec.push_back((*it).second.id);
 	
 	return vec;
@@ -155,7 +171,7 @@ StringVector Case::Case::get_location_ids() {
 	StringVector vec;
 	
 	// add location ids to vector
-	for (LocationMapIter it=m_Locations.begin(); it!=m_Locations.end(); ++it)
+	for (LocationMap::iterator it=m_Locations.begin(); it!=m_Locations.end(); ++it)
 		vec.push_back((*it).second.id);
 	
 	return vec;
@@ -166,7 +182,18 @@ StringVector Case::Case::get_audio_ids() {
 	StringVector vec;
 	
 	// add location ids to vector
-	for (AudioMapIter it=m_Audio.begin(); it!=m_Audio.end(); ++it)
+	for (AudioMap::iterator it=m_Audio.begin(); it!=m_Audio.end(); ++it)
+		vec.push_back((*it).second.id);
+	
+	return vec;
+}
+
+// return a vector of testimony internal ids
+StringVector Case::Case::get_testimony_ids() {
+	StringVector vec;
+	
+	// add location ids to vector
+	for (TestimonyMap::iterator it=m_Testimonies.begin(); it!=m_Testimonies.end(); ++it)
 		vec.push_back((*it).second.id);
 	
 	return vec;

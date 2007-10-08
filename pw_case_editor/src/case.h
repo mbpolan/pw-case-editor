@@ -103,37 +103,40 @@ struct _Image {
 };
 typedef struct _Image Image;
 
+// a single piece of testimony
+struct _TestimonyPiece {
+	Glib::ustring text;
+	Glib::ustring presentId;
+	Glib::ustring presentBlock;
+	Glib::ustring pressBlock;
+	bool hidden;
+};
+typedef struct _TestimonyPiece TestimonyPiece;
+
+// a single testimony from a character
+struct _Testimony {
+	// id of this testimony
+	Glib::ustring id;
+	
+	// speaker
+	Glib::ustring speaker;
+	
+	// vector of testimony pieces
+	std::vector<TestimonyPiece> pieces;
+};
+typedef struct _Testimony Testimony;
+
 }; // namespace Case
 
 // typedefs for cleaner code
 typedef std::map<Glib::ustring, Character> CharacterMap;
-typedef std::map<Glib::ustring, Character>::iterator CharacterMapIter;
-typedef std::map<Glib::ustring, Character>::const_iterator CharacterMapConstIter;
-
 typedef std::map<Glib::ustring, Case::Background> BackgroundMap;
-typedef std::map<Glib::ustring, Case::Background>::iterator BackgroundMapIter;
-typedef std::map<Glib::ustring, Case::Background>::const_iterator BackgroundMapConstIter;
-
 typedef std::map<Glib::ustring, Case::Evidence> EvidenceMap;
-typedef std::map<Glib::ustring, Case::Evidence>::iterator EvidenceMapIter;
-typedef std::map<Glib::ustring, Case::Evidence>::const_iterator EvidenceMapConstIter;
-
 typedef std::map<Glib::ustring, Case::Location> LocationMap;
-typedef std::map<Glib::ustring, Case::Location>::iterator LocationMapIter;
-typedef std::map<Glib::ustring, Case::Location>::const_iterator LocationMapConstIter;
-
 typedef std::map<Glib::ustring, Case::Audio> AudioMap;
-typedef std::map<Glib::ustring, Case::Audio>::iterator AudioMapIter;
-typedef std::map<Glib::ustring, Case::Audio>::const_iterator AudioMapConstIter;
-
 typedef std::map<Glib::ustring, Case::Image> ImageMap;
-typedef std::map<Glib::ustring, Case::Image>::iterator ImageMapIter;
-typedef std::map<Glib::ustring, Case::Image>::const_iterator ImageMapConstIter;
-
+typedef std::map<Glib::ustring, Case::Testimony> TestimonyMap;
 typedef std::map<Glib::ustring, Glib::RefPtr<Gtk::TextBuffer> > BufferMap;
-typedef std::map<Glib::ustring, Glib::RefPtr<Gtk::TextBuffer> >::iterator BufferMapIter;
-typedef std::map<Glib::ustring, Glib::RefPtr<Gtk::TextBuffer> >::const_iterator BufferMapConstIter;
-
 typedef std::vector<Glib::ustring> StringVector;
 
 namespace Case {
@@ -162,6 +165,12 @@ class Case {
 		
 		// remove an image
 		void remove_image(const Glib::ustring &id);
+		
+		// add testimony
+		void add_testimony(const Testimony &testimony);
+		
+		// remove testimony
+		void remove_testimony(const Glib::ustring &id);
 		
 		// add a background
 		void add_background(const Background &bg);
@@ -202,6 +211,9 @@ class Case {
 		// return a vector of audio internal ids
 		StringVector get_audio_ids();
 		
+		// return a vector of testimony internal ids
+		StringVector get_testimony_ids();
+		
 		// clear the entire case information
 		void clear();
 		
@@ -222,6 +234,9 @@ class Case {
 		
 		// clear audio map
 		void clear_audio() { m_Audio.clear(); }
+		
+		// clear testimony map
+		void clear_testimonies() { m_Testimonies.clear(); }
 		
 		// set the case overview
 		void set_overview(const Overview &overview);
@@ -244,8 +259,11 @@ class Case {
 		// return full map of locations
 		LocationMap get_locations() const { return m_Locations; }
 		
-		// return a full of audio
+		// return a full map of audio
 		AudioMap get_audio() const { return m_Audio; }
+		
+		// return a full map of testimonies
+		TestimonyMap get_testimonies() const { return m_Testimonies; }
 	
 	private:
 		// general case data
@@ -271,6 +289,9 @@ class Case {
 		
 		// map of audio
 		AudioMap m_Audio;
+		
+		// map of testimonies
+		TestimonyMap m_Testimonies;
 		
 };
 

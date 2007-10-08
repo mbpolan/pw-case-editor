@@ -722,7 +722,7 @@ void AudioDialog::set_audio(const AudioMap &audio) {
 	m_Model->clear();
 	
 	// iterate over audio
-	for (AudioMapConstIter it=audio.begin(); it!=audio.end(); ++it) {
+	for (AudioMap::const_iterator it=audio.begin(); it!=audio.end(); ++it) {
 		// append a new row
 		Gtk::TreeModel::Row row=*(m_Model->append());
 		
@@ -1529,7 +1529,7 @@ void CharBrowser::construct() {
 void CharBrowser::on_edit_button_clicked() {
 	// form a vector of names
 	StringVector vec;
-	for (CharacterMapIter it=m_CharacterMap.begin(); it!=m_CharacterMap.end(); ++it)
+	for (CharacterMap::iterator it=m_CharacterMap.begin(); it!=m_CharacterMap.end(); ++it)
 		vec.push_back((*it).second.get_internal_name());
 	
 	// get our current character
@@ -1884,7 +1884,7 @@ Gtk::Container* NewCharDialog::build_graphics_page() {
 // constructor
 InitialBlockDialog::InitialBlockDialog(const Glib::ustring &id, BufferMap blocks) {
 	// iterate over blocks and remove the list ids
-	for (BufferMapIter it=blocks.begin(); it!=blocks.end(); ++it) {
+	for (BufferMap::iterator it=blocks.begin(); it!=blocks.end(); ++it) {
 		// remove list id
 		Glib::ustring id=(*it).first;
 		id.erase(id.rfind('_'), id.size());

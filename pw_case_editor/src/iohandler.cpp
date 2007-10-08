@@ -59,7 +59,7 @@ bool IO::save_case_to_file(const Glib::ustring &path, const Case::Case &pcase,
 	fwrite(&charCount, sizeof(int), 1, f);
 	
 	// iterate over character data
-	for (CharacterMapIter it=characters.begin(); it!=characters.end(); ++it) {
+	for (CharacterMap::iterator it=characters.begin(); it!=characters.end(); ++it) {
 		// write internal name
 		write_string(f, (*it).second.get_internal_name());
 		
@@ -102,7 +102,7 @@ bool IO::save_case_to_file(const Glib::ustring &path, const Case::Case &pcase,
 	fwrite(&bgCount, sizeof(int), 1, f);
 	
 	// iterate over backgrounds
-	for (BackgroundMapIter it=backgrounds.begin(); it!=backgrounds.end(); ++it) {
+	for (BackgroundMap::iterator it=backgrounds.begin(); it!=backgrounds.end(); ++it) {
 		// write id
 		write_string(f, (*it).second.id);
 		
@@ -119,7 +119,7 @@ bool IO::save_case_to_file(const Glib::ustring &path, const Case::Case &pcase,
 	fwrite(&evidenceCount, sizeof(int), 1, f);
 	
 	// iterate over evidence
-	for (EvidenceMapIter it=evidence.begin(); it!=evidence.end(); ++it) {
+	for (EvidenceMap::iterator it=evidence.begin(); it!=evidence.end(); ++it) {
 		// write id
 		write_string(f, (*it).second.id);
 		
@@ -142,7 +142,7 @@ bool IO::save_case_to_file(const Glib::ustring &path, const Case::Case &pcase,
 	fwrite(&imageCount, sizeof(int), 1, f);
 	
 	// iterate over images
-	for (ImageMapIter it=images.begin(); it!=images.end(); ++it) {
+	for (ImageMap::iterator it=images.begin(); it!=images.end(); ++it) {
 		// write id
 		write_string(f, (*it).second.id);
 		
@@ -156,7 +156,7 @@ bool IO::save_case_to_file(const Glib::ustring &path, const Case::Case &pcase,
 	fwrite(&locationCount, sizeof(int), 1, f);
 	
 	// iterate over locations
-	for (LocationMapIter it=locations.begin(); it!=locations.end(); ++it) {
+	for (LocationMap::iterator it=locations.begin(); it!=locations.end(); ++it) {
 		// write id
 		write_string(f, (*it).second.id);
 		
@@ -191,7 +191,7 @@ bool IO::save_case_to_file(const Glib::ustring &path, const Case::Case &pcase,
 	fwrite(&audioCount, sizeof(int), 1, f);
 	
 	// iterate over audio
-	for (AudioMapIter it=amap.begin(); it!=amap.end(); ++it) {
+	for (AudioMap::iterator it=amap.begin(); it!=amap.end(); ++it) {
 		Case::Audio audio=(*it).second;
 		
 		// write id
@@ -199,6 +199,44 @@ bool IO::save_case_to_file(const Glib::ustring &path, const Case::Case &pcase,
 		
 		// write file name
 		write_string(f, audio.name);
+	}
+	
+	// write count of testimonies
+	TestimonyMap tmap=pcase.get_testimonies();
+	int testimonyCount=tmap.size();
+	fwrite(&testimonyCount, sizeof(int), 1, f);
+	
+	// iterate over testimonies
+	for (TestimonyMap::iterator it=tmap.begin(); it!=tmap.end(); ++it) {
+		// write testimony id
+		write_string(f, (*it).first);
+		
+		// write speaker
+		write_string(f, (*it).second.speaker);
+		
+		// write amount of pieces
+		int tpieceCount=(*it).second.pieces.size();
+		fwrite(&tpieceCount, sizeof(int), 1, f);
+		
+		// iterate over pieces
+		for (int i=0; i<tpieceCount; i++) {
+			Case::TestimonyPiece piece=(*it).second.pieces[i];
+			
+			// write contents
+			write_string(f, piece.text);
+			
+			// write present evidence id
+			write_string(f, piece.presentId);
+			
+			// write present target
+			write_string(f, piece.presentBlock);
+			
+			// write press target
+			write_string(f, piece.pressBlock);
+			
+			// write hidden value
+			fwrite(&piece.hidden, sizeof(bool), 1, f);
+		}
 	}
 	
 	// write count of blocks
@@ -256,7 +294,7 @@ bool IO::export_case_to_file(const Glib::ustring &path, const Case::Case &pcase,
 	fwrite(&charCount, sizeof(int), 1, f);
 	
 	// iterate over character data
-	for (CharacterMapIter it=characters.begin(); it!=characters.end(); ++it) {
+	for (CharacterMap::iterator it=characters.begin(); it!=characters.end(); ++it) {
 		// write internal name
 		write_string(f, (*it).second.get_internal_name());
 		
@@ -305,7 +343,7 @@ bool IO::export_case_to_file(const Glib::ustring &path, const Case::Case &pcase,
 	fwrite(&bgCount, sizeof(int), 1, f);
 	
 	// iterate over backgrounds
-	for (BackgroundMapIter it=backgrounds.begin(); it!=backgrounds.end(); ++it) {
+	for (BackgroundMap::iterator it=backgrounds.begin(); it!=backgrounds.end(); ++it) {
 		// write id
 		write_string(f, (*it).second.id);
 		
@@ -322,7 +360,7 @@ bool IO::export_case_to_file(const Glib::ustring &path, const Case::Case &pcase,
 	fwrite(&evidenceCount, sizeof(int), 1, f);
 	
 	// iterate over evidence
-	for (EvidenceMapIter it=evidence.begin(); it!=evidence.end(); ++it) {
+	for (EvidenceMap::iterator it=evidence.begin(); it!=evidence.end(); ++it) {
 		// write id
 		write_string(f, (*it).second.id);
 		
@@ -349,7 +387,7 @@ bool IO::export_case_to_file(const Glib::ustring &path, const Case::Case &pcase,
 	fwrite(&imageCount, sizeof(int), 1, f);
 	
 	// iterate over images
-	for (ImageMapIter it=images.begin(); it!=images.end(); ++it) {
+	for (ImageMap::iterator it=images.begin(); it!=images.end(); ++it) {
 		// write id
 		write_string(f, (*it).second.id);
 		
@@ -363,7 +401,7 @@ bool IO::export_case_to_file(const Glib::ustring &path, const Case::Case &pcase,
 	fwrite(&locationCount, sizeof(int), 1, f);
 	
 	// iterate over locations
-	for (LocationMapIter it=locations.begin(); it!=locations.end(); ++it) {
+	for (LocationMap::iterator it=locations.begin(); it!=locations.end(); ++it) {
 		// write id
 		write_string(f, (*it).second.id);
 		
@@ -398,7 +436,7 @@ bool IO::export_case_to_file(const Glib::ustring &path, const Case::Case &pcase,
 	fwrite(&audioCount, sizeof(int), 1, f);
 	
 	// iterate over audio
-	for (AudioMapIter it=amap.begin(); it!=amap.end(); ++it) {
+	for (AudioMap::iterator it=amap.begin(); it!=amap.end(); ++it) {
 		// write id
 		write_string(f, (*it).second.id);
 		
@@ -654,6 +692,51 @@ bool IO::load_case_from_file(const Glib::ustring &path, Case::Case &pcase,
 		pcase.add_audio(audio);
 	}
 	
+	// read count of testimonies
+	int testimonyCount;
+	fread(&testimonyCount, sizeof(int), 1, f);
+	
+	// iterate over testimonies
+	for (int i=0; i<testimonyCount; i++) {
+		Case::Testimony testimony;
+		
+		// read testimony id
+		testimony.id=read_string(f);
+		
+		// read speaker
+		testimony.speaker=read_string(f);
+		
+		// read amount of pieces
+		int tpieceCount;
+		fread(&tpieceCount, sizeof(int), 1, f);
+		
+		// iterate over pieces
+		for (int j=0; j<tpieceCount; j++) {
+			Case::TestimonyPiece piece;
+			
+			// read contents
+			piece.text=read_string(f);
+			
+			// read present evidence id
+			piece.presentId=read_string(f);
+			
+			// read present target
+			piece.presentBlock=read_string(f);
+			
+			// read press target
+			piece.pressBlock=read_string(f);
+			
+			// read hidden value
+			fread(&piece.hidden, sizeof(bool), 1, f);
+			
+			// add this piece
+			testimony.pieces.push_back(piece);
+		}
+		
+		// add this testimony
+		pcase.add_testimony(testimony);
+	}
+	
 	// read amount of text blocks
 	int bufferCount;
 	fread(&bufferCount, sizeof(int), 1, f);
@@ -705,7 +788,7 @@ bool IO::save_sprite_to_file(const Glib::ustring &path, const Sprite &spr) {
 	fwrite(&count, sizeof(int), 1, f);
 	
 	// iterate over animations
-	for (AnimationMapIter it=animations.begin(); it!=animations.end(); ++it) {
+	for (AnimationMap::iterator it=animations.begin(); it!=animations.end(); ++it) {
 		Animation anim=(*it).second;
 		
 		// write id
@@ -757,7 +840,7 @@ bool IO::export_sprite_to_file(const Glib::ustring &path, const Sprite &spr) {
 	fwrite(&count, sizeof(int), 1, f);
 	
 	// iterate over animations
-	for (AnimationMapIter it=animations.begin(); it!=animations.end(); ++it) {
+	for (AnimationMap::iterator it=animations.begin(); it!=animations.end(); ++it) {
 		Animation anim=(*it).second;
 		
 		// write id

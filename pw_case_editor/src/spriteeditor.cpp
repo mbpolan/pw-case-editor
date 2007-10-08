@@ -183,7 +183,8 @@ void SpriteEditor::update_progress_label() {
 	m_TimeEntry->set_text(ss.str());
 	
 	// and set the sound effect
-	m_SfxEntry->set_text(anim.frames[m_CurFrame-1].sfx);
+	if (!anim.frames.empty())
+		m_SfxEntry->set_text(anim.frames[m_CurFrame-1].sfx);
 	
 	// and update check button
 	m_LoopCB->set_active(anim.loop);

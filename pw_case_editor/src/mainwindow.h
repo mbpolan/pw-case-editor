@@ -67,6 +67,15 @@ class MainWindow: public Gtk::Window {
 		// browse characters handler
 		void on_case_browse_chars();
 		
+		// add testimony handler
+		void on_case_add_testimony();
+		
+		// edit testimony
+		void on_case_edit_testimony();
+		
+		// remove testimony
+		void on_case_remove_testimony();
+		
 		// edit locations handler
 		void on_case_edit_locations();
 		

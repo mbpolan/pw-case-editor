@@ -29,6 +29,7 @@
 #include "iohandler.h"
 #include "mainwindow.h"
 #include "spriteeditor.h"
+#include "testimonyeditor.h"
 #include "textboxdialog.h"
 
 // constructor
@@ -73,6 +74,12 @@ void MainWindow::construct() {
 			   sigc::mem_fun(*this, &MainWindow::on_case_add_char));
 	m_ActionGroup->add(Gtk::Action::create("CaseBrowseChar", "_Browse Characters"),
 			   sigc::mem_fun(*this, &MainWindow::on_case_browse_chars));
+	m_ActionGroup->add(Gtk::Action::create("CaseAddTestimony", "_Add Testimony"),
+			   sigc::mem_fun(*this, &MainWindow::on_case_add_testimony));
+	m_ActionGroup->add(Gtk::Action::create("CaseEditTestimony", "_Edit Testimony"),
+			   sigc::mem_fun(*this, &MainWindow::on_case_edit_testimony));
+	m_ActionGroup->add(Gtk::Action::create("CaseRemoveTestimony", "_Remove Testimony"),
+			   sigc::mem_fun(*this, &MainWindow::on_case_remove_testimony));
 	m_ActionGroup->add(Gtk::Action::create("CaseEditLocations", "_Edit Locations"),
 			   sigc::mem_fun(*this, &MainWindow::on_case_edit_locations));
 	m_ActionGroup->add(Gtk::Action::create("CaseEditOverview", "_Edit Overview"),
@@ -129,6 +136,10 @@ void MainWindow::construct() {
 			"	<menu action='CaseMenu'>"
 			"		<menuitem action='CaseAddChar'/>"
 			"		<menuitem action='CaseBrowseChar'/>"
+			"		<separator/>"
+			"		<menuitem action='CaseAddTestimony'/>"
+			"		<menuitem action='CaseEditTestimony'/>"
+			"		<menuitem action='CaseRemoveTestimony'/>"
 			"		<separator/>"
 			"		<menuitem action='CaseInitialBlock'/>"
 			"		<menuitem action='CaseEditLocations'/>"
@@ -374,8 +385,8 @@ void MainWindow::on_open() {
 		
 		// case information is set during load, but we need to make the rest of the widgets aware
 		// first, add characters to the list view
-		std::map<Glib::ustring, Character> characters=m_Case.get_characters();
-		for (CharacterMapIter it=characters.begin(); it!=characters.end(); ++it)
+		CharacterMap characters=m_Case.get_characters();
+		for (CharacterMap::iterator it=characters.begin(); it!=characters.end(); ++it)
 			m_ScriptWidget->add_character(-1, -1, (*it).first, (*it).second.get_internal_name());
 		
 		// now add buffers
@@ -478,9 +489,30 @@ void MainWindow::on_case_browse_chars() {
 		m_Case.clear_characters();
 		
 		// set the new ones
-		for (CharacterMapIter it=cmap.begin(); it!=cmap.end(); ++it)
+		for (CharacterMap::iterator it=cmap.begin(); it!=cmap.end(); ++it)
 			m_Case.add_character((*it).second);
 	}
+}
+
+// add testimony handler
+void MainWindow::on_case_add_testimony() {
+	// run the appropriate dialog
+	TestimonyEditor te(m_Case.get_testimony_ids());
+	if (te.run()==Gtk::RESPONSE_OK) {
+		// get the prepared testimony
+		Case::Testimony testimony=te.get_testimony_data();
+		
+		// add this to the case
+		m_Case.add_testimony(testimony);
+	}
+}
+
+// edit testimony
+void MainWindow::on_case_edit_testimony() {
+}
+
+// remove testimony
+void MainWindow::on_case_remove_testimony() {
 }
 
 // edit locations handler
@@ -495,7 +527,7 @@ void MainWindow::on_case_edit_locations() {
 		m_Case.clear_locations();
 		
 		// add these locations
-		for (LocationMapIter it=locations.begin(); it!=locations.end(); ++it)
+		for (LocationMap::iterator it=locations.begin(); it!=locations.end(); ++it)
 			m_Case.add_location((*it).second);
 	}
 }
@@ -546,7 +578,7 @@ void MainWindow::on_assets_manage_audio() {
 		m_Case.clear_audio();
 		
 		// iterate over audio map
-		for (AudioMapIter it=amap.begin(); it!=amap.end(); ++it)
+		for (AudioMap::iterator it=amap.begin(); it!=amap.end(); ++it)
 			m_Case.add_audio((*it).second);
 	}
 }
@@ -565,7 +597,7 @@ void MainWindow::on_assets_manage_bg() {
 		m_Case.clear_backgrounds();
 		
 		// go over and add these backgrounds
-		for (BackgroundMapIter it=backgrounds.begin(); it!=backgrounds.end(); ++it)
+		for (BackgroundMap::iterator it=backgrounds.begin(); it!=backgrounds.end(); ++it)
 			m_Case.add_background((*it).second);
 	}
 }
@@ -584,7 +616,7 @@ void MainWindow::on_assets_manage_evidence() {
 		m_Case.clear_evidence();
 		
 		// iterate over map and add these pieces of evidence
-		for (EvidenceMapIter it=evidence.begin(); it!=evidence.end(); ++it)
+		for (EvidenceMap::iterator it=evidence.begin(); it!=evidence.end(); ++it)
 			m_Case.add_evidence((*it).second);
 		
 	}
@@ -604,7 +636,7 @@ void MainWindow::on_assets_manage_images() {
 		m_Case.clear_images();
 		
 		// now add these
-		for (ImageMapIter it=imap.begin(); it!=imap.end(); ++it)
+		for (ImageMap::iterator it=imap.begin(); it!=imap.end(); ++it)
 			m_Case.add_image((*it).second);
 	}
 }
