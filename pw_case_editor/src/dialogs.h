@@ -39,6 +39,51 @@
 #include "character.h"
 #include "hotspotwidget.h"
 
+// dialog used to manage testimonies
+class TestimonyManager: public Gtk::Dialog {
+	public:
+		// constructor
+		TestimonyManager(const TestimonyMap &tmap, const StringVector &testimonyIds);
+		
+		// return map of testimonies
+		TestimonyMap get_testimonies() const { return m_Testimonies; }
+		
+	private:
+		// build the ui
+		void construct();
+		
+		// add button click handler
+		void on_add_button_clicked();
+		
+		// edit button click handler
+		void on_edit_button_clicked();
+		
+		// delete button click handler
+		void on_delete_button_clicked();
+		
+		// selection change handler
+		void on_selection_changed();
+		
+		// labels
+		Gtk::Label *m_TitleLabel;
+		Gtk::Label *m_PreviewLabel;
+		
+		// buttons
+		Gtk::Button *m_AddButton;
+		Gtk::Button *m_EditButton;
+		Gtk::Button *m_DeleteButton;
+		
+		// list view for list and its container
+		Gtk::ScrolledWindow *m_SWindow;
+		Gtk::ListViewText *m_ListView;
+		
+		// internal record of testimonies
+		TestimonyMap m_Testimonies;
+		StringVector m_Ids;
+};
+
+/***************************************************************************/
+
 // dialog used to manage images
 class ImageDialog: public Gtk::Dialog {
 	public:

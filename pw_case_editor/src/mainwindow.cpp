@@ -74,12 +74,8 @@ void MainWindow::construct() {
 			   sigc::mem_fun(*this, &MainWindow::on_case_add_char));
 	m_ActionGroup->add(Gtk::Action::create("CaseBrowseChar", "_Browse Characters"),
 			   sigc::mem_fun(*this, &MainWindow::on_case_browse_chars));
-	m_ActionGroup->add(Gtk::Action::create("CaseAddTestimony", "_Add Testimony"),
-			   sigc::mem_fun(*this, &MainWindow::on_case_add_testimony));
-	m_ActionGroup->add(Gtk::Action::create("CaseEditTestimony", "_Edit Testimony"),
-			   sigc::mem_fun(*this, &MainWindow::on_case_edit_testimony));
-	m_ActionGroup->add(Gtk::Action::create("CaseRemoveTestimony", "_Remove Testimony"),
-			   sigc::mem_fun(*this, &MainWindow::on_case_remove_testimony));
+	m_ActionGroup->add(Gtk::Action::create("CaseManageTestimonies", "_Manage Testimonies"),
+			   sigc::mem_fun(*this, &MainWindow::on_case_manage_testimonies));
 	m_ActionGroup->add(Gtk::Action::create("CaseEditLocations", "_Edit Locations"),
 			   sigc::mem_fun(*this, &MainWindow::on_case_edit_locations));
 	m_ActionGroup->add(Gtk::Action::create("CaseEditOverview", "_Edit Overview"),
@@ -137,9 +133,7 @@ void MainWindow::construct() {
 			"		<menuitem action='CaseAddChar'/>"
 			"		<menuitem action='CaseBrowseChar'/>"
 			"		<separator/>"
-			"		<menuitem action='CaseAddTestimony'/>"
-			"		<menuitem action='CaseEditTestimony'/>"
-			"		<menuitem action='CaseRemoveTestimony'/>"
+			"		<menuitem action='CaseManageTestimonies'/>"
 			"		<separator/>"
 			"		<menuitem action='CaseInitialBlock'/>"
 			"		<menuitem action='CaseEditLocations'/>"
@@ -494,25 +488,19 @@ void MainWindow::on_case_browse_chars() {
 	}
 }
 
-// add testimony handler
-void MainWindow::on_case_add_testimony() {
-	// run the appropriate dialog
-	TestimonyEditor te(m_Case.get_testimony_ids());
-	if (te.run()==Gtk::RESPONSE_OK) {
-		// get the prepared testimony
-		Case::Testimony testimony=te.get_testimony_data();
+// manage testimonies
+void MainWindow::on_case_manage_testimonies() {
+	// run testimony manager
+	TestimonyManager tm(m_Case.get_testimonies(), m_Case.get_testimony_ids());
+	if (tm.run()==Gtk::RESPONSE_OK) {
+		// get the updated testimony map from editor
+		TestimonyMap tmap=tm.get_testimonies();
 		
-		// add this to the case
-		m_Case.add_testimony(testimony);
+		// replace map in case with this one
+		m_Case.clear_testimonies();
+		for (TestimonyMap::iterator it=tmap.begin(); it!=tmap.end(); ++it)
+			m_Case.add_testimony((*it).second);
 	}
-}
-
-// edit testimony
-void MainWindow::on_case_edit_testimony() {
-}
-
-// remove testimony
-void MainWindow::on_case_remove_testimony() {
 }
 
 // edit locations handler

@@ -26,6 +26,161 @@
 #include <sstream>
 
 #include "dialogs.h"
+#include "testimonyeditor.h"
+
+// constructor
+TestimonyManager::TestimonyManager(const TestimonyMap &tmap, const StringVector &testimonyIds) {
+	construct();
+	
+	// store record of testimonies
+	m_Testimonies=tmap;
+	m_Ids=testimonyIds;
+	
+	// fill in list view
+	for (TestimonyMap::const_iterator it=tmap.begin(); it!=tmap.end(); ++it) {
+		int row=m_ListView->append_text((*it).first);
+		m_ListView->set_text(row, 1, (*it).second.speaker);
+	}
+}
+
+// build the ui
+void TestimonyManager::construct() {
+	// get vbox
+	Gtk::VBox *vb=get_vbox();
+	vb->set_border_width(10);
+	
+	// allocate layout table
+	Gtk::Table *table=manage(new Gtk::Table);
+	table->set_spacings(5);
+	
+	// allocate labels
+	m_TitleLabel=manage(new Gtk::Label("Testimonies in this Case"));
+	m_PreviewLabel=manage(new Gtk::Label);
+	m_PreviewLabel->set_markup("<b>Preview</b>");
+	
+	// allocate buttons
+	m_AddButton=manage(new Gtk::Button("Add"));
+	m_EditButton=manage(new Gtk::Button("Edit"));
+	m_DeleteButton=manage(new Gtk::Button("Delete"));
+	
+	// connect signals
+	m_AddButton->signal_clicked().connect(sigc::mem_fun(*this, &TestimonyManager::on_add_button_clicked));
+	m_EditButton->signal_clicked().connect(sigc::mem_fun(*this, &TestimonyManager::on_edit_button_clicked));
+	m_DeleteButton->signal_clicked().connect(sigc::mem_fun(*this, &TestimonyManager::on_delete_button_clicked));
+	
+	// allocate scrolled window
+	m_SWindow=manage(new Gtk::ScrolledWindow);
+	m_SWindow->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_ALWAYS);
+	m_SWindow->set_size_request(200, 200);
+	
+	// allocate listview
+	m_ListView=manage(new Gtk::ListViewText(2));
+	m_SWindow->add(*m_ListView);
+	
+	// connect signals
+	m_ListView->get_selection()->signal_changed().connect(sigc::mem_fun(*this, &TestimonyManager::on_selection_changed));
+	
+	// set titles for columns
+	m_ListView->set_column_title(0, "Id");
+	m_ListView->set_column_title(1, "Speaker");
+	
+	// allocate button box
+	Gtk::VButtonBox *buttons=manage(new Gtk::VButtonBox(Gtk::BUTTONBOX_SPREAD));
+	
+	// pack widgets
+	buttons->pack_start(*m_AddButton);
+	buttons->pack_start(*m_EditButton);
+	buttons->pack_start(*m_DeleteButton);
+	
+	// attach options
+	Gtk::AttachOptions xops=Gtk::FILL | Gtk::EXPAND;
+	Gtk::AttachOptions yops=Gtk::SHRINK | Gtk::SHRINK;
+	
+	// place widgets
+	table->attach(*m_TitleLabel, 0, 2, 0, 1, xops, yops);
+	table->attach(*m_SWindow, 0, 1, 1, 2, xops);
+	table->attach(*buttons, 1, 2, 1, 2, xops, yops);
+	table->attach(*m_PreviewLabel, 0, 2, 2, 3, xops, yops);
+	
+	vb->pack_start(*table);
+	
+	// add buttons
+	add_button("OK", Gtk::RESPONSE_OK);
+	add_button("Cancel", Gtk::RESPONSE_CANCEL);
+	
+	show_all_children();
+}
+
+// add button click handler
+void TestimonyManager::on_add_button_clicked() {
+	// run testimony editor
+	TestimonyEditor te(m_Ids);
+	if (te.run()==Gtk::RESPONSE_OK) {
+		// get the testimony
+		Case::Testimony testimony=te.get_testimony_data();
+		
+		// add it to the map
+		m_Testimonies[testimony.id]=testimony;
+		
+		// also, append a row for this testimony
+		int row=m_ListView->append_text(testimony.id);
+		m_ListView->set_text(row, 1, testimony.speaker);
+	}
+}
+
+// edit button click handler
+void TestimonyManager::on_edit_button_clicked() {
+}
+
+// delete button click handler
+void TestimonyManager::on_delete_button_clicked() {
+	// confirm deletion
+	Gtk::MessageDialog md("Are you sure you want to delete this testimony?", false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
+	if (md.run()==Gtk::RESPONSE_YES && !m_ListView->get_selected().empty()) {
+		// find the testimony in question
+		Glib::ustring id=m_ListView->get_text(m_ListView->get_selected()[0], 0);
+		
+		// new vector to store testimonies in
+		std::vector<Case::Testimony> newVec;
+		
+		// iterate over testimonies
+		for (TestimonyMap::iterator it=m_Testimonies.begin(); it!=m_Testimonies.end(); ++it) {
+			if ((*it).first!=id)
+				newVec.push_back((*it).second);
+		}
+		m_Testimonies.erase(id);
+		
+		// with this new vector, clear the list view and repopulate it
+		m_ListView->clear_items();
+		for (int i=0; i<newVec.size(); i++) {
+			int row=m_ListView->append_text(newVec[i].id);
+			m_ListView->set_text(row, 1, newVec[i].speaker);
+		}
+	}
+}
+
+// selection change handler
+void TestimonyManager::on_selection_changed() {
+	if (m_ListView->get_selected().empty())
+		return;
+	
+	// get the selected testimony id
+	Glib::ustring id=m_ListView->get_text(m_ListView->get_selected()[0], 0);
+	
+	// iterate over testimonies
+	for (TestimonyMap::iterator it=m_Testimonies.begin(); it!=m_Testimonies.end(); ++it) {
+		if (id==(*it).first) {
+			// update the preview label
+			Glib::ustring str="<b>Preview</b>\n";
+			str+=(*it).second.pieces[0].text;
+			
+			m_PreviewLabel->set_markup(str);
+			break;
+		}
+	}
+}
+
+/***************************************************************************/
 
 // constructor
 ImageDialog::ImageDialog(const ImageMap &imap, const StringVector &imgIds) {
