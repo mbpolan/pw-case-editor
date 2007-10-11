@@ -444,6 +444,44 @@ bool IO::export_case_to_file(const Glib::ustring &path, const Case::Case &pcase,
 		write_string(f, (*it).second.name);
 	}
 	
+	// write count of testimonies
+	TestimonyMap tmap=pcase.get_testimonies();
+	int testimonyCount=tmap.size();
+	fwrite(&testimonyCount, sizeof(int), 1, f);
+	
+	// iterate over testimonies
+	for (TestimonyMap::iterator it=tmap.begin(); it!=tmap.end(); ++it) {
+		// write testimony id
+		write_string(f, (*it).first);
+		
+		// write speaker
+		write_string(f, (*it).second.speaker);
+		
+		// write amount of pieces
+		int tpieceCount=(*it).second.pieces.size();
+		fwrite(&tpieceCount, sizeof(int), 1, f);
+		
+		// iterate over pieces
+		for (int i=0; i<tpieceCount; i++) {
+			Case::TestimonyPiece piece=(*it).second.pieces[i];
+			
+			// write contents
+			write_string(f, piece.text);
+			
+			// write present evidence id
+			write_string(f, piece.presentId);
+			
+			// write present target
+			write_string(f, piece.presentBlock);
+			
+			// write press target
+			write_string(f, piece.pressBlock);
+			
+			// write hidden value
+			fwrite(&piece.hidden, sizeof(bool), 1, f);
+		}
+	}
+	
 	// write count of blocks
 	int bufferCount=buffers.size();
 	fwrite(&bufferCount, sizeof(int), 1, f);
