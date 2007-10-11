@@ -38,6 +38,9 @@ class TestimonyEditor: public Gtk::Dialog {
 		// constructor
 		TestimonyEditor(const StringVector &testimonyIds);
 		
+		// set a testimony to use
+		void set_testimony(const Case::Testimony &testimony);
+		
 		// return the current testimony data
 		Case::Testimony get_testimony_data();
 		
@@ -71,6 +74,12 @@ class TestimonyEditor: public Gtk::Dialog {
 		
 		// id entry change handler
 		void on_id_entry_changed();
+		
+		// handler for populate signal from text view
+		void on_text_view_populate_menu(Gtk::Menu *menu);
+		
+		// handler for right clicks on list
+		void on_list_button_pressed();
 		
 		// buttons
 		Gtk::Button *m_PrevButton;

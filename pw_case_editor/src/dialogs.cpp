@@ -130,6 +130,31 @@ void TestimonyManager::on_add_button_clicked() {
 
 // edit button click handler
 void TestimonyManager::on_edit_button_clicked() {
+	if (m_ListView->get_selected().empty()) {
+		Gtk::MessageDialog md("You must select a testimony to edit first.", false, Gtk::MESSAGE_INFO);
+		md.run();
+		
+		return;
+	}
+	
+	// get the selected testimony id and speaker
+	int row=m_ListView->get_selected()[0];
+	Glib::ustring id=m_ListView->get_text(row, 0);
+	Glib::ustring speaker=m_ListView->get_text(row, 1);
+	
+	// prepare testimony editor, and feed in this testimony
+	TestimonyEditor te(m_Ids);
+	te.set_testimony(m_Testimonies[id]);
+	
+	// run this dialog
+	if (te.run()==Gtk::RESPONSE_OK) {
+		// simply update this testimony
+		m_Testimonies[id]=te.get_testimony_data();
+		
+		// also, if the speaker was changed, update it in the list
+		if (speaker!=m_Testimonies[id].speaker)
+			m_ListView->set_text(row, 1, m_Testimonies[id].speaker);
+	}
 }
 
 // delete button click handler

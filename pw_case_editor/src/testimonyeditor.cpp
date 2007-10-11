@@ -25,6 +25,7 @@
 #include <sstream>
 
 #include "testimonyeditor.h"
+#include "textboxdialog.h"
 
 // constructor
 TestimonyEditor::TestimonyEditor(const StringVector &testimonyIds) {
@@ -37,6 +38,26 @@ TestimonyEditor::TestimonyEditor(const StringVector &testimonyIds) {
 	m_CurPiece=0;
 	m_Ids=testimonyIds;
 	
+	update();
+}
+
+// set a testimony to use
+void TestimonyEditor::set_testimony(const Case::Testimony &testimony) {
+	// copy the testimony struct
+	m_Testimony=testimony;
+	
+	// set entry values
+	m_IdEntry->set_text(testimony.id);
+	m_SpeakerEntry->set_text(testimony.speaker);
+	
+	// since we set a testimony, that must mean we're editing it
+	// so disable the id entry
+	m_IdEntry->set_sensitive(false);
+	
+	// and enable ok button
+	m_OKButton->set_sensitive(true);
+	
+	// update the dialog
 	update();
 }
 
@@ -101,6 +122,9 @@ void TestimonyEditor::construct() {
 	// allocate text view
 	m_TextView=manage(new Gtk::TextView);
 	
+	// connect signals
+	m_TextView->signal_populate_popup().connect(sigc::mem_fun(*this, &TestimonyEditor::on_text_view_populate_menu));
+	
 	// allocate containers
 	m_PieceFrame=manage(new Gtk::Frame("Testimony Piece"));
 	
@@ -113,9 +137,13 @@ void TestimonyEditor::construct() {
 	Gtk::HBox *hb=manage(new Gtk::HBox);
 	hb->set_spacing(5);
 	
+	// vbox for frame
+	Gtk::VBox *fvb=manage(new Gtk::VBox);
+	fvb->set_spacing(5);
+	
 	// pack widgets
 	hb->pack_start(*m_PrevButton, Gtk::PACK_SHRINK);
-	hb->pack_start(*m_PieceLabel, Gtk::PACK_SHRINK);
+	hb->pack_start(*m_PieceLabel);
 	hb->pack_start(*m_NextButton, Gtk::PACK_SHRINK);
 	
 	// hbuttonbox for buttons
@@ -140,14 +168,20 @@ void TestimonyEditor::construct() {
 	fTable->attach(*m_PressEntry, 1, 2, 3, 4, xops, yops);
 	fTable->attach(*m_AmendButton, 2, 3, 3, 4, xops, yops);
 	
+	// pack widgets
+	fvb->pack_start(*hb);
+	fvb->pack_start(*fTable);
+	
+	// add vbox to frame
+	m_PieceFrame->add(*fvb);
+	
 	// place widgets
 	table->attach(*m_IdLabel, 0, 2, 0, 1, xops, yops);
 	table->attach(*m_IdEntry, 2, 3, 0, 1, xops, yops);
 	table->attach(*m_SpeakerLabel, 0, 2, 1, 2, xops, yops);
 	table->attach(*m_SpeakerEntry, 2, 3, 1, 2, xops, yops);
 	table->attach(*buttons, 0, 3, 2, 3, xops, yops);
-	table->attach(*hb, 0, 3, 3, 4);
-	table->attach(*fTable, 0, 3, 4, 5, xops, yops);
+	table->attach(*m_PieceFrame, 0, 3, 3, 4, xops, yops);
 	
 	vb->pack_start(*table);
 	
@@ -307,4 +341,26 @@ void TestimonyEditor::on_id_entry_changed() {
 	
 	// update ok button
 	m_OKButton->set_sensitive(!found);
+}
+
+// handler for populate signal from text view
+void TestimonyEditor::on_text_view_populate_menu(Gtk::Menu *menu) {
+	Gtk::Menu::MenuList &list=menu->items();
+	
+	// add more items to popup
+	list.push_back(Gtk::Menu_Helpers::SeparatorElem());
+	list.push_back(Gtk::Menu_Helpers::MenuElem("Insert Dialogue", 
+		       sigc::mem_fun(*this, &TestimonyEditor::on_list_button_pressed)));
+}
+
+// handler for right clicks on list
+void TestimonyEditor::on_list_button_pressed() {
+	// run text box dialog
+	TextBoxDialog tbd;
+	if (tbd.run()==Gtk::RESPONSE_OK) {
+		Glib::ustring text=tbd.get_text();
+		
+		// insert this text into the testimony
+		m_TextView->get_buffer()->insert_at_cursor(text);
+	}
 }
