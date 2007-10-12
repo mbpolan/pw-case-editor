@@ -61,6 +61,11 @@ void Case::Case::addLocation(const Location &loc) {
 	m_Locations[loc.id]=loc;
 }
 
+// add a testimony
+void Case::Case::addTestimony(const Testimony &testimony) {
+	m_Testimonies[testimony.id]=testimony;
+}
+
 // add a text buffer
 void Case::Case::addBuffer(const std::string &id, const std::string &contents) {
 	m_Buffers[id]=contents;

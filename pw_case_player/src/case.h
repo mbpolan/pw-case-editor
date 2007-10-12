@@ -99,32 +99,39 @@ struct _Image {
 };
 typedef struct _Image Image;
 
+// a single piece of testimony
+struct _TestimonyPiece {
+	std::string text;
+	std::string presentId;
+	std::string presentBlock;
+	std::string pressBlock;
+	bool hidden;
+};
+typedef struct _TestimonyPiece TestimonyPiece;
+
+// a single testimony from a character
+struct _Testimony {
+	// id of this testimony
+	std::string id;
+	
+	// speaker
+	std::string speaker;
+	
+	// vector of testimony pieces
+	std::vector<TestimonyPiece> pieces;
+};
+typedef struct _Testimony Testimony;
+
 }; // namespace Case
 
 // typedefs for cleaner code
 typedef std::map<std::string, Character> CharacterMap;
-typedef std::map<std::string, Character>::iterator CharacterMapIter;
-typedef std::map<std::string, Character>::const_iterator CharacterMapConstIter;
-
 typedef std::map<std::string, Case::Background> BackgroundMap;
-typedef std::map<std::string, Case::Background>::iterator BackgroundMapIter;
-typedef std::map<std::string, Case::Background>::const_iterator BackgroundMapConstIter;
-
 typedef std::map<std::string, Case::Evidence> EvidenceMap;
-typedef std::map<std::string, Case::Evidence>::iterator EvidenceMapIter;
-typedef std::map<std::string, Case::Evidence>::const_iterator EvidenceMapConstIter;
-
 typedef std::map<std::string, Case::Image> ImageMap;
-typedef std::map<std::string, Case::Image>::iterator ImageMapIter;
-typedef std::map<std::string, Case::Image>::const_iterator ImageMapConstIter;
-
 typedef std::map<std::string, Case::Location> LocationMap;
-typedef std::map<std::string, Case::Location>::iterator LocationMapIter;
-typedef std::map<std::string, Case::Location>::const_iterator LocationMapConstIter;
-
+typedef std::map<std::string, Case::Testimony> TestimonyMap;
 typedef std::map<std::string, std::string> BufferMap;
-typedef std::map<std::string, std::string>::iterator BufferMapIter;
-typedef std::map<std::string, std::string>::const_iterator BufferMapConstIter;
 
 typedef std::vector<std::string> StringVector;
 
@@ -160,6 +167,9 @@ class Case {
 		
 		// add a location
 		void addLocation(const Location &loc);
+		
+		// add a testimony
+		void addTestimony(const Testimony &testimony);
 		
 		// add a text buffer
 		void addBuffer(const std::string &id, const std::string &contents);
@@ -203,6 +213,9 @@ class Case {
 		// return a full map of locations
 		LocationMap getLocations() const { return m_Locations; }
 		
+		// return a full map of testimonies
+		TestimonyMap getTestimonies() const { return m_Testimonies; }
+		
 		// return map of buffers
 		BufferMap getBuffers() const { return m_Buffers; }
 	
@@ -228,9 +241,11 @@ class Case {
 		// map of locations
 		LocationMap m_Locations;
 		
+		// map of testimonies
+		TestimonyMap m_Testimonies;
+		
 		// map of buffers
 		BufferMap m_Buffers;
-		
 };
 
 }; // namespace Case

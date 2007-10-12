@@ -294,6 +294,51 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 			Audio::pushAudio(audio.id, audio);
 	}
 	
+	// read count of testimonies
+	int testimonyCount;
+	fread(&testimonyCount, sizeof(int), 1, f);
+	
+	// iterate over testimonies
+	for (int i=0; i<testimonyCount; i++) {
+		Case::Testimony testimony;
+		
+		// read testimony id
+		testimony.id=readString(f);
+		
+		// read speaker
+		testimony.speaker=readString(f);
+		
+		// read amount of pieces
+		int tpieceCount;
+		fread(&tpieceCount, sizeof(int), 1, f);
+		
+		// iterate over pieces
+		for (int j=0; j<tpieceCount; j++) {
+			Case::TestimonyPiece piece;
+			
+			// read contents
+			piece.text=readString(f);
+			
+			// read present evidence id
+			piece.presentId=readString(f);
+			
+			// read present target
+			piece.presentBlock=readString(f);
+			
+			// read press target
+			piece.pressBlock=readString(f);
+			
+			// read hidden value
+			fread(&piece.hidden, sizeof(bool), 1, f);
+			
+			// add this piece
+			testimony.pieces.push_back(piece);
+		}
+		
+		// add this testimony
+		pcase.addTestimony(testimony);
+	}
+	
 	// read amount of text blocks
 	int bufferCount;
 	fread(&bufferCount, sizeof(int), 1, f);
