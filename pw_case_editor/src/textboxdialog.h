@@ -38,6 +38,9 @@ class TextBoxDialog: public Gtk::Dialog {
 		// get the formatted text
 		Glib::ustring get_text() const;
 		
+		// return a pointer to the internal drawing area
+		TextBoxEditor* get_editor() { return m_TextBox; }
+		
 	private:
 		// build the ui
 		void construct();

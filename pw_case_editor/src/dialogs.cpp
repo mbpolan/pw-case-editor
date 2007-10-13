@@ -39,7 +39,7 @@ TestimonyManager::TestimonyManager(const TestimonyMap &tmap, const StringVector 
 	// fill in list view
 	for (TestimonyMap::const_iterator it=tmap.begin(); it!=tmap.end(); ++it) {
 		int row=m_ListView->append_text((*it).first);
-		m_ListView->set_text(row, 1, (*it).second.speaker);
+		m_ListView->set_text(row, 1, (*it).second.title);
 	}
 }
 
@@ -82,7 +82,7 @@ void TestimonyManager::construct() {
 	
 	// set titles for columns
 	m_ListView->set_column_title(0, "Id");
-	m_ListView->set_column_title(1, "Speaker");
+	m_ListView->set_column_title(1, "Title");
 	
 	// allocate button box
 	Gtk::VButtonBox *buttons=manage(new Gtk::VButtonBox(Gtk::BUTTONBOX_SPREAD));
@@ -124,7 +124,7 @@ void TestimonyManager::on_add_button_clicked() {
 		
 		// also, append a row for this testimony
 		int row=m_ListView->append_text(testimony.id);
-		m_ListView->set_text(row, 1, testimony.speaker);
+		m_ListView->set_text(row, 1, testimony.title);
 	}
 }
 
@@ -151,9 +151,8 @@ void TestimonyManager::on_edit_button_clicked() {
 		// simply update this testimony
 		m_Testimonies[id]=te.get_testimony_data();
 		
-		// also, if the speaker was changed, update it in the list
-		if (speaker!=m_Testimonies[id].speaker)
-			m_ListView->set_text(row, 1, m_Testimonies[id].speaker);
+		// update title of testimony in list
+		m_ListView->set_text(row, 1, m_Testimonies[id].title);
 	}
 }
 
@@ -179,7 +178,7 @@ void TestimonyManager::on_delete_button_clicked() {
 		m_ListView->clear_items();
 		for (int i=0; i<newVec.size(); i++) {
 			int row=m_ListView->append_text(newVec[i].id);
-			m_ListView->set_text(row, 1, newVec[i].speaker);
+			m_ListView->set_text(row, 1, newVec[i].title);
 		}
 	}
 }

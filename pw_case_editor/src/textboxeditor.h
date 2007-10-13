@@ -30,14 +30,25 @@
 // widget that allows for editing a character's text box dialogue
 class TextBoxEditor: public Gtk::DrawingArea {
 	public:
+		// define formats for text
+		enum Format { FORMAT_PLAIN=0, FORMAT_BLUE, FORMAT_DATE, FORMAT_TESTIMONY_TITLE };
+		
 		// constructor
 		TextBoxEditor();
+		
+		// destructor
+		~TextBoxEditor();
 		
 		// set text for a given line
 		void set_text(int line, const Glib::ustring &text);
 		
+		// set the format to use for text
+		void set_format(const Format &format) { m_Format=format; }
+		
 	private:
 		// colors
+		Gdk::Color m_Green;
+		Gdk::Color m_Orange;
 		Gdk::Color m_White;
 		
 		// background image
@@ -51,6 +62,9 @@ class TextBoxEditor: public Gtk::DrawingArea {
 		
 		// expose event handler
 		virtual bool on_expose_event(GdkEventExpose *e);
+		
+		// default text format
+		Format m_Format;
 		
 		// lines of text
 		std::map<int, Glib::ustring> m_Text;

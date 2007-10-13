@@ -118,8 +118,14 @@ struct _Testimony {
 	// id of this testimony
 	Glib::ustring id;
 	
+	// testimony title
+	Glib::ustring title;
+	
 	// speaker
 	Glib::ustring speaker;
+	
+	// block to execute following testimony completion
+	Glib::ustring nextBlock;
 	
 	// vector of testimony pieces
 	std::vector<TestimonyPiece> pieces;

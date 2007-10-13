@@ -48,7 +48,9 @@ void TestimonyEditor::set_testimony(const Case::Testimony &testimony) {
 	
 	// set entry values
 	m_IdEntry->set_text(testimony.id);
+	m_TitleEntry->set_text(testimony.title);
 	m_SpeakerEntry->set_text(testimony.speaker);
+	m_NextBlockEntry->set_text(testimony.nextBlock);
 	
 	// since we set a testimony, that must mean we're editing it
 	// so disable the id entry
@@ -65,7 +67,9 @@ void TestimonyEditor::set_testimony(const Case::Testimony &testimony) {
 Case::Testimony TestimonyEditor::get_testimony_data() {
 	// serialize values
 	m_Testimony.id=m_IdEntry->get_text();
+	m_Testimony.title=m_TitleEntry->get_text();
 	m_Testimony.speaker=m_SpeakerEntry->get_text();
+	m_Testimony.nextBlock=m_NextBlockEntry->get_text();
 	
 	return m_Testimony;
 }
@@ -74,6 +78,7 @@ Case::Testimony TestimonyEditor::get_testimony_data() {
 void TestimonyEditor::construct() {
 	// get vbox
 	Gtk::VBox *vb=get_vbox();
+	vb->set_border_width(10);
 	
 	// allocate layout table
 	Gtk::Table *table=manage(new Gtk::Table);
@@ -84,6 +89,7 @@ void TestimonyEditor::construct() {
 	fTable->set_border_width(10);
 	
 	// allocate buttons
+	m_FormatTitleButton=manage(new Gtk::Button("Format"));
 	m_PrevButton=manage(new Gtk::Button("<<"));
 	m_NextButton=manage(new Gtk::Button(">>"));
 	m_AppendButton=manage(new Gtk::Button("Append"));
@@ -92,6 +98,7 @@ void TestimonyEditor::construct() {
 	m_AmendButton=manage(new Gtk::Button("Amend"));
 	
 	// connect signals
+	m_FormatTitleButton->signal_clicked().connect(sigc::mem_fun(*this, &TestimonyEditor::on_format_title_button_clicked));
 	m_PrevButton->signal_clicked().connect(sigc::mem_fun(*this, &TestimonyEditor::on_prev_button_clicked));
 	m_NextButton->signal_clicked().connect(sigc::mem_fun(*this, &TestimonyEditor::on_next_button_clicked));
 	m_AppendButton->signal_clicked().connect(sigc::mem_fun(*this, &TestimonyEditor::on_append_button_clicked));
@@ -101,14 +108,18 @@ void TestimonyEditor::construct() {
 	
 	// allocate labels
 	m_IdLabel=manage(new Gtk::Label("Testimony Id"));
+	m_TitleLabel=manage(new Gtk::Label("Title"));
 	m_SpeakerLabel=manage(new Gtk::Label("Speaker"));
+	m_NextBlockLabel=manage(new Gtk::Label("Following Block"));
 	m_PieceLabel=manage(new Gtk::Label("1/1"));
 	m_PresentLabel=manage(new Gtk::Label("Evidence Presented"));
 	m_PressLabel=manage(new Gtk::Label("Witness Pressed"));
 	
 	// allocate entries
 	m_IdEntry=manage(new Gtk::Entry);
+	m_TitleEntry=manage(new Gtk::Entry);
 	m_SpeakerEntry=manage(new Gtk::Entry);
+	m_NextBlockEntry=manage(new Gtk::Entry);
 	m_PresentIdEntry=manage(new Gtk::Entry);
 	m_PresentTargetEntry=manage(new Gtk::Entry);
 	m_PressEntry=manage(new Gtk::Entry);
@@ -132,6 +143,11 @@ void TestimonyEditor::construct() {
 	m_SWindow->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_ALWAYS);
 	m_SWindow->set_size_request(200, 200);
 	m_SWindow->add(*m_TextView);
+	
+	// hbox and table for testimony data
+	Gtk::HBox *thb=manage(new Gtk::HBox);
+	Gtk::Table *ttable=manage(new Gtk::Table);
+	ttable->set_col_spacings(25);
 	
 	// hbox for testimony piece control
 	Gtk::HBox *hb=manage(new Gtk::HBox);
@@ -176,12 +192,21 @@ void TestimonyEditor::construct() {
 	m_PieceFrame->add(*fvb);
 	
 	// place widgets
-	table->attach(*m_IdLabel, 0, 2, 0, 1, xops, yops);
-	table->attach(*m_IdEntry, 2, 3, 0, 1, xops, yops);
-	table->attach(*m_SpeakerLabel, 0, 2, 1, 2, xops, yops);
-	table->attach(*m_SpeakerEntry, 2, 3, 1, 2, xops, yops);
-	table->attach(*buttons, 0, 3, 2, 3, xops, yops);
-	table->attach(*m_PieceFrame, 0, 3, 3, 4, xops, yops);
+	ttable->attach(*m_IdLabel, 0, 1, 0, 1, xops, yops);
+	ttable->attach(*m_IdEntry, 1, 2, 0, 1, xops, yops);
+	ttable->attach(*m_TitleLabel, 0, 1, 1, 2, xops, yops);
+	ttable->attach(*m_TitleEntry, 1, 2, 1, 2, xops, yops);
+	ttable->attach(*m_FormatTitleButton, 2, 3, 1, 2, xops, yops);
+	ttable->attach(*m_SpeakerLabel, 0, 1, 2, 3, xops, yops);
+	ttable->attach(*m_SpeakerEntry, 1, 2, 2, 3, xops, yops);
+	ttable->attach(*m_NextBlockLabel, 0, 1, 3, 4, xops, yops);
+	ttable->attach(*m_NextBlockEntry, 1, 2, 3, 4, xops, yops);
+	
+	thb->pack_start(*ttable, Gtk::PACK_SHRINK);
+	
+	table->attach(*thb, 0, 3, 0, 1, xops, yops);
+	table->attach(*buttons, 0, 1, 2, 5, xops, yops);
+	table->attach(*m_PieceFrame, 0, 3, 2, 3, xops, yops);
 	
 	vb->pack_start(*table);
 	
@@ -226,6 +251,28 @@ void TestimonyEditor::update() {
 	
 	// set text in buffer
 	m_TextView->get_buffer()->set_text(piece.text);
+}
+
+// format title button click handler
+void TestimonyEditor::on_format_title_button_clicked() {
+	// prepare text box dialog formatted with testimony title
+	TextBoxDialog tbd;
+	tbd.get_editor()->set_format(TextBoxEditor::FORMAT_TESTIMONY_TITLE);
+	
+	// run the dialog, and insert text into entry
+	if (tbd.run()==Gtk::RESPONSE_OK) {
+		Glib::ustring text=tbd.get_text();
+		
+		// remove useless characters
+		Glib::ustring reformatted="";
+		for (int i=0; i<text.size(); i++) {
+			if (text[i]!='\n')
+				reformatted+=text[i];
+		}
+		
+		// now set the text
+		m_TitleEntry->set_text(reformatted);
+	}
 }
 
 // previous piece button click handler

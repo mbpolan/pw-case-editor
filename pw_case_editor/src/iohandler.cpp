@@ -211,8 +211,14 @@ bool IO::save_case_to_file(const Glib::ustring &path, const Case::Case &pcase,
 		// write testimony id
 		write_string(f, (*it).first);
 		
+		// write title
+		write_string(f, (*it).second.title);
+		
 		// write speaker
 		write_string(f, (*it).second.speaker);
+		
+		// write next block
+		write_string(f, (*it).second.nextBlock);
 		
 		// write amount of pieces
 		int tpieceCount=(*it).second.pieces.size();
@@ -454,8 +460,14 @@ bool IO::export_case_to_file(const Glib::ustring &path, const Case::Case &pcase,
 		// write testimony id
 		write_string(f, (*it).first);
 		
+		// write title
+		write_string(f, (*it).second.title);
+		
 		// write speaker
 		write_string(f, (*it).second.speaker);
+		
+		// write next block
+		write_string(f, (*it).second.nextBlock);
 		
 		// write amount of pieces
 		int tpieceCount=(*it).second.pieces.size();
@@ -741,8 +753,14 @@ bool IO::load_case_from_file(const Glib::ustring &path, Case::Case &pcase,
 		// read testimony id
 		testimony.id=read_string(f);
 		
+		// read title
+		testimony.title=read_string(f);
+		
 		// read speaker
 		testimony.speaker=read_string(f);
+		
+		// read next block
+		testimony.nextBlock=read_string(f);
 		
 		// read amount of pieces
 		int tpieceCount;

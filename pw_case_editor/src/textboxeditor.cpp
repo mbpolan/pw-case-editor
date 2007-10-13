@@ -25,12 +25,17 @@
 
 // constructor
 TextBoxEditor::TextBoxEditor() {
+	// default format
+	m_Format=FORMAT_PLAIN;
+	
 	// create colormap
 	Glib::RefPtr<Gdk::Colormap> cm=get_default_colormap();
 	
 	// allocate colors
-	m_White=Gdk::Color("white");
-	cm->alloc_color(m_White);
+	//m_Blue=Gdk::Color("#6BC6F7");
+	m_Green=Gdk::Color("#00F700"); cm->alloc_color(m_Green);
+	m_Orange=Gdk::Color("#F77339"); cm->alloc_color(m_Orange);
+	m_White=Gdk::Color("white"); cm->alloc_color(m_White);
 	
 	// create the background image
 	m_BG=Gdk::Pixbuf::create_from_xpm_data(textbox_xpm);
@@ -39,6 +44,16 @@ TextBoxEditor::TextBoxEditor() {
 	set_size_request(m_BG->get_width(), m_BG->get_height());
 	
 	add_events(Gdk::EXPOSURE_MASK);
+}
+
+// destructor
+TextBoxEditor::~TextBoxEditor() {
+	Glib::RefPtr<Gdk::Colormap> cm=get_default_colormap();
+	
+	// free allocated colors
+	cm->free_color(m_Green);
+	cm->free_color(m_Orange);
+	cm->free_color(m_White);
 }
 
 // set the line text
@@ -73,8 +88,14 @@ bool TextBoxEditor::on_expose_event(GdkEventExpose *e) {
 	// draw the background image
 	window->draw_pixbuf(m_GC, m_BG, 0, 0, 0, 0, -1, -1, Gdk::RGB_DITHER_NONE, 0, 0);
 	
-	// draw lines of text
-	m_GC->set_foreground(m_White);
+	// set color of text
+	switch(m_Format) {
+		default:
+		case FORMAT_PLAIN: m_GC->set_foreground(m_White); break;
+		case FORMAT_BLUE: m_GC->set_foreground(m_White); break;
+		case FORMAT_DATE: m_GC->set_foreground(m_Green); break;
+		case FORMAT_TESTIMONY_TITLE: m_GC->set_foreground(m_Orange); break;
+	}
 	
 	// create pango layouts
 	Glib::RefPtr<Pango::Layout> l1c=create_pango_layout(m_Text[1]);
@@ -91,10 +112,24 @@ bool TextBoxEditor::on_expose_event(GdkEventExpose *e) {
 	l2c->set_font_description(fd2);
 	l3c->set_font_description(fd3);
 	
+	// calculate x based on format
+	int x1, x2, x3;
+	if (m_Format==FORMAT_DATE || m_Format==FORMAT_TESTIMONY_TITLE) {
+		Pango::Rectangle l1r=l1c->get_pixel_logical_extents();
+		Pango::Rectangle l2r=l2c->get_pixel_logical_extents();
+		Pango::Rectangle l3r=l3c->get_pixel_logical_extents();
+		
+		x1=128-(l1r.get_width()/2);
+		x2=128-(l2r.get_width()/2);
+		x3=128-(l3r.get_width()/2);
+	}
+	else
+		x1=x2=x3=8;
+	
 	// draw the layouts
-	window->draw_layout(m_GC, 8, 4, l1c);
-	window->draw_layout(m_GC, 8, 21, l2c);
-	window->draw_layout(m_GC, 8, 38, l3c);
+	window->draw_layout(m_GC, x1, 4, l1c);
+	window->draw_layout(m_GC, x2, 21, l2c);
+	window->draw_layout(m_GC, x3, 38, l3c);
 	
 	return ret;
 }

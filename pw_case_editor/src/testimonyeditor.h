@@ -54,6 +54,9 @@ class TestimonyEditor: public Gtk::Dialog {
 		// update the dialog state
 		void update();
 		
+		// format title button click handler
+		void on_format_title_button_clicked();
+		
 		// previous piece button click handler
 		void on_prev_button_clicked();
 		
@@ -82,6 +85,7 @@ class TestimonyEditor: public Gtk::Dialog {
 		void on_list_button_pressed();
 		
 		// buttons
+		Gtk::Button *m_FormatTitleButton;
 		Gtk::Button *m_PrevButton;
 		Gtk::Button *m_NextButton;
 		Gtk::Button *m_AppendButton;
@@ -92,14 +96,18 @@ class TestimonyEditor: public Gtk::Dialog {
 		
 		// labels
 		Gtk::Label *m_IdLabel;
+		Gtk::Label *m_TitleLabel;
 		Gtk::Label *m_SpeakerLabel;
+		Gtk::Label *m_NextBlockLabel;
 		Gtk::Label *m_PieceLabel;
 		Gtk::Label *m_PresentLabel;
 		Gtk::Label *m_PressLabel;
 		
 		// text entries
 		Gtk::Entry *m_IdEntry;
+		Gtk::Entry *m_TitleEntry;
 		Gtk::Entry *m_SpeakerEntry;
+		Gtk::Entry *m_NextBlockEntry;
 		Gtk::Entry *m_PresentIdEntry;
 		Gtk::Entry *m_PresentTargetEntry;
 		Gtk::Entry *m_PressEntry;
