@@ -114,8 +114,14 @@ struct _Testimony {
 	// id of this testimony
 	std::string id;
 	
+	// testimony title
+	std::string title;
+	
 	// speaker
 	std::string speaker;
+	
+	// next block to follow upon completion
+	std::string nextBlock;
 	
 	// vector of testimony pieces
 	std::vector<TestimonyPiece> pieces;

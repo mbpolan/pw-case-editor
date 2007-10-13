@@ -305,8 +305,14 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 		// read testimony id
 		testimony.id=readString(f);
 		
+		// read title
+		testimony.title=readString(f);
+		
 		// read speaker
 		testimony.speaker=readString(f);
+		
+		// read next block
+		testimony.nextBlock=readString(f);
 		
 		// read amount of pieces
 		int tpieceCount;
