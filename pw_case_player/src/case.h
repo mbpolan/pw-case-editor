@@ -189,6 +189,9 @@ class Case {
 		// get a location
 		Location* getLocation(const std::string &id);
 		
+		// get a testimony
+		Testimony* getTestimony(const std::string &id);
+		
 		// clear the entire case information
 		void clear();
 		

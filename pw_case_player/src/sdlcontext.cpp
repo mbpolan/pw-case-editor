@@ -158,6 +158,29 @@ void SDLContext::onKeyboardEvent(SDL_KeyboardEvent *e) {
 		m_Screen=SDL_SetVideoMode(m_Width, m_Height, 32, m_VFlags);
 	}
 	
+	// toggle audio mute
+	else if (e->keysym.sym==SDLK_F2) {
+		static bool once=false;
+		
+		// mute all sound effects
+		if (!once) {
+			Mix_Volume(-1, 0);
+			Mix_VolumeMusic(0);
+			
+			std::cout << "Audio muted\n";
+		}
+		
+		// resume all sound effects
+		else {
+			Mix_Volume(-1, MIX_MAX_VOLUME);
+			Mix_VolumeMusic(MIX_MAX_VOLUME);
+			
+			std::cout << "Audio resumed\n";
+		}
+		
+		once=!once;
+	}
+	
 	m_Game->onKeyboardEvent(e);
 }
 

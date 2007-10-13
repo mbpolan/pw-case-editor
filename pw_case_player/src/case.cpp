@@ -111,6 +111,14 @@ Case::Location* Case::Case::getLocation(const std::string &id) {
 		return NULL;
 }
 
+// get a testimony
+Case::Testimony* Case::Case::getTestimony(const std::string &id) {
+	if (m_Testimonies.find(id)!=m_Testimonies.end())
+		return &m_Testimonies[id];
+	else
+		return NULL;
+}
+
 // clear the case information
 void Case::Case::clear() {
 	// clear out overview

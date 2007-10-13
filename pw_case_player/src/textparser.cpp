@@ -35,6 +35,7 @@ TextParser::TextParser(Game *game): m_Game(game) {
 	m_SpeakerGender=Character::GENDER_MALE;
 	m_Dialogue="";
 	m_QueuedFade="null";
+	m_QueuedTestimony="null";
 	m_QueuedEvent="null";
 	m_Direct=false;
 	m_BlockDiag=false;
@@ -357,6 +358,14 @@ void TextParser::nextStep() {
 		if (m_QueuedFade!="null") {
 			m_Game->m_State.fadeOut=m_QueuedFade;
 			m_QueuedFade="null";
+		}
+		
+		// display testimony from a character
+		if (m_QueuedTestimony!="null") {
+			// set the testimony to the game engine
+			m_Game->displayTestimony(m_QueuedTestimony);
+			
+			m_QueuedTestimony="null";
 		}
 		
 		m_Pause=false;
@@ -720,6 +729,10 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		else
 			std::cout << "No such area in courtroom overview: '" << area << "'\n";
 	}
+	
+	// display a testimony
+	else if (trigger=="display_testimony")
+		m_QueuedTestimony=command;
 	
 	// end the current dialog
 	else if (trigger=="end_dialogue")

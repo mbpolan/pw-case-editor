@@ -108,6 +108,9 @@ struct _GameState {
 	// music variables
 	bool continueMusic;
 	
+	// testimony variables
+	std::string curTestimony;
+	
 	// special effects
 	std::string fadeOut;
 	std::string flash;
@@ -181,6 +184,9 @@ class Game {
 		
 		// set the evidence to draw on top screen
 		void setShownEvidence(const std::string &id, const Position &pos);
+		
+		// begin displaying a testimony
+		void displayTestimony(const std::string &id);
 		
 		// change the selected evidence/profile
 		void selectEvidence(bool evidence=true, bool increment=true);

@@ -115,8 +115,9 @@ class TextParser {
 		// font formatting
 		FontStyle m_FontStyle;
 		
-		// queued special effects
+		// queued special effects or specific end of text events
 		std::string m_QueuedFade;
+		std::string m_QueuedTestimony;
 		
 		// generic events to perform
 		std::string m_QueuedEvent;

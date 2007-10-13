@@ -55,6 +55,9 @@ Game::Game(const std::string &rootPath, Case::Case *pcase): m_RootPath(rootPath)
 	m_State.examineX=256/2;
 	m_State.examineY=192/2;
 	
+	// reset testimony variables
+	m_State.curTestimony="null";
+	
 	// reset courtroom sprites
 	m_State.crOverviewDefense="null";
 	m_State.crOverviewProsecutor="null";
@@ -606,6 +609,35 @@ void Game::setShownEvidence(const std::string &id, const Position &pos) {
 		m_State.shownEvidence=id;
 		m_State.shownEvidencePos=pos;
 	}
+}
+
+// display a testimony
+void Game::displayTestimony(const std::string &id) {
+	// get the testimony, if it exists
+	Case::Testimony *testimony=m_Case->getTestimony(id);
+	if (m_Case->getTestimonies().find(id)==m_Case->getTestimonies().end()) {
+		std::cout << "Game: display testimony '" << id << "' doesn't exist.\n";
+		return;
+	}
+	
+	// now, check the speaker's character
+	if (!m_Case->getCharacter(testimony->speaker)) {
+		std::cout << "Game: speaker '" << testimony->speaker << "' for testimony '" << id << "' doesn't exist.\n";
+		return;
+	}
+	
+	// set our current testimony flag
+	m_State.curTestimony=id;
+	
+	// set the speaker at this location
+	m_Case->getLocation("witness_stand")->character=testimony->speaker;
+	
+	// go to witness stand
+	setLocation("witness_stand");
+	
+	// set the first testimony block
+	std::string pre="{*speaker:"+testimony->speaker+";*}";
+	m_Parser->setBlock(pre+testimony->pieces[0].text);
 }
 
 // change the selected evidence
