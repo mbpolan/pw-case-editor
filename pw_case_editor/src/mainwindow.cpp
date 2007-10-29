@@ -653,6 +653,21 @@ void MainWindow::on_tools_sprite_editor() {
 			}
 		}
 		
+		// or if we are creating a sprite from files, do that now
+		else if (mode==SpriteChooserDialog::SPRITE_FROM_GIFS) {
+			Sprite spr;
+			
+			// create this sprite
+			if (!spr.create_from_gifs(scd.get_path())) {
+				Gtk::MessageDialog md(*this, "Unable to create sprite from files.", false, Gtk::MESSAGE_ERROR);
+				md.run();
+				return;
+			}
+			
+			else
+				se.set_sprite_data(spr);
+		}
+		
 		// run the dialog
 		int ret=se.run();
 		if (ret==Gtk::RESPONSE_OK) {

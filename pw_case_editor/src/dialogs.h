@@ -266,13 +266,13 @@ class LocationsDialog: public Gtk::Dialog {
 // dialog displayed before viewing sprite editor
 class SpriteChooserDialog: public Gtk::Dialog {
 	public:
-		enum SpriteMode { SPRITE_NEW=0, SPRITE_EXISTING };
+		enum SpriteMode { SPRITE_NEW=0, SPRITE_EXISTING, SPRITE_FROM_GIFS };
 		
 		// constructor
 		SpriteChooserDialog();
 		
 		// get the selected sprite option
-		SpriteMode get_sprite_mode() const { return (m_NewSpriteRB->get_active() ? SPRITE_NEW : SPRITE_EXISTING); }
+		SpriteMode get_sprite_mode() const;
 		
 		// get path name
 		Glib::ustring get_path() const { return m_PathEntry->get_text(); }
@@ -290,10 +290,14 @@ class SpriteChooserDialog: public Gtk::Dialog {
 		// open sprite radio button toggle handler
 		void on_open_sprite_toggled();
 		
+		// from gif files radio buttons toggle handler
+		void on_from_gifs_toggled();
+		
 		// radio buttons
 		Gtk::RadioButtonGroup m_Group;
 		Gtk::RadioButton *m_NewSpriteRB;
 		Gtk::RadioButton *m_OpenSpriteRB;
+		Gtk::RadioButton *m_CreateFromGifsRB;
 		
 		// labels
 		Gtk::Label *m_SpriteLabel;

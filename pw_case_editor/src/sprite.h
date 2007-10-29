@@ -51,8 +51,14 @@ class Sprite {
 		// constructor
 		Sprite() { }
 		
+		// create a sprite from gifs in a directory
+		bool create_from_gifs(const Glib::ustring &path);
+		
 		// add an entire animation
 		void add_animation(const Animation &anim) { m_Animations[anim.id]=anim; }
+		
+		// add an animation from a gif
+		void add_animation_from_gif(const Glib::ustring &id, const Glib::ustring &path);
 		
 		// get an animation sequence
 		Animation& get_animation(const Glib::ustring &id) { return m_Animations[id]; }
@@ -67,27 +73,10 @@ class Sprite {
 		void remove_animation(const Glib::ustring &id) { m_Animations.erase(id); }
 		
 		// add a frame to an animation sequence
-		void add_frame(const Glib::ustring &id, int time, const Glib::RefPtr<Gdk::Pixbuf> &pixbuf) {
-			Frame fr;
-			fr.time=time;
-			fr.pixbuf=pixbuf;
-			
-			m_Animations[id].frames.push_back(fr);
-		}
+		void add_frame(const Glib::ustring &id, int time, const Glib::RefPtr<Gdk::Pixbuf> &pixbuf);
 		
 		// remove a frame from an animation sequence
-		void remove_frame(const Glib::ustring &id, int index) {
-			Animation &anim=m_Animations[id];
-			int c=0;
-			for (std::vector<Frame>::iterator it=anim.frames.begin(); it!=anim.frames.end(); ++it) {
-				// erase this element if it matches the index
-				if (c==index) {
-					it=anim.frames.erase(it);
-					break;
-				}
-				c+=1;
-			}
-		}
+		void remove_frame(const Glib::ustring &id, int index);
 		
 		// clear out all animations and other data
 		void clear() { m_Animations.clear(); }

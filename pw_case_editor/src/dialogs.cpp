@@ -19,6 +19,7 @@
  ***************************************************************************/
 // dialogs.cpp: implementation of Dialog classes
 
+#include <glibmm/fileutils.h>
 #include <gtkmm/filechooserdialog.h>
 #include <gtkmm/frame.h>
 #include <gtkmm/messagedialog.h>
@@ -756,6 +757,18 @@ SpriteChooserDialog::SpriteChooserDialog() {
 	construct();
 }
 
+// get the selected sprite option
+SpriteChooserDialog::SpriteMode SpriteChooserDialog::get_sprite_mode() const {
+	if (m_NewSpriteRB->get_active())
+		return SPRITE_NEW;
+	
+	else if (m_OpenSpriteRB->get_active())
+		return SPRITE_EXISTING;
+	
+	else
+		return SPRITE_FROM_GIFS;
+}
+
 // build the ui
 void SpriteChooserDialog::construct() {
 	// get default vbox
@@ -767,12 +780,14 @@ void SpriteChooserDialog::construct() {
 	table->set_spacings(5);
 	
 	// allocate radio buttons
-	m_NewSpriteRB=manage(new Gtk::RadioButton(m_Group, "New"));
-	m_OpenSpriteRB=manage(new Gtk::RadioButton(m_Group, "Existing"));
+	m_NewSpriteRB=manage(new Gtk::RadioButton(m_Group, "Blank Sprite"));
+	m_OpenSpriteRB=manage(new Gtk::RadioButton(m_Group, "Open Existing"));
+	m_CreateFromGifsRB=manage(new Gtk::RadioButton(m_Group, "Create from GIFs"));
 	
 	// connect signals
 	m_NewSpriteRB->signal_toggled().connect(sigc::mem_fun(*this, &SpriteChooserDialog::on_new_sprite_toggled));
 	m_OpenSpriteRB->signal_toggled().connect(sigc::mem_fun(*this, &SpriteChooserDialog::on_open_sprite_toggled));
+	m_CreateFromGifsRB->signal_toggled().connect(sigc::mem_fun(*this, &SpriteChooserDialog::on_from_gifs_toggled));
 	
 	// check new sprite by default
 	m_NewSpriteRB->set_active(true);
@@ -798,9 +813,10 @@ void SpriteChooserDialog::construct() {
 	table->attach(*m_SpriteLabel, 0, 1, 0, 1, xops, yops);
 	table->attach(*m_NewSpriteRB, 1, 2, 0, 1, xops, yops);
 	table->attach(*m_OpenSpriteRB, 2, 3, 0, 1, xops, yops);
-	table->attach(*m_PathLabel, 0, 1, 1, 2, xops, yops);
-	table->attach(*m_PathEntry, 1, 2, 1, 2, xops, yops);
-	table->attach(*m_BrowseButton, 2, 3, 1, 2, xops, yops);
+	table->attach(*m_CreateFromGifsRB, 3, 4, 0, 1, xops, yops);
+	table->attach(*m_PathLabel, 0, 2, 1, 2, xops, yops);
+	table->attach(*m_PathEntry, 2, 3, 1, 2, xops, yops);
+	table->attach(*m_BrowseButton, 3, 4, 1, 2, yops, yops);
 	
 	vb->pack_start(*table, Gtk::PACK_SHRINK);
 	
@@ -817,24 +833,43 @@ void SpriteChooserDialog::construct() {
 
 // browse button click handler
 void SpriteChooserDialog::on_browse_button_clicked() {
-	// prepare file chooser
-	Gtk::FileChooserDialog fcd(*this, "Open Sprite", Gtk::FILE_CHOOSER_ACTION_OPEN);
-	fcd.add_button("Open", Gtk::RESPONSE_OK);
-	fcd.add_button("Cancel", Gtk::RESPONSE_CANCEL);
-	
-	// add a filter
-	Gtk::FileFilter filter;
-	filter.add_pattern("*.spr");
-	filter.set_name("Sprites (*.spr)");
-	fcd.add_filter(filter);
-	
-	// run the dialog
-	if (fcd.run()==Gtk::RESPONSE_OK) {
-		// get the selected sprite
-		Glib::ustring path=fcd.get_filename();
+	// open an existing sprite
+	if (get_sprite_mode()==SPRITE_EXISTING) {
+		// prepare file chooser
+		Gtk::FileChooserDialog fcd(*this, "Open Sprite", Gtk::FILE_CHOOSER_ACTION_OPEN);
+		fcd.add_button("Open", Gtk::RESPONSE_OK);
+		fcd.add_button("Cancel", Gtk::RESPONSE_CANCEL);
 		
-		// set this text
-		m_PathEntry->set_text(path);
+		// add a filter
+		Gtk::FileFilter filter;
+		filter.add_pattern("*.spr");
+		filter.set_name("Sprites (*.spr)");
+		fcd.add_filter(filter);
+		
+		// run the dialog
+		if (fcd.run()==Gtk::RESPONSE_OK) {
+			// get the selected sprite
+			Glib::ustring path=fcd.get_filename();
+			
+			// set this text
+			m_PathEntry->set_text(path);
+		}
+	}
+	
+	// otherwise, we're opening a folder
+	else {
+		// prepare file chooser
+		Gtk::FileChooserDialog fcd(*this, "Open Folder", Gtk::FILE_CHOOSER_ACTION_SELECT_FOLDER);
+		fcd.add_button("Open", Gtk::RESPONSE_OK);
+		fcd.add_button("Cancel", Gtk::RESPONSE_CANCEL);
+		
+		// run the dialog
+		if (fcd.run()==Gtk::RESPONSE_OK) {
+			Glib::ustring path=fcd.get_current_folder();
+			
+			// set this text
+			m_PathEntry->set_text(path);
+		}
 	}
 }
 
@@ -847,6 +882,13 @@ void SpriteChooserDialog::on_new_sprite_toggled() {
 
 // open sprite radio button toggle handler
 void SpriteChooserDialog::on_open_sprite_toggled() {
+	// enable file stuff
+	m_PathEntry->set_sensitive(true);
+	m_BrowseButton->set_sensitive(true);
+}
+
+// from gifs button toggled
+void SpriteChooserDialog::on_from_gifs_toggled() {
 	// enable file stuff
 	m_PathEntry->set_sensitive(true);
 	m_BrowseButton->set_sensitive(true);

@@ -290,53 +290,17 @@ void SpriteEditor::on_add_frame_button_clicked() {
 			// first, get the id of our current animation
 			Glib::ustring id=m_AnimCB->get_active_text();
 			
-			// vector of frames in this animation
-			std::vector<Magick::Image> frames;
+			// add the animation from this gif
+			m_Sprite.add_animation_from_gif(id, filenames[0]);
 			
-			// read in the frames
-			Magick::readImages(&frames, filenames[0]);
+			// get the amount of frames in this animation now
+			int amount=m_Sprite.get_animation(id).frames.size();
+			m_CurFrame=amount;
 			
-			// iterate over each frame and process it
-			for (int i=0; i<frames.size(); i++) {
-				Magick::Image frame=frames[i];
-				
-				// get the delay for this frame
-				int delay=frame.animationDelay()*10;
-				
-				// if this image has transparency, flatten it
-				if (frame.matte()) {
-					// vector of layers
-					std::vector<Magick::Image> flatten;
-					
-					// we add a new, blank image that is completely green
-					flatten.push_back(Magick::Image(frame.size(), Magick::ColorRGB(0, 255, 0)));
-					flatten.push_back(frame);
-					
-					// flatten these images
-					Magick::flattenImages(&frame, flatten.begin(), flatten.end());
-				}
-				
-				// dump this image to file
-				frame.write("tmp.png");
-				
-				// and create a pixbuf from it
-				Glib::RefPtr<Gdk::Pixbuf> pixbuf=Gdk::Pixbuf::create_from_file("tmp.png");
-				
-				// once we are through with this file, get rid of it
-				::remove("tmp.png");
-				
-				// add this frame
-				m_Sprite.add_frame(id, delay, pixbuf);
-				
-				// get the amount of frames in this animation now
-				int amount=m_Sprite.get_animation(id).frames.size();
-				m_CurFrame=amount;
-				
-				// set this new frame
-				m_Image->set(m_Sprite.get_animation(id).frames[m_CurFrame-1].pixbuf);
-				
-				update_progress_label();
-			}
+			// set this new frame
+			m_Image->set(m_Sprite.get_animation(id).frames[m_CurFrame-1].pixbuf);
+			
+			update_progress_label();
 			
 			// we don't need to deal with this image anymore
 			return;
