@@ -31,6 +31,7 @@
 #include <gtkmm/liststore.h>
 #include <gtkmm/listviewtext.h>
 #include <gtkmm/notebook.h>
+#include <gtkmm/progressbar.h>
 #include <gtkmm/scrolledwindow.h>
 #include <gtkmm/textbuffer.h>
 #include <gtkmm/textview.h>
@@ -38,6 +39,28 @@
 #include "case.h"
 #include "character.h"
 #include "hotspotwidget.h"
+
+// dialog to display progress of a task
+class ProgressDialog: public Gtk::Dialog {
+	public:
+		// constructor
+		ProgressDialog(const Glib::ustring &label);
+		
+		// set the amount of progress done
+		void set_progress(double amount);
+		
+	private:
+		// build the ui
+		void construct();
+		
+		// label
+		Gtk::Label *m_Label;
+		
+		// progress bar
+		Gtk::ProgressBar *m_ProgBar;
+};
+
+/***************************************************************************/
 
 // dialog used to manage testimonies
 class TestimonyManager: public Gtk::Dialog {

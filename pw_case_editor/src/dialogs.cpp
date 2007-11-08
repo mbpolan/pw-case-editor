@@ -30,6 +30,45 @@
 #include "testimonyeditor.h"
 
 // constructor
+ProgressDialog::ProgressDialog(const Glib::ustring &label) {
+	construct();
+	
+	m_Label->set_text(label);
+}
+
+// set the amount of progress done
+void ProgressDialog::set_progress(double amount) {
+	// format percentage text
+	std::stringstream ss;
+	ss << amount*100;
+	
+	// set fraction and text
+	m_ProgBar->set_fraction(amount);
+	m_ProgBar->set_text(ss.str()+"%");
+}
+
+// build the ui
+void ProgressDialog::construct() {
+	Gtk::VBox *vb=get_vbox();
+	vb->set_spacing(5);
+	vb->set_border_width(10);
+	
+	// allocate label
+	m_Label=manage(new Gtk::Label);
+	
+	// allocate progress bar
+	m_ProgBar=manage(new Gtk::ProgressBar);
+	
+	// pack widgets
+	vb->pack_start(*m_Label, Gtk::PACK_SHRINK);
+	vb->pack_start(*m_ProgBar, Gtk::PACK_SHRINK);
+	
+	show_all_children();
+}
+
+/***************************************************************************/
+
+// constructor
 TestimonyManager::TestimonyManager(const TestimonyMap &tmap, const StringVector &testimonyIds) {
 	construct();
 	
