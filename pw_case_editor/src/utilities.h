@@ -26,6 +26,12 @@
 
 namespace Utils {
 
+// flush gui events that may still be pending in the main loop
+void flush_events();
+
+// compress a buffer
+char* compress_buffer(const char *buffer, int size, int &newSize, bool autoFree);
+
 // extract a text block's id from a full string
 Glib::ustring extract_block_id(const Glib::ustring str);
 

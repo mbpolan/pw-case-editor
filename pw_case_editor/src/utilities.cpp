@@ -19,7 +19,39 @@
  ***************************************************************************/
 // utilities.cpp: implementation of Util namespace
 
+#include <glibmm.h>
+#include <gtkmm/main.h>
+#include <zlib.h>
+
 #include "utilities.h"
+
+// flush gui events that may still be pending in the main loop
+void Utils::flush_events() {
+	while(Gtk::Main::events_pending())
+		Gtk::Main::iteration();
+}
+
+// compress a buffer
+char* Utils::compress_buffer(const char *buffer, int size, int &newSize, bool autoFree) {
+	// calculate new destination buffer size and allocate it
+	newSize=(int) size+(size*0.01)+12;
+	char *dest=new char[newSize];
+	
+	// compress this buffer
+	int ret=compress2((Bytef*) dest, (uLongf*) &newSize, (Bytef*) buffer, size, 9);
+	
+	// check for errors
+	if (ret==Z_MEM_ERROR)
+		g_message("Error: unable to compress buffer: not enough memory.\n");
+	else if (ret==Z_BUF_ERROR)
+		g_message("Error: unable to compress buffer: not enough memory in output buffer.\n");
+	
+	// delete the original buffer if requested
+	if (autoFree)
+		delete [] buffer;
+	
+	return dest;
+}
 
 // extract a text block's id from a full string
 Glib::ustring Utils::extract_block_id(const Glib::ustring str) {

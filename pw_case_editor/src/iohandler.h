@@ -68,8 +68,8 @@ void write_string(FILE *f, const Glib::ustring &str);
 // read a string from file
 Glib::ustring read_string(FILE *f);
 
-// write a pixbuf in bmp format to file
-void write_bmp(FILE *f, const Glib::RefPtr<Gdk::Pixbuf> &pixbuf);
+// write a pixbuf to compressed, internal format
+void write_export_image(FILE *f, const Glib::RefPtr<Gdk::Pixbuf> &pixbuf);
 
 // write a pixbuf to file
 void write_pixbuf(FILE *f, const Glib::RefPtr<Gdk::Pixbuf> &pixbuf);

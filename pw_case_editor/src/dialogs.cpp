@@ -19,6 +19,7 @@
  ***************************************************************************/
 // dialogs.cpp: implementation of Dialog classes
 
+#include <iomanip>
 #include <glibmm/fileutils.h>
 #include <gtkmm/filechooserdialog.h>
 #include <gtkmm/frame.h>
@@ -40,7 +41,7 @@ ProgressDialog::ProgressDialog(const Glib::ustring &label) {
 void ProgressDialog::set_progress(double amount) {
 	// format percentage text
 	std::stringstream ss;
-	ss << amount*100;
+	ss << std::setiosflags(std::ios::fixed) << std::setprecision(0) << (amount*100);
 	
 	// set fraction and text
 	m_ProgBar->set_fraction(amount);

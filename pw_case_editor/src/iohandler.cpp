@@ -22,7 +22,9 @@
 #include <cstdio>
 
 #include "clistview.h"
+#include "dialogs.h"
 #include "iohandler.h"
+#include "utilities.h"
 
 // save a case and its associated data to file
 bool IO::save_case_to_file(const Glib::ustring &path, const Case::Case &pcase,
@@ -326,7 +328,7 @@ bool IO::export_case_to_file(const Glib::ustring &path, const Case::Case &pcase,
 		
 		// write text box tag
 		if (hasTag)
-			write_bmp(f, (*it).second.get_text_box_tag());
+			write_export_image(f, (*it).second.get_text_box_tag());
 		
 		// write headshot existance
 		bool hasHeadshot=(*it).second.has_headshot();
@@ -335,11 +337,11 @@ bool IO::export_case_to_file(const Glib::ustring &path, const Case::Case &pcase,
 		// see if there is a headshot
 		if (hasHeadshot) {
 			// write the actual 70x70 headshot
-			write_bmp(f, (*it).second.get_headshot());
+			write_export_image(f, (*it).second.get_headshot());
 			
 			// create a scaled headshot and write it
 			Glib::RefPtr<Gdk::Pixbuf> scaled=(*it).second.get_headshot()->scale_simple(40, 40, Gdk::INTERP_HYPER);
-			write_bmp(f, scaled);
+			write_export_image(f, scaled);
 		}
 	}
 	
@@ -357,7 +359,7 @@ bool IO::export_case_to_file(const Glib::ustring &path, const Case::Case &pcase,
 		fwrite(&(*it).second.type, sizeof(int), 1, f);
 		
 		// write bitmap
-		write_bmp(f, (*it).second.pixbuf);
+		write_export_image(f, (*it).second.pixbuf);
 	}
 	
 	// get evidence map and write the amount of objects
@@ -380,11 +382,11 @@ bool IO::export_case_to_file(const Glib::ustring &path, const Case::Case &pcase,
 		write_string(f, (*it).second.description);
 		
 		// write bitmap
-		write_bmp(f, (*it).second.pixbuf);
+		write_export_image(f, (*it).second.pixbuf);
 		
 		// create a scaled thumbnail and write it as well
 		Glib::RefPtr<Gdk::Pixbuf> thumb=(*it).second.pixbuf->scale_simple(40, 40, Gdk::INTERP_HYPER);
-		write_bmp(f, thumb);
+		write_export_image(f, thumb);
 	}
 	
 	// get image map and write amount of objects
@@ -398,7 +400,7 @@ bool IO::export_case_to_file(const Glib::ustring &path, const Case::Case &pcase,
 		write_string(f, (*it).second.id);
 		
 		// write image data
-		write_bmp(f, (*it).second.pixbuf);
+		write_export_image(f, (*it).second.pixbuf);
 	}
 	
 	// get location map and write amount of objects
@@ -843,7 +845,13 @@ bool IO::save_sprite_to_file(const Glib::ustring &path, const Sprite &spr) {
 	int count=animations.size();
 	fwrite(&count, sizeof(int), 1, f);
 	
+	// show progress dialog
+	ProgressDialog pd("Saving sprite...");
+	pd.show();
+	Utils::flush_events();
+	
 	// iterate over animations
+	int c=0;
 	for (AnimationMap::iterator it=animations.begin(); it!=animations.end(); ++it) {
 		Animation anim=(*it).second;
 		
@@ -868,7 +876,15 @@ bool IO::save_sprite_to_file(const Glib::ustring &path, const Sprite &spr) {
 			// write pixbuf
 			write_pixbuf(f, anim.frames[i].pixbuf);
 		}
+		
+		c++;
+		
+		// update progress
+		double prog=(double) c/(double) count;
+		pd.set_progress(prog);
 	}
+	
+	pd.hide();
 	
 	// wrap up
 	fclose(f);
@@ -895,7 +911,13 @@ bool IO::export_sprite_to_file(const Glib::ustring &path, const Sprite &spr) {
 	int count=animations.size();
 	fwrite(&count, sizeof(int), 1, f);
 	
+	// show progress dialog
+	ProgressDialog pd("Exporting sprite...");
+	pd.show();
+	Utils::flush_events();
+	
 	// iterate over animations
+	int c=0;
 	for (AnimationMap::iterator it=animations.begin(); it!=animations.end(); ++it) {
 		Animation anim=(*it).second;
 		
@@ -918,9 +940,17 @@ bool IO::export_sprite_to_file(const Glib::ustring &path, const Sprite &spr) {
 			write_string(f, anim.frames[i].sfx);
 			
 			// write image
-			write_bmp(f, anim.frames[i].pixbuf);
+			write_export_image(f, anim.frames[i].pixbuf);
 		}
+		
+		c++;
+		
+		// update progress
+		double prog=(double) c/(double) count;
+		pd.set_progress(prog);
 	}
+	
+	pd.hide();
 	
 	// wrap up
 	fclose(f);
@@ -944,6 +974,11 @@ bool IO::load_sprite_from_file(const Glib::ustring &path, Sprite &spr) {
 	fread(&version, sizeof(int), 1, f);
 	if (version!=SPR_VERSION)
 		return false;
+	
+	// show progress dialog
+	ProgressDialog pd("Loading sprite...");
+	pd.show();
+	Utils::flush_events();
 	
 	// read amount of animations
 	int count;
@@ -981,7 +1016,15 @@ bool IO::load_sprite_from_file(const Glib::ustring &path, Sprite &spr) {
 		
 		// add animation to sprite
 		spr.add_animation(anim);
+		
+		// progress the dialog
+		double prog=(double) i/(double) count;
+		pd.set_progress(prog);
+		
+		Utils::flush_events();
 	}
+	
+	pd.hide();
 	
 	// wrap up
 	fclose(f);
@@ -1013,21 +1056,32 @@ Glib::ustring IO::read_string(FILE *f) {
 	return str;
 }
 
-// write a pixbuf in bmp format to file
-void IO::write_bmp(FILE *f, const Glib::RefPtr<Gdk::Pixbuf> &pixbuf) {
-	// flip the buffer vertically
-	Glib::RefPtr<Gdk::Pixbuf> flipped=pixbuf->flip(false);
+// write a pixbuf to compressed, internal format
+void IO::write_export_image(FILE *f, const Glib::RefPtr<Gdk::Pixbuf> &pixbuf) {
 	char *buffer;
 	gsize bsize;
-	flipped->save_to_buffer(buffer, bsize, "bmp");
+	
+	// options/keys for jpeg buffer
+	std::vector<Glib::ustring> ops; ops.push_back("quality");
+	std::vector<Glib::ustring> keys; keys.push_back("100");
+	
+	// serialize the pixbuf to usable buffer
+	pixbuf->save_to_buffer(buffer, bsize, "jpeg", ops, keys);
+	
+	// compress this buffer
+	int nSize;
+	buffer=Utils::compress_buffer(buffer, bsize, nSize, true);
 	
 	// write buffer size
-	int bytes=fwrite(&bsize, sizeof(gsize), 1, f);
+	int bytes=fwrite(&nSize, sizeof(int), 1, f);
+	
+	// write original size
+	bytes=fwrite(&bsize, sizeof(int), 1, f);
 	
 	// write buffer
-	bytes=fwrite(buffer, sizeof(char), bsize, f);
-	if (bytes!=bsize) {
-		g_message("Wrote/Size: %d/%d", bytes, bsize);
+	bytes=fwrite(buffer, sizeof(char), nSize, f);
+	if (bytes!=nSize) {
+		g_message("Wrote/Size: %d/%d", bytes, nSize);
 		perror("Write error");
 	}
 }

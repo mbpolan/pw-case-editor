@@ -21,8 +21,10 @@
 #include <Magick++.h>
 #include <glibmm/fileutils.h>
 #include <gtkmm/main.h>
+
 #include "dialogs.h"
 #include "sprite.h"
+#include "utilities.h"
 
 // create a sprite from gifs in a directory
 bool Sprite::create_from_gifs(const Glib::ustring &path) {
@@ -31,8 +33,7 @@ bool Sprite::create_from_gifs(const Glib::ustring &path) {
 	pd.show();
 	
 	// make sure to show the dialog
-	while(Gtk::Main::events_pending())
-		Gtk::Main::iteration();
+	Utils::flush_events();
 	
 	// read the directory and copy file names
 	Glib::Dir dir(path);
@@ -57,8 +58,7 @@ bool Sprite::create_from_gifs(const Glib::ustring &path) {
 		pd.set_progress(prog);
 		
 		// process events to show this one
-		while(Gtk::Main::events_pending())
-			Gtk::Main::iteration();
+		Utils::flush_events();
 		
 		// we now need to extract the id of this animation
 		// first, get rid of the extension
