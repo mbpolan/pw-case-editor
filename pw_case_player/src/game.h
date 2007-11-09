@@ -116,6 +116,7 @@ struct _GameState {
 	std::string flash;
 	std::string gavel;
 	std::string courtCamera;
+	std::string testimonySequence;
 	
 	// the current evidence being shown
 	std::string shownEvidence;

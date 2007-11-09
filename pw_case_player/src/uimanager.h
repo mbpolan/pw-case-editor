@@ -28,6 +28,8 @@
 
 #include "common.h"
 
+class Case::Case;
+
 // the UI namespace
 namespace UI {
 
@@ -44,7 +46,8 @@ enum AnimType { ANIM_SIDE_HBOUNCE=0,
 		ANIM_FADE_OUT_BOTTOM,
 		ANIM_FADE_OUT_BOTH,
 		ANIM_FLASH,
-		ANIM_COURT_CAMERA };
+		ANIM_COURT_CAMERA,
+		ANIM_TESTIMONY_SPR };
 
 // a struct containing animation data (not all variables pertinent)
 struct _Animation {
@@ -86,7 +89,7 @@ typedef struct _Animation Animation;
 class Manager {
 	public:
 		// constructor
-		Manager();
+		Manager(Case::Case *pcase);
 		
 		// reverse the velocity of a registered animation
 		void reverseVelocity(const std::string &id);
@@ -106,8 +109,16 @@ class Manager {
 		// register a court camera effect
 		void registerCourtCameraMovement(const std::string &id);
 		
+		// register a testimony sprite sequence animation
+		void registerTestimonySequence(const std::string &id);
+		
 		// draw an animation
 		void drawAnimation(const std::string &id);
+		
+		/* 
+		   Note: all following functions return a bool, which signifies whether
+		   or not the animation in question has completed
+		*/
 		
 		// fade out the current scene to black
 		// returns true if fade out is done, false otherwise
@@ -119,7 +130,13 @@ class Manager {
 		// perform a court camera movement
 		bool moveCourtCamera(const std::string &id, SDL_Surface *panorama, Limit start, Limit end);
 		
+		// animate the testimony sprite sequence
+		bool animateTestimonySequence(const std::string &id);
+		
 	private:
+		// pointer to current case
+		Case::Case *m_Case;
+		
 		// map of registered animations
 		std::map<std::string, Animation> m_Animations;
 };

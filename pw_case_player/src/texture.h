@@ -33,6 +33,7 @@ struct _Texture {
 	int h;
 	short bpp;
 	char *pixels;
+	SDL_Surface *surface;
 };
 typedef struct _Texture Texture;
 

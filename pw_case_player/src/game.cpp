@@ -74,6 +74,7 @@ Game::Game(const std::string &rootPath, Case::Case *pcase): m_RootPath(rootPath)
 	m_State.flash="none";
 	m_State.gavel="none";
 	m_State.courtCamera="none";
+	m_State.testimonySequence="none";
 	
 	// null out variables
 	m_State.currentLocation="null";
@@ -83,7 +84,7 @@ Game::Game(const std::string &rootPath, Case::Case *pcase): m_RootPath(rootPath)
 	m_Parser=new TextParser(this);
 	
 	// allocate ui manager
-	m_UI=new UI::Manager;
+	m_UI=new UI::Manager(m_Case);
 }
 
 // destructor
@@ -508,6 +509,9 @@ void Game::registerAnimations() {
 	// register flash effects
 	m_UI->registerFlash("an_flash", 2);
 	
+	// register sprite sequences
+	m_UI->registerTestimonySequence("an_testimony_sequence");
+	
 	// flip velocities on certain animations to reverse them
 	m_UI->reverseVelocity("an_info_page_button_left");
 }
@@ -635,9 +639,13 @@ void Game::displayTestimony(const std::string &id) {
 	// go to witness stand
 	setLocation("witness_stand");
 	
+	// start testimony sequence
+	m_State.testimonySequence="top";
+	
 	// set the first testimony block
 	std::string pre="{*speaker:"+testimony->speaker+";*}";
 	m_Parser->setBlock(pre+testimony->pieces[0].text);
+	
 }
 
 // change the selected evidence
@@ -992,6 +1000,24 @@ bool Game::renderSpecialEffects() {
 		bool ret=m_UI->flash("an_flash");
 		if (!ret)
 			m_State.flash="none";
+	}
+	
+	// render testimony sprite sequence, if requested
+	else if (m_State.testimonySequence!="none") {
+		bool ret=m_UI->animateTestimonySequence("an_testimony_sequence");
+		if (ret) {
+			Case::Testimony *testimony=m_Case->getTestimony(m_State.curTestimony);
+			
+			// set the first block of testimony
+			std::string pre="{*speaker:"+testimony->speaker+";*}";
+			m_Parser->setBlock(pre+testimony->pieces[0].text);
+			
+			m_State.testimonySequence="none";
+			
+			return true;
+		}
+		
+		return false;
 	}
 	
 	return true;

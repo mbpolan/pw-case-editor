@@ -19,7 +19,39 @@
  ***************************************************************************/
 // utilities.cpp: implementation of Utils namespace
 
+#include <zlib.h>
+
 #include "utilities.h"
+
+// uncompress a buffer
+char* Utils::uncompressBuffer(const char *src, int size, int uncompSize, bool autoFree) {
+	// make sure sizes are logical
+	if (uncompSize<size) {
+		std::cout << "Error: unable to uncompress buffer: size mismatch.\n";
+		return NULL;
+	}
+	
+	// allocate the destination buffer
+	char *dest=new char[uncompSize];
+	
+	// uncompress the original buffer
+	int ret=uncompress((Bytef*) dest, (uLongf*) &uncompSize, (Bytef*) src, size);
+	
+	// check for errors
+	if (ret==Z_MEM_ERROR)
+		std::cout << "Error: unable to uncompress buffer: out of memory.\n";
+	else if (ret==Z_BUF_ERROR)
+		std::cout << "Error: unable to uncompress buffer: out of memory in output buffer.\n";
+	else if (ret==Z_DATA_ERROR)
+		std::cout << "Error: unable to uncompress buffer: input data is corrupted.\n";
+	
+	// free original buffer if requested
+	if (autoFree)
+		delete [] src;
+	
+	// return our newly decompressed buffer
+	return dest;
+}
 
 // convert a court camera script string to animation limits
 void Utils::scriptToLimits(const std::string &str, UI::Limit &start, UI::Limit &end) {

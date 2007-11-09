@@ -94,8 +94,12 @@ void Sprite::animate(int x, int y) {
 		m_CurFrame++;
 		
 		// loop if needed
-		if (m_CurFrame>anim->frames.size()-1 && anim->loop)
-			m_CurFrame=0;
+		if (m_CurFrame>anim->frames.size()-1) {
+			if (anim->loop)
+				m_CurFrame=0;
+			else
+				m_CurFrame--;
+		}
 		
 		// if this frame has a sound effect requested, play it now
 		if (frame->sfx!="")

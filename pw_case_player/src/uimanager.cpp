@@ -26,7 +26,7 @@
 #include "uimanager.h"
 
 // constructor
-UI::Manager::Manager() {
+UI::Manager::Manager(Case::Case *pcase): m_Case(pcase) {
 }
 
 // reverse the velocity of a registered animation
@@ -112,6 +112,22 @@ void UI::Manager::registerCourtCameraMovement(const std::string &id) {
 	anim.velocity=0;
 	anim.multiplier=85;
 	anim.current=Point(0, 0);
+	
+	// add animation
+	m_Animations[id]=anim;
+}
+
+// register a testimony sprite sequence animation
+void UI::Manager::registerTestimonySequence(const std::string &id) {
+	Animation anim;
+	
+	// fill in values
+	anim.speed=5;
+	anim.lastDraw=0;
+	anim.topLimit=0;
+	anim.bottomLimit=256;
+	anim.velocity=1;
+	anim.multiplier=1;
 	
 	// add animation
 	m_Animations[id]=anim;
@@ -325,6 +341,68 @@ bool UI::Manager::moveCourtCamera(const std::string &id, SDL_Surface *panorama, 
 	
 	// draw the panorama
 	Renderer::drawImage(Point(cur.x(), 0), 256, 192, panorama, SDL_GetVideoSurface());
+	
+	return false;
+}
+
+// animate the testimony sprite sequence
+bool UI::Manager::animateTestimonySequence(const std::string &id) {
+	// make sure the animation is valid
+	if (m_Animations.find(id)==m_Animations.end()) {
+		std::cout << "UIManager: animation '" << id << "' not registered\n";
+		return true;
+	}
+	
+	Animation &anim=m_Animations[id];
+	
+	// check for existance of sprites
+	Character *tt=m_Case->getCharacter("testimony_top");
+	Character *tb=m_Case->getCharacter("testimony_bottom");
+	if (!tt || !tb) {
+		std::cout << "UIManager: needed sprites 'testimony_top' and 'testimony_bottom' not found\n";
+		return true;
+	}
+	
+	// now get sprites
+	Sprite *stt=tt->getSprite();
+	Sprite *stb=tb->getSprite();
+	
+	// disable looping
+	stt->toggleLoop(false);
+	stb->toggleLoop(false);
+	
+	// calculate center points for both
+	static int centerxTop=128-(stt->getCurrentFrame()->image->w/2);
+	static int centerxBottom=128-(stb->getCurrentFrame()->image->w/2);
+	
+	// calculate y values
+	static int yTop=5;
+	static int yBottom=stt->getCurrentFrame()->image->h+10;
+	
+	if (anim.topLimit!=centerxTop || anim.bottomLimit!=centerxBottom) {
+		// move sprites across the screen
+		anim.topLimit+=1;
+		anim.bottomLimit-=2;
+		
+		if (anim.topLimit>=centerxTop)
+			anim.topLimit=centerxTop;
+		
+		if (anim.bottomLimit<=centerxBottom)
+			anim.bottomLimit=centerxBottom;
+		
+		stt->renderFrame(anim.topLimit, yTop);
+		stb->renderFrame(anim.bottomLimit, yBottom);
+	}
+	
+	else if (anim.topLimit==centerxTop && anim.bottomLimit==centerxBottom) {
+		stt->animate(centerxTop, yTop);
+		stb->animate(centerxBottom, yBottom);
+		
+		if (stt->done() && stt->done()) {
+			stt->reset();
+			stb->reset();
+		}
+	}
 	
 	return false;
 }

@@ -89,20 +89,31 @@ SDL_Surface* Textures::createTexture(const std::string &id, const std::string &s
 
 // create a texture from data
 SDL_Surface* Textures::createTexture(const std::string &id, const Textures::Texture &tex) {
-	// create the surface
-	SDL_Surface *surface=SDL_CreateRGBSurface(SDL_SWSURFACE, tex.w, tex.h, tex.bpp, 255U << 16, 255 << 8, 255 << 0, 0);
+	SDL_Surface *surface;
 	
-	SDL_LockSurface(surface);
+	if (!tex.surface) {
+		if (!tex.pixels)
+			return NULL;
+		
+		// create the surface
+		surface=SDL_CreateRGBSurface(SDL_SWSURFACE, tex.w, tex.h, tex.bpp, 255U << 16, 255 << 8, 255 << 0, 0);
+		
+		SDL_LockSurface(surface);
+		
+		// copy the texture's pixels to the usable surface
+		char *pixels=(char*) surface->pixels;
+		memcpy(pixels, tex.pixels, tex.w*tex.h*(tex.bpp/8));
+		surface->pixels=(void*) pixels;
+		
+		// delete the unused pixels
+		delete [] tex.pixels;
+		
+		SDL_UnlockSurface(surface);
+		
+	}
 	
-	// copy the texture's pixels to the usable surface
-	char *pixels=(char*) surface->pixels;
-	memcpy(pixels, tex.pixels, tex.w*tex.h*(tex.bpp/8));
-	surface->pixels=(void*) pixels;
-	
-	// delete the unused pixels
-	delete [] tex.pixels;
-	
-	SDL_UnlockSurface(surface);
+	else
+		surface=tex.surface;
 	
 	// set the transparent key
 	SDL_SetColorKey(surface, SDL_SRCCOLORKEY, SDL_MapRGB(surface->format, 0, 255, 0));

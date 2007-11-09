@@ -21,6 +21,7 @@
 
 #include <cstdio>
 #include <iostream>
+#include "SDL_image.h"
 #include "SDL_rotozoom.h"
 
 #include "audio.h"
@@ -575,43 +576,36 @@ Textures::Texture IO::readImage(FILE *f) {
 	unsigned int bsize;
 	fread(&bsize, sizeof(unsigned int), 1, f);
 	
+	// read uncompressed buffer size
+	unsigned int origSize;
+	fread(&origSize, sizeof(unsigned int), 1, f);
+	
 	// read buffer
 	char *buffer=new char[bsize];
 	fread(buffer, sizeof(char), bsize, f);
-	char *pbuf=buffer;
 	
-	// skip to width, height
-	pbuf+=18;
+	// uncompress this buffer
+	buffer=Utils::uncompressBuffer(buffer, bsize, origSize, true);
 	
-	// read width
-	tex.w=*(int*) pbuf;
-	pbuf+=sizeof(int);
+	// read in the jpeg from memory
+	SDL_RWops *rw=SDL_RWFromMem(buffer, origSize);
+	if (!rw)
+		std::cout << "RWops: " << SDL_GetError() << std::endl;
 	
-	// read height
-	tex.h=*(int*) pbuf;
-	pbuf+=sizeof(int);
+	// load our image from raw data (no need to free RWops structure)
+	SDL_Surface *srf=IMG_Load_RW(rw, 1);
+	if (!srf)
+		std::cout << "IMG_Load: " << IMG_GetError() << std::endl;
 	
-	// skip to bpp
-	pbuf+=sizeof(short);
-	
-	// read bpp
-	tex.bpp=*(short*) pbuf;
-	pbuf+=sizeof(short);
-	
-	// skip to pixels
-	pbuf+=24;
-	
-	// calculate remaining size of buffer
-	int size=bsize-54;
-	
-	// allocate buffer
-	tex.pixels=new char[size];
-	
-	// copy pixels to new buffer
-	memcpy(tex.pixels, pbuf, size);
-	
-	// delete the buffer
+	// we're done with the buffer itself; now SDL_RWops will handle
+	// our data so we can forget about our originally read buffer
 	delete [] buffer;
+	
+	// convert this temporary surface into an optimized one
+	tex.surface=SDL_DisplayFormat(srf);
+	
+	// and free the temp
+	SDL_FreeSurface(srf);
 	
 	return tex;
 }

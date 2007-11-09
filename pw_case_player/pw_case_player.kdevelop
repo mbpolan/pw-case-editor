@@ -150,7 +150,7 @@
       <includestyle>3</includestyle>
       <root></root>
       <designerintegration>EmbeddedKDevDesigner</designerintegration>
-      <qmake>/usr/bin/qmake</qmake>
+      <qmake></qmake>
       <designer></designer>
       <designerpluginpaths/>
     </qt>
@@ -177,6 +177,8 @@
       <usePermanentCaching>true</usePermanentCaching>
       <alwaysIncludeNamespaces>false</alwaysIncludeNamespaces>
       <includePaths>.;</includePaths>
+      <parseMissingHeadersExperimental>false</parseMissingHeadersExperimental>
+      <resolveIncludePathsUsingMakeExperimental>false</resolveIncludePathsUsingMakeExperimental>
     </codecompletion>
     <creategettersetter>
       <prefixGet/>
