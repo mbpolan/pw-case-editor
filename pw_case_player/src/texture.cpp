@@ -109,7 +109,6 @@ SDL_Surface* Textures::createTexture(const std::string &id, const Textures::Text
 		delete [] tex.pixels;
 		
 		SDL_UnlockSurface(surface);
-		
 	}
 	
 	else

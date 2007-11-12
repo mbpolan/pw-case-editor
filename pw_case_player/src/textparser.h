@@ -23,6 +23,7 @@
 #define TEXTPARSER_H
 
 #include <iostream>
+#include <queue>
 
 class Game;
 
@@ -84,6 +85,9 @@ class TextParser {
 		// clear current font formatting
 		void clearFormatting();
 		
+		// execute the next trigger
+		void executeNextTrigger();
+		
 		// execute a trigger
 		std::string doTrigger(const std::string &trigger, const std::string &command);
 		
@@ -114,6 +118,9 @@ class TextParser {
 		
 		// font formatting
 		FontStyle m_FontStyle;
+		
+		// triggers to take place
+		std::queue<StringPair> m_QueuedTriggers;
 		
 		// queued special effects or specific end of text events
 		std::string m_QueuedFade;

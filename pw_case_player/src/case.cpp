@@ -25,6 +25,9 @@
 Case::Case::Case() {
 	// clear this case out
 	clear();
+	
+	// add some default blocks
+	addBuffer("INTERNAL_testimony", "null");
 }
 
 // destructor

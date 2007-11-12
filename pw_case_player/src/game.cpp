@@ -204,8 +204,9 @@ void Game::render() {
 	// new block ready for parsing
 	if (status!="null") {
 		m_Parser->setBlock(m_Case->getBuffers()[status]);
+		m_Parser->nextStep();
 	}
-		
+	
 	// pause here and wait for next step
 	// while waiting, be sure to keep redrawing the already present screen
 	if (m_Parser->paused()) {
@@ -619,7 +620,7 @@ void Game::setShownEvidence(const std::string &id, const Position &pos) {
 void Game::displayTestimony(const std::string &id) {
 	// get the testimony, if it exists
 	Case::Testimony *testimony=m_Case->getTestimony(id);
-	if (m_Case->getTestimonies().find(id)==m_Case->getTestimonies().end()) {
+	if (!testimony) {
 		std::cout << "Game: display testimony '" << id << "' doesn't exist.\n";
 		return;
 	}
@@ -634,18 +635,13 @@ void Game::displayTestimony(const std::string &id) {
 	m_State.curTestimony=id;
 	
 	// set the speaker at this location
-	m_Case->getLocation("witness_stand")->character=testimony->speaker;
+	//m_Case->getLocation("witness_stand")->character=testimony->speaker;
 	
 	// go to witness stand
 	setLocation("witness_stand");
 	
 	// start testimony sequence
 	m_State.testimonySequence="top";
-	
-	// set the first testimony block
-	std::string pre="{*speaker:"+testimony->speaker+";*}";
-	m_Parser->setBlock(pre+testimony->pieces[0].text);
-	
 }
 
 // change the selected evidence
@@ -1008,9 +1004,8 @@ bool Game::renderSpecialEffects() {
 		if (ret) {
 			Case::Testimony *testimony=m_Case->getTestimony(m_State.curTestimony);
 			
-			// set the first block of testimony
-			std::string pre="{*speaker:"+testimony->speaker+";*}";
-			m_Parser->setBlock(pre+testimony->pieces[0].text);
+			// set the first block of testimony: the title
+			m_Parser->setBlock("<testimony-title>"+testimony->title+"</testimony-title>");
 			
 			m_State.testimonySequence="none";
 			

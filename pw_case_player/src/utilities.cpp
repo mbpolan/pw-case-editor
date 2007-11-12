@@ -26,10 +26,11 @@
 // uncompress a buffer
 char* Utils::uncompressBuffer(const char *src, int size, int uncompSize, bool autoFree) {
 	// make sure sizes are logical
-	if (uncompSize<size) {
+	/*if (uncompSize<size) {
 		std::cout << "Error: unable to uncompress buffer: size mismatch.\n";
 		return NULL;
 	}
+*/
 	
 	// allocate the destination buffer
 	char *dest=new char[uncompSize];

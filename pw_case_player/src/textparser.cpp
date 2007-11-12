@@ -81,6 +81,11 @@ std::string TextParser::parse() {
 	// if there is a timed paused, wait it out
 	if (m_TimedGoto!=0) {
 		m_TimedGoto-=1;
+		
+		// once we have timed out, proceed to next block
+		if (m_TimedGoto==0)
+			nextStep();
+		
 		return "null";
 	}
 	
@@ -140,12 +145,15 @@ std::string TextParser::parse() {
 				npos=m_Block.find(';');
 				std::string trigComm=m_Block.substr(0, npos);
 				
-				// execute this trigger
-				std::string ret=doTrigger(trigOp, trigComm);
-				
 				// erase to the end of this trigger
 				int end=m_Block.find('}');
 				m_Block.erase(0, end);
+				
+				// add in a marker into the dialogue string
+				m_Dialogue+='^';
+				
+				// and append this trigger
+				m_QueuedTriggers.push(std::make_pair<std::string, std::string> (trigOp, trigComm));
 				
 				continue;
 			}
@@ -216,9 +224,15 @@ std::string TextParser::parse() {
 			// set the last draw time, and increment string position
 			m_LastChar=now;
 			
-			// cache the current, previous, and next characters
-			char prevChar=(m_StrPos>1 ? m_Dialogue[m_StrPos-2] : '0');
+			// our current character
 			char curChar=m_Dialogue[m_StrPos-1];
+			
+			// see if we need to execute a trigger
+			if(curChar=='^')
+				executeNextTrigger();
+			
+			// cache the previous and next characters
+			char prevChar=(m_StrPos>1 ? m_Dialogue[m_StrPos-2] : '0');
 			char nextChar=m_Dialogue[m_StrPos];
 			
 			// prepare the sound effect to potentially play
@@ -344,8 +358,15 @@ void TextParser::nextStep() {
 	}
 	
 	// if the dialogue string is still being drawn, display it all (unless it's a date/location string)
-	if (m_StrPos!=m_Dialogue.size() && !m_Dialogue.empty())
+	if (m_StrPos!=m_Dialogue.size() && !m_Dialogue.empty()) {
+		// although we skip the dialogue, we must execute all triggers
+		for (int i=m_StrPos-1; i<m_Dialogue.size(); i++) {
+			if (m_Dialogue[i]=='^')
+				executeNextTrigger();
+		}
+		
 		m_StrPos=m_Dialogue.size();
+	}
 	
 	// once again, date/location strings have to be fully drawn
 	else {
@@ -374,8 +395,8 @@ void TextParser::nextStep() {
 
 // see if a dialogue sound effect should be played for a given character
 bool TextParser::shouldPlayDialogueEffect(char prev, char ch, char next) {
-	// spaces are never played
-	if (ch==' ')
+	// spaces are never played, nor trigger hooks
+	if (ch==' ' || ch=='^')
 		return false;
 	
 	// same applies for other script characters
@@ -403,6 +424,15 @@ void TextParser::parseTag(const std::string &tag) {
 	else if (tag=="green")
 		m_FontStyle.color="green";
 	
+	// testimony title - orange font and centered
+	else if (tag=="testimony-title") {
+		m_FontStyle.type=tag;
+		
+		m_FontStyle.color="orange";
+		
+		m_BlockDiag=true;
+	}
+	
 	// date tag - set green font and slow down draw speed
 	else if (tag=="date") {
 		m_FontStyle.type=tag;
@@ -419,6 +449,20 @@ void TextParser::clearFormatting() {
 	m_FontStyle.type="plain";
 	m_FontStyle.color="white";
 	m_FontStyle.speed=50;
+}
+
+void TextParser::executeNextTrigger() {
+	if (m_QueuedTriggers.empty())
+		return;
+	
+	// get the next queued trigger
+	StringPair trigger=m_QueuedTriggers.front();
+	
+	// and execute it
+	doTrigger(trigger.first, trigger.second);
+	
+	// get rid of it
+	m_QueuedTriggers.pop();
 }
 
 // execute a trigger
@@ -731,8 +775,13 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	}
 	
 	// display a testimony
-	else if (trigger=="display_testimony")
+	else if (trigger=="display_testimony") {
 		m_QueuedTestimony=command;
+		
+		// preset a new block and start testimony directly after this block
+		m_NextBlock="INTERNAL_testimony";
+		m_Direct=true;
+	}
 	
 	// end the current dialog
 	else if (trigger=="end_dialogue")

@@ -127,7 +127,7 @@ void UI::Manager::registerTestimonySequence(const std::string &id) {
 	anim.topLimit=0;
 	anim.bottomLimit=256;
 	anim.velocity=1;
-	anim.multiplier=1;
+	anim.multiplier=3;
 	
 	// add animation
 	m_Animations[id]=anim;
@@ -379,28 +379,79 @@ bool UI::Manager::animateTestimonySequence(const std::string &id) {
 	static int yTop=5;
 	static int yBottom=stt->getCurrentFrame()->image->h+10;
 	
+	// we are not animating the sprites
 	if (anim.topLimit!=centerxTop || anim.bottomLimit!=centerxBottom) {
-		// move sprites across the screen
-		anim.topLimit+=1;
-		anim.bottomLimit-=2;
+		// we're still progressing towards the center
+		if (anim.velocity==1) {
+			// move sprites across the screen
+			anim.topLimit+=1*anim.multiplier;
+			anim.bottomLimit-=3*anim.multiplier;
+			
+			// center the top
+			if (anim.topLimit>=centerxTop)
+				anim.topLimit=centerxTop;
+			
+			// center the bottom
+			if (anim.bottomLimit<=centerxBottom)
+				anim.bottomLimit=centerxBottom;
+		}
 		
-		if (anim.topLimit>=centerxTop)
-			anim.topLimit=centerxTop;
+		// otherwise, we have already centered both sprites, and
+		// now must move away
+		else {
+			// move sprites across the screen
+			anim.topLimit+=1*anim.multiplier;
+			anim.bottomLimit-=1*anim.multiplier;
+			
+			// clamp the top limit
+			if (anim.topLimit>=256)
+				anim.topLimit=256;
+			
+			// clamp the bottom limit
+			if (anim.bottomLimit<=-stb->getCurrentFrame()->image->w)
+				anim.bottomLimit=-stb->getCurrentFrame()->image->w;
+			
+			// only if both sprites have been removed from the screen, can the
+			// animation end
+			if (anim.topLimit==256 && anim.bottomLimit==-stb->getCurrentFrame()->image->w)
+				return true;
+		}
 		
-		if (anim.bottomLimit<=centerxBottom)
-			anim.bottomLimit=centerxBottom;
-		
+		// draw a single frame of the sprites
 		stt->renderFrame(anim.topLimit, yTop);
 		stb->renderFrame(anim.bottomLimit, yBottom);
 	}
 	
+	// the two sprites have reached their center x points
 	else if (anim.topLimit==centerxTop && anim.bottomLimit==centerxBottom) {
-		stt->animate(centerxTop, yTop);
-		stb->animate(centerxBottom, yBottom);
+		static int ticks=0;
 		
-		if (stt->done() && stt->done()) {
-			stt->reset();
-			stb->reset();
+		// just as soon as the sprites have reached their center positions,
+		// draw a white rectangle to simulate a flash effect
+		if (ticks<5) {
+			SDL_Surface *screen=SDL_GetVideoSurface();
+			
+			// draw the rectangle
+			Renderer::drawRect(screen, Point(0, 0), 256, 192, SDL_MapRGB(screen->format, 255, 255, 255));
+			ticks++;
+		}
+		
+		// once that's done, proceed to animate the sprites
+		else {
+			stt->animate(centerxTop, yTop);
+			stb->animate(centerxBottom, yBottom);
+			
+			if (stt->done() && stt->done()) {
+				//stt->reset();
+				//stb->reset();
+				
+				// flag that we're continuing moving the sprites
+				anim.velocity=0;
+				
+				// start an initial movement
+				anim.topLimit+=3*anim.multiplier;
+				anim.bottomLimit-=1*anim.multiplier;
+			}
 		}
 	}
 	
