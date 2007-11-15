@@ -17,66 +17,30 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-// audio.h: various Audio related functions
+// fpstimer.h: implementation of FPSTimer class
 
-#ifndef AUDIO_H
-#define AUDIO_H
+#include "SDL.h"
 
-#include <iostream>
-#include <map>
-#include "SDL_mixer.h"
+#include "fpstimer.h"
 
-#include "case.h"
+// constructor
+FPSTimer::FPSTimer() {
+	m_LastFrame=0;
+	m_FPSLock=65.0;
+}
 
-namespace Audio {
+// calculate delta in seconds between two sets of ticks
+double FPSTimer::deltaSeconds(int ticks1, int ticks2) {
+	return ((ticks2-ticks1)/1000.0);
+}
 
-// types of samples
-enum SampleType { SAMPLE_EFFECT, SAMPLE_MUSIC };
-
-// audio struct representing music or effect
-struct _Sample {
-	std::string id; // id referenced from within the script
-	SampleType type; // the type of sample
+// delay the engine until the fps lock rate is reached
+void FPSTimer::delay() {
+	int now=SDL_GetTicks();
 	
-	Mix_Chunk *effect; // the effect to play
-	Mix_Music *music; // the music sample to play
-};
-typedef struct _Sample Sample;
-
-// flag whether or not to output sound
-extern bool g_Output;
-
-// map of audio
-typedef std::map<std::string, Sample> AudioMap;
-static AudioMap g_Audio;
-
-// load an audio sample from file
-bool loadSample(const std::string &path, Sample &sample);
-
-// play an effect sample
-void playEffect(const std::string &id, int channel=-1);
-
-// play a music sample
-void playMusic(const std::string &id);
-
-// see if music is playing
-bool isMusicPlaying();
-
-// halt music playback
-void haltMusic();
-
-// add an audio sample
-void pushAudio(const std::string &id, const Sample &sample);
-
-// remove an audio sample
-void popAudio(const std::string &id);
-
-// query an audio sample
-Sample* queryAudio(const std::string &id);
-
-// clear the audio stack
-void clearAudioStack();
-
-}; // namespace Audio
-
-#endif
+	// loop until delta time has reached the appropriate frame rate
+	while(deltaSeconds(m_LastFrame, now)<(1.0/m_FPSLock))
+		now=SDL_GetTicks();
+	
+	m_LastFrame=now;
+}

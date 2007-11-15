@@ -26,7 +26,7 @@
 
 int main(int argc, char *argv[]) {
 	// check arguments
-	if (argc!=2) {
+	if (argc<2) {
 		std::cout << "Usage: pw_case_player <path_to_case_file>\n";
 		return 0;
 	}

@@ -24,11 +24,15 @@
 
 #include <iostream>
 
+#include "fpstimer.h"
 #include "sdlcontext.h"
 
 // class that controls toplevel functions
 class Application {
 	public:
+		// possible command line arguments
+		enum ArgFlags { ARG_NONE=0x00, ARG_NO_SOUND=0x01 };
+		
 		// constructor
 		Application(int argc, char *argv[]);
 		
@@ -50,6 +54,12 @@ class Application {
 		
 		// path to case file
 		std::string m_CasePath;
+		
+		// game timer
+		FPSTimer m_Timer;
+		
+		// arguments from the command line
+		int m_ArgFlags;
 };
 
 #endif

@@ -69,6 +69,9 @@ int drawString(int x, int y, const std::string &str, const std::string &fontId);
 // draw a string with clamped restrictions and delimiter
 int drawString(int x, int y, int delimiter, int rightClamp, const std::string &str, const std::string &fontId);
 
+// draw a string centered on the screen
+int drawStringCentered(int y, int delimiter, const std::string &str, const std::string &fontId);
+
 // get the width of a string
 int getWidth(const std::string &id, const std::string &str);
 

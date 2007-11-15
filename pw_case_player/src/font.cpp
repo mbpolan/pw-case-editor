@@ -328,6 +328,11 @@ int Fonts::drawString(int x, int y, int limit, int rightClamp, const std::string
 	return -1;
 }
 
+// draw a string centered on the screen
+int Fonts::drawStringCentered(int y, int delimiter, const std::string &str, const std::string &fontId) {
+	
+}
+
 // get the width of a string
 int Fonts::getWidth(const std::string &id, const std::string &str) {
 	Font font=queryFont(id);

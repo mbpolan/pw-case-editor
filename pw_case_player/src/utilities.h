@@ -37,6 +37,9 @@ void scriptToLimits(const std::string &str, UI::Limit &start, UI::Limit &end);
 // create a blank surface
 SDL_Surface* createSurface(int width, int height);
 
+// break a string apart based on a delimiting string
+StringVector explodeString(const std::string &delimiter, const std::string &str);
+
 // break a string apart based on a delimiting character
 StringVector explodeString(char delimiter, const std::string &str);
 

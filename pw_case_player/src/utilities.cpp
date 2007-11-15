@@ -92,8 +92,8 @@ SDL_Surface* Utils::createSurface(int width, int height) {
 	return SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 32, 0, 0, 0, 0);
 }
 
-// break a string apart based on a delimiting character
-StringVector Utils::explodeString(char delimiter, const std::string &strc) {
+// break a string apart based on a delimiting string
+StringVector Utils::explodeString(const std::string &delimiter, const std::string &strc) {
 	std::string str=strc;
 	StringVector split;
 	
@@ -111,8 +111,15 @@ StringVector Utils::explodeString(char delimiter, const std::string &strc) {
 		std::string s=str.substr(0, npos);
 		split.push_back(s);
 		
-		str.erase(0, npos+1);
+		str.erase(0, npos+delimiter.size());
 	}
 	
 	return split;
+}
+
+// break a string apart based on a delimiting character
+StringVector Utils::explodeString(char delimiter, const std::string &strc) {
+	std::string d;
+	d+=delimiter;
+	return explodeString(d, strc);
 }

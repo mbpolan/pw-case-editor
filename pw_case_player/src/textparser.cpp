@@ -276,6 +276,11 @@ std::string TextParser::parse() {
 						  SDL_GetVideoSurface()->w-8, area, m_FontStyle.color);
 		}
 		
+		// formatting for testimony titles
+		else if (m_FontStyle.type=="testimony-title") {
+			
+		}
+		
 		// draw the string in plain formatting otherwise
 		else {
 			// draw the string

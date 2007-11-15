@@ -21,6 +21,7 @@
 
 #include "SDL_mixer.h"
 
+#include "audio.h"
 #include "sdlcontext.h"
 #include "iohandler.h"
 #include "renderer.h"
@@ -40,7 +41,8 @@ SDLContext::~SDLContext() {
 	delete m_Game;
 	
 	// close audio channel
-	Mix_CloseAudio();
+	if (Audio::g_Output)
+		Mix_CloseAudio();
 	
 	// free the screen
 	SDL_FreeSurface(m_Screen);	

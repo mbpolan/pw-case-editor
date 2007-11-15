@@ -23,12 +23,35 @@
 #include "SDL.h"
 
 #include "application.h"
+#include "audio.h"
 #include "iohandler.h"
 
 // constructor
 Application::Application(int argc, char *argv[]) {
-	// second argument is path to case file
-	m_CasePath=argv[1];
+	m_ArgFlags=ARG_NONE;
+	
+	// iterate over arguments
+	for (int i=1; i<argc; i++) {
+		std::string arg=argv[i];
+		
+		// see if this is a switch
+		if (arg[0]=='-') {
+			std::string longArg=arg.substr(2, arg.size());
+			std::string shortArg=arg.substr(1, arg.size());
+			
+			// don't output audio
+			if (longArg=="no-sound" || shortArg=="ns")
+				m_ArgFlags |= ARG_NO_SOUND;
+			
+			else
+				std::cout << "Unrecognized argument: " << arg << std::endl;
+		}
+		
+		// the only other argument that doesn't use a - or -- is
+		// the path to the case file
+		else
+			m_CasePath=arg;
+	}
 }
 
 // run the application
@@ -40,9 +63,9 @@ void Application::run() {
 	if (!m_SDLContext->init())
 		return;
 	
-	// initialize audio
-	if (!m_SDLContext->initAudio())
-		return;
+	// initialize audio, unless NO_SOUND was passed
+	if (!m_ArgFlags & ARG_NO_SOUND)
+		Audio::g_Output=m_SDLContext->initAudio();
 	
 	// initialize video
 	if (!m_SDLContext->initVideo(256, 389))
@@ -60,6 +83,9 @@ void Application::run() {
 	while(loop) {
 		// process pending events in the loop
 		loop=processEvents();
+		
+		// make sure to keep a consistent frame rate
+		m_Timer.delay();
 		
 		// render the scene
 		m_SDLContext->render();

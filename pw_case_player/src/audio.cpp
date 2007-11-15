@@ -23,8 +23,16 @@
 
 #include "audio.h"
 
+namespace Audio {
+	// global variable the stores whether or not sound is to be outputted
+	bool g_Output;
+}
+
 // load an audio sample from file
 bool Audio::loadSample(const std::string &path, Audio::Sample &sample) {
+	if (!Audio::g_Output)
+		return true;
+	
 	// see if this is an effect or music
 	std::string ext=path.substr(path.size()-3, path.size()-1);
 	bool success=true;
@@ -57,6 +65,9 @@ bool Audio::loadSample(const std::string &path, Audio::Sample &sample) {
 
 // play an effect sample
 void Audio::playEffect(const std::string &id, int channel) {
+	if (!Audio::g_Output)
+		return;
+	
 	// get the sample
 	Audio::Sample *audio=queryAudio(id);
 	if (!audio) {
@@ -73,6 +84,9 @@ void Audio::playEffect(const std::string &id, int channel) {
 
 // play a music sample
 void Audio::playMusic(const std::string &id) {
+	if (!Audio::g_Output)
+		return;
+	
 	// get the sample
 	Audio::Sample *audio=queryAudio(id);
 	if (!audio) {
@@ -87,21 +101,33 @@ void Audio::playMusic(const std::string &id) {
 
 // see if music is playing
 bool Audio::isMusicPlaying() {
+	if (!Audio::g_Output)
+		return false;
+	
 	return Mix_PlayingMusic();
 }
 
 // halt music playback
 void Audio::haltMusic() {
+	if (!Audio::g_Output)
+		return;
+	
 	Mix_HaltMusic();
 }
 
 // add an audio sample
 void Audio::pushAudio(const std::string &id, const Audio::Sample &audio) {
+	if (!Audio::g_Output)
+		return;
+	
 	g_Audio[id]=audio;
 }
 
 // remove an audio sample
 void Audio::popAudio(const std::string &id) {
+	if (!Audio::g_Output)
+		return;
+	
 	if (queryAudio(id)) {
 		Audio::Sample *audio=queryAudio(id);
 		
@@ -118,6 +144,9 @@ void Audio::popAudio(const std::string &id) {
 
 // query an audio sample
 Audio::Sample* Audio::queryAudio(const std::string &id) {
+	if (!Audio::g_Output)
+		return NULL;
+	
 	if (g_Audio.find(id)==g_Audio.end())
 		return NULL;
 	else
@@ -126,6 +155,9 @@ Audio::Sample* Audio::queryAudio(const std::string &id) {
 
 // clear the audio stack
 void Audio::clearAudioStack() {
+	if (!Audio::g_Output)
+		return;
+	
 	// iterate over audio stack
 	for (AudioMap::iterator it=g_Audio.begin(); it!=g_Audio.end(); ++it) {
 		// free the music chunk

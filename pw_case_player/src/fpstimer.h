@@ -17,66 +17,35 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-// audio.h: various Audio related functions
+// fpstimer.h: the Timer class
 
-#ifndef AUDIO_H
-#define AUDIO_H
+#ifndef FPSTIMER_H
+#define FPSTIMER_H
 
-#include <iostream>
-#include <map>
-#include "SDL_mixer.h"
-
-#include "case.h"
-
-namespace Audio {
-
-// types of samples
-enum SampleType { SAMPLE_EFFECT, SAMPLE_MUSIC };
-
-// audio struct representing music or effect
-struct _Sample {
-	std::string id; // id referenced from within the script
-	SampleType type; // the type of sample
-	
-	Mix_Chunk *effect; // the effect to play
-	Mix_Music *music; // the music sample to play
+// timer class used for game engine fps consistency purposes
+class FPSTimer {
+	public:
+		// constructor
+		FPSTimer();
+		
+		// set the fps to lock; used in delay()
+		void setFPSLock(double fps) { m_FPSLock=fps; }
+		
+		// set the time that the last frame was drawn
+		void setLastFrame(int ticks) { m_LastFrame=ticks; }
+		
+		// calculate delta in seconds between two sets of ticks
+		double deltaSeconds(int ticks1, int ticks2);
+		
+		// delay the engine until the locked fps rate is reached
+		void delay();
+		
+	private:
+		// last time a frame was drawn
+		int m_LastFrame;
+		
+		// rate of fps to lock
+		double m_FPSLock;
 };
-typedef struct _Sample Sample;
-
-// flag whether or not to output sound
-extern bool g_Output;
-
-// map of audio
-typedef std::map<std::string, Sample> AudioMap;
-static AudioMap g_Audio;
-
-// load an audio sample from file
-bool loadSample(const std::string &path, Sample &sample);
-
-// play an effect sample
-void playEffect(const std::string &id, int channel=-1);
-
-// play a music sample
-void playMusic(const std::string &id);
-
-// see if music is playing
-bool isMusicPlaying();
-
-// halt music playback
-void haltMusic();
-
-// add an audio sample
-void pushAudio(const std::string &id, const Sample &sample);
-
-// remove an audio sample
-void popAudio(const std::string &id);
-
-// query an audio sample
-Sample* queryAudio(const std::string &id);
-
-// clear the audio stack
-void clearAudioStack();
-
-}; // namespace Audio
 
 #endif
