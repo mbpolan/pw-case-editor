@@ -250,6 +250,9 @@ std::string TextParser::parse() {
 					sfx="sfx_female_talk";
 			}
 			
+			else if (m_FontStyle.type=="testimony-title")
+				sfx="sfx_male_talk";
+			
 			// play a sound effect if this next character is visible
 			if (shouldPlayDialogueEffect(prevChar, curChar, nextChar))
 				Audio::playEffect(sfx, DIALOGUE_SFX_CHANNEL);
@@ -257,29 +260,9 @@ std::string TextParser::parse() {
 			m_StrPos++;
 		}
 		
-		// if we are formatted to display a date, center the string
-		if (m_FontStyle.type=="date") {
-			// date expects to be in two parts: date and location
-			std::string date=m_Dialogue.substr(0, m_Dialogue.find("\\n"));
-			std::string area=m_Dialogue.substr(m_Dialogue.find("\\n")+2, m_Dialogue.size());
-			
-			// calculate center x for date and location
-			int dx=128-(Fonts::getWidth(m_FontStyle.color, date)/2)-2;
-			int lx=128-(Fonts::getWidth(m_FontStyle.color, area)/2)-2;
-			
-			// draw date
-			Fonts::drawString(dx, 134+shift, m_StrPos, SDL_GetVideoSurface()->w-8, date, m_FontStyle.color);
-			
-			// draw location is m_StrPos has surpassed length of date string
-			if (m_StrPos>date.size())
-				Fonts::drawString(lx, 134+shift+Fonts::g_LineBreakSize, m_StrPos-date.size(),
-						  SDL_GetVideoSurface()->w-8, area, m_FontStyle.color);
-		}
-		
-		// formatting for testimony titles
-		else if (m_FontStyle.type=="testimony-title") {
-			
-		}
+		// if we are formatted to display a date or testimony title, center the string
+		if (m_FontStyle.type=="date" || m_FontStyle.type=="testimony-title")
+			Fonts::drawStringCentered(134+shift, m_StrPos, m_Dialogue, m_FontStyle.color);
 		
 		// draw the string in plain formatting otherwise
 		else {

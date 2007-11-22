@@ -122,7 +122,7 @@ void UI::Manager::registerTestimonySequence(const std::string &id) {
 	Animation anim;
 	
 	// fill in values
-	anim.speed=5;
+	anim.speed=10;
 	anim.lastDraw=0;
 	anim.topLimit=0;
 	anim.bottomLimit=256;

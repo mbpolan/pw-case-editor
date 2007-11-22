@@ -43,4 +43,7 @@ StringVector explodeString(const std::string &delimiter, const std::string &str)
 // break a string apart based on a delimiting character
 StringVector explodeString(char delimiter, const std::string &str);
 
+// count occurrences of a substring in a string
+int amountInString(const std::string &sub, const std::string &str);
+
 }; // namespace UI

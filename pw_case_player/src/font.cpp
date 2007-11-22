@@ -25,6 +25,7 @@
 #include "iohandler.h"
 #include "font.h"
 #include "texture.h"
+#include "utilities.h"
 
 // load a font from file
 bool Fonts::loadFont(const std::string &path, Fonts::Font &font) {
@@ -330,7 +331,31 @@ int Fonts::drawString(int x, int y, int limit, int rightClamp, const std::string
 
 // draw a string centered on the screen
 int Fonts::drawStringCentered(int y, int delimiter, const std::string &str, const std::string &fontId) {
+	std::string nstr=str;
 	
+	// cache the right clamp value
+	int clamp=SDL_GetVideoSurface()->w;
+	
+	// explode the string
+	StringVector vec=Utils::explodeString("\\n", str);
+	
+	// draw first string, since there's always at least one
+	int x=128-(Fonts::getWidth(fontId, vec[0])/2);
+	drawString(x, y, delimiter, clamp, vec[0], fontId);
+	
+	// second line
+	if (vec.size()>1 && delimiter>=vec[0].size()) {
+		// calculate another new x and draw the string
+		x=128-(Fonts::getWidth(fontId, vec[1])/2);
+		drawString(x, y+Fonts::g_LineBreakSize, delimiter-vec[0].size(), clamp, vec[1], fontId);
+		
+		// third line
+		if (vec.size()>2 && delimiter>=(vec[0].size()+vec[1].size())) {
+			// calculate last new x, and draw string
+			x=128-(Fonts::getWidth(fontId, vec[2])/2);
+			drawString(x, y+Fonts::g_LineBreakSize*2, delimiter-(vec[0].size()+vec[1].size()), clamp, vec[2], fontId);
+		}
+	}
 }
 
 // get the width of a string
@@ -349,8 +374,13 @@ int Fonts::getWidth(const std::string &id, const std::string &str) {
 			width+=5;
 		
 		else {
-			// increment width
-			width+=font.glyphs[str[i]].w;
+			if (str[i]=='\\')
+				i+=2;
+			
+			else {
+				// increment width
+				width+=font.glyphs[str[i]].w+1;
+			}
 		}
 	}
 	

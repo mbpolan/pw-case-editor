@@ -97,7 +97,7 @@ StringVector Utils::explodeString(const std::string &delimiter, const std::strin
 	std::string str=strc;
 	StringVector split;
 	
-	while(1) {
+	do {
 		// find next separator
 		int npos=str.find(delimiter);
 		if (npos==-1) {
@@ -112,7 +112,7 @@ StringVector Utils::explodeString(const std::string &delimiter, const std::strin
 		split.push_back(s);
 		
 		str.erase(0, npos+delimiter.size());
-	}
+	} while(1);
 	
 	return split;
 }
@@ -122,4 +122,15 @@ StringVector Utils::explodeString(char delimiter, const std::string &strc) {
 	std::string d;
 	d+=delimiter;
 	return explodeString(d, strc);
+}
+
+// count occurrences of a substring in a string
+int Utils::amountInString(const std::string &sub, const std::string &str) {
+	int c=0;
+	int i=0;
+	while((i=str.find(sub, i))!=-1) {
+		c++;
+	}
+	
+	return c;
 }
