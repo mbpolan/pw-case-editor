@@ -64,7 +64,7 @@ bool Audio::loadSample(const std::string &path, Audio::Sample &sample) {
 }
 
 // play an effect sample
-void Audio::playEffect(const std::string &id, int channel) {
+void Audio::playEffect(const std::string &id, EffectChannel channel) {
 	if (!Audio::g_Output)
 		return;
 	

@@ -21,6 +21,7 @@
 
 #include "SDL_gfxPrimitives.h"
 
+#include "audio.h"
 #include "renderer.h"
 #include "texture.h"
 #include "uimanager.h"
@@ -133,6 +134,22 @@ void UI::Manager::registerTestimonySequence(const std::string &id) {
 	m_Animations[id]=anim;
 }
 
+// register a blinking animation
+void UI::Manager::registerBlink(const std::string &id, const std::string &texture, const Point &p, int speed) {
+	Animation anim;
+	
+	// fill in values
+	anim.speed=speed;
+	anim.lastDraw=0;
+	anim.current=p;
+	anim.ticks=0;
+	anim.velocity=1; // velocity here specifies either draw or hide
+	anim.texture=texture;
+	
+	// add the animation
+	m_Animations[id]=anim;
+}
+
 // draw an animation
 void UI::Manager::drawAnimation(const std::string &id) {
 	// get the requested animation
@@ -240,6 +257,36 @@ bool UI::Manager::flash(const std::string &id) {
 		boxRGBA(SDL_GetVideoSurface(), 0, 0, 256, 192, 255, 255, 255, anim.alpha);
 	
 	return ret;
+}
+
+// perform a blinking animation
+bool UI::Manager::blink(const std::string &id) {
+	// make sure the animation is valid
+	if (m_Animations.find(id)==m_Animations.end()) {
+		std::cout << "UIManager: animation '" << id << "' not registered\n";
+		return true;
+	}
+	
+	Animation &anim=m_Animations[id];
+	
+	// get the texture
+	SDL_Surface *tex=Textures::queryTexture(anim.texture);
+	if (!tex)
+		return true;
+	
+	// see if it's time to display the image
+	int now=SDL_GetTicks();
+	if (now-anim.lastDraw>anim.speed) {
+		anim.lastDraw=now;
+		anim.velocity=(anim.velocity ? 0 : 1);
+	}
+	
+	// if our velocity (in this context, to draw or not) is positive, we draw the texture
+	if (anim.velocity)
+		Renderer::drawImage(anim.current, tex);
+	
+	// blinking animations never end
+	return false;
 }
 
 // perform a court camera movement
@@ -383,6 +430,12 @@ bool UI::Manager::animateTestimonySequence(const std::string &id) {
 	if (anim.topLimit!=centerxTop || anim.bottomLimit!=centerxBottom) {
 		// we're still progressing towards the center
 		if (anim.velocity==1) {
+			static bool once=true;
+			if (once) {
+				Audio::playEffect("sfx_fly_in", Audio::CHANNEL_SCRIPT);
+				once=!once;
+			}
+			
 			// move sprites across the screen
 			anim.topLimit+=1*anim.multiplier;
 			anim.bottomLimit-=3*anim.multiplier;
@@ -399,6 +452,12 @@ bool UI::Manager::animateTestimonySequence(const std::string &id) {
 		// otherwise, we have already centered both sprites, and
 		// now must move away
 		else {
+			static bool once=true;
+			if (once) {
+				Audio::playEffect("sfx_fly_out", Audio::CHANNEL_SCRIPT);
+				once=!once;
+			}
+			
 			// move sprites across the screen
 			anim.topLimit+=1*anim.multiplier;
 			anim.bottomLimit-=1*anim.multiplier;

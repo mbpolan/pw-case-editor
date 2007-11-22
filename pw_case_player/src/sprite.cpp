@@ -103,7 +103,7 @@ void Sprite::animate(int x, int y) {
 		
 		// if this frame has a sound effect requested, play it now
 		if (frame->sfx!="")
-			Audio::playEffect(frame->sfx, SCRIPT_SFX_CHANNEL);
+			Audio::playEffect(frame->sfx, Audio::CHANNEL_SCRIPT);
 	}
 	
 	// draw the current frame

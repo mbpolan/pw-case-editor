@@ -27,11 +27,6 @@
 
 class Game;
 
-// define channels for playing scripted audio
-#define DIALOGUE_SFX_CHANNEL	0
-#define SCRIPT_SFX_CHANNEL 	1
-#define GUI_SFX_CHANNEL		2
-
 // struct that stores the current font style
 struct _FontStyle {
 	std::string type; // built-in types: date, etc
@@ -63,6 +58,15 @@ class TextParser {
 		
 		// see if the current dialogue string is still be drawn
 		bool dialogueDone() const { return (m_StrPos==m_Dialogue.size()); }
+		
+		// manually lock/unlock the _talk animation
+		void lockTalk(bool t) { m_TalkLocked=t; };
+		
+		// see if the script requests that dialogue not be spoken (disable _talk animation)
+		bool talkLocked() const { return m_TalkLocked; }
+		
+		// manually set the speaker
+		void setSpeaker(const std::string &speaker) { m_Speaker=speaker; }
 		
 		// return the currently speaking character, if any
 		std::string getSpeaker() const { return m_Speaker; }
@@ -105,6 +109,7 @@ class TextParser {
 		bool m_Done;
 		bool m_Direct; // flag if the parser should go right to the next block
 		bool m_BlockDiag; // flag if the dialogue should be blocked from being skipped
+		bool m_TalkLocked;
 		
 		// current dialog string data
 		std::string m_Dialogue;

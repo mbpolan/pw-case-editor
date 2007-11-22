@@ -38,6 +38,7 @@ TextParser::TextParser(Game *game): m_Game(game) {
 	m_QueuedTestimony="null";
 	m_QueuedEvent="null";
 	m_Direct=false;
+	m_TalkLocked=false;
 	m_BlockDiag=false;
 	m_Speed=50;
 	m_TimedGoto=0;
@@ -65,6 +66,7 @@ void TextParser::reset() {
 	m_Pause=false;
 	m_Done=true;
 	m_TagOpen=false;
+	m_TalkLocked=false;
 	m_CurTag="";
 	m_NextBlock="null";
 	
@@ -255,7 +257,7 @@ std::string TextParser::parse() {
 			
 			// play a sound effect if this next character is visible
 			if (shouldPlayDialogueEffect(prevChar, curChar, nextChar))
-				Audio::playEffect(sfx, DIALOGUE_SFX_CHANNEL);
+				Audio::playEffect(sfx, Audio::CHANNEL_DIALOGUE);
 			
 			m_StrPos++;
 		}
@@ -310,7 +312,7 @@ std::string TextParser::parse() {
 					int flags=STATE_TEXT_BOX | STATE_LOWER_BAR | STATE_TALK;
 					m_Game->m_State.drawFlags=flags;
 					
-					Audio::playEffect("sfx_return", GUI_SFX_CHANNEL);
+					Audio::playEffect("sfx_return", Audio::CHANNEL_GUI);
 				}
 				
 				m_QueuedEvent="null";
@@ -705,7 +707,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	// play a sound effect
 	else if (trigger=="sfx") {
 		// always play sound effects on their own channel
-		Audio::playEffect(command, SCRIPT_SFX_CHANNEL);
+		Audio::playEffect(command, Audio::CHANNEL_SCRIPT);
 	}
 	
 	// schedule a fade effect with given speed

@@ -47,7 +47,8 @@ enum AnimType { ANIM_SIDE_HBOUNCE=0,
 		ANIM_FADE_OUT_BOTH,
 		ANIM_FLASH,
 		ANIM_COURT_CAMERA,
-		ANIM_TESTIMONY_SPR };
+		ANIM_TESTIMONY_SPR,
+		ANIM_BLINK };
 
 // a struct containing animation data (not all variables pertinent)
 struct _Animation {
@@ -112,6 +113,9 @@ class Manager {
 		// register a testimony sprite sequence animation
 		void registerTestimonySequence(const std::string &id);
 		
+		// register a blinking animation
+		void registerBlink(const std::string &id, const std::string &texture, const Point &p, int speed);
+		
 		// draw an animation
 		void drawAnimation(const std::string &id);
 		
@@ -121,11 +125,13 @@ class Manager {
 		*/
 		
 		// fade out the current scene to black
-		// returns true if fade out is done, false otherwise
 		bool fadeOut(const std::string &id);
 		
 		// perform a flash effect
 		bool flash(const std::string &id);
+		
+		// perform a blinking animation
+		bool blink(const std::string &id);
 		
 		// perform a court camera movement
 		bool moveCourtCamera(const std::string &id, SDL_Surface *panorama, Limit start, Limit end);

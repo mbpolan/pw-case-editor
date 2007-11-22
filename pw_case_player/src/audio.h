@@ -30,6 +30,9 @@
 
 namespace Audio {
 
+// channels for sound effects
+enum EffectChannel { CHANNEL_ANY=-1, CHANNEL_DIALOGUE=0, CHANNEL_SCRIPT, CHANNEL_GUI };
+
 // types of samples
 enum SampleType { SAMPLE_EFFECT, SAMPLE_MUSIC };
 
@@ -54,7 +57,7 @@ static AudioMap g_Audio;
 bool loadSample(const std::string &path, Sample &sample);
 
 // play an effect sample
-void playEffect(const std::string &id, int channel=-1);
+void playEffect(const std::string &id, EffectChannel channel=CHANNEL_ANY);
 
 // play a music sample
 void playMusic(const std::string &id);

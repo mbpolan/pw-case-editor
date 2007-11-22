@@ -72,6 +72,7 @@ Game::Game(const std::string &rootPath, Case::Case *pcase): m_RootPath(rootPath)
 	// reset special effects
 	m_State.fadeOut="none";
 	m_State.flash="none";
+	m_State.blink="none";
 	m_State.gavel="none";
 	m_State.courtCamera="none";
 	m_State.testimonySequence="none";
@@ -461,7 +462,7 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 			// play a sound effect if done
 			else if (m_Parser->dialogueDone()) {
 				// play a sound effect
-				Audio::playEffect("sfx_next_part", GUI_SFX_CHANNEL);
+				Audio::playEffect("sfx_next_part", Audio::CHANNEL_GUI);
 			}
 			
 			// proceed to the next block
@@ -506,6 +507,9 @@ void Game::registerAnimations() {
 	
 	// register court camera effect
 	m_UI->registerCourtCameraMovement("an_court_camera");
+	
+	// register blink effects
+	m_UI->registerBlink("an_testimony_blink", "testimony_logo", Point(2, 2), 1500);
 	
 	// register flash effects
 	m_UI->registerFlash("an_flash", 2);
@@ -602,14 +606,14 @@ void Game::setLocation(const std::string &locationId) {
 void Game::setShownEvidence(const std::string &id, const Position &pos) {
 	if (id=="null") {
 		// play hide effect
-		Audio::playEffect("sfx_hide_item", GUI_SFX_CHANNEL);
+		Audio::playEffect("sfx_hide_item", Audio::CHANNEL_GUI);
 		
 		m_State.shownEvidence="null";
 	}
 	
 	else {
 		// play show effect
-		Audio::playEffect("sfx_show_item", GUI_SFX_CHANNEL);
+		Audio::playEffect("sfx_show_item", Audio::CHANNEL_GUI);
 		
 		m_State.shownEvidence=id;
 		m_State.shownEvidencePos=pos;
@@ -635,10 +639,14 @@ void Game::displayTestimony(const std::string &id) {
 	m_State.curTestimony=id;
 	
 	// set the speaker at this location
-	//m_Case->getLocation("witness_stand")->character=testimony->speaker;
+	m_Case->getLocation("witness_stand")->character=testimony->speaker;
+	m_Parser->setSpeaker("none");
 	
 	// go to witness stand
 	setLocation("witness_stand");
+	
+	// request the talk animation be locked
+	m_Parser->lockTalk(true);
 	
 	// start testimony sequence
 	m_State.testimonySequence="top";
@@ -715,7 +723,7 @@ void Game::renderTopView() {
 			std::string root=character->getRootAnimation();
 			
 			// set talk animation if the dialogue is still being drawn
-			if (!m_Parser->dialogueDone() && m_Parser->getSpeaker()==character->getInternalName())
+			if (!m_Parser->talkLocked() && !m_Parser->dialogueDone() && m_Parser->getSpeaker()==character->getInternalName())
 				sprite->setAnimation(character->getRootAnimation()+"_talk");
 			else
 				sprite->setAnimation(character->getRootAnimation()+"_idle");
@@ -998,11 +1006,21 @@ bool Game::renderSpecialEffects() {
 			m_State.flash="none";
 	}
 	
+	// render a blinking animation
+	else if (m_State.blink!="none")
+		m_UI->blink(m_State.blink);
+	
 	// render testimony sprite sequence, if requested
 	else if (m_State.testimonySequence!="none") {
 		bool ret=m_UI->animateTestimonySequence("an_testimony_sequence");
 		if (ret) {
 			Case::Testimony *testimony=m_Case->getTestimony(m_State.curTestimony);
+			
+			// now start the testimony blink animation
+			m_State.blink="an_testimony_blink";
+			
+			// and set the speaker
+			//m_Parser->setSpeaker(testimony->speaker);
 			
 			// set the first block of testimony: the title
 			m_Parser->setBlock("<testimony-title>"+testimony->title+"</testimony-title>");
@@ -1314,7 +1332,7 @@ void Game::onTopRightButtonClicked() {
 	}
 	
 	// play a sound effect
-	Audio::playEffect("sfx_click", GUI_SFX_CHANNEL);
+	Audio::playEffect("sfx_click", Audio::CHANNEL_GUI);
 }
 
 // bottom left button was clicked
@@ -1386,7 +1404,7 @@ void Game::onBottomLeftButtonClicked() {
 		}
 		
 		// play a sound effect
-		Audio::playEffect("sfx_return", GUI_SFX_CHANNEL);
+		Audio::playEffect("sfx_return", Audio::CHANNEL_GUI);
 	}
 }
 
@@ -1431,7 +1449,7 @@ void Game::onPresentCenterClicked() {
 		toggle(STATE_COURT_REC_BTN | STATE_NEXT_BTN | STATE_LOWER_BAR);
 		
 		// play sound effect
-		Audio::playEffect("sfx_click", GUI_SFX_CHANNEL);
+		Audio::playEffect("sfx_click", Audio::CHANNEL_GUI);
 	}
 }
 
@@ -1600,7 +1618,7 @@ void Game::onRecPageClickEvent(int x, int y) {
 				toggle(flags);
 				
 				// play sound effect
-				Audio::playEffect("sfx_click", GUI_SFX_CHANNEL);
+				Audio::playEffect("sfx_click", Audio::CHANNEL_GUI);
 				
 				return;
 			}
@@ -1628,7 +1646,7 @@ void Game::onRecPageClickEvent(int x, int y) {
 				toggle(flags);
 				
 				// play sound effect
-				Audio::playEffect("sfx_click", GUI_SFX_CHANNEL);
+				Audio::playEffect("sfx_click", Audio::CHANNEL_GUI);
 				
 				return;
 			}
@@ -1662,7 +1680,7 @@ void Game::onRecPageClickEvent(int x, int y) {
 		}
 		
 		// play sound effect
-		Audio::playEffect("sfx_return", GUI_SFX_CHANNEL);
+		Audio::playEffect("sfx_return", Audio::CHANNEL_GUI);
 	}
 	
 	// right button
@@ -1682,7 +1700,7 @@ void Game::onRecPageClickEvent(int x, int y) {
 		}
 		
 		// play sound effect
-		Audio::playEffect("sfx_return", GUI_SFX_CHANNEL);
+		Audio::playEffect("sfx_return", Audio::CHANNEL_GUI);
 	}
 }
 
