@@ -1542,8 +1542,9 @@ void Game::onMoveSceneClicked(int x, int y) {
 			// play a sound effect
 			Audio::playEffect("sfx_click", Audio::CHANNEL_GUI);
 			
-			// schedule a fade effect
-			m_State.fadeOut="both";
+			// schedule a fade effect, only if moving outside of court locations
+			if (!isCourtLocation(m_State.currentLocation) && !isCourtLocation(location->moveLocations[i]))
+				m_State.fadeOut="both";
 			
 			// set our new location
 			m_State.queuedLocation=location->moveLocations[i];
