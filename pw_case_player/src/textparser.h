@@ -38,6 +38,9 @@ typedef struct _FontStyle FontStyle;
 // class that parsers text blocks and executes them
 class TextParser {
 	public:
+		// constants
+		static const int NORMAL_FONT_SPEED=50;
+		
 		// constructor
 		TextParser(Game *game);
 		

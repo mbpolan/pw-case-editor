@@ -175,6 +175,21 @@ std::string TextParser::parse() {
 					case 'd': {
 						m_BlockDiag=true;
 					}; break;
+					
+					// increase speed
+					case '+': {
+						m_Dialogue+='[';
+					}; break;
+					
+					// decrease speed
+					case '-': {
+						m_Dialogue+=']';
+					}; break;
+					
+					// normalized speed
+					case '=': {
+						m_Dialogue+='|';
+					}; break;
 				}
 				
 				// always erase this character
@@ -239,6 +254,28 @@ std::string TextParser::parse() {
 			
 			// prepare the sound effect to potentially play
 			std::string sfx="";
+			
+			// increase speed
+			if (curChar=='[') {
+				m_FontStyle.speed-=10;
+				
+				// make sure to clamp the value to [0,100]
+				if (m_FontStyle.speed<0)
+					m_FontStyle.speed=0;
+			}
+			
+			// decrease speed
+			else if (curChar==']') {
+				m_FontStyle.speed+=10;
+				
+				// make sure to clamp the value to [0,100]
+				if (m_FontStyle.speed>100)
+					m_FontStyle.speed=100;
+			}
+			
+			// reset speed
+			else if (curChar=='|')
+				m_FontStyle.speed=NORMAL_FONT_SPEED;
 			
 			// date string
 			if (m_FontStyle.type=="date")
@@ -438,7 +475,7 @@ void TextParser::parseTag(const std::string &tag) {
 void TextParser::clearFormatting() {
 	m_FontStyle.type="plain";
 	m_FontStyle.color="white";
-	m_FontStyle.speed=50;
+	m_FontStyle.speed=NORMAL_FONT_SPEED;
 }
 
 void TextParser::executeNextTrigger() {
