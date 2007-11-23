@@ -69,6 +69,12 @@ Game::Game(const std::string &rootPath, Case::Case *pcase): m_RootPath(rootPath)
 	// reset music variables
 	m_State.continueMusic=false;
 	
+	// reset temporary image
+	m_State.tempImage="null";
+	
+	// reset queued events
+	m_State.queuedLocation="null";
+	
 	// reset special effects
 	m_State.fadeOut="none";
 	m_State.flash="none";
@@ -512,7 +518,7 @@ void Game::registerAnimations() {
 	m_UI->registerBlink("an_testimony_blink", "testimony_logo", Point(2, 2), 1500);
 	
 	// register flash effects
-	m_UI->registerFlash("an_flash", 2);
+	m_UI->registerFlash("an_flash", 5);
 	
 	// register sprite sequences
 	m_UI->registerTestimonySequence("an_testimony_sequence");
@@ -650,6 +656,7 @@ void Game::displayTestimony(const std::string &id) {
 	
 	// start testimony sequence
 	m_State.testimonySequence="top";
+	m_State.fadeOut="top";
 }
 
 // change the selected evidence
@@ -702,8 +709,19 @@ bool Game::isCourtLocation(const std::string &id) {
 
 // render the game view (top screen)
 void Game::renderTopView() {
+	// temporary image has priority over background
+	if (m_State.tempImage!="null") {
+		// see if this image exists
+		Case::Image *temp=m_Case->getImage(m_State.tempImage);
+		if (!temp)
+			std::cout << "Game: unknown image: " << m_State.tempImage << std::endl;
+		
+		else
+			Renderer::drawImage(Point(0, 0), temp->texture);
+	}
+	
 	// draw the background for this location
-	if (m_State.currentLocation!="null" && m_Case->getLocation(m_State.currentLocation)) {
+	else if (m_State.currentLocation!="null" && m_Case->getLocation(m_State.currentLocation)) {
 		// get the background surface
 		Case::Location *location=m_Case->getLocation(m_State.currentLocation);
 		Case::Background *bg=m_Case->getBackground(location->bg);
@@ -945,8 +963,15 @@ bool Game::renderSpecialEffects() {
 	if (m_State.fadeOut!="none") {
 		// see if we are done fading
 		bool ret=m_UI->fadeOut("an_next_location_fade_"+m_State.fadeOut);
-		if (!ret)
+		if (!ret) {
 			m_State.fadeOut="none";
+			
+			// set a location, if requested
+			if (m_State.queuedLocation!="null") {
+				setLocation(m_State.queuedLocation);
+				m_State.queuedLocation="null";
+			}
+		}
 		
 		return false;
 	}
@@ -1012,6 +1037,9 @@ bool Game::renderSpecialEffects() {
 	
 	// render testimony sprite sequence, if requested
 	else if (m_State.testimonySequence!="none") {
+		// and halt any music playback
+		Audio::haltMusic();
+		
 		bool ret=m_UI->animateTestimonySequence("an_testimony_sequence");
 		if (ret) {
 			Case::Testimony *testimony=m_Case->getTestimony(m_State.curTestimony);
@@ -1489,7 +1517,7 @@ void Game::onControlsClicked(int x, int y) {
 	
 	// play a sound effect if something was clicked
 	if (clicked)
-		Audio::playEffect("sfx_click");
+		Audio::playEffect("sfx_click", Audio::CHANNEL_GUI);
 }
 
 // click handler for move scene
@@ -1512,10 +1540,13 @@ void Game::onMoveSceneClicked(int x, int y) {
 			m_State.selectedLocation=i;
 			
 			// play a sound effect
-			Audio::playEffect("sfx_click");
+			Audio::playEffect("sfx_click", Audio::CHANNEL_GUI);
+			
+			// schedule a fade effect
+			m_State.fadeOut="both";
 			
 			// set our new location
-			setLocation(location->moveLocations[i]);
+			m_State.queuedLocation=location->moveLocations[i];
 			
 			// once this is done, we need to revert back to main screen
 			m_State.prevScreen=SCREEN_MAIN;
@@ -1555,7 +1586,7 @@ void Game::onTalkSceneClicked(int x, int y) {
 			m_State.selectedTalkOption=i;
 			
 			// play a sound effect
-			Audio::playEffect("sfx_click");
+			Audio::playEffect("sfx_click", Audio::CHANNEL_GUI);
 			
 			// get the target block id
 			std::string target;

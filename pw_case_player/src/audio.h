@@ -31,7 +31,7 @@
 namespace Audio {
 
 // channels for sound effects
-enum EffectChannel { CHANNEL_ANY=-1, CHANNEL_DIALOGUE=0, CHANNEL_SCRIPT, CHANNEL_GUI };
+enum EffectChannel { CHANNEL_DIALOGUE=0, CHANNEL_SCRIPT, CHANNEL_GUI };
 
 // types of samples
 enum SampleType { SAMPLE_EFFECT, SAMPLE_MUSIC };
@@ -42,7 +42,7 @@ struct _Sample {
 	SampleType type; // the type of sample
 	
 	Mix_Chunk *effect; // the effect to play
-	Mix_Music *music; // the music sample to play
+	std::string music; // the music sample to play
 };
 typedef struct _Sample Sample;
 
@@ -53,11 +53,18 @@ extern bool g_Output;
 typedef std::map<std::string, Sample> AudioMap;
 static AudioMap g_Audio;
 
+// map of channels
+typedef std::map<int, Mix_Chunk*> ChannelMap;
+static ChannelMap Channels;
+
+// music currently playing
+extern Mix_Music *g_Music;
+
 // load an audio sample from file
 bool loadSample(const std::string &path, Sample &sample);
 
 // play an effect sample
-void playEffect(const std::string &id, EffectChannel channel=CHANNEL_ANY);
+void playEffect(const std::string &id, EffectChannel channel);
 
 // play a music sample
 void playMusic(const std::string &id);

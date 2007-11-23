@@ -764,6 +764,14 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 			std::cout << "No such area in courtroom overview: '" << area << "'\n";
 	}
 	
+	// set an image to be displayed over location background
+	else if (trigger=="set_temp_image")
+		m_Game->m_State.tempImage=command;
+	
+	// hide a set temporary image
+	else if (trigger=="hide_temp_image")
+		m_Game->m_State.tempImage="null";
+	
 	// display a testimony
 	else if (trigger=="display_testimony") {
 		m_QueuedTestimony=command;

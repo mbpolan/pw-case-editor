@@ -26,6 +26,9 @@
 namespace Audio {
 	// global variable the stores whether or not sound is to be outputted
 	bool g_Output;
+	
+	// music currently playing
+	Mix_Music *g_Music=NULL;
 }
 
 // load an audio sample from file
@@ -40,9 +43,7 @@ bool Audio::loadSample(const std::string &path, Audio::Sample &sample) {
 	// music is considered when mp3 or ogg is loaded
 	if (ext=="mp3" || ext=="ogg") {
 		sample.type=SAMPLE_MUSIC;
-		sample.music=Mix_LoadMUS(path.c_str());
-		if (!sample.music)
-			success=false;
+		sample.music=path;
 	}
 	
 	// otherwise, it's an effect
@@ -95,8 +96,24 @@ void Audio::playMusic(const std::string &id) {
 	}
 	
 	// and play it, if it's a music file
-	if (audio->type==SAMPLE_MUSIC)
-		Mix_PlayMusic(audio->music, -1);
+	if (audio->type==SAMPLE_MUSIC) {
+		if (Audio::g_Music!=NULL) {
+			Mix_HaltMusic();
+			Mix_FreeMusic(Audio::g_Music);
+			
+			// always null out the pointer
+			Audio::g_Music=NULL;
+		}
+		
+		// load our new music sample
+		Audio::g_Music=Mix_LoadMUS(audio->music.c_str());
+		if (!Audio::g_Music) {
+			std::cout << "Audio: unable to load music: " << audio->music << std::endl;
+			return;
+		}
+		
+		Mix_PlayMusic(Audio::g_Music, -1);
+	}
 }
 
 // see if music is playing
@@ -112,7 +129,14 @@ void Audio::haltMusic() {
 	if (!Audio::g_Output)
 		return;
 	
+	// first, halt playback
 	Mix_HaltMusic();
+	
+	// then free any previous music
+	if (Audio::g_Music) {
+		Mix_FreeMusic(Audio::g_Music);
+		Audio::g_Music=NULL;
+	}
 }
 
 // add an audio sample
@@ -132,9 +156,7 @@ void Audio::popAudio(const std::string &id) {
 		Audio::Sample *audio=queryAudio(id);
 		
 		// free the music chunk
-		if (audio->type==SAMPLE_MUSIC)
-			Mix_FreeMusic(audio->music);
-		else
+		if (audio->type==SAMPLE_EFFECT)
 			Mix_FreeChunk(audio->effect);
 		
 		// remove it from the map
@@ -160,16 +182,16 @@ void Audio::clearAudioStack() {
 	
 	// iterate over audio stack
 	for (AudioMap::iterator it=g_Audio.begin(); it!=g_Audio.end(); ++it) {
-		// free the music chunk
-		if ((*it).second.type==SAMPLE_MUSIC) {
-			if ((*it).second.music)
-				Mix_FreeMusic((*it).second.music);
-		}
-		
-		else {
+		// free the effect
+		if ((*it).second.type==SAMPLE_EFFECT) {
 			if ((*it).second.effect)
 				Mix_FreeChunk((*it).second.effect);
 		}
+	}
+	
+	if (Audio::g_Music) {
+		Mix_HaltMusic();
+		Mix_FreeMusic(Audio::g_Music);
 	}
 	
 	g_Audio.clear();

@@ -208,7 +208,7 @@ bool UI::Manager::fadeOut(const std::string &id) {
 		anim.lastDraw=now;
 		
 		// increment the alpha value by 1
-		anim.alpha+=1;
+		anim.alpha+=2*anim.speed;
 	}
 	
 	// get the opaque surface

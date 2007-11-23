@@ -99,6 +99,9 @@ struct _GameState {
 	std::string requestedEvidenceParams;
 	std::string requestedAnswerParams;
 	
+	// temporary image to be displayed over location background
+	std::string tempImage;
+	
 	// x,y coordinates or examination cursor
 	int examineX, examineY;
 	
@@ -130,6 +133,9 @@ struct _GameState {
 	
 	// our current location
 	std::string currentLocation;
+	
+	// scheduled events
+	std::string queuedLocation;
 	
 	std::vector<StringPair> custom; // user defined flags
 	
