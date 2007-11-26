@@ -23,6 +23,7 @@
 #define MAINWINDOW_H
 
 #include <gtkmm/actiongroup.h>
+#include <gtkmm/recentmanager.h>
 #include <gtkmm/statusbar.h>
 #include <gtkmm/window.h>
 #include <gtkmm/uimanager.h>
@@ -39,6 +40,12 @@ class MainWindow: public Gtk::Window {
 	private:
 		// build the ui
 		void construct();
+		
+		// create icons for menu items
+		void create_icons();
+		
+		// set an icon for a menu item
+		void set_menuitem_icon(const Glib::ustring &path, const Glib::ustring &file);
 		
 		// new case handler
 		void on_new();

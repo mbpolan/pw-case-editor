@@ -23,7 +23,9 @@
 #include <gtkmm/box.h>
 #include <gtkmm/filechooserdialog.h>
 #include <gtkmm/messagedialog.h>
+#include <gtkmm/separatortoolitem.h>
 #include <gtkmm/stock.h>
+#include <gtkmm/toolbar.h>
 
 #include "dialogs.h"
 #include "iohandler.h"
@@ -62,7 +64,7 @@ void MainWindow::construct() {
 			   sigc::mem_fun(*this, &MainWindow::on_save_as));
 	m_ActionGroup->add(Gtk::Action::create("FileOpen", Gtk::Stock::OPEN, "_Open"),
 			   sigc::mem_fun(*this, &MainWindow::on_open));
-	m_ActionGroup->add(Gtk::Action::create("FileExport", "_Export"),
+	m_ActionGroup->add(Gtk::Action::create("FileExport", Gtk::Stock::CONVERT, "_Export"),
 			   sigc::mem_fun(*this, &MainWindow::on_export));
 	m_ActionGroup->add(Gtk::Action::create("FileQuit", Gtk::Stock::QUIT, "_Quit"),
 			   sigc::mem_fun(*this, &MainWindow::on_quit));
@@ -78,7 +80,7 @@ void MainWindow::construct() {
 			   sigc::mem_fun(*this, &MainWindow::on_case_manage_testimonies));
 	m_ActionGroup->add(Gtk::Action::create("CaseEditLocations", "_Edit Locations"),
 			   sigc::mem_fun(*this, &MainWindow::on_case_edit_locations));
-	m_ActionGroup->add(Gtk::Action::create("CaseEditOverview", "_Edit Overview"),
+	m_ActionGroup->add(Gtk::Action::create("CaseEditOverview", Gtk::Stock::PROPERTIES, "_Edit Overview"),
 			   sigc::mem_fun(*this, &MainWindow::on_case_edit_overview));
 	m_ActionGroup->add(Gtk::Action::create("CaseInitialBlock", "_Initial Text Block"),
 			   sigc::mem_fun(*this, &MainWindow::on_case_change_initial_block));
@@ -122,6 +124,7 @@ void MainWindow::construct() {
 			"		<menuitem action='FileSaveAs'/>"
 			"		<menuitem action='FileOpen'/>"
 			"		<separator/>"
+			"		<separator/>"
 			"		<menuitem action='FileExport'/>"
 			"		<separator/>"
 			"		<menuitem action='FileQuit'/>"
@@ -152,6 +155,13 @@ void MainWindow::construct() {
 			"		<menuitem action='HelpAbout'/>"
 			"	</menu>"
 			"</menubar>"
+			"<toolbar name='Standard'>"
+			"	<toolitem action='FileNew'/>"
+			"	<toolitem action='FileSave'/>"
+			"	<toolitem action='FileSaveAs'/>"
+			"	<toolitem action='FileOpen'/>"
+			"	<toolitem action='FileExport'/>"
+			"</toolbar>"
 			"</ui>";
 	
 	// add this ui
@@ -159,8 +169,31 @@ void MainWindow::construct() {
 	
 	// get the menu bar widget
 	Gtk::Widget *menuBar=m_UIManager->get_widget("/MenuBar");
-	if (menuBar)
+	if (menuBar) {
 		vb->pack_start(*manage(menuBar), Gtk::PACK_SHRINK);
+		
+		// now create icons for certain menu items
+		create_icons();
+	}
+	
+	// get the toolbar widgets
+	Gtk::Toolbar *standardTB=(Gtk::Toolbar*) m_UIManager->get_widget("/Standard");
+	if (standardTB) {
+		standardTB->set_toolbar_style(Gtk::TOOLBAR_ICONS);
+		standardTB->set_tooltips(true);
+		
+		// allocate separator between standard buttons and script buttons
+		Gtk::SeparatorToolItem *item=manage(new Gtk::SeparatorToolItem);
+		standardTB->append(*item);
+		
+		// allocate script buttons
+		Gtk::ToolButton *insertDiagButton=manage(new Gtk::ToolButton(*manage(new Gtk::Image("icons/insert-dialogue.png"))));
+		
+		// append script buttons
+		standardTB->append(*insertDiagButton, sigc::mem_fun(*this, &MainWindow::on_script_insert_dialogue));
+		
+		vb->pack_start(*manage(standardTB), Gtk::PACK_SHRINK);
+	}
 	
 	// allocate script widget
 	m_ScriptWidget=manage(new ScriptWidget);
@@ -175,6 +208,33 @@ void MainWindow::construct() {
 	// add the containers
 	add(*vb);
 	show_all_children();
+}
+
+// create icons for menu items
+void MainWindow::create_icons() {
+	set_menuitem_icon("/MenuBar/AssetsMenu/AssetsManageAudio", "icons/audio.png");
+	set_menuitem_icon("/MenuBar/AssetsMenu/AssetsManageBG", "icons/bg.png");
+	set_menuitem_icon("/MenuBar/AssetsMenu/AssetsManageImages", "icons/image.png");
+	set_menuitem_icon("/MenuBar/AssetsMenu/AssetsManageEvidence", "icons/evidence.png");
+	
+	set_menuitem_icon("/MenuBar/ScriptMenu/ScriptInsertDialogue", "icons/insert-dialogue.png");
+	
+	set_menuitem_icon("/MenuBar/CaseMenu/CaseAddChar", "icons/add-char.png");
+	set_menuitem_icon("/MenuBar/CaseMenu/CaseBrowseChar", "icons/browse-chars.png");
+	set_menuitem_icon("/MenuBar/CaseMenu/CaseManageTestimonies", "icons/testimony.png");
+	set_menuitem_icon("/MenuBar/CaseMenu/CaseInitialBlock", "icons/initblock.png");
+	set_menuitem_icon("/MenuBar/CaseMenu/CaseEditLocations", "icons/location.png");
+}
+
+// set an icon for a menu item
+void MainWindow::set_menuitem_icon(const Glib::ustring &path, const Glib::ustring &file) {
+	// get the menu item
+	Gtk::ImageMenuItem *item=dynamic_cast<Gtk::ImageMenuItem*> (m_UIManager->get_widget(path));
+	if (item) {
+		// create the icon
+		Gtk::Image *img=manage(new Gtk::Image(file));
+		item->set_image(*img);
+	}
 }
 
 // new case handler

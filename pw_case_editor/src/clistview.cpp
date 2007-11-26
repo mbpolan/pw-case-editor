@@ -42,7 +42,7 @@ void on_buffer_changed(Glib::RefPtr<Gtk::TextBuffer> buffer) {
 			
 			// see if the next character is recognized
 			end--;
-			if ((*end)=='b' || (*end)=='n') {
+			if ((*end)=='b' || (*end)=='n' || (*end)=='+' || (*end)=='-' || (*end)=='=') {
 				end++;
 				
 				// apply the tag

@@ -205,7 +205,7 @@ void TestimonyEditor::construct() {
 	thb->pack_start(*ttable, Gtk::PACK_SHRINK);
 	
 	table->attach(*thb, 0, 3, 0, 1, xops, yops);
-	table->attach(*buttons, 0, 1, 2, 5, xops, yops);
+	table->attach(*buttons, 0, 1, 1, 2, xops, yops);
 	table->attach(*m_PieceFrame, 0, 3, 2, 3, xops, yops);
 	
 	vb->pack_start(*table);

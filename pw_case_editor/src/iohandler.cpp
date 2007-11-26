@@ -1061,12 +1061,12 @@ void IO::write_export_image(FILE *f, const Glib::RefPtr<Gdk::Pixbuf> &pixbuf) {
 	char *buffer;
 	gsize bsize;
 	
-	// options/keys for jpeg buffer
-	std::vector<Glib::ustring> ops; ops.push_back("quality");
-	std::vector<Glib::ustring> keys; keys.push_back("100");
+	// options/keys for png buffer
+	std::vector<Glib::ustring> ops; ops.push_back("compression");
+	std::vector<Glib::ustring> keys; keys.push_back("9");
 	
 	// serialize the pixbuf to usable buffer
-	pixbuf->save_to_buffer(buffer, bsize, "jpeg", ops, keys);
+	pixbuf->save_to_buffer(buffer, bsize, "png", ops, keys);
 	
 	// compress this buffer
 	int nSize;
