@@ -51,6 +51,7 @@ void TestimonyEditor::set_testimony(const Case::Testimony &testimony) {
 	m_TitleEntry->set_text(testimony.title);
 	m_SpeakerEntry->set_text(testimony.speaker);
 	m_NextBlockEntry->set_text(testimony.nextBlock);
+	m_FollowLocEntry->set_text(testimony.followLoc);
 	
 	// since we set a testimony, that must mean we're editing it
 	// so disable the id entry
@@ -70,6 +71,7 @@ Case::Testimony TestimonyEditor::get_testimony_data() {
 	m_Testimony.title=m_TitleEntry->get_text();
 	m_Testimony.speaker=m_SpeakerEntry->get_text();
 	m_Testimony.nextBlock=m_NextBlockEntry->get_text();
+	m_Testimony.followLoc=m_FollowLocEntry->get_text();
 	
 	return m_Testimony;
 }
@@ -111,6 +113,7 @@ void TestimonyEditor::construct() {
 	m_TitleLabel=manage(new Gtk::Label("Title"));
 	m_SpeakerLabel=manage(new Gtk::Label("Speaker"));
 	m_NextBlockLabel=manage(new Gtk::Label("Following Block"));
+	m_FollowLocLabel=manage(new Gtk::Label("Following Location"));
 	m_PieceLabel=manage(new Gtk::Label("1/1"));
 	m_PresentLabel=manage(new Gtk::Label("Evidence Presented"));
 	m_PressLabel=manage(new Gtk::Label("Witness Pressed"));
@@ -120,6 +123,7 @@ void TestimonyEditor::construct() {
 	m_TitleEntry=manage(new Gtk::Entry);
 	m_SpeakerEntry=manage(new Gtk::Entry);
 	m_NextBlockEntry=manage(new Gtk::Entry);
+	m_FollowLocEntry=manage(new Gtk::Entry);
 	m_PresentIdEntry=manage(new Gtk::Entry);
 	m_PresentTargetEntry=manage(new Gtk::Entry);
 	m_PressEntry=manage(new Gtk::Entry);
@@ -201,6 +205,8 @@ void TestimonyEditor::construct() {
 	ttable->attach(*m_SpeakerEntry, 1, 2, 2, 3, xops, yops);
 	ttable->attach(*m_NextBlockLabel, 0, 1, 3, 4, xops, yops);
 	ttable->attach(*m_NextBlockEntry, 1, 2, 3, 4, xops, yops);
+	ttable->attach(*m_FollowLocLabel, 0, 1, 4, 5, xops, yops);
+	ttable->attach(*m_FollowLocEntry, 1, 2, 4, 5, xops, yops);
 	
 	thb->pack_start(*ttable, Gtk::PACK_SHRINK);
 	

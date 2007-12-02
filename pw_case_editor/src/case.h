@@ -126,6 +126,7 @@ struct _Testimony {
 	
 	// block to execute following testimony completion
 	Glib::ustring nextBlock;
+	Glib::ustring followLoc;
 	
 	// vector of testimony pieces
 	std::vector<TestimonyPiece> pieces;

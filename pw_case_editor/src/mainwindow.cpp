@@ -22,6 +22,7 @@
 #include <gtkmm/aboutdialog.h>
 #include <gtkmm/box.h>
 #include <gtkmm/filechooserdialog.h>
+#include <gtkmm/menubar.h>
 #include <gtkmm/messagedialog.h>
 #include <gtkmm/separatortoolitem.h>
 #include <gtkmm/stock.h>
@@ -168,7 +169,7 @@ void MainWindow::construct() {
 	m_UIManager->add_ui_from_string(ui);
 	
 	// get the menu bar widget
-	Gtk::Widget *menuBar=m_UIManager->get_widget("/MenuBar");
+	Gtk::MenuBar *menuBar=dynamic_cast<Gtk::MenuBar*> (m_UIManager->get_widget("/MenuBar"));
 	if (menuBar) {
 		vb->pack_start(*manage(menuBar), Gtk::PACK_SHRINK);
 		
@@ -509,6 +510,10 @@ void MainWindow::on_script_insert_dialogue() {
 		if (buffer)
 			buffer->insert_at_cursor(text);
 	}
+}
+
+// insert a trigger into block
+void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 }
 
 // add character

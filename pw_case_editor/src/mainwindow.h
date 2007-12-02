@@ -68,6 +68,9 @@ class MainWindow: public Gtk::Window {
 		// add a formatted dialogue to script
 		void on_script_insert_dialogue();
 		
+		// insert a trigger into block
+		void on_script_insert_trigger(const Glib::ustring &trigger);
+		
 		// add character
 		void on_case_add_char();
 		

@@ -99,6 +99,7 @@ class TestimonyEditor: public Gtk::Dialog {
 		Gtk::Label *m_TitleLabel;
 		Gtk::Label *m_SpeakerLabel;
 		Gtk::Label *m_NextBlockLabel;
+		Gtk::Label *m_FollowLocLabel;
 		Gtk::Label *m_PieceLabel;
 		Gtk::Label *m_PresentLabel;
 		Gtk::Label *m_PressLabel;
@@ -108,6 +109,7 @@ class TestimonyEditor: public Gtk::Dialog {
 		Gtk::Entry *m_TitleEntry;
 		Gtk::Entry *m_SpeakerEntry;
 		Gtk::Entry *m_NextBlockEntry;
+		Gtk::Entry *m_FollowLocEntry;
 		Gtk::Entry *m_PresentIdEntry;
 		Gtk::Entry *m_PresentTargetEntry;
 		Gtk::Entry *m_PressEntry;
