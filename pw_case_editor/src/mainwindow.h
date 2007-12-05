@@ -41,6 +41,9 @@ class MainWindow: public Gtk::Window {
 		// build the ui
 		void construct();
 		
+		// create the trigger submenu
+		void create_trigger_submenu(Gtk::Menu *menu);
+		
 		// create icons for menu items
 		void create_icons();
 		

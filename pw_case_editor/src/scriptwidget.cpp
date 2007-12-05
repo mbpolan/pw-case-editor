@@ -85,7 +85,7 @@ void ScriptWidget::add_text_block(int day, int stage, const Glib::ustring &paren
 	str+=")";
 	
 	// append this text
-	CListView *list=m_TreeViews[day*2+stage];
+	CListView *list=m_TreeViews[stage*2+day];
 	list->append_child_text(parent, blockName, str, buffer);
 }
 
@@ -125,12 +125,12 @@ BufferMap ScriptWidget::get_buffers() const {
 				day=2;
 			
 			// trial
-			if (i%2!=0)
-				pre << 't' << day;
+			if (i%2==0)
+				pre << 'i' << day;
 				
 			// investigation
 			else
-				pre << 'i' << day;
+				pre << 't' << day;
 			
 			// preprend this string to the id
 			Glib::ustring tmp=id;
