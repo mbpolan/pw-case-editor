@@ -89,6 +89,12 @@ void ScriptWidget::add_text_block(int day, int stage, const Glib::ustring &paren
 	list->append_child_text(parent, blockName, str, buffer);
 }
 
+// insert a trigger at the cursor
+void ScriptWidget::insert_trigger_at_cursor(const Glib::ustring &str) {
+	if (m_TextView->get_buffer())
+		m_TextView->get_buffer()->insert_at_cursor(str);
+}
+
 // get a complete map of all buffers
 BufferMap ScriptWidget::get_buffers() const {
 	BufferMap bmap;

@@ -56,6 +56,9 @@ class ScriptWidget: public Gtk::VBox {
 				    const Glib::ustring &blockName, const Glib::ustring &desc,
 				    const Glib::RefPtr<Gtk::TextBuffer> &buffer);
 		
+		// insert a trigger at the cursor
+		void insert_trigger_at_cursor(const Glib::ustring &str);
+		
 		// return buffers used in internal list
 		BufferMap get_buffers() const;
 		

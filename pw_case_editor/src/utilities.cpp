@@ -21,6 +21,7 @@
 
 #include <glibmm.h>
 #include <gtkmm/main.h>
+#include <sstream>
 #include <zlib.h>
 
 #include "utilities.h"
@@ -29,6 +30,14 @@
 void Utils::flush_events() {
 	while(Gtk::Main::events_pending())
 		Gtk::Main::iteration();
+}
+
+// convert int to string
+Glib::ustring Utils::to_string(int val) {
+	std::stringstream ss;
+	ss << val;
+	
+	return ss.str();
 }
 
 // compress a buffer

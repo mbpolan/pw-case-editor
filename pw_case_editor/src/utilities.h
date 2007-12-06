@@ -29,6 +29,9 @@ namespace Utils {
 // flush gui events that may still be pending in the main loop
 void flush_events();
 
+// convert int to string
+Glib::ustring to_string(int val);
+
 // compress a buffer
 char* compress_buffer(const char *buffer, int size, int &newSize, bool autoFree);
 

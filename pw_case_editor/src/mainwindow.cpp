@@ -34,6 +34,8 @@
 #include "spriteeditor.h"
 #include "testimonyeditor.h"
 #include "textboxdialog.h"
+#include "triggerdialogs.h"
+#include "utilities.h"
 
 // constructor
 MainWindow::MainWindow() {
@@ -603,6 +605,59 @@ void MainWindow::on_script_insert_dialogue() {
 
 // insert a trigger into block
 void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
+	if (trigger.find("goto")!=-1) {
+		// make sure there are at least some blocks in the script
+		if (m_ScriptWidget->get_buffers().empty()) {
+			Gtk::MessageDialog md(*this, "You need at least one text block in your case.", false, Gtk::MESSAGE_ERROR);
+			md.run();
+			
+			return;
+		}
+		
+		// run the dialog, and get data
+		InsertGotoDialog diag(m_ScriptWidget->get_buffers());
+		if (diag.run()==Gtk::RESPONSE_OK) {
+			// get the data
+			InsertGotoDialog::Data data=diag.get_data();
+			
+			// begin trigger string
+			Glib::ustring trig="{*goto";
+			
+			// complete is based on goto type
+			switch(data.type) {
+				case InsertGotoDialog::GOTO_NORMAL: {
+					trig+=":";
+					trig+=data.target;
+					trig+=";*}";
+				} break;
+				
+				case InsertGotoDialog::GOTO_DIRECT: {
+					trig+="_direct:";
+					trig+=data.target;
+					trig+=";*}";
+				} break;
+				
+				case InsertGotoDialog::GOTO_TIMED: {
+					trig+="_timed:";
+					trig+=data.target;
+					trig+=",";
+					trig+=Utils::to_string(data.time);
+					trig+=";*}";
+				} break;
+			}
+			
+			// finally, insert it
+			m_ScriptWidget->insert_trigger_at_cursor(trig);
+		}
+	}
+	
+	// halt_music trigger
+	else if (trigger.find("halt_music")!=-1)
+		m_ScriptWidget->insert_trigger_at_cursor("{*halt_music:true;*}");
+	
+	// flash
+	else if (trigger.find("flash")!=-1)
+		m_ScriptWidget->insert_trigger_at_cursor("{*flash:top;*}");
 }
 
 // add character
