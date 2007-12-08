@@ -603,7 +603,7 @@ void MainWindow::on_script_insert_dialogue() {
 
 // insert a trigger into block
 void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
-	if (trigger.find("goto")!=-1) {
+	if (trigger=="goto") {
 		// make sure there are at least some blocks in the script
 		if (m_ScriptWidget->get_buffers().empty()) {
 			Gtk::MessageDialog md(*this, "You need at least one text block in your case.", false, Gtk::MESSAGE_ERROR);
@@ -650,7 +650,7 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 	}
 	
 	// add_evidence/add_profile triggers
-	else if (trigger.find("add_evidence/profile")!=-1) {
+	else if (trigger=="add_evidence/profile") {
 		AddCourtRecDialog diag(m_Case.get_evidence(), m_Case.get_characters());
 		if (diag.run()==Gtk::RESPONSE_OK) {
 			AddCourtRecDialog::Data data=diag.get_data();
@@ -670,7 +670,7 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 	}
 	
 	// show evidence
-	else if (trigger.find("show_evidence")!=-1) {
+	else if (trigger=="show_evidence") {
 		ShowEvidenceDialog diag(m_Case.get_evidence());
 		if (diag.run()==Gtk::RESPONSE_OK) {
 			ShowEvidenceDialog::Data data=diag.get_data();
@@ -691,7 +691,7 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 	}
 	
 	// hide evidence
-	else if (trigger.find("hide_evidence")!=-1) {
+	else if (trigger=="hide_evidence") {
 		HideEvidenceDialog diag;
 		if (diag.run()==Gtk::RESPONSE_OK) {
 			Glib::ustring trig="{*hide_evidence:";
@@ -707,8 +707,101 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 		}
 	}
 	
+	// set location
+	else if (trigger=="set_location") {
+		SetLocationDialog diag(m_Case.get_locations());
+		if (diag.run()==Gtk::RESPONSE_OK) {
+			Glib::ustring trig="{*set_location:";
+			trig+=diag.get_location();
+			trig+=";*}";
+			
+			m_ScriptWidget->insert_trigger_at_cursor(trig);
+		}
+	}
+	
+	// add location
+	else if (trigger=="add_location") {
+		// first, make sure there are at least two locations
+		if (m_Case.get_locations().size()<2) {
+			Gtk::MessageDialog md(*this, "You need at least two locations in your case.", false,
+					       Gtk::MESSAGE_ERROR);
+			md.run();
+			return;
+		}
+		
+		// prepare dialog and run it
+		AddLocationDialog diag(m_Case.get_locations());
+		if (diag.run()==Gtk::RESPONSE_OK) {
+			// get the selected locations
+			StringPair p=diag.get_location_pair();
+			
+			// do some error checking
+			if (p.first==p.second)
+				return;
+			
+			Glib::ustring trig="{*add_location:";
+			trig+=p.first;
+			trig+=",";
+			trig+=p.second;
+			trig+=";*}";
+			
+			m_ScriptWidget->insert_trigger_at_cursor(trig);
+		}
+	}
+	
+	// set locatio trigger
+	else if (trigger=="set_location_trigger") {
+		LocationMap locations=m_Case.get_locations();
+		BufferMap blocks=m_ScriptWidget->get_buffers();
+		
+		// make sure we have at least one location and one block
+		if (locations.empty()) {
+			Gtk::MessageDialog md(*this, "You need at least one location in your case.", false, Gtk::MESSAGE_ERROR);
+			md.run();
+			return;
+		}
+		
+		if (blocks.empty()) {
+			Gtk::MessageDialog md(*this, "You need at least one text block in your case.", false, Gtk::MESSAGE_ERROR);
+			md.run();
+			return;
+		}
+		
+		// prepare and run the dialog
+		LocationTriggerDialog diag(locations, blocks);
+		if (diag.run()==Gtk::RESPONSE_OK) {
+			// get the selected location and buffer
+			StringPair p=diag.get_selection();
+			
+			Glib::ustring trig="{*set_location_trigger:";
+			trig+=p.first;
+			trig+=",";
+			trig+=p.second;
+			trig+=";*}";
+			
+			m_ScriptWidget->insert_trigger_at_cursor(trig);
+		}
+	}
+	
+	// set animation
+	else if (trigger=="set_animation") {
+		SetAnimationDialog diag(m_Case.get_characters());
+		if (diag.run()==Gtk::RESPONSE_OK) {
+			// get the selected character and animation
+			StringPair p=diag.get_selection();
+			
+			Glib::ustring trig="{*set_animation:";
+			trig+=p.first;
+			trig+=",";
+			trig+=p.second;
+			trig+=";*}";
+			
+			m_ScriptWidget->insert_trigger_at_cursor(trig);
+		}
+	}
+	
 	// speaker trigger
-	else if (trigger.find("speaker")!=-1) {
+	else if (trigger=="speaker") {
 		SpeakerDialog diag(m_Case.get_characters());
 		if (diag.run()==Gtk::RESPONSE_OK) {
 			Glib::ustring trig="{*speaker:";
@@ -720,11 +813,11 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 	}
 	
 	// halt_music trigger
-	else if (trigger.find("halt_music")!=-1)
+	else if (trigger=="halt_music")
 		m_ScriptWidget->insert_trigger_at_cursor("{*halt_music:true;*}");
 	
 	// flash
-	else if (trigger.find("flash")!=-1)
+	else if (trigger=="flash")
 		m_ScriptWidget->insert_trigger_at_cursor("{*flash:top;*}");
 }
 

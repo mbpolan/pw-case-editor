@@ -20,6 +20,7 @@
 // triggerdialogs.cpp: implementation of triggerdialogs.h classes
 
 #include <gtkmm/buttonbox.h>
+#include <gtkmm/messagedialog.h>
 #include <gtkmm/separator.h>
 #include <gtkmm/table.h>
 
@@ -40,8 +41,12 @@ AbstractDialog::AbstractDialog(const Glib::ustring &trigger) {
 	vb->pack_start(*manage(new Gtk::HSeparator));
 	
 	// add buttons
-	add_button("OK", Gtk::RESPONSE_OK);
-	add_button("Cancel", Gtk::RESPONSE_CANCEL);
+	Gtk::Button *ok=add_button("OK", Gtk::RESPONSE_OK);
+	Gtk::Button *cancel=add_button("Cancel", Gtk::RESPONSE_CANCEL);
+	
+	// connect button signals
+	ok->signal_clicked().connect(sigc::mem_fun(*this, &AbstractDialog::on_ok_button_clicked));
+	cancel->signal_clicked().connect(sigc::mem_fun(*this, &AbstractDialog::on_cancel_button_clicked));
 	
 	show_all_children();
 }
@@ -472,6 +477,282 @@ void HideEvidenceDialog::construct() {
 	hb->pack_start(*m_RightRB);
 	
 	vb->pack_start(*hb, Gtk::PACK_SHRINK);
+	
+	show_all_children();
+}
+
+/***************************************************************************/
+
+// constructor
+SetLocationDialog::SetLocationDialog(const LocationMap &loc): AbstractDialog("set_location") {
+	construct();
+	
+	m_Locations=loc;
+	
+	// iterate over locations
+	for (LocationMap::const_iterator it=loc.begin(); it!=loc.end(); ++it)
+		m_LocationCB->append_text((*it).second.name);
+	
+	m_LocationCB->set_active(0);
+}
+
+// get the selected location
+Glib::ustring SetLocationDialog::get_location() const {
+	for (LocationMap::const_iterator it=m_Locations.begin(); it!=m_Locations.end(); ++it) {
+		if ((*it).second.name==m_LocationCB->get_active_text())
+			return (*it).first;
+	}
+}
+
+// build the dialog
+void SetLocationDialog::construct() {
+	// get vbox
+	Gtk::VBox *vb=get_vbox();
+	
+	// allocate labels
+	m_LocLabel=manage(new Gtk::Label("Location"));
+	
+	// allocate combo boxes
+	m_LocationCB=manage(new Gtk::ComboBoxText);
+	
+	// hbox for widgets
+	Gtk::HBox *hb=manage(new Gtk::HBox);
+	hb->set_spacing(5);
+	
+	// pack widgets
+	hb->pack_start(*m_LocLabel);
+	hb->pack_start(*m_LocationCB);
+	
+	vb->pack_start(*hb, Gtk::PACK_SHRINK);
+	
+	show_all_children();
+}
+
+/***************************************************************************/
+
+// constructor
+AddLocationDialog::AddLocationDialog(const LocationMap &loc): AbstractDialog("add_location") {
+	construct();
+	
+	m_Locations=loc;
+	
+	// iterate over locations
+	for (LocationMap::const_iterator it=loc.begin(); it!=loc.end(); ++it) {
+		m_LocationCB->append_text((*it).second.name);
+		m_TargetCB->append_text((*it).second.name);
+	}
+	
+	m_LocationCB->set_active(0);
+	m_TargetCB->set_active(1);
+}
+
+// get the selected location
+std::pair<Glib::ustring, Glib::ustring> AddLocationDialog::get_location_pair() const {
+	Glib::ustring a, b;
+	
+	// iterate over locations, and fill in the variables
+	for (LocationMap::const_iterator it=m_Locations.begin(); it!=m_Locations.end(); ++it) {
+		if ((*it).second.name==m_TargetCB->get_active_text())
+			a=(*it).first;
+		
+		else if ((*it).second.name==m_LocationCB->get_active_text())
+			b=(*it).first;
+	}
+	
+	return std::make_pair<Glib::ustring, Glib::ustring> (a, b);
+}
+
+// build the dialog
+void AddLocationDialog::construct() {
+	// get vbox
+	Gtk::VBox *vb=get_vbox();
+	
+	// allocate table
+	Gtk::Table *table=manage(new Gtk::Table);
+	table->set_spacings(5);
+	
+	// allocate labels
+	m_TargetLabel=manage(new Gtk::Label("Add"));
+	m_LocationLabel=manage(new Gtk::Label("To"));
+	
+	// allocate combo boxes
+	m_LocationCB=manage(new Gtk::ComboBoxText);
+	m_TargetCB=manage(new Gtk::ComboBoxText);
+	
+	// place widgets
+	table->attach(*m_TargetLabel, 0, 1, 0, 1);
+	table->attach(*m_TargetCB, 1, 2, 0, 1);
+	table->attach(*m_LocationLabel, 0, 1, 1, 2);
+	table->attach(*m_LocationCB, 1, 2, 1, 2);
+	
+	vb->pack_start(*table, Gtk::PACK_SHRINK);
+	
+	show_all_children();
+}
+
+// overridden handler for ok button
+void AddLocationDialog::on_ok_button_clicked() {
+	// make sure the user didn't select two of the same locations
+	if (m_LocationCB->get_active_text()==m_TargetCB->get_active_text()) {
+		Gtk::MessageDialog md(*this, "You must select two different locations.", false, Gtk::MESSAGE_ERROR);
+		md.run();
+	}
+}
+
+/***************************************************************************/
+
+// constructor
+LocationTriggerDialog::LocationTriggerDialog(const LocationMap &locations, const BufferMap &buffers):
+		AbstractDialog("set_location_trigger") {
+	construct();
+	
+	m_Locations=locations;
+	m_Blocks=buffers;
+	
+	// iterate over locations
+	for (LocationMap::const_iterator it=locations.begin(); it!=locations.end(); ++it)
+		m_LocationCB->append_text((*it).second.name);
+	
+	// iterate over blocks
+	for (BufferMap::const_iterator it=buffers.begin(); it!=buffers.end(); ++it) {
+		Glib::ustring id=(*it).first;
+		id.erase(id.rfind("_"), id.size());
+		
+		m_BlockCB->append_text(id);
+	}
+	
+	m_LocationCB->set_active(0);
+	m_BlockCB->set_active(0);
+}
+
+// get the selection
+StringPair LocationTriggerDialog::get_selection() const {
+	Glib::ustring location;
+	
+	// iterate over locations and find the id
+	for (LocationMap::const_iterator it=m_Locations.begin(); it!=m_Locations.end(); ++it) {
+		if ((*it).second.name==m_LocationCB->get_active_text()) {
+			location=(*it).first;
+			break;
+		}
+	}
+	
+	return std::make_pair<Glib::ustring, Glib::ustring> (location, m_BlockCB->get_active_text());
+}
+
+// build the dialog
+void LocationTriggerDialog::construct() {
+	// get the vbox
+	Gtk::VBox *vb=get_vbox();
+	
+	// allocate table
+	Gtk::Table *table=manage(new Gtk::Table);
+	table->set_spacings(5);
+	
+	// allocate labels
+	m_LocLabel=manage(new Gtk::Label("Location"));
+	m_BlockLabel=manage(new Gtk::Label("Block Trigger"));
+	
+	// allocate combo boxes
+	m_LocationCB=manage(new Gtk::ComboBoxText);
+	m_BlockCB=manage(new Gtk::ComboBoxText);
+	
+	// connect signals
+	m_BlockCB->signal_changed().connect(sigc::mem_fun(*this, &LocationTriggerDialog::on_text_block_combo_box_changed));
+	
+	// allocate text views
+	m_BlockView=manage(new Gtk::TextView);
+	m_BlockView->set_editable(false);
+	m_BlockView->set_size_request(200, 200);
+	
+	// allocate scrolled window
+	m_SWindow=manage(new Gtk::ScrolledWindow);
+	m_SWindow->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
+	m_SWindow->add(*m_BlockView);
+	
+	// place widgets
+	table->attach(*m_LocLabel, 0, 1, 0, 1), Gtk::FILL | Gtk::EXPAND, Gtk::SHRINK;
+	table->attach(*m_LocationCB, 1, 2, 0, 1, Gtk::FILL | Gtk::EXPAND, Gtk::SHRINK);
+	table->attach(*m_BlockLabel, 0, 1, 1, 2, Gtk::FILL | Gtk::EXPAND, Gtk::SHRINK);
+	table->attach(*m_BlockCB, 1, 2, 1, 2, Gtk::FILL | Gtk::EXPAND, Gtk::SHRINK);
+	table->attach(*manage(new Gtk::VSeparator), 2, 3, 0, 2);
+	table->attach(*m_SWindow, 3, 4, 0, 2);
+	
+	vb->pack_start(*table, Gtk::PACK_SHRINK);
+	
+	show_all_children();
+}
+
+// handler for text block combo box changes
+void LocationTriggerDialog::on_text_block_combo_box_changed() {
+	// first, get the text block that's selected
+	Glib::ustring id=m_BlockCB->get_active_text();
+	
+	// now, simply find the block, and set its contents in the textview
+	for (BufferMap::iterator it=m_Blocks.begin(); it!=m_Blocks.end(); ++it) {
+		if ((*it).first.find(id)!=-1) {
+			m_BlockView->set_buffer(m_Blocks[(*it).first]);
+			break;
+		}
+	}
+}
+
+/***************************************************************************/
+
+// constructor
+SetAnimationDialog::SetAnimationDialog(const CharacterMap &chars): AbstractDialog("set_animation") {
+	construct();
+	
+	m_CharMap=chars;
+	
+	// iterate over characters
+	for (CharacterMap::const_iterator it=chars.begin(); it!=chars.end(); ++it)
+		m_CharCB->append_text((*it).second.get_name());
+	
+	m_CharCB->set_active(0);
+}
+
+// get the selection
+StringPair SetAnimationDialog::get_selection() const {
+	Glib::ustring ch;
+	
+	// first, find the character's id
+	for (CharacterMap::const_iterator it=m_CharMap.begin(); it!=m_CharMap.end(); ++it) {
+		if ((*it).second.get_name()==m_CharCB->get_active_text()) {
+			ch=(*it).second.get_internal_name();
+			break;
+		}
+	}
+	
+	return std::make_pair<Glib::ustring, Glib::ustring> (ch, m_AnimEntry->get_text());
+}
+
+// build the dialog
+void SetAnimationDialog::construct() {
+	// get the vbox
+	Gtk::VBox *vb=get_vbox();
+	
+	// allocate table
+	Gtk::Table *table=manage(new Gtk::Table);
+	table->set_spacings(5);
+	
+	// allocate labels
+	m_CharLabel=manage(new Gtk::Label("Character"));
+	m_AnimLabel=manage(new Gtk::Label("Animation"));
+	
+	// allocate entries
+	m_AnimEntry=manage(new Gtk::Entry);
+	
+	// allocate combo box
+	m_CharCB=manage(new Gtk::ComboBoxText);
+	
+	// place widgets
+	table->attach(*m_CharLabel, 0, 1, 0, 1);
+	table->attach(*m_CharCB, 1, 2, 0, 1);
+	table->attach(*m_AnimLabel, 0, 1, 1, 2);
+	table->attach(*m_AnimEntry, 1, 2, 1, 2);
+	
+	vb->pack_start(*table);
 	
 	show_all_children();
 }

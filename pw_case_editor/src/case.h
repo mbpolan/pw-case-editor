@@ -145,6 +145,7 @@ typedef std::map<Glib::ustring, Case::Image> ImageMap;
 typedef std::map<Glib::ustring, Case::Testimony> TestimonyMap;
 typedef std::map<Glib::ustring, Glib::RefPtr<Gtk::TextBuffer> > BufferMap;
 typedef std::vector<Glib::ustring> StringVector;
+typedef std::pair<Glib::ustring, Glib::ustring> StringPair;
 
 namespace Case {
 

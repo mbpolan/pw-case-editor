@@ -29,7 +29,9 @@
 #include <gtkmm/image.h>
 #include <gtkmm/notebook.h>
 #include <gtkmm/radiobutton.h>
+#include <gtkmm/scrolledwindow.h>
 #include <gtkmm/table.h>
+#include <gtkmm/textview.h>
 
 #include "case.h"
 
@@ -40,6 +42,12 @@ class AbstractDialog: public Gtk::Dialog {
 		AbstractDialog(const Glib::ustring &trigger);
 		
 	protected:
+		// handler for ok button clicks
+		virtual void on_ok_button_clicked() { };
+		
+		// handler for cancel button clicks
+		virtual void on_cancel_button_clicked() { };
+		
 		// labels
 		Gtk::Label *m_TriggerLabel;
 };
@@ -243,6 +251,123 @@ class HideEvidenceDialog: public AbstractDialog {
 		
 		// labels
 		Gtk::Label *m_PositionLabel;
+};
+
+/***************************************************************************/
+
+// set_location trigger
+class SetLocationDialog: public AbstractDialog {
+	public:
+		// constructor
+		SetLocationDialog(const LocationMap &locations);
+		
+		// get the selected location
+		Glib::ustring get_location() const;
+		
+	protected:
+		// build the dialog
+		void construct();
+		
+		// labels
+		Gtk::Label *m_LocLabel;
+		
+		// combo boxes
+		Gtk::ComboBoxText *m_LocationCB;
+		
+		LocationMap m_Locations;
+};
+
+/***************************************************************************/
+
+// add_location trigger
+class AddLocationDialog: public AbstractDialog {
+	public:
+		// constructor
+		AddLocationDialog(const LocationMap &locations);
+		
+		// get the selected location
+		StringPair get_location_pair() const;
+		
+	protected:
+		// build the dialog
+		void construct();
+		
+		// overridden handler for ok button
+		virtual void on_ok_button_clicked();
+		
+		// labels
+		Gtk::Label *m_TargetLabel;
+		Gtk::Label *m_LocationLabel;
+		
+		// combo boxes
+		Gtk::ComboBoxText *m_TargetCB;
+		Gtk::ComboBoxText *m_LocationCB;
+		
+		LocationMap m_Locations;
+};
+
+/***************************************************************************/
+
+// set location trigger
+class LocationTriggerDialog: public AbstractDialog {
+	public:
+		// constructor
+		LocationTriggerDialog(const LocationMap &locations, const BufferMap &buffers);
+		
+		// get the selection
+		StringPair get_selection() const;
+		
+	protected:
+		// build the dialog
+		void construct();
+		
+		// handler for text block combo box changes
+		void on_text_block_combo_box_changed();
+		
+		// scrolled windows
+		Gtk::ScrolledWindow *m_SWindow;
+		
+		// labels
+		Gtk::Label *m_LocLabel;
+		Gtk::Label *m_BlockLabel;
+		
+		// combo boxes
+		Gtk::ComboBoxText *m_LocationCB;
+		Gtk::ComboBoxText *m_BlockCB;
+		
+		// text views
+		Gtk::TextView *m_BlockView;
+		
+		LocationMap m_Locations;
+		BufferMap m_Blocks;
+};
+
+/***************************************************************************/
+
+// set_animation trigger
+class SetAnimationDialog: public AbstractDialog {
+	public:
+		// constructor
+		SetAnimationDialog(const CharacterMap &chars);
+		
+		// get the selection
+		StringPair get_selection() const;
+		
+	protected:
+		// build the dialog
+		void construct();
+		
+		// labels
+		Gtk::Label *m_CharLabel;
+		Gtk::Label *m_AnimLabel;
+		
+		// entries
+		Gtk::Entry *m_AnimEntry;
+		
+		// combo boxes
+		Gtk::ComboBoxText *m_CharCB;
+		
+		CharacterMap m_CharMap;
 };
 
 #endif
