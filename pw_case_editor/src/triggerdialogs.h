@@ -26,15 +26,18 @@
 #include <gtkmm/dialog.h>
 #include <gtkmm/entry.h>
 #include <gtkmm/label.h>
+#include <gtkmm/image.h>
+#include <gtkmm/notebook.h>
 #include <gtkmm/radiobutton.h>
+#include <gtkmm/table.h>
 
 #include "case.h"
 
 // abstract dialog for inserting triggers
-class InsertAbstractDialog: public Gtk::Dialog {
+class AbstractDialog: public Gtk::Dialog {
 	public:
 		// constructor
-		InsertAbstractDialog(const Glib::ustring &trigger);
+		AbstractDialog(const Glib::ustring &trigger);
 		
 	protected:
 		// labels
@@ -43,8 +46,88 @@ class InsertAbstractDialog: public Gtk::Dialog {
 
 /***************************************************************************/
 
+// add_evidence/add_profile triggers
+class AddCourtRecDialog: public AbstractDialog {
+	public:
+		// type of trigger
+		enum Type { TYPE_ADD_EVIDENCE, TYPE_ADD_PROFILE };
+		
+		// data representing selection
+		struct _Data {
+			Type type;
+			Glib::ustring id;
+		};
+		typedef struct _Data Data;
+		
+		// constructor
+		AddCourtRecDialog(const EvidenceMap &ev, const CharacterMap &chars);
+		
+		// get the selected evidence or profile
+		Data get_data() const;
+		
+	protected:
+		// build the dialog
+		void construct();
+		
+		// handler for combo box changes
+		void on_combo_box_changed(const Glib::ustring &id);
+		
+		// build the add_evidence page
+		Gtk::Table* build_evidence_page();
+		
+		// build the add_profile page
+		Gtk::Table* build_profile_page();
+		
+		// notebook container
+		Gtk::Notebook *m_NB;
+		
+		// labels
+		Gtk::Label *m_EvidenceLabel;
+		Gtk::Label *m_ProfileLabel;
+		Gtk::Label *m_EvidencePreviewLabel;
+		Gtk::Label *m_ProfilePreviewLabel;
+		
+		// combo boxes
+		Gtk::ComboBoxText *m_EvidenceCB;
+		Gtk::ComboBoxText *m_ProfileCB;
+		
+		// images
+		Gtk::Image *m_EvidenceImage;
+		Gtk::Image *m_ProfileImage;
+		
+		// records of maps
+		CharacterMap m_CharMap;
+		EvidenceMap m_EvidenceMap;
+};
+
+/***************************************************************************/
+
+// speaker trigger
+class SpeakerDialog: public AbstractDialog {
+	public:
+		// constructor
+		SpeakerDialog(const CharacterMap &chars);
+		
+		// get the selected speaker
+		Glib::ustring get_speaker();
+		
+	protected:
+		// build the dialog
+		void construct();
+		
+		// labels
+		Gtk::Label *m_SpeakerLabel;
+		
+		// combo boxes
+		Gtk::ComboBoxText *m_CharsCB;
+		
+		CharacterMap m_CharMap;
+};
+
+/***************************************************************************/
+
 // goto (and its relatives) trigger
-class InsertGotoDialog: public InsertAbstractDialog {
+class GotoDialog: public AbstractDialog {
 	public:
 		// type
 		enum Type { GOTO_NORMAL, GOTO_DIRECT, GOTO_TIMED };
@@ -59,7 +142,7 @@ class InsertGotoDialog: public InsertAbstractDialog {
 		
 		
 		// constructor
-		InsertGotoDialog(BufferMap blocks);
+		GotoDialog(BufferMap blocks);
 		
 		// get the goto data
 		Data get_data();
@@ -87,6 +170,79 @@ class InsertGotoDialog: public InsertAbstractDialog {
 		
 		// combo boxes
 		Gtk::ComboBoxText *m_BlockCB;
+};
+
+/***************************************************************************/
+
+// show_evidence_* triggers
+class ShowEvidenceDialog: public AbstractDialog {
+	public:
+		// position of evidence
+		enum Type { TYPE_POS_LEFT, TYPE_POS_RIGHT };
+		
+		// data representing selection
+		struct _Data {
+			Type type;
+			Glib::ustring id;
+		};
+		typedef struct _Data Data;
+		
+		// constructor
+		ShowEvidenceDialog(const EvidenceMap &ev);
+		
+		// get selected evidence
+		Data get_data() const;
+		
+	protected:
+		// build the dialog
+		void construct();
+		
+		// handler for combo box changes
+		void on_combo_box_changed();
+		
+		// radio buttons
+		Gtk::RadioButtonGroup m_Group;
+		Gtk::RadioButton *m_LeftRB;
+		Gtk::RadioButton *m_RightRB;
+		
+		// labels
+		Gtk::Label *m_PositionLabel;
+		Gtk::Label *m_EvidenceLabel;
+		Gtk::Label *m_PreviewLabel;
+		
+		// combo boxes
+		Gtk::ComboBoxText *m_EvidenceCB;
+		
+		// images
+		Gtk::Image *m_Image;
+		
+		EvidenceMap m_EvidenceMap;
+};
+
+/***************************************************************************/
+
+// hide_evidence_* trigger
+class HideEvidenceDialog: public AbstractDialog {
+	public:
+		enum Type { TYPE_POS_LEFT, TYPE_POS_RIGHT };
+		
+		// constructor
+		HideEvidenceDialog();
+		
+		// get the position
+		Type get_position() const;
+		
+	protected:
+		// build the dialog
+		void construct();
+		
+		// radio buttons
+		Gtk::RadioButtonGroup m_Group;
+		Gtk::RadioButton *m_LeftRB;
+		Gtk::RadioButton *m_RightRB;
+		
+		// labels
+		Gtk::Label *m_PositionLabel;
 };
 
 #endif

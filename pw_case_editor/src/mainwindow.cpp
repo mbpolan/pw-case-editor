@@ -240,10 +240,8 @@ void MainWindow::create_trigger_submenu(Gtk::Menu *menu) {
 		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "speaker")));
 	list.push_back(Gtk::Menu_Helpers::MenuElem("Goto", 
 		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "goto")));
-	list.push_back(Gtk::Menu_Helpers::MenuElem("Add Evidence", 
-		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "add_evidence")));
-	list.push_back(Gtk::Menu_Helpers::MenuElem("Add Profile", 
-		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "add_profile")));
+	list.push_back(Gtk::Menu_Helpers::MenuElem("Add Evidence/Profile", 
+		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "add_evidence/profile")));
 	list.push_back(Gtk::Menu_Helpers::MenuElem("Show Evidence", 
 		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "show_evidence")));
 	list.push_back(Gtk::Menu_Helpers::MenuElem("Hide Evidence", 
@@ -615,29 +613,29 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 		}
 		
 		// run the dialog, and get data
-		InsertGotoDialog diag(m_ScriptWidget->get_buffers());
+		GotoDialog diag(m_ScriptWidget->get_buffers());
 		if (diag.run()==Gtk::RESPONSE_OK) {
 			// get the data
-			InsertGotoDialog::Data data=diag.get_data();
+			GotoDialog::Data data=diag.get_data();
 			
 			// begin trigger string
 			Glib::ustring trig="{*goto";
 			
 			// complete is based on goto type
 			switch(data.type) {
-				case InsertGotoDialog::GOTO_NORMAL: {
+				case GotoDialog::GOTO_NORMAL: {
 					trig+=":";
 					trig+=data.target;
 					trig+=";*}";
 				} break;
 				
-				case InsertGotoDialog::GOTO_DIRECT: {
+				case GotoDialog::GOTO_DIRECT: {
 					trig+="_direct:";
 					trig+=data.target;
 					trig+=";*}";
 				} break;
 				
-				case InsertGotoDialog::GOTO_TIMED: {
+				case GotoDialog::GOTO_TIMED: {
 					trig+="_timed:";
 					trig+=data.target;
 					trig+=",";
@@ -647,6 +645,76 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 			}
 			
 			// finally, insert it
+			m_ScriptWidget->insert_trigger_at_cursor(trig);
+		}
+	}
+	
+	// add_evidence/add_profile triggers
+	else if (trigger.find("add_evidence/profile")!=-1) {
+		AddCourtRecDialog diag(m_Case.get_evidence(), m_Case.get_characters());
+		if (diag.run()==Gtk::RESPONSE_OK) {
+			AddCourtRecDialog::Data data=diag.get_data();
+			
+			Glib::ustring trig="{*add_";
+			
+			if (data.type==AddCourtRecDialog::TYPE_ADD_EVIDENCE)
+				trig+="evidence:";
+			else
+				trig+="profile:";
+			
+			trig+=data.id;
+			trig+=";*}";
+			
+			m_ScriptWidget->insert_trigger_at_cursor(trig);
+		}
+	}
+	
+	// show evidence
+	else if (trigger.find("show_evidence")!=-1) {
+		ShowEvidenceDialog diag(m_Case.get_evidence());
+		if (diag.run()==Gtk::RESPONSE_OK) {
+			ShowEvidenceDialog::Data data=diag.get_data();
+			
+			Glib::ustring trig="{*show_evidence:";
+			trig+=data.id;
+			trig+=",";
+			
+			if (data.type==ShowEvidenceDialog::TYPE_POS_LEFT)
+				trig+="left";
+			else
+				trig+="right";
+			
+			trig+=";*}";
+			
+			m_ScriptWidget->insert_trigger_at_cursor(trig);
+		}
+	}
+	
+	// hide evidence
+	else if (trigger.find("hide_evidence")!=-1) {
+		HideEvidenceDialog diag;
+		if (diag.run()==Gtk::RESPONSE_OK) {
+			Glib::ustring trig="{*hide_evidence:";
+			
+			if (diag.get_position()==HideEvidenceDialog::TYPE_POS_LEFT)
+				trig+="left";
+			else
+				trig+="right";
+			
+			trig+=";*}";
+			
+			m_ScriptWidget->insert_trigger_at_cursor(trig);
+		}
+	}
+	
+	// speaker trigger
+	else if (trigger.find("speaker")!=-1) {
+		SpeakerDialog diag(m_Case.get_characters());
+		if (diag.run()==Gtk::RESPONSE_OK) {
+			Glib::ustring trig="{*speaker:";
+			trig+=diag.get_speaker();
+			trig+=";*}";
+			
 			m_ScriptWidget->insert_trigger_at_cursor(trig);
 		}
 	}
