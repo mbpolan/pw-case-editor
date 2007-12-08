@@ -34,6 +34,7 @@
 #include <gtkmm/textview.h>
 
 #include "case.h"
+#include "casecombobox.h"
 
 // abstract dialog for inserting triggers
 class AbstractDialog: public Gtk::Dialog {
@@ -121,15 +122,13 @@ class SpeakerDialog: public AbstractDialog {
 		
 	protected:
 		// build the dialog
-		void construct();
+		void construct(const CharacterMap &chars);
 		
 		// labels
 		Gtk::Label *m_SpeakerLabel;
 		
 		// combo boxes
-		Gtk::ComboBoxText *m_CharsCB;
-		
-		CharacterMap m_CharMap;
+		CharComboBox *m_CharsCB;
 };
 
 /***************************************************************************/
@@ -266,15 +265,13 @@ class SetLocationDialog: public AbstractDialog {
 		
 	protected:
 		// build the dialog
-		void construct();
+		void construct(const LocationMap &locations);
 		
 		// labels
 		Gtk::Label *m_LocLabel;
 		
 		// combo boxes
-		Gtk::ComboBoxText *m_LocationCB;
-		
-		LocationMap m_Locations;
+		LocationComboBox *m_LocationCB;
 };
 
 /***************************************************************************/
@@ -290,7 +287,7 @@ class AddLocationDialog: public AbstractDialog {
 		
 	protected:
 		// build the dialog
-		void construct();
+		void construct(const LocationMap &locations);
 		
 		// overridden handler for ok button
 		virtual void on_ok_button_clicked();
@@ -300,10 +297,8 @@ class AddLocationDialog: public AbstractDialog {
 		Gtk::Label *m_LocationLabel;
 		
 		// combo boxes
-		Gtk::ComboBoxText *m_TargetCB;
-		Gtk::ComboBoxText *m_LocationCB;
-		
-		LocationMap m_Locations;
+		LocationComboBox *m_TargetCB;
+		LocationComboBox *m_LocationCB;
 };
 
 /***************************************************************************/
@@ -319,7 +314,7 @@ class LocationTriggerDialog: public AbstractDialog {
 		
 	protected:
 		// build the dialog
-		void construct();
+		void construct(const LocationMap &locations);
 		
 		// handler for text block combo box changes
 		void on_text_block_combo_box_changed();
@@ -332,13 +327,12 @@ class LocationTriggerDialog: public AbstractDialog {
 		Gtk::Label *m_BlockLabel;
 		
 		// combo boxes
-		Gtk::ComboBoxText *m_LocationCB;
+		LocationComboBox *m_LocationCB;
 		Gtk::ComboBoxText *m_BlockCB;
 		
 		// text views
 		Gtk::TextView *m_BlockView;
 		
-		LocationMap m_Locations;
 		BufferMap m_Blocks;
 };
 
@@ -355,7 +349,7 @@ class SetAnimationDialog: public AbstractDialog {
 		
 	protected:
 		// build the dialog
-		void construct();
+		void construct(const CharacterMap &chars);
 		
 		// labels
 		Gtk::Label *m_CharLabel;
@@ -365,9 +359,31 @@ class SetAnimationDialog: public AbstractDialog {
 		Gtk::Entry *m_AnimEntry;
 		
 		// combo boxes
-		Gtk::ComboBoxText *m_CharCB;
+		CharComboBox *m_CharCB;
+};
+
+/***************************************************************************/
+
+// put_character trigger
+class PutCharDialog: public AbstractDialog {
+	public:
+		// constructor
+		PutCharDialog(const CharacterMap &chars, const LocationMap &locations);
 		
-		CharacterMap m_CharMap;
+		// get the selection
+		StringPair get_selection() const;
+		
+	protected:
+		// build the dialog
+		void construct(const CharacterMap &chars, const LocationMap &locations);
+		
+		// labels
+		Gtk::Label *m_CharLabel;
+		Gtk::Label *m_LocLabel;
+		
+		// combo boxes
+		CharComboBox *m_CharCB;
+		LocationComboBox *m_LocationCB;
 };
 
 #endif

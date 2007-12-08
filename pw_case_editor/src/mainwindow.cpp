@@ -800,6 +800,23 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 		}
 	}
 	
+	// put character
+	else if (trigger=="put_character") {
+		PutCharDialog diag(m_Case.get_characters(), m_Case.get_locations());
+		if (diag.run()==Gtk::RESPONSE_OK) {
+			// get the selected character and location
+			StringPair p=diag.get_selection();
+			
+			Glib::ustring trig="{*put_character:";
+			trig+=p.first;
+			trig+=",";
+			trig+=p.second;
+			trig+=";*}";
+			
+			m_ScriptWidget->insert_trigger_at_cursor(trig);
+		}
+	}
+	
 	// speaker trigger
 	else if (trigger=="speaker") {
 		SpeakerDialog diag(m_Case.get_characters());
