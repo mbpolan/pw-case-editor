@@ -24,6 +24,7 @@
 #include <gtkmm/filechooserdialog.h>
 #include <gtkmm/menubar.h>
 #include <gtkmm/messagedialog.h>
+#include <gtkmm/recentchoosermenu.h>
 #include <gtkmm/separatortoolitem.h>
 #include <gtkmm/stock.h>
 #include <gtkmm/toolbar.h>
@@ -181,8 +182,7 @@ void MainWindow::construct() {
 		Gtk::Menu *tmenu=new Gtk::Menu;
 		
 		// we need to manually add a trigger submenu to the Script menu
-		Gtk::MenuItem &sItem=menuBar->items()[1];
-		Gtk::Menu *refMenu=sItem.get_submenu();
+		Gtk::Menu *refMenu=menuBar->items()[1].get_submenu();
 		
 		// grab the list of items and add a new submenu
 		Gtk::Menu_Helpers::MenuList &list=refMenu->items();
@@ -192,6 +192,37 @@ void MainWindow::construct() {
 		
 		// finally, create the menu
 		create_trigger_submenu(tmenu);
+		
+		m_RecentMenu=manage(new Gtk::Menu);
+		
+		// get the file menu
+		refMenu=menuBar->items()[0].get_submenu();
+		
+		// get the list of items, and increment the iterator into position
+		list=refMenu->items();
+		it=list.begin();
+		for (int i=0; i<5; i++)
+			it++; // puts us into the 5th row, below Open
+		
+		// now insert a separator, and the actual recent files menu
+		list.insert(it, Gtk::Menu_Helpers::SeparatorElem());
+		list.insert(it, Gtk::Menu_Helpers::MenuElem("Open Recent", *m_RecentMenu));
+		
+		// read the recent files record
+		if (IO::read_recent_files(m_RecentFiles)) {
+			list=m_RecentMenu->items();
+			
+			// go over each file
+			for (int i=0; i<m_RecentFiles.size(); i++) {
+				// create an image for the menu from stock
+				Gtk::Image *image=manage(new Gtk::Image);
+				Gtk::Stock::lookup(Gtk::StockID(Gtk::Stock::FILE), Gtk::IconSize(Gtk::ICON_SIZE_MENU), *image);
+				
+				// and add it as a recent file with said image
+				list.push_back(Gtk::Menu_Helpers::ImageMenuElem(m_RecentFiles[i].second, *image,
+					       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_open_recent), m_RecentFiles[i].first)));
+			}
+		}
 		
 		// now create icons for certain menu items
 		create_icons();
@@ -376,6 +407,57 @@ void MainWindow::set_menuitem_icon(const Glib::ustring &path, const Glib::ustrin
 		// create the icon
 		Gtk::Image *img=manage(new Gtk::Image(file));
 		item->set_image(*img);
+	}
+}
+
+// process a loaded case
+void MainWindow::process_load_case(const Glib::ustring &path) {
+	// load the case
+	BufferMap buffers;
+	std::map<Glib::ustring, Glib::ustring> bufferDescriptions;
+	if (!IO::load_case_from_file(path.c_str(), m_Case, buffers, bufferDescriptions)) {
+		// gee, another vague error message; make it more detailed in the future
+		Gtk::MessageDialog md(*this, "Unable to load case due to an unknown error.", false, Gtk::MESSAGE_ERROR);
+		md.run();
+		
+		m_Statusbar->push("Unable to open case file");
+		return;
+	}
+	
+	// clear out the current case
+	m_ScriptWidget->clear(m_Case.get_overview().lawSys);
+	
+	// case information is set during load, but we need to make the rest of the widgets aware
+	// first, add characters to the list view
+	CharacterMap characters=m_Case.get_characters();
+	for (CharacterMap::iterator it=characters.begin(); it!=characters.end(); ++it)
+		m_ScriptWidget->add_character(-1, -1, (*it).first, (*it).second.get_internal_name());
+		
+	// now add buffers
+	for (BufferMap::iterator it=buffers.begin(); it!=buffers.end(); ++it) {
+		// we have the block id, and we can use that to map it to a parent node
+		Glib::ustring id=(*it).first;
+		
+		// extract the real id
+		Glib::ustring realId=id.substr(0, id.rfind("_"));
+		
+		// find the first underscore from the right
+		int npos=id.rfind("_");
+		Glib::ustring rootId=id.substr(npos+1, id.size()-npos);
+		id.erase(npos, id.size()-npos);
+		
+		// get the stage and day identifiers
+		int stage=(rootId[0]==(char) 'i' ? 0 : 1);
+		int day=atoi(rootId.substr(1, rootId.size()).c_str());
+		
+		// find the first underscore from the right
+		npos=id.rfind("_");
+		
+		// everything before the first underscore is the id of the parent
+		Glib::ustring parent=id.substr(0, npos);
+		
+		// now add the text block
+		m_ScriptWidget->add_text_block(stage, day, parent, id, bufferDescriptions[realId], (*it).second);
 	}
 }
 
@@ -565,64 +647,29 @@ void MainWindow::on_open() {
 		m_Statusbar->push("Opening file...");
 		
 		// load the case
-		BufferMap buffers;
-		std::map<Glib::ustring, Glib::ustring> bufferDescriptions;
-		if (!IO::load_case_from_file(path.c_str(), m_Case, buffers, bufferDescriptions)) {
-			// gee, another vague error message; make it more detailed in the future
-			Gtk::MessageDialog md(*this, "Unable to load case due to an unknown error.", false, Gtk::MESSAGE_ERROR);
-			md.run();
-			
-			m_Statusbar->push("Unable to open case file");
-			return;
-		}
-		
-		// clear out the current case
-		m_ScriptWidget->clear(m_Case.get_overview().lawSys);
-		
-		// case information is set during load, but we need to make the rest of the widgets aware
-		// first, add characters to the list view
-		CharacterMap characters=m_Case.get_characters();
-		for (CharacterMap::iterator it=characters.begin(); it!=characters.end(); ++it)
-			m_ScriptWidget->add_character(-1, -1, (*it).first, (*it).second.get_internal_name());
-		
-		// now add buffers
-		for (BufferMap::iterator it=buffers.begin(); it!=buffers.end(); ++it) {
-			// we have the block id, and we can use that to map it to a parent node
-			Glib::ustring id=(*it).first;
-			
-			// extract the real id
-			Glib::ustring realId=id.substr(0, id.rfind("_"));
-			
-			// find the first underscore from the right
-			int npos=id.rfind("_");
-			Glib::ustring rootId=id.substr(npos+1, id.size()-npos);
-			id.erase(npos, id.size()-npos);
-			
-			// get the stage and day identifiers
-			int stage=(rootId[0]==(char) 'i' ? 0 : 1);
-			int day=atoi(rootId.substr(1, rootId.size()).c_str());
-			
-			// find the first underscore from the right
-			npos=id.rfind("_");
-			
-			// everything before the first underscore is the id of the parent
-			Glib::ustring parent=id.substr(0, npos);
-			
-			// now add the text block
-			m_ScriptWidget->add_text_block(stage, day, parent, id, bufferDescriptions[realId], (*it).second);
-		}
+		process_load_case(path);
 		
 		m_Statusbar->push("Case opened successfully");
+		
+		// extract file name
+		Glib::ustring title=path.substr(path.rfind("/")+1, path.size()-1);
+		
+		// add this file as a recent file
+		IO::add_recent_file(path, title);
 		
 		// cache save path
 		m_Saved=true;
 		m_SavePath=path;
 		
 		// update title bar
-		Glib::ustring title=path.substr(path.rfind("/")+1, path.size()-1);
 		title+=" - Phoenix Wright Case Editor";
 		set_title(title);
 	}
+}
+
+// open a recent file
+void MainWindow::on_open_recent(const Glib::ustring &path) {
+	process_load_case(path);
 }
 
 // quit handler

@@ -77,6 +77,12 @@ void write_pixbuf(FILE *f, const Glib::RefPtr<Gdk::Pixbuf> &pixbuf);
 // read a pixbuf from file
 Glib::RefPtr<Gdk::Pixbuf> read_pixbuf(FILE *f);
 
+// add a file to the recent files record
+void add_recent_file(const Glib::ustring &uri, const Glib::ustring &display);
+
+// read the recent files record
+bool read_recent_files(std::vector<StringPair> &vec);
+
 }; // namespace IO
 
 #endif

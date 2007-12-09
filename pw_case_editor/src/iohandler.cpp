@@ -1141,3 +1141,81 @@ Glib::RefPtr<Gdk::Pixbuf> IO::read_pixbuf(FILE *f) {
 	
 	return pixbuf;
 }
+
+// add a file to the recent files record
+void IO::add_recent_file(const Glib::ustring &uri, const Glib::ustring &display) {
+	// try to read the recent files record file
+	std::vector<StringPair> vec;
+	if (!IO::read_recent_files(vec)) {
+		// create the file
+		FILE *f=fopen("editor.rfs", "wb");
+		if (!f) {
+			g_warning("Couldn't create editor.rfs file!");
+			return;
+		}
+		
+		// write a single amount
+		int amount=1;
+		fwrite(&amount, sizeof(int), 1, f);
+		
+		// write info
+		write_string(f, uri);
+		write_string(f, display);
+		
+		// that's all
+		fclose(f);
+	}
+	
+	// we opened the record
+	else {
+		// add this as the most recent file
+		vec.push_back(std::make_pair<Glib::ustring, Glib::ustring> (uri, display));
+		
+		// now, reopen the recent file store
+		FILE *f=fopen("editor.rfs", "wb");
+		if (!f) {
+			g_warning("Unable to reopen recent file store for addition of new file!");
+			return;
+		}
+		
+		// write amount of files (cap to 5)
+		int amount=(vec.size()>5 ? 5 : vec.size());
+		fwrite(&amount, sizeof(int), 1, f);
+		
+		// iterate over our files
+		for (int i=amount-1; i>=0; i--) {
+			write_string(f, vec[i].first);
+			write_string(f, vec[i].second);
+		}
+		
+		fclose(f);
+	}
+}
+
+// read the recent files record
+bool IO::read_recent_files(std::vector<StringPair> &vec) {
+	FILE *f=fopen("editor.rfs", "rb");
+	if (!f)
+		return false;
+	
+	// read amount of files
+	int amount;
+	fread(&amount, sizeof(int), 1, f);
+	
+	// iterate over amount of files
+	for (int i=0; i<amount; i++) {
+		// five files max
+		if (i>5)
+			break;
+		
+		// read info
+		Glib::ustring uri=read_string(f);
+		Glib::ustring display=read_string(f);
+		
+		// and add it
+		vec.push_back(std::make_pair<Glib::ustring, Glib::ustring> (uri, display));
+	}
+	
+	fclose(f);
+	return true;
+}

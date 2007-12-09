@@ -23,6 +23,7 @@
 #define MAINWINDOW_H
 
 #include <gtkmm/actiongroup.h>
+#include <gtkmm/recentfilter.h>
 #include <gtkmm/recentmanager.h>
 #include <gtkmm/statusbar.h>
 #include <gtkmm/window.h>
@@ -53,6 +54,9 @@ class MainWindow: public Gtk::Window {
 		// set an icon for a menu item
 		void set_menuitem_icon(const Glib::ustring &path, const Glib::ustring &file);
 		
+		// process a loaded case from file
+		void process_load_case(const Glib::ustring &path);
+		
 		// new case handler
 		void on_new();
 		
@@ -67,6 +71,9 @@ class MainWindow: public Gtk::Window {
 		
 		// load case handler
 		void on_open();
+		
+		// open a recent file
+		void on_open_recent(const Glib::ustring &path);
 		
 		// quit handler
 		void on_quit();
@@ -116,6 +123,7 @@ class MainWindow: public Gtk::Window {
 		// menu stuff
 		Glib::RefPtr<Gtk::ActionGroup> m_ActionGroup;
 		Glib::RefPtr<Gtk::UIManager> m_UIManager;
+		Gtk::Menu *m_RecentMenu;
 		
 		// status bar
 		Gtk::Statusbar *m_Statusbar;
@@ -129,6 +137,9 @@ class MainWindow: public Gtk::Window {
 		// save file details
 		bool m_Saved;
 		Glib::ustring m_SavePath;
+		
+		// recent files
+		std::vector<StringPair> m_RecentFiles;
 };
 
 #endif
