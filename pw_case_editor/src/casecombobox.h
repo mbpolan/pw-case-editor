@@ -38,6 +38,9 @@ class CharComboBox: public Gtk::ComboBoxText {
 		// get the selected character's internal name
 		Glib::ustring get_selected_internal() const;
 		
+		// get the selected character
+		Character* get_selected_character();
+		
 	protected:
 		CharacterMap m_Characters;
 };
@@ -56,8 +59,50 @@ class LocationComboBox: public Gtk::ComboBoxText {
 		// get the selected locations's internal name
 		Glib::ustring get_selected_internal() const;
 		
+		// get the selected location
+		Case::Location* get_selected_location();
+		
 	protected:
 		LocationMap m_Locations;
+};
+
+/***************************************************************************/
+
+// combo box for evidence
+class EvidenceComboBox: public Gtk::ComboBoxText {
+	public:
+		// constructor
+		EvidenceComboBox(const EvidenceMap &ev);
+		
+		// get the selected location's name
+		Glib::ustring get_selected_name() const;
+		
+		// get the selected locations's internal name
+		Glib::ustring get_selected_internal() const;
+		
+		// get the selected evidence
+		Case::Evidence* get_selected_evidence();
+		
+	protected:
+		EvidenceMap m_Evidence;
+};
+
+/***************************************************************************/
+
+// combo box for text blocks
+class BlockComboBox: public Gtk::ComboBoxText {
+	public:
+		// constructor
+		BlockComboBox(const BufferMap &blocks);
+		
+		// get the selected locations's internal name
+		Glib::ustring get_selected_internal() const;
+		
+		// get the selected evidence
+		Glib::RefPtr<Gtk::TextBuffer> get_selected_block();
+		
+	protected:
+		BufferMap m_Buffers;
 };
 
 #endif

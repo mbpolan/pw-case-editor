@@ -35,6 +35,8 @@
 
 #include "case.h"
 #include "casecombobox.h"
+#include "locationwidget.h"
+#include "triplet.h"
 
 // abstract dialog for inserting triggers
 class AbstractDialog: public Gtk::Dialog {
@@ -76,16 +78,16 @@ class AddCourtRecDialog: public AbstractDialog {
 		
 	protected:
 		// build the dialog
-		void construct();
+		void construct(const EvidenceMap &ev, const CharacterMap &chars);
 		
 		// handler for combo box changes
 		void on_combo_box_changed(const Glib::ustring &id);
 		
 		// build the add_evidence page
-		Gtk::Table* build_evidence_page();
+		Gtk::Table* build_evidence_page(const EvidenceMap &ev);
 		
 		// build the add_profile page
-		Gtk::Table* build_profile_page();
+		Gtk::Table* build_profile_page(const CharacterMap &chars);
 		
 		// notebook container
 		Gtk::Notebook *m_NB;
@@ -97,16 +99,12 @@ class AddCourtRecDialog: public AbstractDialog {
 		Gtk::Label *m_ProfilePreviewLabel;
 		
 		// combo boxes
-		Gtk::ComboBoxText *m_EvidenceCB;
-		Gtk::ComboBoxText *m_ProfileCB;
+		EvidenceComboBox *m_EvidenceCB;
+		CharComboBox *m_ProfileCB;
 		
 		// images
 		Gtk::Image *m_EvidenceImage;
 		Gtk::Image *m_ProfileImage;
-		
-		// records of maps
-		CharacterMap m_CharMap;
-		EvidenceMap m_EvidenceMap;
 };
 
 /***************************************************************************/
@@ -138,25 +136,17 @@ class GotoDialog: public AbstractDialog {
 	public:
 		// type
 		enum Type { GOTO_NORMAL, GOTO_DIRECT, GOTO_TIMED };
-		
-		// data related to a goto trigger
-		struct _Data {
-			Glib::ustring target;
-			int time;
-			Type type;
-		};
-		typedef struct _Data Data;
-		
+		typedef Triplet<Glib::ustring, Type, int> Data;
 		
 		// constructor
-		GotoDialog(BufferMap blocks);
+		GotoDialog(const BufferMap &blocks);
 		
 		// get the goto data
 		Data get_data();
 		
 	protected:
 		// build the dialog
-		void construct();
+		void construct(const BufferMap &blocks);
 		
 		// radio button toggle handler
 		void on_radio_button_toggled(const Glib::ustring &button);
@@ -176,7 +166,7 @@ class GotoDialog: public AbstractDialog {
 		Gtk::Entry *m_TimeEntry;
 		
 		// combo boxes
-		Gtk::ComboBoxText *m_BlockCB;
+		BlockComboBox *m_BlockCB;
 };
 
 /***************************************************************************/
@@ -186,13 +176,7 @@ class ShowEvidenceDialog: public AbstractDialog {
 	public:
 		// position of evidence
 		enum Type { TYPE_POS_LEFT, TYPE_POS_RIGHT };
-		
-		// data representing selection
-		struct _Data {
-			Type type;
-			Glib::ustring id;
-		};
-		typedef struct _Data Data;
+		typedef std::pair<Glib::ustring, Type> Data;
 		
 		// constructor
 		ShowEvidenceDialog(const EvidenceMap &ev);
@@ -202,7 +186,7 @@ class ShowEvidenceDialog: public AbstractDialog {
 		
 	protected:
 		// build the dialog
-		void construct();
+		void construct(const EvidenceMap &ev);
 		
 		// handler for combo box changes
 		void on_combo_box_changed();
@@ -218,12 +202,10 @@ class ShowEvidenceDialog: public AbstractDialog {
 		Gtk::Label *m_PreviewLabel;
 		
 		// combo boxes
-		Gtk::ComboBoxText *m_EvidenceCB;
+		EvidenceComboBox *m_EvidenceCB;
 		
 		// images
 		Gtk::Image *m_Image;
-		
-		EvidenceMap m_EvidenceMap;
 };
 
 /***************************************************************************/
@@ -267,11 +249,8 @@ class SetLocationDialog: public AbstractDialog {
 		// build the dialog
 		void construct(const LocationMap &locations);
 		
-		// labels
-		Gtk::Label *m_LocLabel;
-		
-		// combo boxes
-		LocationComboBox *m_LocationCB;
+		// location widget
+		LocationWidget *m_LocWidget;
 };
 
 /***************************************************************************/
@@ -314,7 +293,7 @@ class LocationTriggerDialog: public AbstractDialog {
 		
 	protected:
 		// build the dialog
-		void construct(const LocationMap &locations);
+		void construct(const LocationMap &locations, const BufferMap &buffers);
 		
 		// handler for text block combo box changes
 		void on_text_block_combo_box_changed();
@@ -328,12 +307,10 @@ class LocationTriggerDialog: public AbstractDialog {
 		
 		// combo boxes
 		LocationComboBox *m_LocationCB;
-		Gtk::ComboBoxText *m_BlockCB;
+		BlockComboBox *m_BlockCB;
 		
 		// text views
 		Gtk::TextView *m_BlockView;
-		
-		BufferMap m_Blocks;
 };
 
 /***************************************************************************/
@@ -379,11 +356,88 @@ class PutCharDialog: public AbstractDialog {
 		
 		// labels
 		Gtk::Label *m_CharLabel;
-		Gtk::Label *m_LocLabel;
 		
 		// combo boxes
 		CharComboBox *m_CharCB;
-		LocationComboBox *m_LocationCB;
+		
+		// location widget
+		LocationWidget *m_LocWidget;
+};
+
+/***************************************************************************/
+
+// add_talk_option trigger
+class AddTalkDialog: public AbstractDialog {
+	public:
+		// constructor
+		AddTalkDialog(const CharacterMap &chars, const BufferMap &buffers);
+		
+		// get the data
+		StringTriplet get_data() const;
+		
+	protected:
+		// build the dialog
+		void construct(const CharacterMap &chars, const BufferMap &buffers);
+		
+		// labels
+		Gtk::Label *m_CharLabel;
+		Gtk::Label *m_ViewLabel;
+		Gtk::Label *m_BlockLabel;
+		
+		// combo boxes
+		CharComboBox *m_CharCB;
+		BlockComboBox *m_BlockCB;
+		
+		// entries
+		Gtk::Entry *m_ViewEntry;
+};
+
+/***************************************************************************/
+
+// remove_talk_option trigger
+class RemoveTalkDialog: public AbstractDialog {
+	public:
+		// constructor
+		RemoveTalkDialog(const CharacterMap &chars);
+		
+		// get data
+		StringPair get_data() const;
+		
+	protected:
+		// build the dialog
+		void construct(const CharacterMap &chars);
+		
+		// labels
+		Gtk::Label *m_CharLabel;
+		Gtk::Label *m_ViewLabel;
+		
+		// combo boxes
+		CharComboBox *m_CharCB;
+		
+		// entries
+		Gtk::Entry *m_ViewEntry;
+};
+
+/***************************************************************************/
+
+// clear_* triggers
+class ClearCharDialog: public AbstractDialog {
+	public:
+		// constructor
+		ClearCharDialog(const Glib::ustring &trigger, const CharacterMap &chars);
+		
+		// get the selected character
+		Glib::ustring get_character() const;
+		
+	protected:
+		// build the dialog
+		void construct(const CharacterMap &chars);
+		
+		// labels
+		Gtk::Label *m_CharLabel;
+		
+		// combo box
+		CharComboBox *m_CharCB;
 };
 
 #endif

@@ -44,6 +44,11 @@ Glib::ustring CharComboBox::get_selected_internal() const {
 	}
 }
 
+// get the selected character
+Character* CharComboBox::get_selected_character() {
+	return &(m_Characters[get_selected_internal()]);
+}
+
 /***************************************************************************/
 
 // constructor
@@ -69,4 +74,63 @@ Glib::ustring LocationComboBox::get_selected_internal() const {
 		if ((*it).second.name==name)
 			return (*it).first;
 	}
+}
+
+// get the selected location
+Case::Location* LocationComboBox::get_selected_location() {
+	return &(m_Locations[get_selected_internal()]);
+}
+
+/***************************************************************************/
+
+// constructor
+EvidenceComboBox::EvidenceComboBox(const EvidenceMap &ev): m_Evidence(ev) {
+	// iterate over evidence
+	for (EvidenceMap::const_iterator it=ev.begin(); it!=ev.end(); ++it)
+		append_text((*it).second.name);
+	
+	set_active(0);
+}
+
+// get the selected evidence's name
+Glib::ustring EvidenceComboBox::get_selected_name() const {
+	return get_active_text();
+}
+
+// get the selected evidence's internal name
+Glib::ustring EvidenceComboBox::get_selected_internal() const {
+	Glib::ustring name=get_active_text();
+	for (EvidenceMap::const_iterator it=m_Evidence.begin(); it!=m_Evidence.end(); ++it) {
+		if ((*it).second.name==name)
+			return (*it).first;
+	}
+}
+
+// get the selected evidence
+Case::Evidence* EvidenceComboBox::get_selected_evidence() {
+	return &(m_Evidence[get_selected_internal()]);
+}
+
+/***************************************************************************/
+
+// constructor
+BlockComboBox::BlockComboBox(const BufferMap &blocks): m_Buffers(blocks) {
+	// iterate over buffers
+	for (BufferMap::const_iterator it=blocks.begin(); it!=blocks.end(); ++it) {
+		Glib::ustring id=(*it).first;
+		id.erase(id.rfind("_"), id.size());
+		append_text(id);
+	}
+	
+	set_active(0);
+}
+
+// get the selected block's internal name
+Glib::ustring BlockComboBox::get_selected_internal() const {
+	return get_active_text();
+}
+
+// get the selected block
+Glib::RefPtr<Gtk::TextBuffer> BlockComboBox::get_selected_block() {
+	return m_Buffers[get_selected_internal()];
 }

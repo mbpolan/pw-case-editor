@@ -27,6 +27,7 @@
 #include <gtkmm/separatortoolitem.h>
 #include <gtkmm/stock.h>
 #include <gtkmm/toolbar.h>
+#include <sstream>
 
 #include "dialogs.h"
 #include "iohandler.h"
@@ -228,6 +229,57 @@ void MainWindow::construct() {
 	// add the containers
 	add(*vb);
 	show_all_children();
+}
+
+// alert the user is there are not enough items in an element to perform an action
+bool MainWindow::check_case_element(const Glib::ustring &element, int amount) {
+	// format an error string, if needed
+	std::stringstream ss;
+	ss << "You need at least " << amount;
+	
+	// flag if we failed the check
+	bool fail=false;
+	
+	// check amount of characters
+	if (element=="characters") {
+		if (m_Case.get_characters().size()<amount) {
+			ss << " character(s)";
+			fail=true;
+		}
+	}
+	
+	// check amount of locations
+	else if (element=="locations") {
+		if (m_Case.get_locations().size()<amount) {
+			ss << " location(s)";
+			fail=true;
+		}
+	}
+	
+	// check amount of evidence
+	else if (element=="evidence") {
+		if (m_Case.get_evidence().size()<amount) {
+			ss << " piece(s) of evidence";
+			fail=true;
+		}
+	}
+	
+	// check amount of text blocks
+	else if (element=="blocks") {
+		if (m_ScriptWidget->get_buffers().size()<amount) {
+			ss << " text block(s)";
+			fail=true;
+		}
+	}
+	
+	// looks like we failed the check, show an error dialog
+	if (fail) {
+		ss << " in your case.";
+		Gtk::MessageDialog md(*this, ss.str(), false, Gtk::MESSAGE_ERROR);
+		md.run();
+	}
+	
+	return !fail; // correct return value
 }
 
 // create the trigger submenu
@@ -604,13 +656,8 @@ void MainWindow::on_script_insert_dialogue() {
 // insert a trigger into block
 void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 	if (trigger=="goto") {
-		// make sure there are at least some blocks in the script
-		if (m_ScriptWidget->get_buffers().empty()) {
-			Gtk::MessageDialog md(*this, "You need at least one text block in your case.", false, Gtk::MESSAGE_ERROR);
-			md.run();
-			
+		if (!check_case_element("blocks", 1))
 			return;
-		}
 		
 		// run the dialog, and get data
 		GotoDialog diag(m_ScriptWidget->get_buffers());
@@ -622,24 +669,24 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 			Glib::ustring trig="{*goto";
 			
 			// complete is based on goto type
-			switch(data.type) {
+			switch(data.second) {
 				case GotoDialog::GOTO_NORMAL: {
 					trig+=":";
-					trig+=data.target;
+					trig+=data.first;
 					trig+=";*}";
 				} break;
 				
 				case GotoDialog::GOTO_DIRECT: {
 					trig+="_direct:";
-					trig+=data.target;
+					trig+=data.first;
 					trig+=";*}";
 				} break;
 				
 				case GotoDialog::GOTO_TIMED: {
 					trig+="_timed:";
-					trig+=data.target;
+					trig+=data.first;
 					trig+=",";
-					trig+=Utils::to_string(data.time);
+					trig+=Utils::to_string(data.third);
 					trig+=";*}";
 				} break;
 			}
@@ -671,15 +718,19 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 	
 	// show evidence
 	else if (trigger=="show_evidence") {
+		if (!check_case_element("evidence", 1))
+			return;
+		
+		// prepare dialog
 		ShowEvidenceDialog diag(m_Case.get_evidence());
 		if (diag.run()==Gtk::RESPONSE_OK) {
 			ShowEvidenceDialog::Data data=diag.get_data();
 			
 			Glib::ustring trig="{*show_evidence:";
-			trig+=data.id;
+			trig+=data.first;
 			trig+=",";
 			
-			if (data.type==ShowEvidenceDialog::TYPE_POS_LEFT)
+			if (data.second==ShowEvidenceDialog::TYPE_POS_LEFT)
 				trig+="left";
 			else
 				trig+="right";
@@ -709,6 +760,9 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 	
 	// set location
 	else if (trigger=="set_location") {
+		if (!check_case_element("location", 1))
+			return;
+		
 		SetLocationDialog diag(m_Case.get_locations());
 		if (diag.run()==Gtk::RESPONSE_OK) {
 			Glib::ustring trig="{*set_location:";
@@ -721,13 +775,8 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 	
 	// add location
 	else if (trigger=="add_location") {
-		// first, make sure there are at least two locations
-		if (m_Case.get_locations().size()<2) {
-			Gtk::MessageDialog md(*this, "You need at least two locations in your case.", false,
-					       Gtk::MESSAGE_ERROR);
-			md.run();
+		if (!check_case_element("locations", 2))
 			return;
-		}
 		
 		// prepare dialog and run it
 		AddLocationDialog diag(m_Case.get_locations());
@@ -754,18 +803,13 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 		LocationMap locations=m_Case.get_locations();
 		BufferMap blocks=m_ScriptWidget->get_buffers();
 		
-		// make sure we have at least one location and one block
-		if (locations.empty()) {
-			Gtk::MessageDialog md(*this, "You need at least one location in your case.", false, Gtk::MESSAGE_ERROR);
-			md.run();
+		// make sure we have at least one location
+		if (!check_case_element("locations", 1))
 			return;
-		}
 		
-		if (blocks.empty()) {
-			Gtk::MessageDialog md(*this, "You need at least one text block in your case.", false, Gtk::MESSAGE_ERROR);
-			md.run();
+		// and at least one block
+		if (!check_case_element("blocks", 1))
 			return;
-		}
 		
 		// prepare and run the dialog
 		LocationTriggerDialog diag(locations, blocks);
@@ -785,6 +829,10 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 	
 	// set animation
 	else if (trigger=="set_animation") {
+		if (!check_case_element("characters", 1))
+			return;
+		
+		// prepare the dialog
 		SetAnimationDialog diag(m_Case.get_characters());
 		if (diag.run()==Gtk::RESPONSE_OK) {
 			// get the selected character and animation
@@ -802,6 +850,10 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 	
 	// put character
 	else if (trigger=="put_character") {
+		if (!check_case_element("locations", 1) || !check_case_element("characters", 1))
+			return;
+		
+		// prepare dialog
 		PutCharDialog diag(m_Case.get_characters(), m_Case.get_locations());
 		if (diag.run()==Gtk::RESPONSE_OK) {
 			// get the selected character and location
@@ -817,8 +869,74 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 		}
 	}
 	
+	// add talk option
+	else if (trigger=="add_talk_option") {
+		if (!check_case_element("characters", 1))
+			return;
+		
+		// prepare dialog
+		AddTalkDialog diag(m_Case.get_characters(), m_ScriptWidget->get_buffers());
+		if (diag.run()==Gtk::RESPONSE_OK) {
+			// get the inputted data
+			StringTriplet t=diag.get_data();
+			
+			Glib::ustring trig="{*add_talk_option:";
+			trig+=t.first;
+			trig+=",";
+			trig+=t.second;
+			trig+=",";
+			trig+=t.third;
+			trig+=";*}";
+			
+			m_ScriptWidget->insert_trigger_at_cursor(trig);
+		}
+	}
+	
+	// remove talk option
+	else if (trigger=="remove_talk_option") {
+		if (!check_case_element("characters", 1))
+			return;
+		
+		// prepare dialog
+		RemoveTalkDialog diag(m_Case.get_characters());
+		if (diag.run()==Gtk::RESPONSE_OK) {
+			// get the inputted data
+			StringPair p=diag.get_data();
+			
+			Glib::ustring trig="{*remove_talk_option:";
+			trig+=p.first;
+			trig+=",";
+			trig+=p.second;
+			trig+=";*}";
+			
+			m_ScriptWidget->insert_trigger_at_cursor(trig);
+		}
+	}
+	
+	// clear talk options or presentables
+	else if (trigger=="clear_talk_options" || trigger=="clear_presentables") {
+		if (!check_case_element("characters", 1))
+			return;
+		
+		// prepare dialog
+		ClearCharDialog diag(trigger, m_Case.get_characters());
+		if (diag.run()==Gtk::RESPONSE_OK) {
+			Glib::ustring trig="{*";
+			trig+=trigger;
+			trig+=":";
+			trig+=diag.get_character();
+			trig+=";*}";
+			
+			m_ScriptWidget->insert_trigger_at_cursor(trig);
+		}
+	}
+	
 	// speaker trigger
 	else if (trigger=="speaker") {
+		if (!check_case_element("characters", 1))
+			return;
+		
+		// prepare dialog
 		SpeakerDialog diag(m_Case.get_characters());
 		if (diag.run()==Gtk::RESPONSE_OK) {
 			Glib::ustring trig="{*speaker:";

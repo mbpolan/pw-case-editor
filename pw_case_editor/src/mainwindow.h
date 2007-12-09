@@ -41,6 +41,9 @@ class MainWindow: public Gtk::Window {
 		// build the ui
 		void construct();
 		
+		// alert the user is there are not enough items of an element to perform an action
+		bool check_case_element(const Glib::ustring &element, int amount);
+		
 		// create the trigger submenu
 		void create_trigger_submenu(Gtk::Menu *menu);
 		

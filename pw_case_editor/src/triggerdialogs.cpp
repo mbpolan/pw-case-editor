@@ -56,31 +56,7 @@ AbstractDialog::AbstractDialog(const Glib::ustring &trigger) {
 // constructor
 AddCourtRecDialog::AddCourtRecDialog(const EvidenceMap &ev, const CharacterMap &chars):
 		AbstractDialog("add_evidence, add_profile") {
-	construct();
-	
-	m_EvidenceMap=ev;
-	m_CharMap=chars;
-	
-	// iterate over evidence map
-	for (EvidenceMap::const_iterator it=ev.begin(); it!=ev.end(); ++it) {
-		static bool once=true;
-		if ((*it).second.pixbuf && once) {
-			m_EvidenceImage->set((*it).second.pixbuf);
-			once=false;
-		}
-		
-		m_EvidenceCB->append_text((*it).second.name);
-	}
-	
-	m_EvidenceCB->set_active(0);
-	
-	// iterate over character map
-	for (CharacterMap::const_iterator it=chars.begin(); it!=chars.end(); ++it)
-		m_ProfileCB->append_text((*it).second.get_name());
-	
-	m_ProfileCB->set_active(0);
-	if (!chars.empty())
-		m_ProfileImage->set(m_CharMap[m_ProfileCB->get_active_text()].get_headshot());
+	construct(ev, chars);
 }
 
 // get the selected evidence or profile
@@ -89,37 +65,25 @@ AddCourtRecDialog::Data AddCourtRecDialog::get_data() const {
 	
 	data.type=(m_NB->get_current_page()==0 ? TYPE_ADD_EVIDENCE : TYPE_ADD_PROFILE);
 	
-	if (data.type==TYPE_ADD_EVIDENCE) {
-		for (EvidenceMap::const_iterator it=m_EvidenceMap.begin(); it!=m_EvidenceMap.end(); ++it) {
-			if ((*it).second.name==m_EvidenceCB->get_active_text()) {
-				data.id=(*it).first;
-				break;
-			}
-		}
-	}
+	if (data.type==TYPE_ADD_EVIDENCE)
+		data.id=m_EvidenceCB->get_selected_internal();
 	
-	else {
-		for (CharacterMap::const_iterator it=m_CharMap.begin(); it!=m_CharMap.end(); ++it) {
-			if ((*it).second.get_name()==m_ProfileCB->get_active_text()) {
-				data.id=(*it).second.get_internal_name();
-				break;
-			}
-		}
-	}
+	else
+		data.id=m_ProfileCB->get_selected_internal();
 	
 	return data;
 }
 
 // build the dialog
-void AddCourtRecDialog::construct() {
+void AddCourtRecDialog::construct(const EvidenceMap &ev, const CharacterMap &chars) {
 	Gtk::VBox *vb=get_vbox();
 	
 	// allocate notebook
 	m_NB=manage(new Gtk::Notebook);
 	
 	// add pages
-	m_NB->append_page(*build_evidence_page(), "Evidence");
-	m_NB->append_page(*build_profile_page(), "Profile");
+	m_NB->append_page(*build_evidence_page(ev), "Evidence");
+	m_NB->append_page(*build_profile_page(chars), "Profile");
 	
 	// pack widgets
 	vb->pack_start(*m_NB, Gtk::PACK_SHRINK);
@@ -129,22 +93,15 @@ void AddCourtRecDialog::construct() {
 
 // handler for combo box changes
 void AddCourtRecDialog::on_combo_box_changed(const Glib::ustring &id) {
-	if (id=="evidence") {
-		// find the id
-		for (EvidenceMap::const_iterator it=m_EvidenceMap.begin(); it!=m_EvidenceMap.end(); ++it) {
-			if ((*it).second.name==m_EvidenceCB->get_active_text()) {
-				m_EvidenceImage->set(m_EvidenceMap[(*it).first].pixbuf);
-				break;
-			}
-		}
-	}
+	if (id=="evidence")
+		m_EvidenceImage->set(m_EvidenceCB->get_selected_evidence()->pixbuf);
 	
 	else
-		m_ProfileImage->set(m_CharMap[m_ProfileCB->get_active_text()].get_headshot());
+		m_ProfileImage->set(m_ProfileCB->get_selected_character()->get_headshot());
 }
 
 // build the add_evidence page
-Gtk::Table* AddCourtRecDialog::build_evidence_page() {
+Gtk::Table* AddCourtRecDialog::build_evidence_page(const EvidenceMap &ev) {
 	Gtk::Table *table=manage(new Gtk::Table);
 	table->set_spacings(5);
 	
@@ -153,7 +110,7 @@ Gtk::Table* AddCourtRecDialog::build_evidence_page() {
 	m_EvidencePreviewLabel=manage(new Gtk::Label("Preview"));
 	
 	// allocate combobox
-	m_EvidenceCB=manage(new Gtk::ComboBoxText);
+	m_EvidenceCB=manage(new EvidenceComboBox(ev));
 	
 	// connect signals
 	m_EvidenceCB->signal_changed().connect(sigc::bind(
@@ -173,7 +130,7 @@ Gtk::Table* AddCourtRecDialog::build_evidence_page() {
 }
 
 // build the add_profile page
-Gtk::Table* AddCourtRecDialog::build_profile_page() {
+Gtk::Table* AddCourtRecDialog::build_profile_page(const CharacterMap &chars) {
 	Gtk::Table *table=manage(new Gtk::Table);
 	table->set_spacings(5);
 	
@@ -182,7 +139,7 @@ Gtk::Table* AddCourtRecDialog::build_profile_page() {
 	m_ProfilePreviewLabel=manage(new Gtk::Label("Preview"));
 	
 	// allocate combobox
-	m_ProfileCB=manage(new Gtk::ComboBoxText);
+	m_ProfileCB=manage(new CharComboBox(chars));
 	
 	// connect signal
 	m_ProfileCB->signal_changed().connect(sigc::bind(
@@ -240,46 +197,33 @@ void SpeakerDialog::construct(const CharacterMap &chars) {
 /***************************************************************************/
 
 // constructor
-GotoDialog::GotoDialog(BufferMap blocks): AbstractDialog("goto") {
-	construct();
+GotoDialog::GotoDialog(const BufferMap &blocks): AbstractDialog("goto") {
+	construct(blocks);
 	
 	// toggle some widgets
 	m_TimeLabel->set_sensitive(false);
 	m_TimeEntry->set_sensitive(false);
-	
-	// fill in combo box
-	for (BufferMap::iterator it=blocks.begin(); it!=blocks.end(); ++it) {
-		// remove list id
-		Glib::ustring id=(*it).first;
-		id.erase(id.rfind('_'), id.size());
-		
-		// add the block
-		m_BlockCB->append_text(id);
-	}
-	
-	m_BlockCB->set_active(0);
 }
 
 // get the goto trigger data
 GotoDialog::Data GotoDialog::get_data() {
-	GotoDialog::Data data;
-	
 	// fill in values
-	data.target=m_BlockCB->get_active_text();
-	data.time=atoi(m_TimeEntry->get_text().c_str());
+	GotoDialog::Type type;
+	Glib::ustring id=m_BlockCB->get_selected_internal();
+	int time=atoi(m_TimeEntry->get_text().c_str());
 	
 	if (m_NormalRB->get_active())
-		data.type=GOTO_NORMAL;
+		type=GOTO_NORMAL;
 	else if (m_DirectRB->get_active())
-		data.type=GOTO_DIRECT;
+		type=GOTO_DIRECT;
 	else
-		data.type=GOTO_TIMED;
+		type=GOTO_TIMED;
 	
-	return data;
+	return make_triplet<Glib::ustring, GotoDialog::Type, int>(id, type, time);
 }
 
 // build the dialog
-void GotoDialog::construct() {
+void GotoDialog::construct(const BufferMap &blocks) {
 	// get the vbox
 	Gtk::VBox *vb=get_vbox();
 	
@@ -309,7 +253,7 @@ void GotoDialog::construct() {
 	m_TimeLabel=manage(new Gtk::Label("Delay Time (ms)"));
 	
 	// allocate combo boxes
-	m_BlockCB=manage(new Gtk::ComboBoxText);
+	m_BlockCB=manage(new BlockComboBox(blocks));
 	
 	// pack buttons
 	hbb->pack_start(*m_NormalRB, Gtk::PACK_SHRINK);
@@ -349,35 +293,19 @@ void GotoDialog::on_radio_button_toggled(const Glib::ustring &button) {
 
 // constructor
 ShowEvidenceDialog::ShowEvidenceDialog(const EvidenceMap &ev): AbstractDialog("show_evidence_*") {
-	construct();
-	
-	m_EvidenceMap=ev;
-	
-	// iterate over evidence
-	for (EvidenceMap::const_iterator it=ev.begin(); it!=ev.end(); ++it)
-		m_EvidenceCB->append_text((*it).second.name);
-	m_EvidenceCB->set_active(0);
+	construct(ev);
 }
 
 // get the selection
 ShowEvidenceDialog::Data ShowEvidenceDialog::get_data() const {
-	ShowEvidenceDialog::Data data;
+	ShowEvidenceDialog::Type type=(m_LeftRB->get_active() ? ShowEvidenceDialog::TYPE_POS_LEFT : ShowEvidenceDialog::TYPE_POS_RIGHT);
+	Glib::ustring id=m_EvidenceCB->get_selected_internal();
 	
-	data.type=(m_LeftRB->get_active() ? ShowEvidenceDialog::TYPE_POS_LEFT : ShowEvidenceDialog::TYPE_POS_RIGHT);
-	
-	// find the id
-	for (EvidenceMap::const_iterator it=m_EvidenceMap.begin(); it!=m_EvidenceMap.end(); ++it) {
-		if ((*it).second.name==m_EvidenceCB->get_active_text()) {
-			data.id=(*it).first;
-			break;
-		}
-	}
-	
-	return data;
+	return std::make_pair<Glib::ustring, ShowEvidenceDialog::Type>(id, type);
 }
 
 // build the dialog
-void ShowEvidenceDialog::construct() {
+void ShowEvidenceDialog::construct(const EvidenceMap &ev) {
 	// get vbox
 	Gtk::VBox *vb=get_vbox();
 	
@@ -395,7 +323,7 @@ void ShowEvidenceDialog::construct() {
 	m_RightRB=manage(new Gtk::RadioButton(m_Group, "Right"));
 	
 	// allocate combo box
-	m_EvidenceCB=manage(new Gtk::ComboBoxText);
+	m_EvidenceCB=manage(new EvidenceComboBox(ev));
 	m_EvidenceCB->signal_changed().connect(sigc::mem_fun(*this, &ShowEvidenceDialog::on_combo_box_changed));
 	
 	// allocate image
@@ -422,13 +350,7 @@ void ShowEvidenceDialog::construct() {
 
 // handler for combo box changes
 void ShowEvidenceDialog::on_combo_box_changed() {
-	// find the id
-	for (EvidenceMap::const_iterator it=m_EvidenceMap.begin(); it!=m_EvidenceMap.end(); ++it) {
-		if ((*it).second.name==m_EvidenceCB->get_active_text()) {
-			m_Image->set(m_EvidenceMap[(*it).first].pixbuf);
-			break;
-		}
-	}
+	m_Image->set(m_EvidenceCB->get_selected_evidence()->pixbuf);
 }
 
 /***************************************************************************/
@@ -481,7 +403,7 @@ SetLocationDialog::SetLocationDialog(const LocationMap &loc): AbstractDialog("se
 
 // get the selected location
 Glib::ustring SetLocationDialog::get_location() const {
-	return m_LocationCB->get_selected_internal();
+	return m_LocWidget->get_selected_location();
 }
 
 // build the dialog
@@ -489,21 +411,10 @@ void SetLocationDialog::construct(const LocationMap &locations) {
 	// get vbox
 	Gtk::VBox *vb=get_vbox();
 	
-	// allocate labels
-	m_LocLabel=manage(new Gtk::Label("Location"));
+	// allocate special location widget
+	m_LocWidget=manage(new LocationWidget(locations));
 	
-	// allocate combo boxes
-	m_LocationCB=manage(new LocationComboBox(locations));
-	
-	// hbox for widgets
-	Gtk::HBox *hb=manage(new Gtk::HBox);
-	hb->set_spacing(5);
-	
-	// pack widgets
-	hb->pack_start(*m_LocLabel);
-	hb->pack_start(*m_LocationCB);
-	
-	vb->pack_start(*hb, Gtk::PACK_SHRINK);
+	vb->pack_start(*m_LocWidget, Gtk::PACK_SHRINK);
 	
 	show_all_children();
 }
@@ -563,19 +474,7 @@ void AddLocationDialog::on_ok_button_clicked() {
 // constructor
 LocationTriggerDialog::LocationTriggerDialog(const LocationMap &locations, const BufferMap &buffers):
 		AbstractDialog("set_location_trigger") {
-	construct(locations);
-	
-	m_Blocks=buffers;
-	
-	// iterate over blocks
-	for (BufferMap::const_iterator it=buffers.begin(); it!=buffers.end(); ++it) {
-		Glib::ustring id=(*it).first;
-		id.erase(id.rfind("_"), id.size());
-		
-		m_BlockCB->append_text(id);
-	}
-	
-	m_BlockCB->set_active(0);
+	construct(locations, buffers);
 }
 
 // get the selection
@@ -584,7 +483,7 @@ StringPair LocationTriggerDialog::get_selection() const {
 }
 
 // build the dialog
-void LocationTriggerDialog::construct(const LocationMap &locations) {
+void LocationTriggerDialog::construct(const LocationMap &locations, const BufferMap &buffers) {
 	// get the vbox
 	Gtk::VBox *vb=get_vbox();
 	
@@ -598,7 +497,7 @@ void LocationTriggerDialog::construct(const LocationMap &locations) {
 	
 	// allocate combo boxes
 	m_LocationCB=manage(new LocationComboBox(locations));
-	m_BlockCB=manage(new Gtk::ComboBoxText);
+	m_BlockCB=manage(new BlockComboBox(buffers));
 	
 	// connect signals
 	m_BlockCB->signal_changed().connect(sigc::mem_fun(*this, &LocationTriggerDialog::on_text_block_combo_box_changed));
@@ -628,16 +527,8 @@ void LocationTriggerDialog::construct(const LocationMap &locations) {
 
 // handler for text block combo box changes
 void LocationTriggerDialog::on_text_block_combo_box_changed() {
-	// first, get the text block that's selected
-	Glib::ustring id=m_BlockCB->get_active_text();
-	
-	// now, simply find the block, and set its contents in the textview
-	for (BufferMap::iterator it=m_Blocks.begin(); it!=m_Blocks.end(); ++it) {
-		if ((*it).first.find(id)!=-1) {
-			m_BlockView->set_buffer(m_Blocks[(*it).first]);
-			break;
-		}
-	}
+	// simply find the block, and set its contents in the textview
+	m_BlockView->set_buffer(m_BlockCB->get_selected_block());
 }
 
 /***************************************************************************/
@@ -693,7 +584,7 @@ PutCharDialog::PutCharDialog(const CharacterMap &chars, const LocationMap &locat
 // get the selection
 StringPair PutCharDialog::get_selection() const {	
 	return std::make_pair<Glib::ustring, Glib::ustring> 
-			(m_CharCB->get_selected_internal(), m_LocationCB->get_selected_internal());
+			(m_CharCB->get_selected_internal(), m_LocWidget->get_selected_location());
 }
 
 // build the dialog
@@ -705,21 +596,149 @@ void PutCharDialog::construct(const CharacterMap &chars, const LocationMap &loca
 	Gtk::Table *table=manage(new Gtk::Table);
 	table->set_spacings(5);
 	
+	// allocate location widget
+	m_LocWidget=manage(new LocationWidget(locations));
+	
 	// allocate labels
 	m_CharLabel=manage(new Gtk::Label("Character"));
-	m_LocLabel=manage(new Gtk::Label("Location"));
 	
 	// allocat combo boxes
 	m_CharCB=manage(new CharComboBox(chars));
-	m_LocationCB=manage(new LocationComboBox(locations));
 	
 	// place widgets
 	table->attach(*m_CharLabel, 0, 1, 0, 1);
 	table->attach(*m_CharCB, 1, 2, 0, 1);
-	table->attach(*m_LocLabel, 0, 1, 1, 2);
-	table->attach(*m_LocationCB, 1, 2, 1, 2);
+	table->attach(*m_LocWidget, 0, 2, 1, 2);
 	
 	vb->pack_start(*table, Gtk::PACK_SHRINK);
+	
+	show_all_children();
+}
+
+/***************************************************************************/
+
+// constructor
+AddTalkDialog::AddTalkDialog(const CharacterMap &chars, const BufferMap &buffers):
+		AbstractDialog("add_talk_option") {
+	construct(chars, buffers);
+}
+
+// get the data
+StringTriplet AddTalkDialog::get_data() const {
+	return make_triplet<Glib::ustring, Glib::ustring, Glib::ustring>(m_CharCB->get_selected_internal(),
+									 m_ViewEntry->get_text(),
+									 m_BlockCB->get_selected_internal());
+}
+
+// build the dialog
+void AddTalkDialog::construct(const CharacterMap &chars, const BufferMap &buffers) {
+	// get the vbox
+	Gtk::VBox *vb=get_vbox();
+	
+	// allocate table
+	Gtk::Table *table=manage(new Gtk::Table);
+	table->set_spacings(5);
+	
+	// allocate combo boxes
+	m_CharCB=manage(new CharComboBox(chars));
+	m_BlockCB=manage(new BlockComboBox(buffers));
+	
+	// allocate labels
+	m_CharLabel=manage(new Gtk::Label("Character"));
+	m_ViewLabel=manage(new Gtk::Label("Display String"));
+	m_BlockLabel=manage(new Gtk::Label("Block"));
+	
+	// allocate entries
+	m_ViewEntry=manage(new Gtk::Entry);
+	
+	// place widgets
+	table->attach(*m_CharLabel, 0, 1, 0, 1);
+	table->attach(*m_CharCB, 1, 2, 0, 1);
+	table->attach(*m_ViewLabel, 0, 1, 1, 2);
+	table->attach(*m_ViewEntry, 1, 2, 1, 2);
+	table->attach(*m_BlockLabel, 0, 1, 2, 3);
+	table->attach(*m_BlockCB, 1, 2, 2, 3);
+	
+	vb->pack_start(*table, Gtk::PACK_SHRINK);
+	
+	show_all_children();
+}
+
+/***************************************************************************/
+
+// constructor
+RemoveTalkDialog::RemoveTalkDialog(const CharacterMap &chars): AbstractDialog("remove_talk_option") {
+	construct(chars);
+}
+
+// get data
+StringPair RemoveTalkDialog::get_data() const {
+	return std::make_pair<Glib::ustring, Glib::ustring>(m_CharCB->get_selected_internal(), m_ViewEntry->get_text());
+}
+
+// build the dialog
+void RemoveTalkDialog::construct(const CharacterMap &chars) {
+	// get the vbox
+	Gtk::VBox *vb=get_vbox();
+	
+	// allocate table
+	Gtk::Table *table=manage(new Gtk::Table);
+	table->set_spacings(5);
+	
+	// allocate labels
+	m_CharLabel=manage(new Gtk::Label("Character"));
+	m_ViewLabel=manage(new Gtk::Label("Display String"));
+	
+	// combo boxes
+	m_CharCB=manage(new CharComboBox(chars));
+	
+	// entries
+	m_ViewEntry=manage(new Gtk::Entry);
+	
+	// place widgets
+	table->attach(*m_CharLabel, 0, 1, 0, 1);
+	table->attach(*m_CharCB, 1, 2, 0, 1);
+	table->attach(*m_ViewLabel, 0, 1, 1, 2);
+	table->attach(*m_ViewEntry, 1, 2, 1, 2);
+	
+	vb->pack_start(*table, Gtk::PACK_SHRINK);
+	
+	show_all_children();
+}
+
+/***************************************************************************/
+
+// constructor
+ClearCharDialog::ClearCharDialog(const Glib::ustring &trigger, const CharacterMap &chars):
+		AbstractDialog(trigger) {
+	construct(chars);
+}
+
+// get the selected character
+Glib::ustring ClearCharDialog::get_character() const {
+	return m_CharCB->get_selected_internal();
+}
+
+// build the dialog
+void ClearCharDialog::construct(const CharacterMap &chars) {
+	// get the vbox
+	Gtk::VBox *vb=get_vbox();
+	
+	// allocate hbox
+	Gtk::HBox *hb=manage(new Gtk::HBox);
+	hb->set_spacing(5);
+	
+	// allocate label
+	m_CharLabel=manage(new Gtk::Label("Character"));
+	
+	// allocate combo box
+	m_CharCB=manage(new CharComboBox(chars));
+	
+	// pack widgets
+	hb->pack_start(*m_CharLabel);
+	hb->pack_start(*m_CharCB);
+	
+	vb->pack_start(*hb, Gtk::PACK_SHRINK);
 	
 	show_all_children();
 }
