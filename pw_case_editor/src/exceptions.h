@@ -17,33 +17,18 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-// utilities.h: various utility functions
+// exceptions.h: various classes for C++ exceptions
 
-#ifndef UTILITIES_H
-#define UTILITIES_H
+#ifndef EXCEPTIONS_H
+#define EXCEPTIONS_H
 
-#include <glibmm/ustring.h>
-
-namespace Utils {
-
-// flush gui events that may still be pending in the main loop
-void flush_events();
-
-// format an exception string
-Glib::ustring exceptionString(const Glib::ustring &reason, const Glib::ustring &file, int line);
-
-// convert int to string
-Glib::ustring to_string(int val);
-
-// compress a buffer
-char* compress_buffer(const char *buffer, int size, int &newSize, bool autoFree);
-
-// extract a text block's id from a full string
-Glib::ustring extract_block_id(const Glib::ustring str);
-
-// extract a text block's description from a full string
-Glib::ustring extract_block_description(const Glib::ustring &str);
-
-}; // namespace Utils
+// exception thrown when a case element is not acceptable
+// specifically in MainWindow::check_case_element
+class ElementEx: public std::exception {
+	public:
+		virtual const char* what() const throw() {
+			return "Case element provided is not acceptable";
+		}
+};
 
 #endif

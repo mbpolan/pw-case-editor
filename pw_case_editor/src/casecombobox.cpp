@@ -134,3 +134,39 @@ Glib::ustring BlockComboBox::get_selected_internal() const {
 Glib::RefPtr<Gtk::TextBuffer> BlockComboBox::get_selected_block() {
 	return m_Buffers[get_selected_internal()];
 }
+
+/***************************************************************************/
+
+// constructor
+AudioComboBox::AudioComboBox(const AudioMap &map, const Filter &filter): m_Audio(map) {
+	// iterate over evidence
+	for (AudioMap::const_iterator it=map.begin(); it!=map.end(); ++it) {
+		bool add=true;
+		
+		if (filter==AudioComboBox::FILTER_MUSIC) {
+			if ((*it).second.name.rfind(".mp3")==-1 && (*it).second.name.rfind(".ogg")==-1)
+				add=false;
+		}
+		
+		else if (filter==AudioComboBox::FILTER_SFX) {
+			if ((*it).second.name.rfind(".mp3")!=-1 && (*it).second.name.rfind(".ogg")!=-1)
+				add=false;
+		}
+		
+		// only add the text is it is not filtered
+		if (add)
+			append_text((*it).second.id);
+	}
+	
+	set_active(0);
+}
+
+// get the selected audio's internal name
+Glib::ustring AudioComboBox::get_selected_internal() const {
+	return get_active_text();
+}
+
+// get the selected audio
+Case::Audio* AudioComboBox::get_selected_audio() {
+	return &(m_Audio[get_selected_internal()]);
+}

@@ -32,6 +32,19 @@ void Utils::flush_events() {
 		Gtk::Main::iteration();
 }
 
+// format an exception string
+Glib::ustring Utils::exceptionString(const Glib::ustring &reason, const Glib::ustring &file, int line) {
+	std::stringstream ss;
+	ss << "Fatal exception: " << reason << ".";
+	ss << "\nFile: ";
+	ss << file;
+	ss << "\nLine: ";
+	ss << line;
+	ss << "\nThe program will now terminate.";
+	
+	return ss.str();
+}
+
 // convert int to string
 Glib::ustring Utils::to_string(int val) {
 	std::stringstream ss;

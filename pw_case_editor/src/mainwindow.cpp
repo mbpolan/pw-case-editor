@@ -19,6 +19,8 @@
  ***************************************************************************/
 // mainwindow.cpp: implementation of MainWindow class
 
+#include <iostream>
+#include <glibmm/exception.h>
 #include <gtkmm/aboutdialog.h>
 #include <gtkmm/box.h>
 #include <gtkmm/filechooserdialog.h>
@@ -31,6 +33,7 @@
 #include <sstream>
 
 #include "dialogs.h"
+#include "exceptions.h"
 #include "iohandler.h"
 #include "mainwindow.h"
 #include "spriteeditor.h"
@@ -38,6 +41,8 @@
 #include "textboxdialog.h"
 #include "triggerdialogs.h"
 #include "utilities.h"
+
+ElementEx g_ElementEx;
 
 // constructor
 MainWindow::MainWindow() {
@@ -272,6 +277,7 @@ bool MainWindow::check_case_element(const Glib::ustring &element, int amount) {
 	bool fail=false;
 	
 	// check amount of characters
+	try {
 	if (element=="characters") {
 		if (m_Case.get_characters().size()<amount) {
 			ss << " character(s)";
@@ -301,6 +307,27 @@ bool MainWindow::check_case_element(const Glib::ustring &element, int amount) {
 			ss << " text block(s)";
 			fail=true;
 		}
+	}
+	
+	// check amount of audio
+	else if (element=="audio") {
+		if (m_Case.get_audio().size()<amount) {
+			ss << " audio sample(s)";
+			fail=true;
+		}
+	}
+	
+	// not a real element? O_o
+	else
+		throw g_ElementEx;
+	
+	} // try
+	
+	// catch the one and only exception that can possibly occur
+	catch (ElementEx &ex) {
+		Gtk::MessageDialog md(*this, Utils::exceptionString(ex.what(), __FILE__, __LINE__), false, Gtk::MESSAGE_ERROR);
+		md.run();
+		abort();
 	}
 	
 	// looks like we failed the check, show an error dialog
@@ -845,7 +872,7 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 		}
 	}
 	
-	// set locatio trigger
+	// set location trigger
 	else if (trigger=="set_location_trigger") {
 		LocationMap locations=m_Case.get_locations();
 		BufferMap blocks=m_ScriptWidget->get_buffers();
@@ -978,6 +1005,108 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 		}
 	}
 	
+	// add presentable trigger
+	else if (trigger=="add_presentable") {
+		if (!check_case_element("characters", 1) || !check_case_element("blocks", 1))
+			return;
+		
+		// prepare dialog
+		AddPresentDialog diag(m_Case.get_characters(), m_ScriptWidget->get_buffers());
+		if (diag.run()==Gtk::RESPONSE_OK) {
+			// get the inputted data
+			StringTriplet t=diag.get_data();
+			
+			Glib::ustring trig="{*add_presentable:";
+			trig+=t.first;
+			trig+=",";
+			trig+=t.second;
+			trig+=",";
+			trig+=t.third;
+			trig+=";*}";
+			
+			m_ScriptWidget->insert_trigger_at_cursor(trig);
+		}
+	}
+	
+	// remove presentable trigger
+	else if (trigger=="remove_presentable") {
+		if (!check_case_element("characters", 1))
+			return;
+		
+		// prepare the dialog
+		RemovePresentDialog diag(m_Case.get_characters());
+		if(diag.run()==Gtk::RESPONSE_OK) {
+			// get the data
+			StringPair p=diag.get_data();
+			
+			Glib::ustring trig="{*remove_presentable:";
+			trig+=p.first;
+			trig+=",";
+			trig+=p.second;
+			trig+=";*}";
+			
+			m_ScriptWidget->insert_trigger_at_cursor(trig);
+		}
+	}
+	
+	// set bad presentable block trigger
+	else if (trigger=="set_bad_presentable_block") {
+		if (!check_case_element("characters", 1) || !check_case_element("blocks", 1))
+			return;
+		
+		// prepare the dialog
+		BadPresentDialog diag(m_Case.get_characters(), m_ScriptWidget->get_buffers());
+		if (diag.run()==Gtk::RESPONSE_OK) {
+			// get the data
+			StringPair p=diag.get_data();
+			
+			Glib::ustring trig="{*set_bad_presentable_block:";
+			trig+=p.first;
+			trig+=",";
+			trig+=p.second;
+			trig+=";*}";
+			
+			m_ScriptWidget->insert_trigger_at_cursor(trig);
+		}
+	}
+	
+	// set location music trigger
+	else if (trigger=="set_location_music") {
+		if (!check_case_element("locations", 1) || !check_case_element("audio", 1))
+			return;
+		
+		// prepare dialog
+		LocMusicDialog diag(m_Case.get_locations(), m_Case.get_audio());
+		if (diag.run()==Gtk::RESPONSE_OK) {
+			// get selection data
+			StringPair p=diag.get_data();
+			
+			Glib::ustring trig="{*set_location_music:";
+			trig+=p.first;
+			trig+=",";
+			trig+=p.second;
+			trig+=";*}";
+			
+			m_ScriptWidget->insert_trigger_at_cursor(trig);
+		}
+	}
+	
+	// clear location music trigger
+	else if (trigger=="clear_location_music") {
+		if (!check_case_element("locations", 1))
+			return;
+		
+		// prepare dialog
+		SetLocationDialog diag(m_Case.get_locations());
+		if (diag.run()==Gtk::RESPONSE_OK) {
+			Glib::ustring trig="{*clear_location_music:";
+			trig+=diag.get_location();
+			trig+=";*}";
+			
+			m_ScriptWidget->insert_trigger_at_cursor(trig);
+		}
+	}
+	
 	// speaker trigger
 	else if (trigger=="speaker") {
 		if (!check_case_element("characters", 1))
@@ -988,6 +1117,22 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 		if (diag.run()==Gtk::RESPONSE_OK) {
 			Glib::ustring trig="{*speaker:";
 			trig+=diag.get_speaker();
+			trig+=";*}";
+			
+			m_ScriptWidget->insert_trigger_at_cursor(trig);
+		}
+	}
+	
+	// play music trigger
+	else if (trigger=="play_music") {
+		if (!check_case_element("audio", 1))
+			return;
+		
+		// prepare dialog
+		MusicDialog diag(m_Case.get_audio());
+		if (diag.run()==Gtk::RESPONSE_OK) {
+			Glib::ustring trig="{*play_music:";
+			trig+=diag.get_audio();
 			trig+=";*}";
 			
 			m_ScriptWidget->insert_trigger_at_cursor(trig);

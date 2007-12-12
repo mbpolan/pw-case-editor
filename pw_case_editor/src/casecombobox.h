@@ -95,14 +95,34 @@ class BlockComboBox: public Gtk::ComboBoxText {
 		// constructor
 		BlockComboBox(const BufferMap &blocks);
 		
-		// get the selected locations's internal name
+		// get the selected block internal name
 		Glib::ustring get_selected_internal() const;
 		
-		// get the selected evidence
+		// get the selected block
 		Glib::RefPtr<Gtk::TextBuffer> get_selected_block();
 		
 	protected:
 		BufferMap m_Buffers;
+};
+
+/***************************************************************************/
+
+// combo box for audio
+class AudioComboBox: public Gtk::ComboBoxText {
+	public:
+		enum Filter { FILTER_NONE, FILTER_SFX, FILTER_MUSIC };
+		
+		// constructor
+		AudioComboBox(const AudioMap &map, const Filter &filter=FILTER_NONE);
+		
+		// get the selected locations's internal name
+		Glib::ustring get_selected_internal() const;
+		
+		// get the selected evidence
+		Case::Audio* get_selected_audio();
+		
+	protected:
+		AudioMap m_Audio;
 };
 
 #endif

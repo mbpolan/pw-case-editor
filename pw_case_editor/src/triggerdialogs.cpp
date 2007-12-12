@@ -742,3 +742,220 @@ void ClearCharDialog::construct(const CharacterMap &chars) {
 	
 	show_all_children();
 }
+
+/***************************************************************************/
+
+// constructor
+AddPresentDialog::AddPresentDialog(const CharacterMap &chars, const BufferMap &buffers):
+		AbstractDialog("add_presentable") {
+	construct(chars, buffers);
+}
+
+// get the selected data
+StringTriplet AddPresentDialog::get_data() const {
+	return make_triplet<Glib::ustring, Glib::ustring, Glib::ustring> (m_CharCB->get_selected_internal(),
+									  m_ItemEntry->get_text(),
+									  m_BlockCB->get_selected_internal());
+}
+
+// build the dialog
+void AddPresentDialog::construct(const CharacterMap &chars, const BufferMap &buffers) {
+	// get the vbox
+	Gtk::VBox *vb=get_vbox();
+	
+	// allocate table
+	Gtk::Table *table=manage(new Gtk::Table);
+	table->set_spacings(5);
+	
+	// allocate labels
+	m_CharLabel=manage(new Gtk::Label("Character"));
+	m_ItemLabel=manage(new Gtk::Label("Court Record Item ID"));
+	m_BlockLabel=manage(new Gtk::Label("Target Block"));
+	
+	// allocate combo boxes
+	m_CharCB=manage(new CharComboBox(chars));
+	m_BlockCB=manage(new BlockComboBox(buffers));
+	
+	// allocate entries
+	m_ItemEntry=manage(new Gtk::Entry);
+	
+	// place widgets
+	table->attach(*m_CharLabel, 0, 1, 0, 1);
+	table->attach(*m_CharCB, 1, 2, 0, 1);
+	table->attach(*m_ItemLabel, 0, 1, 1, 2);
+	table->attach(*m_ItemEntry, 1, 2, 1, 2);
+	table->attach(*m_BlockLabel, 0, 1, 2, 3);
+	table->attach(*m_BlockCB, 1, 2, 2, 3);
+	
+	vb->pack_start(*table, Gtk::PACK_SHRINK);
+	
+	show_all_children();
+}
+
+/***************************************************************************/
+
+// constructor
+RemovePresentDialog::RemovePresentDialog(const CharacterMap &chars):
+		AbstractDialog("remove_presentable") {
+	construct(chars);
+}
+
+// get the selected data
+StringPair RemovePresentDialog::get_data() const {
+	return std::make_pair<Glib::ustring, Glib::ustring> (m_CharCB->get_selected_internal(),
+							     m_ItemEntry->get_text());
+}
+
+// build the dialog
+void RemovePresentDialog::construct(const CharacterMap &chars) {
+	// get the vbox
+	Gtk::VBox *vb=get_vbox();
+	
+	// allocate table
+	Gtk::Table *table=manage(new Gtk::Table);
+	table->set_spacings(5);
+	
+	// allocate labels
+	m_CharLabel=manage(new Gtk::Label("Character"));
+	m_ItemLabel=manage(new Gtk::Label("Court Record Item ID"));
+	
+	// allocate combo boxes
+	m_CharCB=manage(new CharComboBox(chars));
+	
+	// allocate entries
+	m_ItemEntry=manage(new Gtk::Entry);
+	
+	// place widgets
+	table->attach(*m_CharLabel, 0, 1, 0, 1);
+	table->attach(*m_CharCB, 1, 2, 0, 1);
+	table->attach(*m_ItemLabel, 0, 1, 1, 2);
+	table->attach(*m_ItemEntry, 1, 2, 1, 2);
+	
+	vb->pack_start(*table, Gtk::PACK_SHRINK);
+	
+	show_all_children();
+}
+
+/***************************************************************************/
+
+// constructor
+BadPresentDialog::BadPresentDialog(const CharacterMap &chars, const BufferMap &buffers):
+		AbstractDialog("set_bad_presentable_block") {
+	construct(chars, buffers);
+}
+
+// get the selected data
+StringPair BadPresentDialog::get_data() const {
+	return std::make_pair<Glib::ustring, Glib::ustring> (m_CharCB->get_selected_internal(),
+							     m_BlockCB->get_selected_internal());
+}
+
+// build the dialog
+void BadPresentDialog::construct(const CharacterMap &chars, const BufferMap &buffers) {
+	// get the vbox
+	Gtk::VBox *vb=get_vbox();
+	
+	// allocate table
+	Gtk::Table *table=manage(new Gtk::Table);
+	table->set_spacings(5);
+	
+	// allocate labels
+	m_CharLabel=manage(new Gtk::Label("Character"));
+	m_BlockLabel=manage(new Gtk::Label("Target Block"));
+	
+	// allocate combo boxes
+	m_CharCB=manage(new CharComboBox(chars));
+	m_BlockCB=manage(new BlockComboBox(buffers));
+	
+	// place widgets
+	table->attach(*m_CharLabel, 0, 1, 0, 1);
+	table->attach(*m_CharCB, 1, 2, 0, 1);
+	table->attach(*m_BlockLabel, 0, 1, 1, 2);
+	table->attach(*m_BlockCB, 1, 2, 1, 2);
+	
+	vb->pack_start(*table, Gtk::PACK_SHRINK);
+	
+	show_all_children();
+}
+
+/***************************************************************************/
+
+// constructor
+LocMusicDialog::LocMusicDialog(const LocationMap &locations, const AudioMap &audio):
+		AbstractDialog("set_location_music") {
+	construct(locations, audio);
+}
+
+// get the selected data
+StringPair LocMusicDialog::get_data() const {
+	// FIXME: the location widget returns a specific court location; we need to generalize
+	// this return value as 'court'
+	return std::make_pair<Glib::ustring, Glib::ustring> (m_AudioCB->get_selected_internal(),
+							     m_LocWidget->get_selected_location());
+}
+
+// build the dialog
+void LocMusicDialog::construct(const LocationMap &locations, const AudioMap &audio) {
+	// get the vbox
+	Gtk::VBox *vb=get_vbox();
+	
+	// allocate table
+	Gtk::Table *table=manage(new Gtk::Table);
+	table->set_spacings(5);
+	
+	// allocate labels
+	Gtk::Label *m_MusicLabel=manage(new Gtk::Label("Music"));
+	
+	// allocate location widget
+	m_LocWidget=manage(new LocationWidget(locations));
+	
+	// allocate combo boxes
+	m_AudioCB=manage(new AudioComboBox(audio, AudioComboBox::FILTER_MUSIC));
+	
+	// place widgets
+	table->attach(*m_MusicLabel, 0, 1, 0, 1);
+	table->attach(*m_AudioCB, 1, 2, 0, 1);
+	table->attach(*manage(new Gtk::HSeparator), 0, 2, 1, 2);
+	table->attach(*m_LocWidget, 0, 2, 2, 3);
+	
+	vb->pack_start(*table);
+	
+	show_all_children();
+}
+
+/***************************************************************************/
+
+// constructor
+MusicDialog::MusicDialog(const AudioMap &audio):
+		AbstractDialog("play_music") {
+	construct(audio);
+}
+
+// get the selected audio
+Glib::ustring MusicDialog::get_audio() const {
+	return m_AudioCB->get_selected_internal();
+}
+
+// build the dialog
+void MusicDialog::construct(const AudioMap &audio) {
+	// get the vbox
+	Gtk::VBox *vb=get_vbox();
+	
+	// allocate table
+	Gtk::Table *table=manage(new Gtk::Table);
+	table->set_spacings(5);
+	
+	// allocate labels
+	Gtk::Label *m_MusicLabel=manage(new Gtk::Label("Audio"));
+	
+	// allocate combo boxes
+	m_AudioCB=manage(new AudioComboBox(audio, AudioComboBox::FILTER_MUSIC));
+	
+	// place widgets
+	table->attach(*m_MusicLabel, 0, 1, 0, 1);
+	table->attach(*m_AudioCB, 1, 2, 0, 1);
+	
+	vb->pack_start(*table);
+	
+	show_all_children();
+}

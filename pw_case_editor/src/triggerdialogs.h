@@ -440,4 +440,129 @@ class ClearCharDialog: public AbstractDialog {
 		CharComboBox *m_CharCB;
 };
 
+/***************************************************************************/
+
+// add_presentable trigger
+class AddPresentDialog: public AbstractDialog {
+	public:
+		// constructor
+		AddPresentDialog(const CharacterMap &chars, const BufferMap &buffers);
+		
+		// get the selected data
+		StringTriplet get_data() const;
+		
+	protected:
+		// build the dialog
+		void construct(const CharacterMap &chars, const BufferMap &buffers);
+		
+		// labels
+		Gtk::Label *m_CharLabel;
+		Gtk::Label *m_ItemLabel;
+		Gtk::Label *m_BlockLabel;
+		
+		// combo boxes
+		CharComboBox *m_CharCB;
+		BlockComboBox *m_BlockCB;
+		
+		// entries
+		Gtk::Entry *m_ItemEntry;
+};
+
+/***************************************************************************/
+
+// remove_presentable trigger
+class RemovePresentDialog: public AbstractDialog {
+	public:
+		// constructor
+		RemovePresentDialog(const CharacterMap &chars);
+		
+		// get the selected data
+		StringPair get_data() const;
+		
+	protected:
+		// build the dialog
+		void construct(const CharacterMap &chars);
+		
+		// labels
+		Gtk::Label *m_CharLabel;
+		Gtk::Label *m_ItemLabel;
+		
+		// combo boxes
+		CharComboBox *m_CharCB;
+		
+		// entries
+		Gtk::Entry *m_ItemEntry;
+};
+
+/***************************************************************************/
+
+// set_bad_presentable_block
+class BadPresentDialog: public AbstractDialog {
+	public:
+		// constructor
+		BadPresentDialog(const CharacterMap &chars, const BufferMap &buffers);
+		
+		// get the selected data
+		StringPair get_data() const;
+		
+	protected:
+		// build the dialog
+		void construct(const CharacterMap &chars, const BufferMap &buffers);
+		
+		// labels
+		Gtk::Label *m_CharLabel;
+		Gtk::Label *m_BlockLabel;
+		
+		// combo boxes
+		CharComboBox *m_CharCB;
+		BlockComboBox *m_BlockCB;
+};
+
+/***************************************************************************/
+
+// set_location_music trigger
+class LocMusicDialog: public AbstractDialog {
+	public:
+		// constructor
+		LocMusicDialog(const LocationMap &locations, const AudioMap &audio);
+		
+		// get the selected data
+		StringPair get_data() const;
+		
+	protected:
+		// build the dialog
+		void construct(const LocationMap &locations, const AudioMap &audio);
+		
+		// labels
+		Gtk::Label *m_MusicLabel;
+		
+		// combo boxes
+		AudioComboBox *m_AudioCB;
+		
+		// location selection widget
+		LocationWidget *m_LocWidget;
+};
+
+/***************************************************************************/
+
+// play_music trigger
+class MusicDialog: public AbstractDialog {
+	public:
+		// constructor
+		MusicDialog(const AudioMap &audio);
+		
+		// get the selected data
+		Glib::ustring get_audio() const;
+		
+	protected:
+		// build the dialog
+		void construct(const AudioMap &audio);
+		
+		// labels
+		Gtk::Label *m_MusicLabel;
+		
+		// combo boxes
+		AudioComboBox *m_AudioCB;
+};
+
 #endif
