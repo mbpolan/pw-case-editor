@@ -384,8 +384,10 @@ void MainWindow::create_trigger_submenu(Gtk::Menu *menu) {
 		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "set_location_music")));
 	list.push_back(Gtk::Menu_Helpers::MenuElem("Clear Location Music", 
 		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "clear_location_music")));
-	list.push_back(Gtk::Menu_Helpers::MenuElem("Request Evidence/Answer", 
-		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "request_evidence/answer")));
+	list.push_back(Gtk::Menu_Helpers::MenuElem("Request Evidence", 
+		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "request_evidence")));
+	list.push_back(Gtk::Menu_Helpers::MenuElem("Request Answer", 
+		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "request_answer")));
 	list.push_back(Gtk::Menu_Helpers::MenuElem("Play Music", 
 		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "play_music")));
 	list.push_back(Gtk::Menu_Helpers::MenuElem("Halt Music", 
@@ -1142,6 +1144,84 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 	// halt_music trigger
 	else if (trigger=="halt_music")
 		m_ScriptWidget->insert_trigger_at_cursor("{*halt_music:true;*}");
+	
+	// request evidence trigger
+	else if (trigger=="request_evidence") {
+		if (!check_case_element("blocks", 2))
+			return;
+		
+		// prepare dialog
+		ReqEvidenceDialog diag(m_ScriptWidget->get_buffers());
+		if (diag.run()==Gtk::RESPONSE_OK) {
+			// get the data
+			StringTriplet t=diag.get_data();
+			
+			Glib::ustring trig="{*request_evidence:";
+			trig+=t.first;
+			trig+=",";
+			trig+=t.second;
+			trig+=",";
+			trig+=t.third;
+			trig+=";*}";
+			
+			m_ScriptWidget->insert_trigger_at_cursor(trig);
+		}
+	}
+	
+	// request answer trigger
+	else if (trigger=="request_answer") {
+		ReqAnswerDialog diag;
+		if (diag.run()==Gtk::RESPONSE_OK) {
+			// get talk options
+			std::vector<StringPair> vec=diag.get_talk_options();
+			
+			Glib::ustring trig="{*request_answer:";
+			
+			// iterate over talk options and format each
+			for (int i=0; i<vec.size(); i++) {
+				if (i!=0)
+					trig+=",";
+				trig+="(";
+				trig+=vec[i].first;
+				trig+=",";
+				trig+=vec[i].second;
+				trig+=")";
+			}
+			
+			trig+=";*}";
+			
+			m_ScriptWidget->insert_trigger_at_cursor(trig);
+		}
+	}
+	
+	// move court camera trigger
+	else if (trigger=="move_court_camera") {
+		CourtCamDialog diag;
+		if (diag.run()==Gtk::RESPONSE_OK) {
+			// get data
+			StringPair p=diag.get_data();
+			
+			Glib::ustring trig="{*move_court_camera:";
+			trig+=p.first;
+			trig+=",";
+			trig+=p.second;
+			trig+=";*}";
+			
+			m_ScriptWidget->insert_trigger_at_cursor(trig);
+		}
+	}
+	
+	// fade out trigger
+	else if (trigger=="fade_out") {
+		FadeDialog diag;
+		if (diag.run()==Gtk::RESPONSE_OK) {
+			Glib::ustring trig="{*fade_out:";
+			trig+=diag.get_selection();
+			trig+=";*}";
+			
+			m_ScriptWidget->insert_trigger_at_cursor(trig);
+		}
+	}
 	
 	// flash
 	else if (trigger=="flash")

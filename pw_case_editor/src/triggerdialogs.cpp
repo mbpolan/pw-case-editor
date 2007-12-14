@@ -25,6 +25,7 @@
 #include <gtkmm/table.h>
 
 #include "triggerdialogs.h"
+#include "utilities.h"
 
 // abstract dialog constructor
 AbstractDialog::AbstractDialog(const Glib::ustring &trigger) {
@@ -956,6 +957,285 @@ void MusicDialog::construct(const AudioMap &audio) {
 	table->attach(*m_AudioCB, 1, 2, 0, 1);
 	
 	vb->pack_start(*table);
+	
+	show_all_children();
+}
+
+/***************************************************************************/
+
+// constructor
+ReqEvidenceDialog::ReqEvidenceDialog(const BufferMap &buffers):
+		AbstractDialog("request_evidence") {
+	construct(buffers);
+}
+
+// get the data
+StringTriplet ReqEvidenceDialog::get_data() const {
+	return make_triplet<Glib::ustring, Glib::ustring, Glib::ustring> (m_EvidenceEntry->get_text(),
+									  m_CorrectCB->get_selected_internal(),
+									  m_WrongCB->get_selected_internal());
+}
+
+// build the dialog
+void ReqEvidenceDialog::construct(const BufferMap &buffers) {
+	// get the vbox
+	Gtk::VBox *vb=get_vbox();
+	
+	// allocate table
+	Gtk::Table *table=manage(new Gtk::Table);
+	table->set_spacings(5);
+	
+	// allocate combo boxes
+	m_CorrectCB=manage(new BlockComboBox(buffers));
+	m_WrongCB=manage(new BlockComboBox(buffers));
+	
+	// allocate labels
+	m_EvidenceLabel=manage(new Gtk::Label("Court Record Item ID"));
+	m_CorrectLabel=manage(new Gtk::Label("Target Correct Block"));
+	m_WrongLabel=manage(new Gtk::Label("Target Incorrect Block"));
+	
+	// allocate entries
+	m_EvidenceEntry=manage(new Gtk::Entry);
+	
+	// place widgets
+	table->attach(*m_EvidenceLabel, 0, 1, 0, 1);
+	table->attach(*m_EvidenceEntry, 1, 2, 0, 1);
+	table->attach(*m_CorrectLabel, 0, 1, 1, 2);
+	table->attach(*m_CorrectCB, 1, 2, 1, 2);
+	table->attach(*m_WrongLabel, 0, 1, 2, 3);
+	table->attach(*m_WrongCB, 1, 2, 2, 3);
+	
+	vb->pack_start(*table, Gtk::PACK_SHRINK);
+	
+	show_all_children();
+}
+
+/***************************************************************************/
+
+// constructor
+ReqAnswerDialog::ReqAnswerDialog(): AbstractDialog("request_answer") {
+	construct();
+}
+
+// get the talk options
+std::vector<StringPair> ReqAnswerDialog::get_talk_options() const {
+	std::vector<StringPair> vec;
+	
+	for (int i=0; i<m_TalkList->size(); i++) {
+		Glib::ustring a=m_TalkList->get_text(i, 0);
+		Glib::ustring b=m_TalkList->get_text(i, 1);
+		
+		vec.push_back(std::make_pair<Glib::ustring, Glib::ustring> (a, b));
+	}
+	
+	return vec;
+}
+
+// build the dialog
+void ReqAnswerDialog::construct() {
+	// get the vbox
+	Gtk::VBox *vb=get_vbox();
+	
+	// allocate table
+	Gtk::Table *table=manage(new Gtk::Table);
+	table->set_spacings(5);
+	
+	// allocate buttons
+	m_AddButton=manage(new Gtk::Button("Add"));
+	m_RemoveButton=manage(new Gtk::Button("Remove"));
+	
+	// connect signals
+	m_AddButton->signal_clicked().connect(sigc::mem_fun(*this, &ReqAnswerDialog::on_add_button_clicked));
+	m_RemoveButton->signal_clicked().connect(sigc::mem_fun(*this, &ReqAnswerDialog::on_remove_button_clicked));
+	
+	// allocate scrolled window
+	m_SWindow=manage(new Gtk::ScrolledWindow);
+	m_SWindow->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
+	m_SWindow->set_size_request(200, 250);
+	
+	// allocate list view
+	m_TalkList=manage(new Gtk::ListViewText(2, true));
+	m_SWindow->add(*m_TalkList);
+	
+	// configure list
+	m_TalkList->set_column_title(0, "Display String");
+	m_TalkList->set_column_title(1, "Target Block");
+	
+	// button box for buttons
+	Gtk::HButtonBox *hbb=manage(new Gtk::HButtonBox);
+	
+	// pack widgets
+	hbb->pack_start(*m_AddButton, Gtk::PACK_SHRINK);
+	hbb->pack_start(*m_RemoveButton, Gtk::PACK_SHRINK);
+	
+	table->attach(*hbb, 0, 1, 0, 1);
+	table->attach(*m_SWindow, 0, 1, 1, 2);
+	
+	vb->pack_start(*table);
+	
+	show_all_children();
+}
+
+// add button handler
+void ReqAnswerDialog::on_add_button_clicked() {
+	// insert a new row
+	int i=m_TalkList->append_text("New Talk Option");
+	
+	// we need to generate a unique id
+	int c=1;
+	Glib::ustring newID="block0";
+	while(1) {
+		bool b=true;
+		
+		// given the id, iterate over items, and see if there is already a similar one
+		for (int i=0; i<m_TalkList->size(); i++) {
+			if (m_TalkList->get_text(i, 1)==newID) {
+				newID="block";
+				newID+=Utils::to_string(c++);
+				b=false;
+			}
+		}
+		
+		if (b)
+			break;
+	}
+	
+	m_TalkList->set_text(i, 1, newID);
+}
+
+// remove button handler
+void ReqAnswerDialog::on_remove_button_clicked() {
+	// get our selection
+	Glib::ustring selected=m_TalkList->get_text(m_TalkList->get_selected()[0], 1);
+	
+	// iterate over items
+	std::vector<StringPair> items;
+	for (int i=0; i<m_TalkList->size(); i++) {
+		Glib::ustring id=m_TalkList->get_text(i, 1);
+		if (id!=selected)
+			items.push_back(std::make_pair<Glib::ustring, Glib::ustring> (m_TalkList->get_text(i, 0), id));
+	}
+	
+	// we're done with this list's current contents
+	m_TalkList->clear_items();
+	
+	// now set the new row contents
+	for (int i=0; i<items.size(); i++) {
+		int row=m_TalkList->append_text(items[i].first);
+		m_TalkList->set_text(row, 1, items[i].second);
+	}
+}
+
+/***************************************************************************/
+
+// constructor
+CourtCamDialog::CourtCamDialog(): AbstractDialog("move_court_camera") {
+	construct();
+}
+
+// get the data
+StringPair CourtCamDialog::get_data() const {
+	// convert to actual location id
+	Glib::ustring a=m_FromCB->get_active_text();
+	if (a=="Prosecution Stand") a="prosecutor_stand";
+	else if (a=="Witness Stand") a="witness_stand";
+	else a="defense_stand";
+	
+	// likewise as above
+	Glib::ustring b=m_ToCB->get_active_text();
+	if (b=="Prosecution Stand") b="prosecutor_stand";
+	else if (b=="Witness Stand") b="witness_stand";
+	else b="defense_stand";
+	
+	return std::make_pair<Glib::ustring, Glib::ustring> (a, b);
+}
+
+// build the dialog
+void CourtCamDialog::construct() {
+	// get the vbox
+	Gtk::VBox *vb=get_vbox();
+	
+	// allocate table
+	Gtk::Table *table=manage(new Gtk::Table);
+	table->set_spacings(5);
+	
+	// allocate labels
+	m_FromLabel=manage(new Gtk::Label("From"));
+	m_ToLabel=manage(new Gtk::Label("To"));
+	
+	// allocate arrow
+	m_Arrow=manage(new Gtk::Arrow(Gtk::ARROW_RIGHT, Gtk::SHADOW_NONE));
+	
+	// allocate combo boxes
+	m_FromCB=manage(new Gtk::ComboBoxText);
+	m_ToCB=manage(new Gtk::ComboBoxText);
+	
+	// populate combo boxes
+	for (int i=0; i<3; i++) {
+		Glib::ustring str;
+		switch(i) {
+			case 0: str="Prosecution Stand"; break;
+			case 1: str="Witness Stand"; break;
+			case 2: str="Defense Stand"; break;
+		}
+		
+		m_FromCB->append_text(str);
+		m_ToCB->append_text(str);
+	}
+	
+	// set defaults
+	m_FromCB->set_active(0);
+	m_ToCB->set_active(1);
+	
+	// place widgets
+	table->attach(*m_FromLabel, 0, 1, 0, 1);
+	table->attach(*m_ToLabel, 2, 3, 0, 1);
+	table->attach(*m_FromCB, 0, 1, 1, 2);
+	table->attach(*m_Arrow, 1, 2, 1, 2);
+	table->attach(*m_ToCB, 2, 3, 1, 2);
+	
+	vb->pack_start(*table, Gtk::PACK_SHRINK);
+	
+	show_all_children();
+}
+
+/***************************************************************************/
+
+// constructor
+FadeDialog::FadeDialog(): AbstractDialog("fade_out") {
+	construct();
+}
+
+// get the selection
+Glib::ustring FadeDialog::get_selection() const {
+	if (m_TopRB->get_active())
+		return "top";
+	else if (m_BottomRB->get_active())
+		return "bottom";
+	else
+		return "both";
+}
+
+// build the dialog
+void FadeDialog::construct() {
+	// get the vbox
+	Gtk::VBox *vb=get_vbox();
+	
+	// button box
+	Gtk::VButtonBox *vbb=manage(new Gtk::VButtonBox);
+	vbb->set_spacing(5);
+	
+	// allocate radio button
+	m_TopRB=manage(new Gtk::RadioButton(m_Group, "Top Screen"));
+	m_BottomRB=manage(new Gtk::RadioButton(m_Group, "Lower Screen"));
+	m_BothRB=manage(new Gtk::RadioButton(m_Group, "Both Screens"));
+	
+	// pack widgets
+	vbb->pack_start(*m_TopRB);
+	vbb->pack_start(*m_BottomRB);
+	vbb->pack_start(*m_BothRB);
+	
+	vb->pack_start(*vbb, Gtk::PACK_SHRINK);
 	
 	show_all_children();
 }

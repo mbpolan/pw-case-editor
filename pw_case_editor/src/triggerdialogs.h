@@ -22,10 +22,12 @@
 #ifndef TRIGGERDIALOGS_H
 #define TRIGGERDIALOGS_H
 
+#include <gtkmm/arrow.h>
 #include <gtkmm/comboboxtext.h>
 #include <gtkmm/dialog.h>
 #include <gtkmm/entry.h>
 #include <gtkmm/label.h>
+#include <gtkmm/listviewtext.h>
 #include <gtkmm/image.h>
 #include <gtkmm/notebook.h>
 #include <gtkmm/radiobutton.h>
@@ -563,6 +565,115 @@ class MusicDialog: public AbstractDialog {
 		
 		// combo boxes
 		AudioComboBox *m_AudioCB;
+};
+
+/***************************************************************************/
+
+// request_evidence trigger
+class ReqEvidenceDialog: public AbstractDialog {
+	public:
+		// constructor
+		ReqEvidenceDialog(const BufferMap &buffers);
+		
+		// get the data
+		StringTriplet get_data() const;
+		
+	protected:
+		// build the dialog
+		void construct(const BufferMap &buffers);
+		
+		// combo boxes
+		BlockComboBox *m_CorrectCB;
+		BlockComboBox *m_WrongCB;
+		
+		// labels
+		Gtk::Label *m_EvidenceLabel;
+		Gtk::Label *m_CorrectLabel;
+		Gtk::Label *m_WrongLabel;
+		
+		// entries
+		Gtk::Entry *m_EvidenceEntry;
+};
+
+/***************************************************************************/
+
+// request_answer trigger
+class ReqAnswerDialog: public AbstractDialog {
+	public:
+		// constructor
+		ReqAnswerDialog();
+		
+		// get the talk options
+		std::vector<StringPair> get_talk_options() const;
+		
+	protected:
+		// build the dialog
+		void construct();
+		
+		// add button handler
+		void on_add_button_clicked();
+		
+		// remove button handler
+		void on_remove_button_clicked();
+		
+		// container
+		Gtk::ScrolledWindow *m_SWindow;
+		
+		// list for options
+		Gtk::ListViewText *m_TalkList;
+		
+		// buttons
+		Gtk::Button *m_AddButton;
+		Gtk::Button *m_RemoveButton;
+};
+
+/***************************************************************************/
+
+// move_court_camera trigger
+class CourtCamDialog: public AbstractDialog {
+	public:
+		// constructor
+		CourtCamDialog();
+		
+		// get the data
+		StringPair get_data() const;
+		
+	protected:
+		// build the dialog
+		void construct();
+		
+		// combo boxes
+		Gtk::ComboBoxText *m_FromCB;
+		Gtk::ComboBoxText *m_ToCB;
+		
+		// labels
+		Gtk::Label *m_FromLabel;
+		Gtk::Label *m_ToLabel;
+		
+		// arrow
+		Gtk::Arrow *m_Arrow;
+};
+
+/***************************************************************************/
+
+// fade_out trigger
+class FadeDialog: public AbstractDialog {
+	public:
+		// constructor
+		FadeDialog();
+		
+		// get the selection
+		Glib::ustring get_selection() const;
+		
+	protected:
+		// build the dialog
+		void construct();
+		
+		// radio buttons
+		Gtk::RadioButtonGroup m_Group;
+		Gtk::RadioButton *m_TopRB;
+		Gtk::RadioButton *m_BottomRB;
+		Gtk::RadioButton *m_BothRB;
 };
 
 #endif
