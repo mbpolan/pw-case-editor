@@ -317,6 +317,18 @@ bool MainWindow::check_case_element(const Glib::ustring &element, int amount) {
 		}
 	}
 	
+	// check amount of testimonies
+	else if (element=="testimonies") {
+		if (m_Case.get_testimonies().size()<amount) {
+			if (amount==1)
+				ss << " testimony";
+			else
+				ss << " testimonies";
+			
+			fail=true;
+		}
+	}
+	
 	// not a real element? O_o
 	else
 		throw g_ElementEx;
@@ -1226,6 +1238,63 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 	// flash
 	else if (trigger=="flash")
 		m_ScriptWidget->insert_trigger_at_cursor("{*flash:top;*}");
+	
+	// set an image for court overview
+	else if (trigger=="set_court_overview_image") {
+		if (!check_case_element("images", 1))
+			return;
+		
+		// prepare dialog
+		OverImageDialog diag(m_Case.get_images());
+		if (diag.run()==Gtk::RESPONSE_OK) {
+			// get the data
+			StringPair p=diag.get_data();
+			
+			Glib::ustring trig="{*set_court_overview_image:";
+			trig+=p.first;
+			trig+=",";
+			trig+=p.second;
+			trig+=";*}";
+			
+			m_ScriptWidget->insert_trigger_at_cursor(trig);
+		}
+	}
+	
+	// show temporary image
+	else if (trigger=="set_temp_image") {
+		if (!check_case_element("images", 1))
+			return;
+		
+		// prepare dialog
+		TempImgDialog diag(m_Case.get_images());
+		if (diag.run()==Gtk::RESPONSE_OK) {
+			Glib::ustring trig="{*set_temp_image:";
+			trig+=diag.get_image();
+			trig+=";*}";
+			
+			m_ScriptWidget->insert_trigger_at_cursor(trig);
+		}
+	}
+	
+	// hide temporary image
+	else if (trigger=="hide_temp_image")
+		m_ScriptWidget->insert_trigger_at_cursor("{*hide_temp_image:true;*}");
+	
+	// display a testimony
+	else if (trigger=="display_testimony") {
+		if (!check_case_element("testimonies", 1))
+			return;
+		
+		// prepare dialog
+		DisplayTestimonyDialog diag(m_Case.get_testimonies());
+		if (diag.run()==Gtk::RESPONSE_OK) {
+			Glib::ustring trig="{*display_testimony:";
+			trig+=diag.get_testimony();
+			trig+=";*}";
+			
+			m_ScriptWidget->insert_trigger_at_cursor(trig);
+		}
+	}
 }
 
 // add character

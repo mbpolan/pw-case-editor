@@ -1239,3 +1239,167 @@ void FadeDialog::construct() {
 	
 	show_all_children();
 }
+
+/***************************************************************************/
+
+// constructor
+OverImageDialog::OverImageDialog(const ImageMap &images): AbstractDialog("set_court_overview_image") {
+	construct(images);
+}
+
+// get the data
+StringPair OverImageDialog::get_data() const {
+	Glib::ustring area;
+	if (m_ProsecutorRB->get_active())
+		area="prosecutor";
+	else if (m_DefenseRB->get_active())
+		area="defense";
+	else
+		area="witness";
+	
+	return std::make_pair<Glib::ustring, Glib::ustring> (area, m_ImgCB->get_selected_internal());
+}
+
+// build the dialog
+void OverImageDialog::construct(const ImageMap &images) {
+	// allocate table
+	Gtk::Table *table=manage(new Gtk::Table);
+	table->set_spacings(5);
+	
+	// allocate labels
+	m_ImageLabel=manage(new Gtk::Label("Image"));
+	m_PreviewLabel=manage(new Gtk::Label("Preview"));
+	m_LocLabel=manage(new Gtk::Label("Set Image for Court Location"));
+	
+	// allocate image combo box
+	m_ImgCB=manage(new ImgComboBox(images));
+	
+	// allocate image
+	m_Image=manage(new Gtk::Image);
+	
+	// allocate scrolled window for image
+	m_SWindow=manage(new Gtk::ScrolledWindow);
+	m_SWindow->set_size_request(100, 100);
+	m_SWindow->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
+	m_SWindow->add(*m_Image);
+	
+	// connect signals
+	m_ImgCB->signal_changed().connect(sigc::mem_fun(*this, &OverImageDialog::on_combo_box_changed));
+	on_combo_box_changed(); // call initially to set image
+	
+	// allocate radio buttons
+	m_ProsecutorRB=manage(new Gtk::RadioButton(m_Group, "Prosecutor Stand"));
+	m_DefenseRB=manage(new Gtk::RadioButton(m_Group, "Defense Stand"));
+	m_WitnessRB=manage(new Gtk::RadioButton(m_Group, "Witness Stand"));
+	m_JudgeRB=manage(new Gtk::RadioButton(m_Group, "Judge's Stand"));
+	
+	// place widgets
+	table->attach(*m_ImageLabel, 0, 1, 0, 1);
+	table->attach(*m_ImgCB, 1, 2, 0, 1);
+	table->attach(*m_PreviewLabel, 0, 1, 1, 2);
+	table->attach(*m_SWindow, 1, 2, 1, 2);
+	table->attach(*manage(new Gtk::HSeparator), 0, 2, 2, 3);
+	table->attach(*m_LocLabel, 0, 1, 3, 4);
+	table->attach(*m_ProsecutorRB, 1, 2, 3, 4);
+	table->attach(*m_DefenseRB, 1, 2, 4, 5);
+	table->attach(*m_WitnessRB, 1, 2, 5, 6);
+	table->attach(*m_JudgeRB, 1, 2, 6, 7);
+	
+	get_vbox()->pack_start(*table, Gtk::PACK_SHRINK);
+	
+	show_all_children();
+}
+
+// handler for combo box selection changes
+void OverImageDialog::on_combo_box_changed() {
+	m_Image->set(m_ImgCB->get_selected_image()->pixbuf);
+}
+
+/***************************************************************************/
+
+// constructor
+TempImgDialog::TempImgDialog(const ImageMap &map): AbstractDialog("set_temp_image") {
+	construct(map);
+}
+
+// get the selected image
+Glib::ustring TempImgDialog::get_image() const {
+	return m_ImgCB->get_selected_internal();
+}
+
+// build the dialog
+void TempImgDialog::construct(const ImageMap &map) {
+	// allocate table
+	Gtk::Table *table=manage(new Gtk::Table);
+	table->set_spacings(5);
+	
+	// allocate labels
+	m_ImgLabel=manage(new Gtk::Label("Image"));
+	m_PreviewLabel=manage(new Gtk::Label("Preview"));
+	
+	// allocate image combo box
+	m_ImgCB=manage(new ImgComboBox(map));
+	
+	// allocate image
+	m_Image=manage(new Gtk::Image);
+	
+	// allocate scrolled window for image
+	m_SWindow=manage(new Gtk::ScrolledWindow);
+	m_SWindow->set_size_request(100, 100);
+	m_SWindow->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
+	m_SWindow->add(*m_Image);
+	
+	on_combo_box_changed();
+	
+	// pack widgets
+	table->attach(*m_ImgLabel, 0, 1, 0, 1);
+	table->attach(*m_ImgCB, 1, 2, 0, 1);
+	table->attach(*m_PreviewLabel, 0, 1, 1, 2);
+	table->attach(*m_SWindow, 1, 2, 1, 2);
+	
+	get_vbox()->pack_start(*table, Gtk::PACK_SHRINK);
+	
+	show_all_children();
+}
+
+// handler for combo box selection changes
+void TempImgDialog::on_combo_box_changed() {
+	m_Image->set(m_ImgCB->get_selected_image()->pixbuf);
+}
+
+/***************************************************************************/
+
+// constructor
+DisplayTestimonyDialog::DisplayTestimonyDialog(const TestimonyMap &map):
+		AbstractDialog("display_testimony") {
+	construct(map);
+}
+
+// get testimony selected
+Glib::ustring DisplayTestimonyDialog::get_testimony() const {
+	return m_TestimonyCB->get_active_text();
+}
+
+// build the dialog
+void DisplayTestimonyDialog::construct(const TestimonyMap &map) {
+	// allocate hbox
+	Gtk::HBox *hb=manage(new Gtk::HBox);
+	hb->set_spacing(5);
+	
+	// allocate labels
+	m_TestimonyLabel=manage(new Gtk::Label("Testimony to Display"));
+	
+	// allocate combo box
+	m_TestimonyCB=manage(new Gtk::ComboBoxText);
+	for (TestimonyMap::const_iterator it=map.begin(); it!=map.end(); ++it)
+		m_TestimonyCB->append_text((*it).first);
+	m_TestimonyCB->set_active(0);
+	
+	// pack widgets
+	hb->pack_start(*m_TestimonyLabel);
+	hb->pack_start(*m_TestimonyCB);
+	
+	get_vbox()->pack_start(*hb, Gtk::PACK_SHRINK);
+	
+	show_all_children();
+}

@@ -170,3 +170,24 @@ Glib::ustring AudioComboBox::get_selected_internal() const {
 Case::Audio* AudioComboBox::get_selected_audio() {
 	return &(m_Audio[get_selected_internal()]);
 }
+
+/***************************************************************************/
+
+// constructor
+ImgComboBox::ImgComboBox(const ImageMap &map): m_Images(map) {
+	// iterate over evidence
+	for (ImageMap::const_iterator it=map.begin(); it!=map.end(); ++it)
+		append_text((*it).second.id);
+	
+	set_active(0);
+}
+
+// get the selected image's internal name
+Glib::ustring ImgComboBox::get_selected_internal() const {
+	return get_active_text();
+}
+
+// get the selected image
+Case::Image* ImgComboBox::get_selected_image() {
+	return &(m_Images[get_selected_internal()]);
+}

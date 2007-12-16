@@ -115,7 +115,7 @@ class AudioComboBox: public Gtk::ComboBoxText {
 		// constructor
 		AudioComboBox(const AudioMap &map, const Filter &filter=FILTER_NONE);
 		
-		// get the selected locations's internal name
+		// get the selected audio's internal name
 		Glib::ustring get_selected_internal() const;
 		
 		// get the selected evidence
@@ -123,6 +123,24 @@ class AudioComboBox: public Gtk::ComboBoxText {
 		
 	protected:
 		AudioMap m_Audio;
+};
+
+/***************************************************************************/
+
+// combo box for images
+class ImgComboBox: public Gtk::ComboBoxText {
+	public:
+		// constructor
+		ImgComboBox(const ImageMap &map);
+		
+		// get the selected image's internal name
+		Glib::ustring get_selected_internal() const;
+		
+		// get the selected image
+		Case::Image* get_selected_image();
+		
+	protected:
+		ImageMap m_Images;
 };
 
 #endif

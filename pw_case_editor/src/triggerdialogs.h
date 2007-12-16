@@ -676,4 +676,98 @@ class FadeDialog: public AbstractDialog {
 		Gtk::RadioButton *m_BothRB;
 };
 
+/***************************************************************************/
+
+// set_court_overview_image trigger
+class OverImageDialog: public AbstractDialog {
+	public:
+		// constructor
+		OverImageDialog(const ImageMap &images);
+		
+		// get the data
+		StringPair get_data() const;
+		
+	protected:
+		// build the dialog
+		void construct(const ImageMap &images);
+		
+		// handler for combo box selection changes
+		void on_combo_box_changed();
+		
+		// labels
+		Gtk::Label *m_ImageLabel;
+		Gtk::Label *m_PreviewLabel;
+		Gtk::Label *m_LocLabel;
+		
+		// scrolled window
+		Gtk::ScrolledWindow *m_SWindow;
+		
+		// combo boxes
+		ImgComboBox *m_ImgCB;
+		
+		// images
+		Gtk::Image *m_Image;
+		
+		// radio buttons
+		Gtk::RadioButtonGroup m_Group;
+		Gtk::RadioButton *m_ProsecutorRB;
+		Gtk::RadioButton *m_WitnessRB;
+		Gtk::RadioButton *m_DefenseRB;
+		Gtk::RadioButton *m_JudgeRB;
+};
+
+/***************************************************************************/
+
+// set_temp_image trigger
+class TempImgDialog: public AbstractDialog {
+	public:
+		// constructor
+		TempImgDialog(const ImageMap &map);
+		
+		// get the selected image
+		Glib::ustring get_image() const;
+		
+	protected:
+		// build the dialog
+		void construct(const ImageMap &map);
+		
+		// handler for combo box selection changes
+		void on_combo_box_changed();
+		
+		// labels
+		Gtk::Label *m_ImgLabel;
+		Gtk::Label *m_PreviewLabel;
+		
+		// combo boxes
+		ImgComboBox *m_ImgCB;
+		
+		// scrolled window
+		Gtk::ScrolledWindow *m_SWindow;
+		
+		// image
+		Gtk::Image *m_Image;
+};
+
+/***************************************************************************/
+
+// display_testimony trigger
+class DisplayTestimonyDialog: public AbstractDialog {
+	public:
+		// constructor
+		DisplayTestimonyDialog(const TestimonyMap &map);
+		
+		// get selected testimony
+		Glib::ustring get_testimony() const;
+		
+	protected:
+		// build the dialog
+		void construct(const TestimonyMap &map);
+		
+		// labels
+		Gtk::Label *m_TestimonyLabel;
+		
+		// combo boxes
+		Gtk::ComboBoxText *m_TestimonyCB;
+};
+
 #endif
