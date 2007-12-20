@@ -17,36 +17,49 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-// utilities.h: various utility functions
+// iconmanager.h: class to manage application icons
 
-#ifndef UTILITIES_H
-#define UTILITIES_H
+#ifndef ICONMANAGER_H
+#define ICONMANAGER_H
 
+#include <gdkmm/pixbuf.h>
 #include <glibmm/ustring.h>
+#include <gtkmm/stockid.h>
+#include <map>
 
-namespace Utils {
+// stock icons for this application
+namespace AppStock {
+	extern Gtk::StockID ADD_CHARACTER;
+	extern Gtk::StockID AUDIO;
+	extern Gtk::StockID BACKGROUND;
+	extern Gtk::StockID BROWSE_CHARS;
+	extern Gtk::StockID EVIDENCE;
+	extern Gtk::StockID IMAGE;
+	extern Gtk::StockID INITBLOCK;
+	extern Gtk::StockID INSERT_DIALOGUE;
+	extern Gtk::StockID LOCATION;
+	extern Gtk::StockID TESTIMONY;
+}
 
-// flush gui events that may still be pending in the main loop
-void flush_events();
+// typedef'd map of icons
+typedef std::map<Glib::ustring, Glib::RefPtr<Gdk::Pixbuf> > IconMap;
+typedef std::map<Glib::ustring, Gtk::IconSet> SetMap;
 
-// get the current working directory
-Glib::ustring cwd();
-
-// format an exception string
-Glib::ustring exceptionString(const Glib::ustring &reason, const Glib::ustring &file, int line);
-
-// convert int to string
-Glib::ustring to_string(int val);
-
-// compress a buffer
-char* compress_buffer(const char *buffer, int size, int &newSize, bool autoFree);
-
-// extract a text block's id from a full string
-Glib::ustring extract_block_id(const Glib::ustring str);
-
-// extract a text block's description from a full string
-Glib::ustring extract_block_description(const Glib::ustring &str);
-
-}; // namespace Utils
+// manager for application icons
+class IconManager {
+	public:
+		// create icons sets from file
+		bool create_from_file(const Glib::ustring &file);
+		
+		// look up a stock id based on icon set string
+		Gtk::StockID lookup_from_set(const Glib::ustring &str);
+		
+	private:
+		// create complete icon sets for given icons
+		void create_icon_sets(const IconMap &icons);
+		
+		// default icon sets
+		SetMap m_DefaultSets;
+};
 
 #endif

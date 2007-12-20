@@ -230,6 +230,7 @@ void MainWindow::construct() {
 		}
 		
 		// now create icons for certain menu items
+		m_IconMgr.create_from_file(Utils::cwd()+"/dat.dpkg");
 		create_icons();
 	}
 	
@@ -244,7 +245,7 @@ void MainWindow::construct() {
 		standardTB->append(*item);
 		
 		// allocate script buttons
-		Gtk::ToolButton *insertDiagButton=manage(new Gtk::ToolButton(*manage(new Gtk::Image("icons/insert-dialogue.png"))));
+		Gtk::ToolButton *insertDiagButton=manage(new Gtk::ToolButton(*manage(new Gtk::Image(AppStock::INSERT_DIALOGUE, Gtk::ICON_SIZE_LARGE_TOOLBAR))));
 		
 		// append script buttons
 		standardTB->append(*insertDiagButton, sigc::mem_fun(*this, &MainWindow::on_script_insert_dialogue));
@@ -426,27 +427,27 @@ void MainWindow::create_trigger_submenu(Gtk::Menu *menu) {
 
 // create icons for menu items
 void MainWindow::create_icons() {
-	set_menuitem_icon("/MenuBar/AssetsMenu/AssetsManageAudio", "icons/audio.png");
-	set_menuitem_icon("/MenuBar/AssetsMenu/AssetsManageBG", "icons/bg.png");
-	set_menuitem_icon("/MenuBar/AssetsMenu/AssetsManageImages", "icons/image.png");
-	set_menuitem_icon("/MenuBar/AssetsMenu/AssetsManageEvidence", "icons/evidence.png");
+	set_menuitem_icon("/MenuBar/AssetsMenu/AssetsManageAudio", AppStock::AUDIO);
+	set_menuitem_icon("/MenuBar/AssetsMenu/AssetsManageBG", AppStock::BACKGROUND);
+	set_menuitem_icon("/MenuBar/AssetsMenu/AssetsManageImages", AppStock::IMAGE);
+	set_menuitem_icon("/MenuBar/AssetsMenu/AssetsManageEvidence", AppStock::EVIDENCE);
 	
-	set_menuitem_icon("/MenuBar/ScriptMenu/ScriptInsertDialogue", "icons/insert-dialogue.png");
+	set_menuitem_icon("/MenuBar/ScriptMenu/ScriptInsertDialogue", AppStock::INSERT_DIALOGUE);
 	
-	set_menuitem_icon("/MenuBar/CaseMenu/CaseAddChar", "icons/add-char.png");
-	set_menuitem_icon("/MenuBar/CaseMenu/CaseBrowseChar", "icons/browse-chars.png");
-	set_menuitem_icon("/MenuBar/CaseMenu/CaseManageTestimonies", "icons/testimony.png");
-	set_menuitem_icon("/MenuBar/CaseMenu/CaseInitialBlock", "icons/initblock.png");
-	set_menuitem_icon("/MenuBar/CaseMenu/CaseEditLocations", "icons/location.png");
+	set_menuitem_icon("/MenuBar/CaseMenu/CaseAddChar", AppStock::ADD_CHARACTER);
+	set_menuitem_icon("/MenuBar/CaseMenu/CaseBrowseChar", AppStock::BROWSE_CHARS);
+	set_menuitem_icon("/MenuBar/CaseMenu/CaseManageTestimonies", AppStock::TESTIMONY);
+	set_menuitem_icon("/MenuBar/CaseMenu/CaseInitialBlock", AppStock::INITBLOCK);
+	set_menuitem_icon("/MenuBar/CaseMenu/CaseEditLocations", AppStock::LOCATION);
 }
 
 // set an icon for a menu item
-void MainWindow::set_menuitem_icon(const Glib::ustring &path, const Glib::ustring &file) {
+void MainWindow::set_menuitem_icon(const Glib::ustring &path, const Gtk::StockID &id) {
 	// get the menu item
 	Gtk::ImageMenuItem *item=dynamic_cast<Gtk::ImageMenuItem*> (m_UIManager->get_widget(path));
 	if (item) {
 		// create the icon
-		Gtk::Image *img=manage(new Gtk::Image(file));
+		Gtk::Image *img=manage(new Gtk::Image(id, Gtk::ICON_SIZE_MENU));
 		item->set_image(*img);
 	}
 }

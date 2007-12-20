@@ -30,6 +30,7 @@
 #include <gtkmm/uimanager.h>
 
 #include "case.h"
+#include "iconmanager.h"
 #include "scriptwidget.h"
 
 // the core application window
@@ -52,7 +53,7 @@ class MainWindow: public Gtk::Window {
 		void create_icons();
 		
 		// set an icon for a menu item
-		void set_menuitem_icon(const Glib::ustring &path, const Glib::ustring &file);
+		void set_menuitem_icon(const Glib::ustring &path, const Gtk::StockID &id);
 		
 		// process a loaded case from file
 		void process_load_case(const Glib::ustring &path);
@@ -130,6 +131,9 @@ class MainWindow: public Gtk::Window {
 		
 		// script widget
 		ScriptWidget *m_ScriptWidget;
+		
+		// icon manager
+		IconManager m_IconMgr;
 		
 		// internal case data
 		Case::Case m_Case;

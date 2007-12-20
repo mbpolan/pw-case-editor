@@ -19,6 +19,8 @@
  ***************************************************************************/
 // iohandler.cpp: implementation of I/O functions
 
+#include <archive.h>
+#include <archive_entry.h>
 #include <cstdio>
 
 #include "clistview.h"
@@ -1194,7 +1196,9 @@ void IO::add_recent_file(const Glib::ustring &uri, const Glib::ustring &display)
 
 // read the recent files record
 bool IO::read_recent_files(std::vector<StringPair> &vec) {
-	FILE *f=fopen("editor.rfs", "rb");
+	Glib::ustring rpath=Utils::cwd();
+	rpath+="/editor.rfs";
+	FILE *f=fopen(rpath.c_str(), "rb");
 	if (!f)
 		return false;
 	
@@ -1217,5 +1221,55 @@ bool IO::read_recent_files(std::vector<StringPair> &vec) {
 	}
 	
 	fclose(f);
+	return true;
+}
+
+// read icons from a theme file
+bool IO::read_icons_from_file(const Glib::ustring &file, IconMap &icons) {
+	// first, create a new archive and entry
+	struct archive *ar=archive_read_new();
+	struct archive_entry *entry=archive_entry_new();
+	
+	// the file is in gzip'd tar format
+	archive_read_support_compression_gzip(ar);
+	archive_read_support_format_tar(ar);
+	
+	// now open the archive
+	if (archive_read_open_filename(ar, file.c_str(), 1024)!=0)
+		return false;
+	
+	// iterate over files in archive
+	while(archive_read_next_header(ar, &entry)==ARCHIVE_OK) {
+		// get the original name of the file
+		Glib::ustring fname=Glib::ustring(archive_entry_pathname(entry));
+		
+		// and extract this file temporarily
+		archive_read_extract(ar, entry, 0);
+		
+		// create a pixbuf from this file
+		Glib::RefPtr<Gdk::Pixbuf> pixbuf=Gdk::Pixbuf::create_from_file(fname);
+		
+		// add this icon
+		if (pixbuf)
+			icons[fname]=pixbuf;
+		else
+			g_message("IO: unable to create pixbuf for icon '%s' from file!", fname.c_str());
+		
+		// since we're done with this file, delete it
+		Glib::ustring cmd;
+#ifndef __WIN32__
+		cmd="rm ";
+#elif
+		// TODO
+#endif
+		cmd+=Utils::cwd()+"/"+fname;
+		system(cmd.c_str());
+		
+		archive_read_data_skip(ar);
+	}
+	
+	// we're done
+	archive_read_finish(ar);
+	
 	return true;
 }

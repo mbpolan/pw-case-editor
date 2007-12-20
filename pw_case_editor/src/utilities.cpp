@@ -19,6 +19,7 @@
  ***************************************************************************/
 // utilities.cpp: implementation of Util namespace
 
+#include <cstdlib>
 #include <glibmm.h>
 #include <gtkmm/main.h>
 #include <sstream>
@@ -30,6 +31,16 @@
 void Utils::flush_events() {
 	while(Gtk::Main::events_pending())
 		Gtk::Main::iteration();
+}
+
+// get the current working directory
+Glib::ustring Utils::cwd() {
+#ifndef __WIN32__
+	char path[255];
+	return getcwd(path, 255);
+#elif
+	// TODO: Windows code for getting working directory
+#endif
 }
 
 // format an exception string

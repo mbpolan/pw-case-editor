@@ -23,11 +23,13 @@
 #define IOHANDLER_H
 
 #include <cstdio>
+#include <gdkmm/pixbuf.h>
 #include <glibmm/ustring.h>
 #include <gtkmm/textbuffer.h>
 #include <map>
 
 #include "case.h"
+#include "iconmanager.h"
 #include "sprite.h"
 
 namespace IO {
@@ -82,6 +84,9 @@ void add_recent_file(const Glib::ustring &uri, const Glib::ustring &display);
 
 // read the recent files record
 bool read_recent_files(std::vector<StringPair> &vec);
+
+// read icons from a theme file
+bool read_icons_from_file(const Glib::ustring &file, IconMap &icons);
 
 }; // namespace IO
 
