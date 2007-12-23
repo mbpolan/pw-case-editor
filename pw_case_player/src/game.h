@@ -108,11 +108,15 @@ struct _GameState {
 	// the previous screen displayed
 	int prevScreen;
 	
+	// temporary state changes
+	bool hideTextBox;
+	
 	// music variables
 	bool continueMusic;
 	
 	// testimony variables
 	std::string curTestimony;
+	int curTestimonyPiece;
 	
 	// special effects
 	std::string fadeOut;
@@ -136,6 +140,7 @@ struct _GameState {
 	
 	// scheduled events
 	std::string queuedLocation;
+	std::string queuedBlock;
 	
 	std::vector<StringPair> custom; // user defined flags
 	
@@ -186,6 +191,9 @@ class Game {
 		
 		// see if an element is flagged to be drawn
 		bool flagged(int flag);
+		
+		// see if the text box should be drawn
+		bool shouldDrawTextBox();
 		
 		// set the current backdrop location
 		void setLocation(const std::string &location);

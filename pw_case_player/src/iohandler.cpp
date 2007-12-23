@@ -315,6 +315,9 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 		// read next block
 		testimony.nextBlock=readString(f);
 		
+		// read follow up location
+		testimony.followLocation=readString(f);
+		
 		// read amount of pieces
 		int tpieceCount;
 		fread(&tpieceCount, sizeof(int), 1, f);
@@ -573,29 +576,24 @@ Textures::Texture IO::readImage(FILE *f) {
 	Textures::Texture tex;
 	
 	// read buffer size
-	unsigned int bsize;
-	fread(&bsize, sizeof(unsigned int), 1, f);
-	
-	// read uncompressed buffer size
-	unsigned int origSize;
-	fread(&origSize, sizeof(unsigned int), 1, f);
+	unsigned int size;
+	fread(&size, sizeof(unsigned int), 1, f);
 	
 	// read buffer
-	char *buffer=new char[bsize];
-	fread(buffer, sizeof(char), bsize, f);
-	
-	// uncompress this buffer
-	buffer=Utils::uncompressBuffer(buffer, bsize, origSize, true);
+	char *buffer=new char[size];
+	fread(buffer, sizeof(char), size, f);
 	
 	// read in the jpeg from memory
-	SDL_RWops *rw=SDL_RWFromMem(buffer, origSize);
+	SDL_RWops *rw=SDL_RWFromMem(buffer, size);
 	if (!rw)
 		std::cout << "RWops: " << SDL_GetError() << std::endl;
 	
 	// load our image from raw data (no need to free RWops structure)
 	SDL_Surface *srf=IMG_Load_RW(rw, 1);
-	if (!srf)
+	if (!srf) {
 		std::cout << "IMG_Load: " << IMG_GetError() << std::endl;
+		return tex;
+	}
 	
 	// we're done with the buffer itself; now SDL_RWops will handle
 	// our data so we can forget about our originally read buffer

@@ -195,13 +195,6 @@ bool UI::Manager::fadeOut(const std::string &id) {
 	// get the animation
 	UI::Animation &anim=m_Animations[id];
 	
-	// if the alpha is 255, then we're done
-	if (anim.alpha>=255) {
-		// reset for next time this function is called
-		anim.alpha=0;
-		return false;
-	}
-	
 	// see if it's time to increase the alpha
 	int now=SDL_GetTicks();
 	if (now-anim.lastDraw>=anim.speed) {
@@ -223,6 +216,13 @@ bool UI::Manager::fadeOut(const std::string &id) {
 			Renderer::drawImage(Point(0, 0), opaque);
 			Renderer::drawImage(Point(0, 197), opaque);
 		} break;
+	}
+	
+	// if the alpha is 255, then we're done
+	if (anim.alpha>=255) {
+		// reset for next time this function is called
+		anim.alpha=0;
+		return false;
 	}
 	
 	return true;

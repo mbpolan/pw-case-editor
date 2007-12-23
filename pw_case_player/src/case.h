@@ -122,6 +122,7 @@ struct _Testimony {
 	
 	// next block to follow upon completion
 	std::string nextBlock;
+	std::string followLocation;
 	
 	// vector of testimony pieces
 	std::vector<TestimonyPiece> pieces;

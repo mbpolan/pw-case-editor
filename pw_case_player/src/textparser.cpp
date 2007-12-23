@@ -520,6 +520,14 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		m_Direct=true;
 	}
 	
+	// hide the text box for a duration
+	else if (trigger=="hide_text_box")
+		m_Game->m_State.hideTextBox=true;
+	
+	// show the text box once more
+	else if (trigger=="show_text_box")
+		m_Game->m_State.hideTextBox=false;
+	
 	// add evidence to court record
 	else if (trigger=="add_evidence") {
 		// make sure this evidence exists at all
@@ -702,7 +710,9 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		std::string target=params[1];
 		
 		// if the court was requested, set all court locations to play the same music
-		if (target=="court") {
+		if (target=="court" || target=="prosecutor_stand" || target=="defense_stand" ||
+		    target=="defense_helper_stand" || target=="witness_stand" || target=="courtroom" ||
+		    target=="judge_stand") {
 			m_Game->m_State.continueMusic=true;
 			pcase->getLocation("prosecutor_stand")->music=musicId;
 			pcase->getLocation("defense_stand")->music=musicId;

@@ -55,8 +55,12 @@ Game::Game(const std::string &rootPath, Case::Case *pcase): m_RootPath(rootPath)
 	m_State.examineX=256/2;
 	m_State.examineY=192/2;
 	
+	// reset temporary state variables
+	m_State.hideTextBox=false;
+	
 	// reset testimony variables
 	m_State.curTestimony="null";
+	m_State.curTestimonyPiece=0;
 	
 	// reset courtroom sprites
 	m_State.crOverviewDefense="null";
@@ -74,6 +78,7 @@ Game::Game(const std::string &rootPath, Case::Case *pcase): m_RootPath(rootPath)
 	
 	// reset queued events
 	m_State.queuedLocation="null";
+	m_State.queuedBlock="null";
 	
 	// reset special effects
 	m_State.fadeOut="none";
@@ -462,13 +467,46 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 		if (flagged(STATE_NEXT_BTN) && ((e->x>=16 && e->x<=16+223) && (e->y>=242 && e->y<=242+111)) &&
 		    !m_State.requestingAnswer && !m_State.requestingEvidence) {
 			// if the parser is blocking the dialogue, don't skip
-			if (!m_Parser->dialogueDone() && m_Parser->isBlocking())
+			if (!m_Parser->dialogueDone() && (m_Parser->isBlocking() || m_State.curTestimony!="null"))
 				return;
 			
 			// play a sound effect if done
 			else if (m_Parser->dialogueDone()) {
 				// play a sound effect
 				Audio::playEffect("sfx_next_part", Audio::CHANNEL_GUI);
+			}
+			
+			// if we are in the process of a testimony, set the next piece
+			// as the following block
+			if (m_State.curTestimony!="null") {
+				Case::Testimony *testimony=m_Case->getTestimony(m_State.curTestimony);
+				
+				// check if there's another piece
+				if (m_State.curTestimonyPiece>=testimony->pieces.size()) {
+					// schedule a fade out
+					m_State.fadeOut="top";
+					
+					// save references to queued events
+					m_State.queuedBlock=testimony->nextBlock;
+					m_State.queuedLocation=testimony->followLocation;
+					
+					// reset everything related to a testimony
+					m_State.curTestimonyPiece=0;
+					m_State.blink="none";
+					m_State.curTestimony="null";
+				}
+				
+				// otherwise, move along
+				else {
+					// set the speaker
+					m_Parser->setSpeaker(testimony->speaker);
+					
+					// set the next block and increment counter
+					m_Parser->setBlock(testimony->pieces[m_State.curTestimonyPiece].text);
+					m_State.curTestimonyPiece++;
+				}
+				
+				m_Parser->nextStep();
 			}
 			
 			// proceed to the next block
@@ -573,6 +611,23 @@ void Game::toggle(int flags) {
 // see if an element is flagged to be drawn
 bool Game::flagged(int flag) {
 	return (m_State.drawFlags & flag);
+}
+
+// see if the text box should be drawn
+bool Game::shouldDrawTextBox() {
+	// first of all, fade out effects need to be text-box free
+	if (m_State.fadeOut!="none")
+		return false;
+	
+	// same applies to the court camera
+	if (m_State.courtCamera!="none")
+		return false;
+	
+	// explicitly hidden text boxes
+	if (m_State.hideTextBox)
+		return false;
+	
+	return true;
 }
 
 // set the current backdrop location
@@ -785,7 +840,7 @@ void Game::renderTopView() {
 	}
 	
 	// draw text box, if needed
-	if (flagged(STATE_TEXT_BOX)) {
+	if (flagged(STATE_TEXT_BOX) && shouldDrawTextBox()) {
 		// draw the text box over everything
 		renderTextBox();
 	}
@@ -971,6 +1026,13 @@ bool Game::renderSpecialEffects() {
 				setLocation(m_State.queuedLocation);
 				m_State.queuedLocation="null";
 			}
+			
+			// set the next block, if requested
+			if (m_State.queuedBlock!="null") {
+				m_Parser->setBlock(m_Case->getBuffers()[m_State.queuedBlock]);
+				m_Parser->nextStep();
+				m_State.queuedBlock="null";
+			}
 		}
 		
 		return false;
@@ -1046,9 +1108,6 @@ bool Game::renderSpecialEffects() {
 			
 			// now start the testimony blink animation
 			m_State.blink="an_testimony_blink";
-			
-			// and set the speaker
-			//m_Parser->setSpeaker(testimony->speaker);
 			
 			// set the first block of testimony: the title
 			m_Parser->setBlock("<testimony-title>"+testimony->title+"</testimony-title>");

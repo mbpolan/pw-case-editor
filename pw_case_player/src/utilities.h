@@ -27,9 +27,6 @@
 // utilities namespace
 namespace Utils {
 
-// uncompress a buffer
-char* uncompressBuffer(const char *src, int size, int uncompSize, bool autoFree);
-
 // convert a court camera script string to animation limits
 // string should be in the form of: "location1,location2"
 void scriptToLimits(const std::string &str, UI::Limit &start, UI::Limit &end);
