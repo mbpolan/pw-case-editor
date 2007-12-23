@@ -96,8 +96,28 @@ void Utils::flush_events() {
 		Gtk::Main::iteration();
 }
 
+// calculate center of screen coordinates for a window
+void Utils::calculate_center(int width, int height, int &x, int &y) {
+	// we assume the default screen
+	Glib::RefPtr<Gdk::Screen> screen=Gdk::Screen::get_default();
+	
+	x=(screen->get_width()/2)-(width/2);
+	y=(screen->get_height()/2)-(height/2);
+}
+
+// convert an I/O error code into a string error message
+Glib::ustring Utils::io_error_to_str(const IO::Code &code) {
+	switch(code) {
+		case IO::CODE_OK: return ""; break; // this shouldn't be handled
+		case IO::CODE_OPEN_FAILED: return "Unable to open file."; break;
+		case IO::CODE_WRONG_MAGIC_NUM: return "File's header is incorrect or corrupt."; break;
+		case IO::CODE_WRONG_VERSION: return "This file version is not supported."; break;
+		case IO::CODE_VALIDATE_FAILED: return "The file is corrupt and cannot be opened."; break;
+	}
+}
+
 // format an exception string
-Glib::ustring Utils::exceptionString(const Glib::ustring &reason, const Glib::ustring &file, int line) {
+Glib::ustring Utils::exception_string(const Glib::ustring &reason, const Glib::ustring &file, int line) {
 	std::stringstream ss;
 	ss << "Fatal exception: " << reason << ".";
 	ss << "\nFile: ";

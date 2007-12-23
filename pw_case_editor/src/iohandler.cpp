@@ -30,13 +30,13 @@
 #include "utilities.h"
 
 // save a case and its associated data to file
-bool IO::save_case_to_file(const Glib::ustring &path, const Case::Case &pcase,
+IO::Code IO::save_case_to_file(const Glib::ustring &path, const Case::Case &pcase,
 			   const BufferMap &buffers,
 			   std::map<Glib::ustring, Glib::ustring> &bufferDescriptions) {
 	// open the requested file
 	FILE *f=fopen(path.c_str(), "wb");
 	if (!f)
-		return false;
+		return IO::CODE_OPEN_FAILED;
 	
 	// write the header
 	fputc('C', f);
@@ -277,15 +277,15 @@ bool IO::save_case_to_file(const Glib::ustring &path, const Case::Case &pcase,
 	
 	// wrap up
 	fclose(f);
-	return true;
+	return IO::CODE_OK;
 }
 
 // export a case to file
-bool IO::export_case_to_file(const Glib::ustring &path, const Case::Case &pcase, const BufferMap &buffers) {
+IO::Code IO::export_case_to_file(const Glib::ustring &path, const Case::Case &pcase, const BufferMap &buffers) {
 	// open the requested file
 	FILE *f=fopen(path.c_str(), "wb");
 	if (!f)
-		return false;
+		return IO::CODE_OPEN_FAILED;
 	
 	// first and foremost, we write the file information
 	write_string(f, FILE_MAGIC_NUM);
@@ -528,31 +528,29 @@ bool IO::export_case_to_file(const Glib::ustring &path, const Case::Case &pcase,
 	
 	// wrap up
 	fclose(f);
-	return true;
+	return IO::CODE_OK;
 }
 
 // load a case from file
-bool IO::load_case_from_file(const Glib::ustring &path, Case::Case &pcase,
+IO::Code IO::load_case_from_file(const Glib::ustring &path, Case::Case &pcase,
 			     BufferMap &buffers,
 			     std::map<Glib::ustring, Glib::ustring> &bufferDescriptions) {
 	// open requested file
 	FILE *f=fopen(path.c_str(), "rb");
 	if (!f)
-		return false;
+		return IO::CODE_OPEN_FAILED;
 	
 	// read magic number and verify it
 	if (fgetc(f)!='C' || fgetc(f)!='P' ||
 	    fgetc(f)!='R' || fgetc(f)!='J' ||
-	    fgetc(f)!='T') {
-		g_message("Incorrect magic number.");
-		return false;
-	}
+	    fgetc(f)!='T')
+		return IO::CODE_WRONG_MAGIC_NUM;
 	
 	// read file version and verify it
 	int version;
 	fread(&version, sizeof(int), 1, f);
 	if (version!=FILE_VERSION)
-		return false;
+		return IO::CODE_WRONG_VERSION;
 	
 	// create a new overview struct
 	Case::Overview overview;
@@ -836,15 +834,15 @@ bool IO::load_case_from_file(const Glib::ustring &path, Case::Case &pcase,
 	
 	// wrap up
 	fclose(f);
-	return true;
+	return IO::CODE_OK;
 }
 
 // save a sprite to file
-bool IO::save_sprite_to_file(const Glib::ustring &path, const Sprite &spr) {
+IO::Code IO::save_sprite_to_file(const Glib::ustring &path, const Sprite &spr) {
 	// open the requested file
 	FILE *f=fopen(path.c_str(), "wb");
 	if (!f)
-		return false;
+		return IO::CODE_OPEN_FAILED;
 	
 	// write file header
 	write_string(f, SPR_MAGIC_NUM);
@@ -900,15 +898,15 @@ bool IO::save_sprite_to_file(const Glib::ustring &path, const Sprite &spr) {
 	
 	// wrap up
 	fclose(f);
-	return true;
+	return IO::CODE_OK;
 }
 
 // export a sprite to file
-bool IO::export_sprite_to_file(const Glib::ustring &path, const Sprite &spr) {
+IO::Code IO::export_sprite_to_file(const Glib::ustring &path, const Sprite &spr) {
 	// open the requested file
 	FILE *f=fopen(path.c_str(), "wb");
 	if (!f)
-		return false;
+		return IO::CODE_OPEN_FAILED;
 	
 	// write file header
 	fputc('P', f);
@@ -966,26 +964,26 @@ bool IO::export_sprite_to_file(const Glib::ustring &path, const Sprite &spr) {
 	
 	// wrap up
 	fclose(f);
-	return true;
+	return IO::CODE_OK;
 }
 
 // load a sprite from file
-bool IO::load_sprite_from_file(const Glib::ustring &path, Sprite &spr) {
+IO::Code IO::load_sprite_from_file(const Glib::ustring &path, Sprite &spr) {
 	// open requested file
 	FILE *f=fopen(path.c_str(), "rb");
 	if (!f)
-		return false;
+		return IO::CODE_OPEN_FAILED;
 	
 	// read magic number and verify it
 	Glib::ustring mn=read_string(f);
 	if (mn!=SPR_MAGIC_NUM)
-		return false;
+		return IO::CODE_WRONG_MAGIC_NUM;
 	
 	// read version and verify it
 	int version;
 	fread(&version, sizeof(int), 1, f);
 	if (version!=SPR_VERSION)
-		return false;
+		return IO::CODE_WRONG_VERSION;
 	
 	// show progress dialog
 	ProgressDialog pd("Loading sprite...");
@@ -1040,7 +1038,7 @@ bool IO::load_sprite_from_file(const Glib::ustring &path, Sprite &spr) {
 	
 	// wrap up
 	fclose(f);
-	return true;
+	return IO::CODE_OK;
 }
 
 // write a string to file
@@ -1192,12 +1190,12 @@ void IO::add_recent_file(const Glib::ustring &uri, const Glib::ustring &display)
 }
 
 // read the recent files record
-bool IO::read_recent_files(std::vector<StringPair> &vec) {
+IO::Code IO::read_recent_files(std::vector<StringPair> &vec) {
 	Glib::ustring rpath=Utils::FS::cwd();
 	rpath+="editor.rfs";
 	FILE *f=fopen(rpath.c_str(), "rb");
 	if (!f)
-		return false;
+		return IO::CODE_OPEN_FAILED;
 	
 	// read amount of files
 	int amount;
@@ -1218,15 +1216,15 @@ bool IO::read_recent_files(std::vector<StringPair> &vec) {
 	}
 	
 	fclose(f);
-	return true;
+	return IO::CODE_OK;
 }
 
 // unpack the resource file
-bool IO::unpack_resource_file(const Glib::ustring &file) {
+IO::Code IO::unpack_resource_file(const Glib::ustring &file) {
 	// before anything, validate this resource file
 	FILE *f=fopen(file.c_str(), "rb");
 	if (!f)
-		return false;
+		return IO::CODE_OPEN_FAILED;
 	
 	// calculate the size of the file
 	fseek(f, 0, SEEK_END);
@@ -1240,7 +1238,7 @@ bool IO::unpack_resource_file(const Glib::ustring &file) {
 		
 		// FIXME: once again, be more descriptive here
 		g_message("Size is incorrect\n");
-		return false;
+		return IO::CODE_VALIDATE_FAILED;
 	}
 	
 	// first, create a new archive and entry
@@ -1252,7 +1250,7 @@ bool IO::unpack_resource_file(const Glib::ustring &file) {
 	
 	// try to open the archive from our file
 	if (archive_read_open_FILE(ar, f)!=ARCHIVE_OK)
-		return false;
+		return IO::CODE_OPEN_FAILED;
 		
 	struct archive_entry *entry=archive_entry_new();
 	
@@ -1282,15 +1280,15 @@ bool IO::unpack_resource_file(const Glib::ustring &file) {
 	archive_read_finish(ar);
 	fclose(f);
 	
-	return true;
+	return IO::CODE_OK;
 }
 
 // read icons from a theme file
-bool IO::read_icons_from_file(IconMap &icons) {
+IO::Code IO::read_icons_from_file(IconMap &icons) {
 	// open the temporary file directory
 	DIR *dir=opendir(Glib::ustring(Utils::FS::cwd()+".temp").c_str());
 	if (!dir)
-		return false;
+		return IO::CODE_OPEN_FAILED;
 	
 	// iterate over each entry
 	struct dirent *entry;
@@ -1317,5 +1315,5 @@ bool IO::read_icons_from_file(IconMap &icons) {
 	// close this directory
 	closedir(dir);
 	
-	return true;
+	return IO::CODE_OK;
 }

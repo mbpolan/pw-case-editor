@@ -56,7 +56,7 @@ class MainWindow: public Gtk::Window {
 		void set_menuitem_icon(const Glib::ustring &path, const Gtk::StockID &id);
 		
 		// process a loaded case from file
-		void process_load_case(const Glib::ustring &path);
+		bool process_load_case(const Glib::ustring &path);
 		
 		// new case handler
 		void on_new();

@@ -32,6 +32,9 @@ class SplashScreen: public Gtk::Window {
 		SplashScreen(const Glib::ustring &file);
 		
 	private:
+		// mouse button click handler
+		virtual bool on_button_press_event(GdkEventButton *e);
+		
 		// image
 		Gtk::Image *m_Image;
 };

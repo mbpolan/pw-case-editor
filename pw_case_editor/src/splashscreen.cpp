@@ -22,9 +22,15 @@
 #include <gtkmm/box.h>
 
 #include "splashscreen.h"
+#include "utilities.h"
+
+using namespace Utils;
 
 // constructor
 SplashScreen::SplashScreen(const Glib::ustring &file) {
+	// ask to receive button presses
+	add_events(Gdk::BUTTON_PRESS_MASK);
+	
 	Gtk::VBox *vb=manage(new Gtk::VBox);
 	
 	// allocate the image
@@ -38,5 +44,19 @@ SplashScreen::SplashScreen(const Glib::ustring &file) {
 	set_keep_above(true);
 	set_decorated(false);
 	
+	// calculate center of screen for splash image
+	int x, y;
+	calculate_center(m_Image->get_pixbuf()->get_width(), m_Image->get_pixbuf()->get_height(), x, y);
+	
+	// and move it there
+	move(x, y);
+	
 	show_all_children();
+}
+
+// mouse button click handler
+bool SplashScreen::on_button_press_event(GdkEventButton *e) {
+	Gtk::Window::on_button_press_event(e);
+	
+	hide();
 }

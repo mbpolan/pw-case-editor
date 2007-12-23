@@ -34,6 +34,14 @@
 
 namespace IO {
 
+// various error codes
+enum Code { CODE_OK=		 	 1,
+	    CODE_OPEN_FAILED=	 	 0,
+	    CODE_WRONG_MAGIC_NUM=	-1,
+	    CODE_WRONG_VERSION=		-2,
+	    CODE_VALIDATE_FAILED=	-3
+};
+
 // case file information
 const Glib::ustring FILE_MAGIC_NUM="PWT";
 const int FILE_VERSION=10;
@@ -46,26 +54,26 @@ const int SPR_VERSION=10;
 const long RESOURCE_FILE_SIZE=192434;
 
 // save a case and its associated data to file
-bool save_case_to_file(const Glib::ustring &path, const Case::Case &pcase,
+IO::Code save_case_to_file(const Glib::ustring &path, const Case::Case &pcase,
 		       const BufferMap &buffers,
 		       std::map<Glib::ustring, Glib::ustring> &bufferDescriptions);
 
 // export a case to file
-bool export_case_to_file(const Glib::ustring &path, const Case::Case &pcase, const BufferMap &buffers);
+IO::Code export_case_to_file(const Glib::ustring &path, const Case::Case &pcase, const BufferMap &buffers);
 
 // load a case from file
-bool load_case_from_file(const Glib::ustring &path, Case::Case &pcase,
+IO::Code load_case_from_file(const Glib::ustring &path, Case::Case &pcase,
 			 BufferMap &buffers,
 		         std::map<Glib::ustring, Glib::ustring> &bufferDescriptions);
 
 // save a sprite to file
-bool save_sprite_to_file(const Glib::ustring &path, const Sprite &spr);
+IO::Code save_sprite_to_file(const Glib::ustring &path, const Sprite &spr);
 
 // export a sprite to file
-bool export_sprite_to_file(const Glib::ustring &path, const Sprite &spr);
+IO::Code export_sprite_to_file(const Glib::ustring &path, const Sprite &spr);
 
 // load a sprite from file
-bool load_sprite_from_file(const Glib::ustring &path, Sprite &spr);
+IO::Code load_sprite_from_file(const Glib::ustring &path, Sprite &spr);
 
 // write a string to file
 void write_string(FILE *f, const Glib::ustring &str);
@@ -86,13 +94,13 @@ Glib::RefPtr<Gdk::Pixbuf> read_pixbuf(FILE *f);
 void add_recent_file(const Glib::ustring &uri, const Glib::ustring &display);
 
 // read the recent files record
-bool read_recent_files(std::vector<StringPair> &vec);
+IO::Code read_recent_files(std::vector<StringPair> &vec);
 
 // unpack the resource file
-bool unpack_resource_file(const Glib::ustring &file);
+IO::Code unpack_resource_file(const Glib::ustring &file);
 
 // read icons from a theme file
-bool read_icons_from_file(IconMap &icons);
+IO::Code read_icons_from_file(IconMap &icons);
 
 }; // namespace IO
 

@@ -24,6 +24,8 @@
 
 #include <glibmm/ustring.h>
 
+#include "iohandler.h"
+
 namespace Utils {
 
 // general filesystem functions for cross-platform compatability
@@ -49,8 +51,14 @@ void remove_dir(const Glib::ustring &path);
 // flush gui events that may still be pending in the main loop
 void flush_events();
 
+// calculate center of screen coordinates for a window
+void calculate_center(int width, int height, int &x, int &y);
+
+// convert an I/O error code into a string error message
+Glib::ustring io_error_to_str(const IO::Code &code);
+
 // format an exception string
-Glib::ustring exceptionString(const Glib::ustring &reason, const Glib::ustring &file, int line);
+Glib::ustring exception_string(const Glib::ustring &reason, const Glib::ustring &file, int line);
 
 // convert int to string
 Glib::ustring to_string(int val);

@@ -50,6 +50,11 @@ MainWindow::MainWindow() {
 	set_title("Unsaved File - Phoenix Wright Case Editor");
 	set_size_request(640, 480);
 	
+	// center it up
+	int x, y;
+	Utils::calculate_center(640, 480, x, y);
+	move(x, y);
+	
 	// reset save variables
 	m_Saved=false;
 	m_SavePath="";
@@ -349,7 +354,7 @@ bool MainWindow::check_case_element(const Glib::ustring &element, int amount) {
 	
 	// catch the one and only exception that can possibly occur
 	catch (ElementEx &ex) {
-		Gtk::MessageDialog md(*this, Utils::exceptionString(ex.what(), __FILE__, __LINE__), false, Gtk::MESSAGE_ERROR);
+		Gtk::MessageDialog md(*this, Utils::exception_string(ex.what(), __FILE__, __LINE__), false, Gtk::MESSAGE_ERROR);
 		md.run();
 		abort();
 	}
@@ -464,17 +469,24 @@ void MainWindow::set_menuitem_icon(const Glib::ustring &path, const Gtk::StockID
 }
 
 // process a loaded case
-void MainWindow::process_load_case(const Glib::ustring &path) {
-	// load the case
+bool MainWindow::process_load_case(const Glib::ustring &path) {
+	// prepare variables
 	BufferMap buffers;
 	std::map<Glib::ustring, Glib::ustring> bufferDescriptions;
-	if (!IO::load_case_from_file(path.c_str(), m_Case, buffers, bufferDescriptions)) {
-		// gee, another vague error message; make it more detailed in the future
-		Gtk::MessageDialog md(*this, "Unable to load case due to an unknown error.", false, Gtk::MESSAGE_ERROR);
+	
+	// and load the case
+	IO::Code code;
+	if ((code=IO::load_case_from_file(path.c_str(), m_Case, buffers, bufferDescriptions))!=IO::CODE_OK) {
+		// format error message
+		Glib::ustring msg="Unable to load requested case.\nReason:";
+		msg+=Utils::io_error_to_str(code);
+		
+		// show a dialog
+		Gtk::MessageDialog md(*this, msg, false, Gtk::MESSAGE_ERROR);
 		md.run();
 		
 		m_Statusbar->push("Unable to open case file");
-		return;
+		return false;
 	}
 	
 	// clear out the current case
@@ -512,6 +524,8 @@ void MainWindow::process_load_case(const Glib::ustring &path) {
 		// now add the text block
 		m_ScriptWidget->add_text_block(stage, day, parent, id, bufferDescriptions[realId], (*it).second);
 	}
+	
+	return true;
 }
 
 // new case handler
@@ -555,9 +569,14 @@ void MainWindow::on_save() {
 		
 		// save this case
 		std::map<Glib::ustring, Glib::ustring> bdescs=m_ScriptWidget->get_buffer_descriptions();
-		if (!IO::save_case_to_file(m_SavePath, m_Case, m_ScriptWidget->get_buffers(), bdescs)) {
-			// TODO: this should be more informative...
-			Gtk::MessageDialog md(*this, "An error prevented a complete save of your case!", false, Gtk::MESSAGE_ERROR);
+		IO::Code code;
+		if ((code=IO::save_case_to_file(m_SavePath, m_Case, m_ScriptWidget->get_buffers(), bdescs))!=IO::CODE_OK) {
+			// format error string
+			Glib::ustring msg="An error prevented a complete save of your case!\nReason:";
+			msg+=Utils::io_error_to_str(code);
+			
+			// show dialog
+			Gtk::MessageDialog md(*this, msg, false, Gtk::MESSAGE_ERROR);
 			md.run();
 			
 			return;
@@ -594,9 +613,14 @@ void MainWindow::on_save() {
 		
 		// save this case
 		std::map<Glib::ustring, Glib::ustring> bdescs=m_ScriptWidget->get_buffer_descriptions();
-		if (!IO::save_case_to_file(path, m_Case, m_ScriptWidget->get_buffers(), bdescs)) {
-			// TODO: this should be more informative...
-			Gtk::MessageDialog md(*this, "An error prevented a complete save of your case!", false, Gtk::MESSAGE_ERROR);
+		IO::Code code;
+		if ((code=IO::save_case_to_file(path, m_Case, m_ScriptWidget->get_buffers(), bdescs))!=IO::CODE_OK) {
+			// format the error message
+			Glib::ustring msg="An error prevented a complete save of your case!\nReason:";
+			msg+=Utils::io_error_to_str(code);
+			
+			// show dialog
+			Gtk::MessageDialog md(*this, msg, false, Gtk::MESSAGE_ERROR);
 			md.run();
 			
 			m_Statusbar->push("Unable to save file");
@@ -654,9 +678,15 @@ void MainWindow::on_export() {
 		m_Statusbar->push("Exporting case to file...");
 		
 		// export this case
-		if (!IO::export_case_to_file(path, m_Case, m_ScriptWidget->get_buffers())) {
-			// TODO: more info has to be added here
-			Gtk::MessageDialog md(*this, "An error prevented an export of your case!", false, Gtk::MESSAGE_ERROR);
+		IO::Code code;
+		if ((code=IO::export_case_to_file(path, m_Case, m_ScriptWidget->get_buffers()))!=IO::CODE_OK) {
+			// format the error message
+			Glib::ustring msg="An error prevented an export of your case!\n";
+			msg+="Reason: ";
+			msg+=Utils::io_error_to_str(code);
+			
+			// show a dialog
+			Gtk::MessageDialog md(*this, msg, false, Gtk::MESSAGE_ERROR);
 			md.run();
 			
 			m_Statusbar->push("Unable to export case");
@@ -700,7 +730,8 @@ void MainWindow::on_open() {
 		m_Statusbar->push("Opening file...");
 		
 		// load the case
-		process_load_case(path);
+		if (!process_load_case(path))
+			return;
 		
 		m_Statusbar->push("Case opened successfully");
 		
@@ -722,7 +753,16 @@ void MainWindow::on_open() {
 
 // open a recent file
 void MainWindow::on_open_recent(const Glib::ustring &path) {
-	process_load_case(path);
+	if (process_load_case(path)) {
+		// update the title bar
+		Glib::ustring title=path.substr(path.rfind("/")+1, path.size()-1);
+		title+=" - Phoenix Wright Case Editor";
+		set_title(title);
+		
+		// cache save path
+		m_Saved=true;
+		m_SavePath=path;
+	}
 }
 
 // quit handler
