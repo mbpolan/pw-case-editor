@@ -38,9 +38,6 @@ Glib::ustring exceptionString(const Glib::ustring &reason, const Glib::ustring &
 // convert int to string
 Glib::ustring to_string(int val);
 
-// compress a buffer
-char* compress_buffer(const char *buffer, int size, int &newSize, bool autoFree);
-
 // extract a text block's id from a full string
 Glib::ustring extract_block_id(const Glib::ustring str);
 

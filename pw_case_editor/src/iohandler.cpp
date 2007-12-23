@@ -1079,20 +1079,16 @@ void IO::write_export_image(FILE *f, const Glib::RefPtr<Gdk::Pixbuf> &pixbuf) {
 	// serialize the pixbuf to usable buffer
 	pixbuf->save_to_buffer(buffer, bsize, "png", ops, keys);
 	
-	// compress this buffer
-	int nSize;
-	buffer=Utils::compress_buffer(buffer, bsize, nSize, true);
-	
 	// write buffer size
-	int bytes=fwrite(&nSize, sizeof(int), 1, f);
+	int bytes=fwrite(&bsize, sizeof(int), 1, f);
 	
 	// write original size
 	bytes=fwrite(&bsize, sizeof(int), 1, f);
 	
 	// write buffer
-	bytes=fwrite(buffer, sizeof(char), nSize, f);
-	if (bytes!=nSize) {
-		g_message("Wrote/Size: %d/%d", bytes, nSize);
+	bytes=fwrite(buffer, sizeof(char), bsize, f);
+	if (bytes!=bsize) {
+		g_message("Wrote/Size: %d/%d", bytes, bsize);
 		perror("Write error");
 	}
 }
@@ -1197,7 +1193,7 @@ void IO::add_recent_file(const Glib::ustring &uri, const Glib::ustring &display)
 // read the recent files record
 bool IO::read_recent_files(std::vector<StringPair> &vec) {
 	Glib::ustring rpath=Utils::cwd();
-	rpath+="/editor.rfs";
+	rpath+="editor.rfs";
 	FILE *f=fopen(rpath.c_str(), "rb");
 	if (!f)
 		return false;
@@ -1262,7 +1258,7 @@ bool IO::read_icons_from_file(const Glib::ustring &file, IconMap &icons) {
 #elif
 		// TODO
 #endif
-		cmd+=Utils::cwd()+"/"+fname;
+		cmd+=Utils::cwd()+fname;
 		system(cmd.c_str());
 		
 		archive_read_data_skip(ar);

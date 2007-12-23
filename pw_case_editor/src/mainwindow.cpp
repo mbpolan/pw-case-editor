@@ -230,7 +230,7 @@ void MainWindow::construct() {
 		}
 		
 		// now create icons for certain menu items
-		m_IconMgr.create_from_file(Utils::cwd()+"/dat.dpkg");
+		m_IconMgr.create_from_file(Utils::cwd()+"dat.dpkg");
 		create_icons();
 	}
 	
@@ -314,6 +314,14 @@ bool MainWindow::check_case_element(const Glib::ustring &element, int amount) {
 	else if (element=="audio") {
 		if (m_Case.get_audio().size()<amount) {
 			ss << " audio sample(s)";
+			fail=true;
+		}
+	}
+	
+	// check images
+	else if (element=="images") {
+		if (m_Case.get_images().size()<amount) {
+			ss << " image(s)";
 			fail=true;
 		}
 	}

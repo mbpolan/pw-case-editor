@@ -23,7 +23,6 @@
 #include <glibmm.h>
 #include <gtkmm/main.h>
 #include <sstream>
-#include <zlib.h>
 
 #include "utilities.h"
 
@@ -37,7 +36,7 @@ void Utils::flush_events() {
 Glib::ustring Utils::cwd() {
 #ifndef __WIN32__
 	char path[255];
-	return getcwd(path, 255);
+	return Glib::ustring(getcwd(path, 255))+"/";
 #elif
 	// TODO: Windows code for getting working directory
 #endif
@@ -62,28 +61,6 @@ Glib::ustring Utils::to_string(int val) {
 	ss << val;
 	
 	return ss.str();
-}
-
-// compress a buffer
-char* Utils::compress_buffer(const char *buffer, int size, int &newSize, bool autoFree) {
-	// calculate new destination buffer size and allocate it
-	newSize=(int) size+(size*0.01)+12;
-	char *dest=new char[newSize];
-	
-	// compress this buffer
-	int ret=compress2((Bytef*) dest, (uLongf*) &newSize, (Bytef*) buffer, size, 9);
-	
-	// check for errors
-	if (ret==Z_MEM_ERROR)
-		g_message("Error: unable to compress buffer: not enough memory.\n");
-	else if (ret==Z_BUF_ERROR)
-		g_message("Error: unable to compress buffer: not enough memory in output buffer.\n");
-	
-	// delete the original buffer if requested
-	if (autoFree)
-		delete [] buffer;
-	
-	return dest;
 }
 
 // extract a text block's id from a full string

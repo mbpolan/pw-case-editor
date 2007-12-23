@@ -1339,6 +1339,7 @@ void TempImgDialog::construct(const ImageMap &map) {
 	
 	// allocate image combo box
 	m_ImgCB=manage(new ImgComboBox(map));
+	m_ImgCB->signal_changed().connect(sigc::mem_fun(*this, &TempImgDialog::on_combo_box_changed));
 	
 	// allocate image
 	m_Image=manage(new Gtk::Image);
