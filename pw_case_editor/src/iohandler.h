@@ -42,6 +42,9 @@ const int FILE_VERSION=10;
 const Glib::ustring SPR_MAGIC_NUM="SPR";
 const int SPR_VERSION=10;
 
+// expected size of resource file
+const long RESOURCE_FILE_SIZE=192434;
+
 // save a case and its associated data to file
 bool save_case_to_file(const Glib::ustring &path, const Case::Case &pcase,
 		       const BufferMap &buffers,
@@ -85,8 +88,11 @@ void add_recent_file(const Glib::ustring &uri, const Glib::ustring &display);
 // read the recent files record
 bool read_recent_files(std::vector<StringPair> &vec);
 
+// unpack the resource file
+bool unpack_resource_file(const Glib::ustring &file);
+
 // read icons from a theme file
-bool read_icons_from_file(const Glib::ustring &file, IconMap &icons);
+bool read_icons_from_file(IconMap &icons);
 
 }; // namespace IO
 

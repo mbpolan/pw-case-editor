@@ -17,50 +17,26 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-// utilities.h: various utility functions
+// splashscreen.cpp: implementation of SplashScreen class
 
-#ifndef UTILITIES_H
-#define UTILITIES_H
+#include <gtkmm/box.h>
 
-#include <glibmm/ustring.h>
+#include "splashscreen.h"
 
-namespace Utils {
-
-// general filesystem functions for cross-platform compatability
-namespace FS {
-
-// get the current working directory
-Glib::ustring cwd();
-
-// move a file on the filesystem
-void move(const Glib::ustring &from, Glib::ustring &to);
-
-// check if a directory exists
-bool dir_exists(const Glib::ustring &path);
-
-// create a directory
-void mkdir(const Glib::ustring &path);
-
-// remove a directory
-void remove_dir(const Glib::ustring &path);
-
-} // namespace FS
-
-// flush gui events that may still be pending in the main loop
-void flush_events();
-
-// format an exception string
-Glib::ustring exceptionString(const Glib::ustring &reason, const Glib::ustring &file, int line);
-
-// convert int to string
-Glib::ustring to_string(int val);
-
-// extract a text block's id from a full string
-Glib::ustring extract_block_id(const Glib::ustring str);
-
-// extract a text block's description from a full string
-Glib::ustring extract_block_description(const Glib::ustring &str);
-
-}; // namespace Utils
-
-#endif
+// constructor
+SplashScreen::SplashScreen(const Glib::ustring &file) {
+	Gtk::VBox *vb=manage(new Gtk::VBox);
+	
+	// allocate the image
+	m_Image=manage(new Gtk::Image(file));
+	
+	// pack widgets
+	vb->pack_start(*m_Image, Gtk::PACK_SHRINK);
+	add(*vb);
+	
+	// configure this window
+	set_keep_above(true);
+	set_decorated(false);
+	
+	show_all_children();
+}

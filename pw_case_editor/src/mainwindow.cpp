@@ -55,6 +55,9 @@ MainWindow::MainWindow() {
 	m_SavePath="";
 	
 	construct();
+	
+	// now we can safely delete the resource temp directory
+	Utils::FS::remove_dir(Utils::FS::cwd()+".temp");
 }
 
 // build the ui
@@ -230,7 +233,7 @@ void MainWindow::construct() {
 		}
 		
 		// now create icons for certain menu items
-		m_IconMgr.create_from_file(Utils::cwd()+"dat.dpkg");
+		m_IconMgr.create_from_file(Utils::FS::cwd()+"dat.dpkg");
 		create_icons();
 	}
 	

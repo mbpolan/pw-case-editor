@@ -22,6 +22,7 @@
 #include <archive.h>
 #include <archive_entry.h>
 #include <cstdio>
+#include <dirent.h>
 
 #include "clistview.h"
 #include "dialogs.h"
@@ -1192,7 +1193,7 @@ void IO::add_recent_file(const Glib::ustring &uri, const Glib::ustring &display)
 
 // read the recent files record
 bool IO::read_recent_files(std::vector<StringPair> &vec) {
-	Glib::ustring rpath=Utils::cwd();
+	Glib::ustring rpath=Utils::FS::cwd();
 	rpath+="editor.rfs";
 	FILE *f=fopen(rpath.c_str(), "rb");
 	if (!f)
@@ -1220,52 +1221,101 @@ bool IO::read_recent_files(std::vector<StringPair> &vec) {
 	return true;
 }
 
-// read icons from a theme file
-bool IO::read_icons_from_file(const Glib::ustring &file, IconMap &icons) {
+// unpack the resource file
+bool IO::unpack_resource_file(const Glib::ustring &file) {
+	// before anything, validate this resource file
+	FILE *f=fopen(file.c_str(), "rb");
+	if (!f)
+		return false;
+	
+	// calculate the size of the file
+	fseek(f, 0, SEEK_END);
+	long size=ftell(f);
+	rewind(f);
+	
+	// and compare it with our hardcoded size
+	if (size!=IO::RESOURCE_FILE_SIZE) {
+		// no use for this file anymore
+		fclose(f);
+		
+		// FIXME: once again, be more descriptive here
+		g_message("Size is incorrect\n");
+		return false;
+	}
+	
 	// first, create a new archive and entry
 	struct archive *ar=archive_read_new();
-	struct archive_entry *entry=archive_entry_new();
 	
 	// the file is in gzip'd tar format
 	archive_read_support_compression_gzip(ar);
 	archive_read_support_format_tar(ar);
 	
-	// now open the archive
-	if (archive_read_open_filename(ar, file.c_str(), 1024)!=0)
+	// try to open the archive from our file
+	if (archive_read_open_FILE(ar, f)!=ARCHIVE_OK)
 		return false;
+		
+	struct archive_entry *entry=archive_entry_new();
+	
+	// make our temporary directory
+	Utils::FS::mkdir(Utils::FS::cwd()+".temp");
+	
+	// windows is a jerk and doesn't hide by prefixed dot, so we
+	// need to set some attributes
+#ifdef __WIN32__
+	system(Glib::ustring("attrib +h +s ")+Utils::FS::cwd()+".temp");
+#endif
 	
 	// iterate over files in archive
 	while(archive_read_next_header(ar, &entry)==ARCHIVE_OK) {
-		// get the original name of the file
-		Glib::ustring fname=Glib::ustring(archive_entry_pathname(entry));
-		
 		// and extract this file temporarily
 		archive_read_extract(ar, entry, 0);
 		
-		// create a pixbuf from this file
-		Glib::RefPtr<Gdk::Pixbuf> pixbuf=Gdk::Pixbuf::create_from_file(fname);
+		// move the file
+		Glib::ustring to=Utils::FS::cwd()+Glib::ustring(".temp/")+archive_entry_pathname(entry);
 		
-		// add this icon
-		if (pixbuf)
-			icons[fname]=pixbuf;
-		else
-			g_message("IO: unable to create pixbuf for icon '%s' from file!", fname.c_str());
-		
-		// since we're done with this file, delete it
-		Glib::ustring cmd;
-#ifndef __WIN32__
-		cmd="rm ";
-#elif
-		// TODO
-#endif
-		cmd+=Utils::cwd()+fname;
-		system(cmd.c_str());
+		Utils::FS::move(Utils::FS::cwd()+archive_entry_pathname(entry), to);
 		
 		archive_read_data_skip(ar);
 	}
 	
 	// we're done
 	archive_read_finish(ar);
+	fclose(f);
+	
+	return true;
+}
+
+// read icons from a theme file
+bool IO::read_icons_from_file(IconMap &icons) {
+	// open the temporary file directory
+	DIR *dir=opendir(Glib::ustring(Utils::FS::cwd()+".temp").c_str());
+	if (!dir)
+		return false;
+	
+	// iterate over each entry
+	struct dirent *entry;
+	while((entry=readdir(dir))) {
+		// get the original name of the file
+		Glib::ustring fname=Glib::ustring(entry->d_name);
+		
+		// check to make sure this is an icon
+		if (fname.size()<5 || fname.substr(fname.size()-5, 5)!=".pngG")
+			continue;
+		
+		// create a pixbuf from this file
+		Glib::ustring real=Utils::FS::cwd()+".temp/";
+		real+=fname;
+		Glib::RefPtr<Gdk::Pixbuf> pixbuf=Gdk::Pixbuf::create_from_file(real);
+		
+		// add this icon
+		if (pixbuf)
+			icons[fname]=pixbuf;
+		else
+			g_message("IO: unable to create pixbuf for icon '%s' from file!", fname.c_str());
+	}
+	
+	// close this directory
+	closedir(dir);
 	
 	return true;
 }

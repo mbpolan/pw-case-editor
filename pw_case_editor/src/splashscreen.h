@@ -17,50 +17,23 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-// utilities.h: various utility functions
+// splashscreen.h: the SplashScreen window class
 
-#ifndef UTILITIES_H
-#define UTILITIES_H
+#ifndef SPLASHSCREEN_H
+#define SPLASHSCREEN_H
 
-#include <glibmm/ustring.h>
+#include <gtkmm/image.h>
+#include <gtkmm/window.h>
 
-namespace Utils {
-
-// general filesystem functions for cross-platform compatability
-namespace FS {
-
-// get the current working directory
-Glib::ustring cwd();
-
-// move a file on the filesystem
-void move(const Glib::ustring &from, Glib::ustring &to);
-
-// check if a directory exists
-bool dir_exists(const Glib::ustring &path);
-
-// create a directory
-void mkdir(const Glib::ustring &path);
-
-// remove a directory
-void remove_dir(const Glib::ustring &path);
-
-} // namespace FS
-
-// flush gui events that may still be pending in the main loop
-void flush_events();
-
-// format an exception string
-Glib::ustring exceptionString(const Glib::ustring &reason, const Glib::ustring &file, int line);
-
-// convert int to string
-Glib::ustring to_string(int val);
-
-// extract a text block's id from a full string
-Glib::ustring extract_block_id(const Glib::ustring str);
-
-// extract a text block's description from a full string
-Glib::ustring extract_block_description(const Glib::ustring &str);
-
-}; // namespace Utils
+// borderless window that functions like a splash screen
+class SplashScreen: public Gtk::Window {
+	public:
+		// constructor
+		SplashScreen(const Glib::ustring &file);
+		
+	private:
+		// image
+		Gtk::Image *m_Image;
+};
 
 #endif

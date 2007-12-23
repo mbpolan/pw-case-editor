@@ -43,7 +43,7 @@ namespace AppStock {
 bool IconManager::create_from_file(const Glib::ustring &file) {
 	// load the icons
 	IconMap icons;
-	if (!IO::read_icons_from_file(file, icons))
+	if (!IO::read_icons_from_file(icons))
 		return false;
 	
 	// now create icon sets for these icons
