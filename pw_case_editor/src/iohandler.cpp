@@ -1078,11 +1078,8 @@ void IO::write_export_image(FILE *f, const Glib::RefPtr<Gdk::Pixbuf> &pixbuf) {
 	// serialize the pixbuf to usable buffer
 	pixbuf->save_to_buffer(buffer, bsize, "png", ops, keys);
 	
-	// write buffer size
-	int bytes=fwrite(&bsize, sizeof(int), 1, f);
-	
-	// write original size
-	bytes=fwrite(&bsize, sizeof(int), 1, f);
+	// write size
+	int bytes=fwrite(&bsize, sizeof(unsigned int), 1, f);
 	
 	// write buffer
 	bytes=fwrite(buffer, sizeof(char), bsize, f);
@@ -1235,9 +1232,6 @@ IO::Code IO::unpack_resource_file(const Glib::ustring &file) {
 	if (size!=IO::RESOURCE_FILE_SIZE) {
 		// no use for this file anymore
 		fclose(f);
-		
-		// FIXME: once again, be more descriptive here
-		g_message("Size is incorrect\n");
 		return IO::CODE_VALIDATE_FAILED;
 	}
 	
