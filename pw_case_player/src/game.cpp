@@ -624,7 +624,7 @@ bool Game::shouldDrawTextBox() {
 		return false;
 	
 	// explicitly hidden text boxes
-	if (m_State.hideTextBox)
+	if (m_State.hideTextBox && m_Parser->dialogueDone())
 		return false;
 	
 	return true;
@@ -1017,10 +1017,10 @@ bool Game::renderSpecialEffects() {
 	// if we are still fading out, don't parse the text
 	if (m_State.fadeOut!="none") {
 		// see if we are done fading
-		bool ret=m_UI->fadeOut("an_next_location_fade_"+m_State.fadeOut);
-		if (!ret) {
-			m_State.fadeOut="none";
-			
+		int ret=m_UI->fadeOut("an_next_location_fade_"+m_State.fadeOut);
+		
+		// midpoint of fade out reached
+		if (ret==0) {
 			// set a location, if requested
 			if (m_State.queuedLocation!="null") {
 				setLocation(m_State.queuedLocation);
@@ -1034,6 +1034,10 @@ bool Game::renderSpecialEffects() {
 				m_State.queuedBlock="null";
 			}
 		}
+		
+		// effect was completed
+		else if (ret==1)
+			m_State.fadeOut="none";
 		
 		return false;
 	}

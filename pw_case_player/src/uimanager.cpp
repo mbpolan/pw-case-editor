@@ -85,6 +85,7 @@ void UI::Manager::registerFadeOut(const std::string &id, int speed, const AnimTy
 	anim.speed=speed;
 	anim.lastDraw=0;
 	anim.type=type;
+	anim.velocity=1;
 	
 	// add animatiom
 	m_Animations[id]=anim;
@@ -186,10 +187,10 @@ void UI::Manager::drawAnimation(const std::string &id) {
 }
 
 // fade out the current scene to black
-bool UI::Manager::fadeOut(const std::string &id) {
+int UI::Manager::fadeOut(const std::string &id) {
 	if (m_Animations.find(id)==m_Animations.end()) {
 		std::cout << "UIManager: animation '" << id << "' not registered\n";
-		return true;
+		return 1;
 	}
 	
 	// get the animation
@@ -201,7 +202,11 @@ bool UI::Manager::fadeOut(const std::string &id) {
 		anim.lastDraw=now;
 		
 		// increment the alpha value by 1
-		anim.alpha+=2*anim.speed;
+		anim.alpha+=(2*anim.speed)*anim.velocity;
+		
+		// clamp values
+		if (anim.alpha>255) anim.alpha=255;
+		else if (anim.alpha<0) anim.alpha=0;
 	}
 	
 	// get the opaque surface
@@ -218,14 +223,23 @@ bool UI::Manager::fadeOut(const std::string &id) {
 		} break;
 	}
 	
-	// if the alpha is 255, then we're done
-	if (anim.alpha>=255) {
-		// reset for next time this function is called
-		anim.alpha=0;
-		return false;
+	// if the alpha is 255, then begin fading in
+	if (anim.alpha>=255 && anim.velocity==1) {
+		anim.alpha=255;
+		anim.velocity=-1;
+		return 0;
 	}
 	
-	return true;
+	// we're done with this special effect
+	else if (anim.alpha<=0 && anim.velocity==-1) {
+		// reset for next time
+		anim.alpha=0;
+		anim.velocity=1;
+		
+		return 1;
+	}
+	
+	return -1;
 }
 
 // perform a flash effect

@@ -120,12 +120,13 @@ class Manager {
 		void drawAnimation(const std::string &id);
 		
 		/* 
-		   Note: all following functions return a bool, which signifies whether
+		   Note: most of the following functions return a bool, which signifies whether
 		   or not the animation in question has completed
 		*/
 		
 		// fade out the current scene to black
-		bool fadeOut(const std::string &id);
+		// returns -1 for beginning, 0 for midpoint, 1 when done
+		int fadeOut(const std::string &id);
 		
 		// perform a flash effect
 		bool flash(const std::string &id);

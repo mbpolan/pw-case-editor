@@ -86,6 +86,9 @@ class TextParser {
 		// see if a dialogue sound effect should be played for a given character
 		bool shouldPlayDialogueEffect(char prev, char ch, char next);
 		
+		// see if a trigger should be executed right away
+		bool preparseTrigger(const std::string &trigger);
+		
 		// parse a tag and apply styling
 		void parseTag(const std::string &tag);
 		

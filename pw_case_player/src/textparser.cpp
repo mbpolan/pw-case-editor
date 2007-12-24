@@ -151,11 +151,19 @@ std::string TextParser::parse() {
 				int end=m_Block.find('}');
 				m_Block.erase(0, end);
 				
-				// add in a marker into the dialogue string
-				m_Dialogue+='^';
+				// if this trigger is to be preparsed, then do so now
+				if (!preparseTrigger(trigOp)) {
+					// add a hook into the dialogue string
+					m_Dialogue+='^';
+					
+					// and append this trigger
+					m_QueuedTriggers.push(std::make_pair<std::string, std::string> (trigOp, trigComm));
+				}
 				
-				// and append this trigger
-				m_QueuedTriggers.push(std::make_pair<std::string, std::string> (trigOp, trigComm));
+				else {
+					// execute the trigger right away
+					doTrigger(trigOp, trigComm);
+				}
 				
 				continue;
 			}
@@ -439,6 +447,17 @@ bool TextParser::shouldPlayDialogueEffect(char prev, char ch, char next) {
 		return false;
 	
 	return true;
+}
+
+// see if a trigger should be executed right away
+bool TextParser::preparseTrigger(const std::string &trigger) {
+	// in order to keep the script flowing nicely, certain triggers
+	// need to be executed before the script it set in motion
+	if (trigger=="speaker")
+		return true;
+	
+	else
+		return false;
 }
 
 // parse a tag and apply styling
