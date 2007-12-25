@@ -40,6 +40,9 @@ class TextParser {
 	public:
 		// constants
 		static const int NORMAL_FONT_SPEED=50;
+		static const char TEXT_SPEED_INCR_CHAR='[';
+		static const char TEXT_SPEED_DECR_CHAR=']';
+		static const char TEXT_SPEED_NORM_CHAR='|';
 		
 		// constructor
 		TextParser(Game *game);

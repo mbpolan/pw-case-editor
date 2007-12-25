@@ -170,6 +170,8 @@ std::string TextParser::parse() {
 			
 			// dialogue control
 			else if (ch=='\\' && m_Block[1]!='n') {
+				bool erase=true;
+				
 				// check the next character
 				switch(m_Block[1]) {
 					// dialogue break
@@ -186,22 +188,35 @@ std::string TextParser::parse() {
 					
 					// increase speed
 					case '+': {
-						m_Dialogue+='[';
+						int multiplier=atoi(Utils::charToStr(m_Block[2]).c_str());
+						
+						for (int i=0; i<multiplier; i++)
+							m_Dialogue+=TEXT_SPEED_INCR_CHAR;
+						
+						m_Block.erase(0, 3);
+						erase=false;
 					}; break;
 					
 					// decrease speed
 					case '-': {
-						m_Dialogue+=']';
+						int multiplier=atoi(Utils::charToStr(m_Block[2]).c_str());
+						
+						for (int i=0; i<multiplier; i++)
+							m_Dialogue+=TEXT_SPEED_DECR_CHAR;
+						
+						m_Block.erase(0, 3);
+						erase=false;
 					}; break;
 					
 					// normalized speed
 					case '=': {
-						m_Dialogue+='|';
+						m_Dialogue+=TEXT_SPEED_NORM_CHAR;
 					}; break;
 				}
 				
-				// always erase this character
-				m_Block.erase(0, 2);
+				// erase this sequence of characters
+				if (erase)
+					m_Block.erase(0, 2);
 			}
 			
 			// normal character
@@ -264,7 +279,7 @@ std::string TextParser::parse() {
 			std::string sfx="";
 			
 			// increase speed
-			if (curChar=='[') {
+			if (curChar==TEXT_SPEED_INCR_CHAR) {
 				m_FontStyle.speed-=10;
 				
 				// make sure to clamp the value to [0,100]
@@ -273,7 +288,7 @@ std::string TextParser::parse() {
 			}
 			
 			// decrease speed
-			else if (curChar==']') {
+			else if (curChar==TEXT_SPEED_DECR_CHAR) {
 				m_FontStyle.speed+=10;
 				
 				// make sure to clamp the value to [0,100]
@@ -282,7 +297,7 @@ std::string TextParser::parse() {
 			}
 			
 			// reset speed
-			else if (curChar=='|')
+			else if (curChar==TEXT_SPEED_NORM_CHAR)
 				m_FontStyle.speed=NORMAL_FONT_SPEED;
 			
 			// date string

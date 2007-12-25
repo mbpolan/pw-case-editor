@@ -59,6 +59,13 @@ SDL_Surface* Utils::createSurface(int width, int height) {
 	return SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 32, 0, 0, 0, 0);
 }
 
+// convert a char to a string
+std::string Utils::charToStr(char ch) {
+	std::string str="";
+	str+=ch;
+	return str;
+}
+
 // break a string apart based on a delimiting string
 StringVector Utils::explodeString(const std::string &delimiter, const std::string &strc) {
 	std::string str=strc;

@@ -257,6 +257,10 @@ int Fonts::drawString(int x, int y, int limit, int rightClamp, const std::string
 	for (int i=0; i<limit; i++) {
 		char ch=(char) str[i];
 		
+		// don't bother drawing unknown characters
+		if (font.glyphs.find(ch)==font.glyphs.end())
+			continue;
+		
 		// see if we should force a new line
 		if (ch=='\n') {
 			// check if we already have three lines
