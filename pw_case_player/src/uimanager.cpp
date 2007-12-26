@@ -135,6 +135,24 @@ void UI::Manager::registerTestimonySequence(const std::string &id) {
 	m_Animations[id]=anim;
 }
 
+// register a cross examination sprite sequence animation
+void UI::Manager::registerCrossExamineSequence(const std::string &id) {
+	Animation anim;
+	
+	// fill in values
+	anim.speed=10;
+	anim.lastDraw=0;
+	anim.rightLimit=256; // x value of right lawyer image
+	anim.leftLimit=0; // x value of left lawyer image
+	anim.topLimit=0; // keeps track of top sprite
+	anim.bottomLimit=256; // keeps track of bottom sprite
+	anim.velocity=1;
+	anim.multiplier=3;
+	
+	// add the animation
+	m_Animations[id]=anim;
+}
+
 // register a blinking animation
 void UI::Manager::registerBlink(const std::string &id, const std::string &texture, const Point &p, int speed) {
 	Animation anim;
@@ -526,6 +544,186 @@ bool UI::Manager::animateTestimonySequence(const std::string &id) {
 				anim.bottomLimit-=1*anim.multiplier;
 			}
 		}
+	}
+	
+	return false;
+}
+
+// FIXME: the following function is annoyingly similar to the above testimony one
+//        maybe find a way to merge them together in the future
+// animate the cross examination sprite sequence
+bool UI::Manager::animateCrossExamineSequence(const std::string &id, 
+					      SDL_Surface *leftImg, SDL_Surface *rightImg) {
+	// make sure the animation is valid
+	if (m_Animations.find(id)==m_Animations.end()) {
+		std::cout << "UIManager: animation '" << id << "' not registered\n";
+		return true;
+	}
+	
+	Animation &anim=m_Animations[id];
+	
+	// check for existance of sprites
+	Character *xt=m_Case->getCharacter("cross_examine_top");
+	Character *xb=m_Case->getCharacter("cross_examine_bottom");
+	if (!xt || !xb) {
+		std::cout << "UIManager: needed sprites 'cross_examine_top' and 'cross_examine_bottom' not found\n";
+		return true;
+	}
+	
+	// now get sprites
+	Sprite *xtt=xt->getSprite();
+	Sprite *xtb=xb->getSprite();
+	
+	// disable looping
+	xtt->toggleLoop(false);
+	xtb->toggleLoop(false);
+	
+	// cache the current frame of lower sprite
+	SDL_Surface *lFrame=xtb->getCurrentFrame()->image;
+	
+	// calculate center points for both
+	static int centerxTop=128-(xtt->getCurrentFrame()->image->w/2);
+	static int centerxBottom=128-(lFrame->w/2);
+	
+	// calculate y values
+	static int yTop=5;
+	static int yBottom=xtt->getCurrentFrame()->image->h+10;
+	
+	// for the lower screen, always draw the colorized court overview
+	Renderer::drawImage(Point(0, 197), "court_overview_c");
+	
+	// now draw bounding rectangles for containment of lawyer images
+	Renderer::drawRect(SDL_GetVideoSurface(), Point(0, 227), 256, 2, 0);
+	Renderer::drawRect(SDL_GetVideoSurface(), Point(0, 277), 256, 2, 0);
+	
+	Renderer::drawRect(SDL_GetVideoSurface(), Point(0, 307), 256, 2, 0);
+	Renderer::drawRect(SDL_GetVideoSurface(), Point(0, 357), 256, 2, 0);
+	
+	// then draw the blue line images
+	Renderer::drawImage(Point(0, 229), "blueline");
+	Renderer::drawImage(Point(0, 309), "blueline");
+	
+	// and finally, draw the two lawyers' images
+	Renderer::drawImage(Point(anim.leftLimit, 229), leftImg);
+	Renderer::drawImage(Point(anim.rightLimit, 309), rightImg);
+	
+	// we are not animating the sprites
+	if (anim.topLimit!=centerxTop || anim.bottomLimit!=centerxBottom) {
+		// we're still progressing towards the center
+		if (anim.velocity==1) {
+			// play an introductory sound effect
+			static bool once=true;
+			if (once) {
+				// play a sound effect
+				Audio::playEffect("sfx_fly_in", Audio::CHANNEL_SCRIPT);
+				
+				// also preset the starting positions for right lawyer's image
+				anim.rightLimit=256-rightImg->w;
+				
+				once=!once;
+			}
+			
+			// move sprites across the screen
+			anim.topLimit+=1*anim.multiplier;
+			anim.bottomLimit-=3*anim.multiplier;
+			
+			// center the top
+			if (anim.topLimit>=centerxTop)
+				anim.topLimit=centerxTop;
+			
+			// center the bottom
+			if (anim.bottomLimit<=centerxBottom)
+				anim.bottomLimit=centerxBottom;
+		}
+		
+		// we're moving up
+		else {
+			// once more, play another sound effect
+			bool once=true; 
+			if (once) {
+				// play a sound effect
+				Audio::playEffect("sfx_fly_out", Audio::CHANNEL_SCRIPT);
+				once=!once;
+			}
+			
+			// once the sprites are moved out of the way, we're done
+			if (yTop-anim.delta.y()<=0 && yBottom+anim.delta.y()>=192)
+				return true;
+			
+			// increase the y delta
+			anim.delta.setY(anim.delta.y()+2*anim.multiplier);
+		}
+		
+		// draw top sprite frame
+		xtt->renderFrame(anim.topLimit, yTop-anim.delta.y());
+		
+		// the important part about the bottom sprite, is that it has the possibility
+		// of moving below into the lower screen when the animation is in its final stages
+		// we first need to test if that has already occurred...
+		if ((yBottom+anim.delta.y())+lFrame->h<=192)
+			// simply draw the frame in its entirety
+			xtb->renderFrame(anim.bottomLimit, yBottom+anim.delta.y());
+		
+		// well, this sucks; we need to draw only the visible portion
+		else {
+			// fill in the source rectangle, with the cutoff region noted
+			SDL_Rect src;
+			src.x=0;
+			src.y=0;
+			src.w=lFrame->w;
+			src.h=192-(yBottom+anim.delta.y()); // here's the magic
+			
+			// for the destination rectangle, fill in values for
+			// where the sprite is located
+			SDL_Rect dest;
+			dest.x=anim.bottomLimit;
+			dest.y=yBottom+anim.delta.y();
+			
+			// now manually blit the frame
+			SDL_BlitSurface(lFrame, &src, SDL_GetVideoSurface(), &dest);
+		}
+	}
+	
+	// we reached the midpoint: animate the sprites
+	else {
+		static int ticks=0;
+		
+		// just as soon as the sprites have reached their center positions,
+		// draw a white rectangle to simulate a flash effect
+		if (ticks<8) {
+			SDL_Surface *screen=SDL_GetVideoSurface();
+			
+			// draw the rectangle
+			Renderer::drawRect(screen, Point(0, 0), 256, 192, SDL_MapRGB(screen->format, 255, 255, 255));
+			ticks++;
+		}
+		
+		// once that's done, proceed to animate the sprites
+		else {
+			xtt->animate(centerxTop, yTop);
+			xtb->animate(centerxBottom, yBottom);
+			
+			if (xtt->done() && xtt->done()) {
+				//stt->reset();
+				//stb->reset();
+				
+				// flag that we're continuing moving the sprites
+				anim.velocity=0;
+				
+				// start an initial movement
+				anim.topLimit+=3*anim.multiplier;
+				anim.bottomLimit-=1*anim.multiplier;
+			}
+		}
+	}
+	
+	// the two lawyer images should move ever so slightly as well
+	static int ticks=0;
+	if (SDL_GetTicks()-ticks>300) {
+		anim.rightLimit-=1;
+		anim.leftLimit+=1;
+		
+		ticks=SDL_GetTicks();
 	}
 	
 	return false;

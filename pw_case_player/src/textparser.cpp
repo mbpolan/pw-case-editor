@@ -36,6 +36,7 @@ TextParser::TextParser(Game *game): m_Game(game) {
 	m_Dialogue="";
 	m_QueuedFade="null";
 	m_QueuedTestimony="null";
+	m_QueuedExamination="null";
 	m_QueuedEvent="null";
 	m_Direct=false;
 	m_TalkLocked=false;
@@ -434,9 +435,23 @@ void TextParser::nextStep() {
 		// display testimony from a character
 		if (m_QueuedTestimony!="null") {
 			// set the testimony to the game engine
-			m_Game->displayTestimony(m_QueuedTestimony);
+			m_Game->displayTestimony(m_QueuedTestimony, false);
 			
 			m_QueuedTestimony="null";
+		}
+		
+		// begin a cross examination
+		else if (m_QueuedExamination!="null") {
+			StringVector params=Utils::explodeString(',', m_QueuedExamination);
+			
+			// begin the requested cross examination of testimony
+			m_Game->displayTestimony(params[0], true);
+			
+			// set images for lawyers
+			m_Game->m_State.crossExamineLawyers.first=params[1];
+			m_Game->m_State.crossExamineLawyers.second=params[2];
+			
+			m_QueuedExamination="null";
 		}
 		
 		m_Pause=false;
@@ -577,10 +592,21 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	}
 	
 	// show evidence on screen
-	else if (trigger=="show_evidence_left") {
+	else if (trigger=="show_evidence") {
+		StringVector params=Utils::explodeString(',', command);
+		std::string item=params[0];
+		std::string pos=params[1];
+		
 		// given the id, get the actual evidence struct
-		if (pcase->getEvidence(command))
-			m_Game->setShownEvidence(command, POSITION_LEFT);
+		if (pcase->getEvidence(item)) {
+			if (pos=="right")
+				m_Game->setShownEvidence(item, POSITION_RIGHT);
+			else
+				m_Game->setShownEvidence(item, POSITION_LEFT);
+		}
+		
+		else
+			std::cout << "Warning: evidence '" << item << "' doesn't exist\n";
 	}
 	
 	// hide shown evidence
@@ -830,7 +856,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	// set images for courtroom overview
 	else if (trigger=="set_court_overview_image") {
 		// split the command string
-		std::vector<std::string> params=Utils::explodeString(',', command);
+		StringVector params=Utils::explodeString(',', command);
 		std::string area=params[0];
 		std::string image=params[1];
 		
@@ -859,6 +885,15 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		
 		// preset a new block and start testimony directly after this block
 		m_NextBlock="INTERNAL_testimony";
+		m_Direct=true;
+	}
+	
+	// begin cross examining a witness
+	else if (trigger=="cross_examine") {
+		m_QueuedExamination=command;
+		
+		// present a new block, and start cross examination afterwards
+		m_NextBlock="INTERNAL_cross_examination";
 		m_Direct=true;
 	}
 	

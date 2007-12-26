@@ -61,6 +61,7 @@ Game::Game(const std::string &rootPath, Case::Case *pcase): m_RootPath(rootPath)
 	// reset testimony variables
 	m_State.curTestimony="null";
 	m_State.curTestimonyPiece=0;
+	m_State.curExamination=false;
 	
 	// reset courtroom sprites
 	m_State.crOverviewDefense="null";
@@ -87,6 +88,11 @@ Game::Game(const std::string &rootPath, Case::Case *pcase): m_RootPath(rootPath)
 	m_State.gavel="none";
 	m_State.courtCamera="none";
 	m_State.testimonySequence="none";
+	m_State.crossExamineSequence="none";
+	
+	// reset cross examination lawyer image ids
+	m_State.crossExamineLawyers.first="null";
+	m_State.crossExamineLawyers.second="null";
 	
 	// null out variables
 	m_State.currentLocation="null";
@@ -560,6 +566,7 @@ void Game::registerAnimations() {
 	
 	// register sprite sequences
 	m_UI->registerTestimonySequence("an_testimony_sequence");
+	m_UI->registerCrossExamineSequence("an_cross_examine_sequence");
 	
 	// flip velocities on certain animations to reverse them
 	m_UI->reverseVelocity("an_info_page_button_left");
@@ -627,6 +634,10 @@ bool Game::shouldDrawTextBox() {
 	if (m_State.hideTextBox && m_Parser->dialogueDone())
 		return false;
 	
+	// cross examination effect
+	if (m_State.crossExamineSequence!="none")
+		return false;
+	
 	return true;
 }
 
@@ -682,7 +693,7 @@ void Game::setShownEvidence(const std::string &id, const Position &pos) {
 }
 
 // display a testimony
-void Game::displayTestimony(const std::string &id) {
+void Game::displayTestimony(const std::string &id, bool crossExamine) {
 	// get the testimony, if it exists
 	Case::Testimony *testimony=m_Case->getTestimony(id);
 	if (!testimony) {
@@ -698,19 +709,25 @@ void Game::displayTestimony(const std::string &id) {
 	
 	// set our current testimony flag
 	m_State.curTestimony=id;
+	m_State.curExamination=crossExamine;
 	
 	// set the speaker at this location
 	m_Case->getLocation("witness_stand")->character=testimony->speaker;
 	m_Parser->setSpeaker("none");
 	
 	// go to witness stand
-	setLocation("witness_stand");
+	m_State.queuedLocation="witness_stand";
 	
 	// request the talk animation be locked
 	m_Parser->lockTalk(true);
 	
 	// start testimony sequence
-	m_State.testimonySequence="top";
+	if (!crossExamine)
+		m_State.testimonySequence="top";
+	else
+		m_State.crossExamineSequence="top";
+	
+	// and schedule a fade out
 	m_State.fadeOut="top";
 }
 
@@ -865,6 +882,11 @@ void Game::renderTopView() {
 
 // render the menu view (lower screen)
 void Game::renderMenuView() {
+	// if the cross examination sequence is being animated, don't draw anything;
+	// graphics are handled by the UIManager function
+	if (m_State.crossExamineSequence!="none")
+		return;
+	
 	// when dealing with drawing elements, some need to be drawn "thin"
 	// this is only true when the examine scene is being drawn
 	std::string append="";
@@ -963,6 +985,13 @@ void Game::renderMenuView() {
 			else
 				renderControls(CONTROLS_EXAMINE | CONTROLS_MOVE);
 		}
+	}
+	
+	// draw testimony movement buttons
+	else if (flagged(STATE_CROSS_EXAMINE_BTNS)) {
+		// first, draw the two testimony movement buttons
+		Renderer::drawImage(Point(16, 64+192+5), "x_examine_btn");
+		Renderer::drawImage(Point(16+106+12, 64+192+5), "x_examine_btn");
 	}
 	
 	// top everything off with scanlines
@@ -1117,6 +1146,36 @@ bool Game::renderSpecialEffects() {
 			m_Parser->setBlock("<testimony-title>"+testimony->title+"</testimony-title>");
 			
 			m_State.testimonySequence="none";
+			
+			return true;
+		}
+		
+		return false;
+	}
+	
+	// render cross examination sprite sequence
+	else if (m_State.crossExamineSequence!="none") {
+		Audio::haltMusic();
+		
+		// make sure lawyer images exist
+		Case::Image *leftImg=m_Case->getImage(m_State.crossExamineLawyers.first);
+		Case::Image *rightImg=m_Case->getImage(m_State.crossExamineLawyers.second);
+		if (!leftImg || !rightImg) {
+			std::cout << "Game: needed sprites 'cross_examine_top' and 'cross_examine_bottom' not found\n";
+			m_State.crossExamineSequence="none";
+			return true;
+		}
+		
+		// animate the sequence
+		bool ret=m_UI->animateCrossExamineSequence("an_cross_examine_sequence", leftImg->texture, rightImg->texture);
+		if (ret) {
+			// get the testimony in question
+			Case::Testimony *testimony=m_Case->getTestimony(m_State.curTestimony);
+			
+			m_State.crossExamineSequence="none";
+			
+			// once again, we set the testimony title as our cross examination title
+			m_Parser->setBlock("<testimony-title>"+testimony->title+"</testimony-title>");
 			
 			return true;
 		}

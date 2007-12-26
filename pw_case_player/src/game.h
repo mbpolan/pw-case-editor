@@ -48,7 +48,8 @@ enum GameFlags {
 	STATE_EXAMINE=			1 << 13,
 	STATE_MOVE=			1 << 14,
 	STATE_TALK=			1 << 15,
-	STATE_PRESENT_TOP_BTN=		1 << 16 };
+	STATE_PRESENT_TOP_BTN=		1 << 16,
+	STATE_CROSS_EXAMINE_BTNS=	1 << 17 };
 
 // menu controls to draw
 enum Controls {
@@ -117,6 +118,7 @@ struct _GameState {
 	// testimony variables
 	std::string curTestimony;
 	int curTestimonyPiece;
+	bool curExamination;
 	
 	// special effects
 	std::string fadeOut;
@@ -125,6 +127,10 @@ struct _GameState {
 	std::string gavel;
 	std::string courtCamera;
 	std::string testimonySequence;
+	std::string crossExamineSequence;
+	
+	// lawyer images for cross examination sequences
+	StringPair crossExamineLawyers;
 	
 	// the current evidence being shown
 	std::string shownEvidence;
@@ -202,7 +208,7 @@ class Game {
 		void setShownEvidence(const std::string &id, const Position &pos);
 		
 		// begin displaying a testimony
-		void displayTestimony(const std::string &id);
+		void displayTestimony(const std::string &id, bool crossExamine);
 		
 		// change the selected evidence/profile
 		void selectEvidence(bool evidence=true, bool increment=true);

@@ -61,6 +61,9 @@ struct _Animation {
 	// current position of element
 	Point current;
 	
+	// location differences
+	Point delta;
+	
 	// type of animation
 	AnimType type;
 	
@@ -113,6 +116,9 @@ class Manager {
 		// register a testimony sprite sequence animation
 		void registerTestimonySequence(const std::string &id);
 		
+		// register a cross examination sprite sequence animation
+		void registerCrossExamineSequence(const std::string &id);
+		
 		// register a blinking animation
 		void registerBlink(const std::string &id, const std::string &texture, const Point &p, int speed);
 		
@@ -139,6 +145,9 @@ class Manager {
 		
 		// animate the testimony sprite sequence
 		bool animateTestimonySequence(const std::string &id);
+		
+		// animate the cross examination sprite sequence
+		bool animateCrossExamineSequence(const std::string &id, SDL_Surface *leftLawyer, SDL_Surface *rightLawyer);
 		
 	private:
 		// pointer to current case
