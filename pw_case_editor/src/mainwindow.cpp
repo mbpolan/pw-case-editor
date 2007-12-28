@@ -44,11 +44,16 @@
 
 ElementEx g_ElementEx;
 
+MainWindow *g_MainWnd;
+
 // constructor
 MainWindow::MainWindow() {
 	// set the title and minimum window size
 	set_title("Unsaved File - Phoenix Wright Case Editor");
 	set_size_request(640, 480);
+	
+	// register our window as the global pointer
+	g_MainWnd=this;
 	
 	// center it up
 	int x, y;
@@ -806,24 +811,24 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 			GotoDialog::Data data=diag.get_data();
 			
 			// begin trigger string
-			Glib::ustring trig="{*goto";
+			Glib::ustring trig="{*";
 			
 			// complete is based on goto type
 			switch(data.second) {
 				case GotoDialog::GOTO_NORMAL: {
-					trig+=":";
+					trig+="goto:";
 					trig+=data.first;
 					trig+=";*}";
 				} break;
 				
 				case GotoDialog::GOTO_DIRECT: {
-					trig+="_direct:";
+					trig+="direct_goto:";
 					trig+=data.first;
 					trig+=";*}";
 				} break;
 				
 				case GotoDialog::GOTO_TIMED: {
-					trig+="_timed:";
+					trig+="timed_goto:";
 					trig+=data.first;
 					trig+=",";
 					trig+=Utils::to_string(data.third);
@@ -900,7 +905,7 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 	
 	// set location
 	else if (trigger=="set_location") {
-		if (!check_case_element("location", 1))
+		if (!check_case_element("locations", 1))
 			return;
 		
 		SetLocationDialog diag(m_Case.get_locations());

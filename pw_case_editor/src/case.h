@@ -128,6 +128,9 @@ struct _Testimony {
 	Glib::ustring nextBlock;
 	Glib::ustring followLoc;
 	
+	// block to execute if the cross examination is scrolled through
+	Glib::ustring xExamineEndBlock;
+	
 	// vector of testimony pieces
 	std::vector<TestimonyPiece> pieces;
 };

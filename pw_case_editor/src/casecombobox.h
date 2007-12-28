@@ -32,6 +32,9 @@ class CharComboBox: public Gtk::ComboBoxText {
 		// constructor
 		CharComboBox(const CharacterMap &characters);
 		
+		// set the active character by internal name
+		void set_active_internal(const Glib::ustring &name);
+		
 		// get the selected character's name
 		Glib::ustring get_selected_name() const;
 		
@@ -53,16 +56,25 @@ class LocationComboBox: public Gtk::ComboBoxText {
 		// constructor
 		LocationComboBox(const LocationMap &locations);
 		
+		// set the active location via internal name
+		void set_active_internal(const Glib::ustring &id);
+		
 		// get the selected location's name
 		Glib::ustring get_selected_name() const;
 		
 		// get the selected locations's internal name
-		Glib::ustring get_selected_internal() const;
+		Glib::ustring get_selected_internal();
 		
 		// get the selected location
 		Case::Location* get_selected_location();
 		
 	protected:
+		// check if a location is a court location (uses display name as argument)
+		Glib::ustring is_court_location(const Glib::ustring &str);
+		
+		// check if a location is a court location (uses internal id as argument)
+		Glib::ustring internal_is_court_location(const Glib::ustring &str);
+		
 		LocationMap m_Locations;
 };
 

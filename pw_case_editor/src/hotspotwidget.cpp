@@ -121,6 +121,10 @@ bool HotspotWidget::on_button_press_event(GdkEventButton *e) {
 		m_Hotspot.rect.x=int(e->x);
 		m_Hotspot.rect.y=int(e->y);
 		
+		// and reset previous rectangle dimensions
+		m_Hotspot.rect.w=0;
+		m_Hotspot.rect.h=0;
+		
 		// emit signal
 		m_SigPointChanged.emit(m_Hotspot.rect.x, m_Hotspot.rect.y);
 	}

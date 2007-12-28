@@ -228,6 +228,9 @@ IO::Code IO::save_case_to_file(const Glib::ustring &path, const Case::Case &pcas
 		// write follow location
 		write_string(f, (*it).second.followLoc);
 		
+		// write cross examine end block
+		write_string(f, (*it).second.xExamineEndBlock);
+		
 		// write amount of pieces
 		int tpieceCount=(*it).second.pieces.size();
 		fwrite(&tpieceCount, sizeof(int), 1, f);
@@ -479,6 +482,9 @@ IO::Code IO::export_case_to_file(const Glib::ustring &path, const Case::Case &pc
 		
 		// write follow location
 		write_string(f, (*it).second.followLoc);
+		
+		// write cross examine end block
+		write_string(f, (*it).second.xExamineEndBlock);
 		
 		// write amount of pieces
 		int tpieceCount=(*it).second.pieces.size();
@@ -773,6 +779,9 @@ IO::Code IO::load_case_from_file(const Glib::ustring &path, Case::Case &pcase,
 		
 		// read follow location
 		testimony.followLoc=read_string(f);
+		
+		// read cross examine end block
+		testimony.xExamineEndBlock=read_string(f);
 		
 		// read amount of pieces
 		int tpieceCount;
@@ -1207,6 +1216,12 @@ IO::Code IO::read_recent_files(std::vector<StringPair> &vec) {
 		// read info
 		Glib::ustring uri=read_string(f);
 		Glib::ustring display=read_string(f);
+		
+		// see if this file still exists
+		FILE *f=fopen(uri.c_str(), "rb");
+		if (!f)
+			continue;
+		fclose(f);
 		
 		// and add it
 		vec.push_back(std::make_pair<Glib::ustring, Glib::ustring> (uri, display));

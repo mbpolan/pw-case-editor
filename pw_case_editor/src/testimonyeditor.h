@@ -31,12 +31,14 @@
 #include <gtkmm/textview.h>
 
 #include "case.h"
+#include "casecombobox.h"
 
 // class that handles editing of testimonies
 class TestimonyEditor: public Gtk::Dialog {
 	public:
 		// constructor
-		TestimonyEditor(const StringVector &testimonyIds);
+		TestimonyEditor(const CharacterMap &chars, const LocationMap &locations, 
+				const BufferMap &buffers, const StringVector &testimonyIds);
 		
 		// set a testimony to use
 		void set_testimony(const Case::Testimony &testimony);
@@ -46,7 +48,7 @@ class TestimonyEditor: public Gtk::Dialog {
 		
 	private:
 		// build the ui
-		void construct();
+		void construct(const CharacterMap &chars, const LocationMap &locations, const BufferMap &buffers);
 		
 		// create a default testimony piece
 		Case::TestimonyPiece create_testimony_piece();
@@ -81,6 +83,9 @@ class TestimonyEditor: public Gtk::Dialog {
 		// handler for populate signal from text view
 		void on_text_view_populate_menu(Gtk::Menu *menu);
 		
+		// present check button toggled
+		void on_present_toggled();
+		
 		// handler for right clicks on list
 		void on_list_button_pressed();
 		
@@ -100,22 +105,26 @@ class TestimonyEditor: public Gtk::Dialog {
 		Gtk::Label *m_SpeakerLabel;
 		Gtk::Label *m_NextBlockLabel;
 		Gtk::Label *m_FollowLocLabel;
+		Gtk::Label *m_XExamineBlockLabel;
 		Gtk::Label *m_PieceLabel;
-		Gtk::Label *m_PresentLabel;
 		Gtk::Label *m_PressLabel;
 		
 		// text entries
 		Gtk::Entry *m_IdEntry;
 		Gtk::Entry *m_TitleEntry;
-		Gtk::Entry *m_SpeakerEntry;
-		Gtk::Entry *m_NextBlockEntry;
-		Gtk::Entry *m_FollowLocEntry;
 		Gtk::Entry *m_PresentIdEntry;
-		Gtk::Entry *m_PresentTargetEntry;
-		Gtk::Entry *m_PressEntry;
+		
+		// combo boxes
+		CharComboBox *m_SpeakerCB;
+		BlockComboBox *m_PresentTargetCB;
+		BlockComboBox *m_PressCB;
+		BlockComboBox *m_NextBlockCB;
+		BlockComboBox *m_XExamineCB;
+		LocationComboBox *m_FollowLocCB;
 		
 		// check buttons
 		Gtk::CheckButton *m_HiddenCB;
+		Gtk::CheckButton *m_PresentLabelCB;
 		
 		// text view
 		Gtk::TextView *m_TextView;

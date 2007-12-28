@@ -24,10 +24,12 @@
 #include <gtkmm/filechooserdialog.h>
 #include <gtkmm/frame.h>
 #include <gtkmm/messagedialog.h>
+#include <gtkmm/separator.h>
 #include <gtkmm/table.h>
 #include <sstream>
 
 #include "dialogs.h"
+#include "mainwindow.h"
 #include "testimonyeditor.h"
 
 // constructor
@@ -122,7 +124,7 @@ void TestimonyManager::construct() {
 	m_ListView->get_selection()->signal_changed().connect(sigc::mem_fun(*this, &TestimonyManager::on_selection_changed));
 	
 	// set titles for columns
-	m_ListView->set_column_title(0, "Id");
+	m_ListView->set_column_title(0, "ID");
 	m_ListView->set_column_title(1, "Title");
 	
 	// allocate button box
@@ -155,7 +157,8 @@ void TestimonyManager::construct() {
 // add button click handler
 void TestimonyManager::on_add_button_clicked() {
 	// run testimony editor
-	TestimonyEditor te(m_Ids);
+	TestimonyEditor te(g_MainWnd->get_case()->get_characters(), g_MainWnd->get_case()->get_locations(),
+			   g_MainWnd->get_case_buffers(), m_Ids);
 	if (te.run()==Gtk::RESPONSE_OK) {
 		// get the testimony
 		Case::Testimony testimony=te.get_testimony_data();
@@ -184,7 +187,8 @@ void TestimonyManager::on_edit_button_clicked() {
 	Glib::ustring speaker=m_ListView->get_text(row, 1);
 	
 	// prepare testimony editor, and feed in this testimony
-	TestimonyEditor te(m_Ids);
+	TestimonyEditor te(g_MainWnd->get_case()->get_characters(), g_MainWnd->get_case()->get_locations(),
+			   g_MainWnd->get_case_buffers(), m_Ids);
 	te.set_testimony(m_Testimonies[id]);
 	
 	// run this dialog
@@ -288,7 +292,7 @@ void ImageDialog::construct() {
 	m_SWindow->set_size_request(100, 150);
 	
 	m_ImageList=manage(new Gtk::ListViewText(1));
-	m_ImageList->set_column_title(0, "Internal Id");
+	m_ImageList->set_column_title(0, "Internal ID");
 	m_SWindow->add(*m_ImageList);
 	
 	// connect signals
@@ -334,7 +338,7 @@ void ImageDialog::on_add_clicked() {
 		Glib::RefPtr<Gdk::Pixbuf> pixbuf=Gdk::Pixbuf::create_from_file(path);
 		if (pixbuf) {
 			// ask for id
-			TextInputDialog td("Internal Id");
+			TextInputDialog td("Internal ID");
 			if (td.run()==Gtk::RESPONSE_OK) {
 				Glib::ustring id=td.get_text();
 				
@@ -420,7 +424,7 @@ void NewHotspotDialog::construct() {
 	m_YLabel=manage(new Gtk::Label("Y"));
 	m_WLabel=manage(new Gtk::Label("Width"));
 	m_HLabel=manage(new Gtk::Label("Height"));
-	m_BlockLabel=manage(new Gtk::Label("Target Block Id"));
+	m_BlockLabel=manage(new Gtk::Label("Target Block ID"));
 	
 	// allocate entries
 	m_XEntry=manage(new Gtk::Entry);
@@ -518,6 +522,7 @@ void NewHotspotDialog::on_dimension_entry_changed() {
 
 // constructor
 LocationsDialog::LocationsDialog(const LocationMap &locations, const BackgroundMap &bgs, const StringVector &usedIds) {
+	set_size_request(500, 400);
 	construct();
 	
 	// copy data
@@ -545,7 +550,7 @@ void LocationsDialog::construct() {
 	// allocate labels
 	m_LocationsLabel=manage(new Gtk::Label("Locations"));
 	m_DetailsLabel=manage(new Gtk::Label("Details"));
-	m_IdLabel=manage(new Gtk::Label("Internal Id"));
+	m_IdLabel=manage(new Gtk::Label("Internal ID"));
 	m_NameLabel=manage(new Gtk::Label("Name"));
 	m_BGLabel=manage(new Gtk::Label("Background Id"));
 	m_HotspotsLabel=manage(new Gtk::Label("Hotspots"));
@@ -575,13 +580,12 @@ void LocationsDialog::construct() {
 	m_HotspotList->set_column_title(0, "Area");
 	m_HotspotList->set_column_title(1, "Target Block");
 	
-	// allocate tree view
+	// allocate tree view for location ids
 	m_Model=Gtk::ListStore::create(m_ColumnRec);
 	m_TreeView=manage(new Gtk::TreeView(m_Model));
-	m_TreeView->set_size_request(50, 100);
 	
 	// append a default column
-	m_TreeView->append_column("Location Id", m_ColumnRec.m_Column);
+	m_TreeView->append_column("Location ID", m_ColumnRec.m_Column);
 	
 	// connect selection change signals
 	Glib::RefPtr<Gtk::TreeView::Selection> selection=m_TreeView->get_selection();
@@ -622,7 +626,7 @@ void LocationsDialog::construct() {
 	table->attach(*m_HotspotSWindow, 2, 4, 6, 7);
 	table->attach(*m_AmendButton, 3, 4, 7, 8, xops, yops);
 	
-	vb->pack_start(*table, Gtk::PACK_SHRINK);
+	vb->pack_start(*table);
 	
 	// add buttons
 	add_button("OK", Gtk::RESPONSE_OK);
@@ -634,7 +638,7 @@ void LocationsDialog::construct() {
 // add a location
 void LocationsDialog::on_add() {
 	// ask for an id
-	TextInputDialog td("Location Id");
+	TextInputDialog td("Location ID");
 	if (td.run()==Gtk::RESPONSE_OK) {
 		// check the id
 		Glib::ustring id=td.get_text();
@@ -642,7 +646,7 @@ void LocationsDialog::on_add() {
 		// see if it's already been used
 		for (int i=0; i<m_UsedIds.size(); i++) {
 			if (id==m_UsedIds[i]) {
-				Gtk::MessageDialog md(*this, "You must choose a unique id.", false, Gtk::MESSAGE_WARNING);
+				Gtk::MessageDialog md(*this, "You must choose a unique ID.", false, Gtk::MESSAGE_WARNING);
 				md.run();
 				return;
 			}
@@ -974,6 +978,8 @@ void TextInputDialog::construct(const Glib::ustring &label, const Glib::ustring 
 
 // constructor
 AudioDialog::AudioDialog() {
+	set_size_request(250, 300);
+	
 	construct();
 }
 
@@ -1045,7 +1051,7 @@ void AudioDialog::construct() {
 	
 	// append columns
 	m_AudioList->append_column_editable("File Name", m_ColRec.m_NameCol);
-	m_AudioList->append_column("Id", m_ColRec.m_IdCol);
+	m_AudioList->append_column("ID", m_ColRec.m_IdCol);
 	
 	// attach options
 	Gtk::AttachOptions xops=Gtk::FILL | Gtk::EXPAND;
@@ -1069,7 +1075,7 @@ void AudioDialog::construct() {
 // add button handler
 void AudioDialog::on_add_audio() {
 	// ask for internal id
-	TextInputDialog td("Internal Id");
+	TextInputDialog td("Internal ID");
 	if (td.run()==Gtk::RESPONSE_OK) {
 		std::string id=td.get_text();
 		
@@ -1123,7 +1129,7 @@ void NewEvidenceDialog::construct() {
 	
 	// allocate labels
 	m_PathLabel=manage(new Gtk::Label("Path to Image"));
-	m_IdLabel=manage(new Gtk::Label("Internal Id"));
+	m_IdLabel=manage(new Gtk::Label("Internal ID"));
 	
 	// allocate entries
 	m_PathEntry=manage(new Gtk::Entry);
@@ -1220,20 +1226,21 @@ void EvidenceDialog::construct() {
 	// allocate labels
 	m_EvidenceLabel=manage(new Gtk::Label("Evidence Assets"));
 	m_PreviewLabel=manage(new Gtk::Label("Preview"));
-	m_InternalLabel=manage(new Gtk::Label("Internal Id"));
+	m_InternalLabel=manage(new Gtk::Label("Internal ID"));
 	m_NameLabel=manage(new Gtk::Label("Name"));
 	m_CaptionLabel=manage(new Gtk::Label("Caption"));
 	m_DescLabel=manage(new Gtk::Label("Description"));
 	
 	// allocate image
 	m_Image=manage(new Gtk::Image);
+	m_Image->set_size_request(70, 70);
 	
 	// allocate tree view and its model
 	m_Model=Gtk::ListStore::create(m_ColumnRec);
 	m_TreeView=manage(new Gtk::TreeView(m_Model));
 	
 	// append column
-	m_TreeView->append_column("Evidence Id", m_ColumnRec.m_Column);
+	m_TreeView->append_column("Evidence ID", m_ColumnRec.m_Column);
 	
 	// connect signals
 	Glib::RefPtr<Gtk::TreeView::Selection> selection=m_TreeView->get_selection();
@@ -1243,6 +1250,7 @@ void EvidenceDialog::construct() {
 	m_SWindow=manage(new Gtk::ScrolledWindow);
 	m_SWindow->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
 	m_SWindow->add(*m_TreeView);
+	m_SWindow->set_size_request(150, 200);
 	
 	// allocate entries
 	m_InternalEntry=manage(new Gtk::Entry);
@@ -1274,17 +1282,18 @@ void EvidenceDialog::construct() {
 	table->attach(*m_AddButton, 0, 1, 1, 2, yops, yops);
 	table->attach(*m_DeleteButton, 1, 2, 1, 2, yops, yops);
 	table->attach(*m_SWindow, 0, 2, 2, 6);
-	table->attach(*m_PreviewLabel, 2, 4, 0, 1, xops, yops);
-	table->attach(*m_Image, 2, 4, 1, 2);
-	table->attach(*m_InternalLabel, 2, 3, 2, 3, xops, yops);
-	table->attach(*m_InternalEntry, 3, 4, 2, 3, xops, yops);
-	table->attach(*m_NameLabel, 2, 3, 3, 4, xops, yops);
-	table->attach(*m_NameEntry, 3, 4, 3, 4, xops, yops);
-	table->attach(*m_CaptionLabel, 2, 3, 4, 5, xops, yops);
-	table->attach(*m_CaptionEntry, 3, 4, 4, 5, xops, yops);
-	table->attach(*m_DescLabel, 2, 3, 5, 6, xops, yops);
-	table->attach(*m_DescEntry, 3, 4, 5, 6, xops, yops);
-	table->attach(*m_AmendButton, 3, 4, 6, 7, xops, yops);
+	table->attach(*manage(new Gtk::VSeparator), 2, 3, 0, 7);
+	table->attach(*m_PreviewLabel, 3, 5, 0, 1, xops, yops);
+	table->attach(*m_Image, 3, 5, 1, 2);
+	table->attach(*m_InternalLabel, 3, 4, 2, 3, xops, yops);
+	table->attach(*m_InternalEntry, 4, 5, 2, 3, xops, yops);
+	table->attach(*m_NameLabel, 3, 4, 3, 4, xops, yops);
+	table->attach(*m_NameEntry, 4, 5, 3, 4, xops, yops);
+	table->attach(*m_CaptionLabel, 3, 4, 4, 5, xops, yops);
+	table->attach(*m_CaptionEntry, 4, 5, 4, 5, xops, yops);
+	table->attach(*m_DescLabel, 3, 4, 5, 6, xops, yops);
+	table->attach(*m_DescEntry, 4, 5, 5, 6, xops, yops);
+	table->attach(*m_AmendButton, 4, 5, 6, 7, xops, yops);
 	
 	vb->pack_start(*table, Gtk::PACK_SHRINK);
 	
@@ -1433,7 +1442,7 @@ void BackgroundsDialog::construct() {
 	m_ListView=manage(new Gtk::TreeView(m_ListModel));
 	
 	// configure list view
-	m_ListView->append_column("Background IDs", m_ColumnRec.m_Column);
+	m_ListView->append_column("Background ID", m_ColumnRec.m_Column);
 	
 	// connect selection signals
 	Glib::RefPtr<Gtk::TreeView::Selection> selection=m_ListView->get_selection();
@@ -1741,7 +1750,7 @@ void CharBrowser::construct() {
 	
 	// allocate labels
 	m_CharacterLabel=manage(new Gtk::Label("Character"));
-	m_InternalLabel=manage(new Gtk::Label("Internal Id"));
+	m_InternalLabel=manage(new Gtk::Label("Internal ID"));
 	m_NameLabel=manage(new Gtk::Label("Name"));
 	m_DescLabel=manage(new Gtk::Label("Description"));
 	
@@ -2001,7 +2010,7 @@ Gtk::Container* NewCharDialog::build_general_page() {
 	Gtk::AttachOptions yops=Gtk::SHRINK | Gtk::SHRINK;
 	
 	// allocate labels
-	m_CodeNameLabel=manage(new Gtk::Label("Internal Code Name"));
+	m_CodeNameLabel=manage(new Gtk::Label("Internal ID"));
 	m_NameLabel=manage(new Gtk::Label("Name"));
 	m_GenderLabel=manage(new Gtk::Label("Gender"));
 	m_CapLabel=manage(new Gtk::Label("Caption"));

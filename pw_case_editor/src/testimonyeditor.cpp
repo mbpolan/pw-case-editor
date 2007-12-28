@@ -26,10 +26,12 @@
 
 #include "testimonyeditor.h"
 #include "textboxdialog.h"
+#include "tooltips.h"
 
 // constructor
-TestimonyEditor::TestimonyEditor(const StringVector &testimonyIds) {
-	construct();
+TestimonyEditor::TestimonyEditor(const CharacterMap &chars, const LocationMap &locations, 
+				 const BufferMap &buffers, const StringVector &testimonyIds) {
+	construct(chars, locations, buffers);
 	
 	// add a default piece
 	m_Testimony.pieces.push_back(create_testimony_piece());
@@ -49,9 +51,10 @@ void TestimonyEditor::set_testimony(const Case::Testimony &testimony) {
 	// set entry values
 	m_IdEntry->set_text(testimony.id);
 	m_TitleEntry->set_text(testimony.title);
-	m_SpeakerEntry->set_text(testimony.speaker);
-	m_NextBlockEntry->set_text(testimony.nextBlock);
-	m_FollowLocEntry->set_text(testimony.followLoc);
+	m_SpeakerCB->set_active_internal(testimony.speaker);
+	m_NextBlockCB->set_active_text(testimony.nextBlock);
+	m_FollowLocCB->set_active_internal(testimony.followLoc);
+	m_XExamineCB->set_active_text(testimony.xExamineEndBlock);
 	
 	// since we set a testimony, that must mean we're editing it
 	// so disable the id entry
@@ -69,15 +72,16 @@ Case::Testimony TestimonyEditor::get_testimony_data() {
 	// serialize values
 	m_Testimony.id=m_IdEntry->get_text();
 	m_Testimony.title=m_TitleEntry->get_text();
-	m_Testimony.speaker=m_SpeakerEntry->get_text();
-	m_Testimony.nextBlock=m_NextBlockEntry->get_text();
-	m_Testimony.followLoc=m_FollowLocEntry->get_text();
+	m_Testimony.speaker=m_SpeakerCB->get_selected_internal();
+	m_Testimony.nextBlock=m_NextBlockCB->get_active_text();
+	m_Testimony.followLoc=m_FollowLocCB->get_selected_internal();
+	m_Testimony.xExamineEndBlock=m_XExamineCB->get_selected_internal();
 	
 	return m_Testimony;
 }
 
 // build the ui
-void TestimonyEditor::construct() {
+void TestimonyEditor::construct(const CharacterMap &chars, const LocationMap &locations, const BufferMap &buffers) {
 	// get vbox
 	Gtk::VBox *vb=get_vbox();
 	vb->set_border_width(10);
@@ -109,30 +113,41 @@ void TestimonyEditor::construct() {
 	m_AmendButton->signal_clicked().connect(sigc::mem_fun(*this, &TestimonyEditor::on_amend_button_clicked));
 	
 	// allocate labels
-	m_IdLabel=manage(new Gtk::Label("Testimony Id"));
+	m_IdLabel=manage(new Gtk::Label("Testimony ID"));
 	m_TitleLabel=manage(new Gtk::Label("Title"));
 	m_SpeakerLabel=manage(new Gtk::Label("Speaker"));
-	m_NextBlockLabel=manage(new Gtk::Label("Following Block"));
-	m_FollowLocLabel=manage(new Gtk::Label("Following Location"));
+	m_NextBlockLabel=manage(new Gtk::Label("Testimony End Block"));
+	m_FollowLocLabel=manage(new Gtk::Label("Testimony End Location"));
+	m_XExamineBlockLabel=manage(new Gtk::Label("Cross Examination End Block"));
 	m_PieceLabel=manage(new Gtk::Label("1/1"));
-	m_PresentLabel=manage(new Gtk::Label("Evidence Presented"));
 	m_PressLabel=manage(new Gtk::Label("Witness Pressed"));
 	
 	// allocate entries
 	m_IdEntry=manage(new Gtk::Entry);
 	m_TitleEntry=manage(new Gtk::Entry);
-	m_SpeakerEntry=manage(new Gtk::Entry);
-	m_NextBlockEntry=manage(new Gtk::Entry);
-	m_FollowLocEntry=manage(new Gtk::Entry);
 	m_PresentIdEntry=manage(new Gtk::Entry);
-	m_PresentTargetEntry=manage(new Gtk::Entry);
-	m_PressEntry=manage(new Gtk::Entry);
+	
+	// set tooltips for entries
+	m_IdEntry->set_tooltip_text(Tooltips::lookup("TestimonyEditor::m_IdEntry"));
+	m_TitleEntry->set_tooltip_text(Tooltips::lookup("TestimonyEditor::m_TitleEntry"));
+	
+	// allocate combo boxes
+	m_SpeakerCB=manage(new CharComboBox(chars));
+	m_PresentTargetCB=manage(new BlockComboBox(buffers));
+	m_PressCB=manage(new BlockComboBox(buffers));
+	m_XExamineCB=manage(new BlockComboBox(buffers));
+	m_NextBlockCB=manage(new BlockComboBox(buffers));
+	m_FollowLocCB=manage(new LocationComboBox(locations));
 	
 	// connect signals
 	m_IdEntry->signal_changed().connect(sigc::mem_fun(*this, &TestimonyEditor::on_id_entry_changed));
 	
 	// allocate check buttons
 	m_HiddenCB=manage(new Gtk::CheckButton("Piece is Hidden"));
+	m_PresentLabelCB=manage(new Gtk::CheckButton("Evidence Presented"));
+	
+	// connect signals
+	m_PresentLabelCB->signal_toggled().connect(sigc::mem_fun(*this, &TestimonyEditor::on_present_toggled));
 	
 	// allocate text view
 	m_TextView=manage(new Gtk::TextView);
@@ -151,7 +166,7 @@ void TestimonyEditor::construct() {
 	// hbox and table for testimony data
 	Gtk::HBox *thb=manage(new Gtk::HBox);
 	Gtk::Table *ttable=manage(new Gtk::Table);
-	ttable->set_col_spacings(25);
+	ttable->set_spacings(5);
 	
 	// hbox for testimony piece control
 	Gtk::HBox *hb=manage(new Gtk::HBox);
@@ -181,15 +196,25 @@ void TestimonyEditor::construct() {
 	// place frame widgets
 	fTable->attach(*m_SWindow, 0, 3, 0, 1, xops, yops);
 	fTable->attach(*m_HiddenCB, 0, 3, 1, 2, xops, yops);
-	fTable->attach(*m_PresentLabel, 0, 1, 2, 3, xops, yops);
-	fTable->attach(*m_PresentIdEntry, 1, 2, 2, 3, xops, yops);
-	fTable->attach(*m_PresentTargetEntry, 2, 3, 2, 3, xops, yops);
-	fTable->attach(*m_PressLabel, 0, 1, 3, 4, xops, yops);
-	fTable->attach(*m_PressEntry, 1, 2, 3, 4, xops, yops);
-	fTable->attach(*m_AmendButton, 2, 3, 3, 4, xops, yops);
+	
+	// allocate table for testimony piece widgets
+	Gtk::Table *tpTable=manage(new Gtk::Table);
+	tpTable->set_spacings(5);
+	tpTable->set_homogeneous(true);
+	
+	// place testimony piece widgets
+	tpTable->attach(*m_PresentLabelCB, 0, 1, 0, 1, xops, yops);
+	tpTable->attach(*m_PresentIdEntry, 1, 2, 0, 1, xops, yops);
+	tpTable->attach(*m_PresentTargetCB, 2, 3, 0, 1, xops, yops);
+	tpTable->attach(*m_PressLabel, 0, 1, 1, 2, xops, yops);
+	tpTable->attach(*m_PressCB, 1, 2, 1, 2, xops, yops);
+	tpTable->attach(*m_AmendButton, 2, 3, 1, 2, xops, yops);
+	
+	fTable->attach(*tpTable, 0, 3, 2, 3, xops, yops);
 	
 	// pack widgets
 	fvb->pack_start(*hb);
+	fvb->pack_start(*buttons);
 	fvb->pack_start(*fTable);
 	
 	// add vbox to frame
@@ -202,17 +227,18 @@ void TestimonyEditor::construct() {
 	ttable->attach(*m_TitleEntry, 1, 2, 1, 2, xops, yops);
 	ttable->attach(*m_FormatTitleButton, 2, 3, 1, 2, xops, yops);
 	ttable->attach(*m_SpeakerLabel, 0, 1, 2, 3, xops, yops);
-	ttable->attach(*m_SpeakerEntry, 1, 2, 2, 3, xops, yops);
+	ttable->attach(*m_SpeakerCB, 1, 2, 2, 3, xops, yops);
 	ttable->attach(*m_NextBlockLabel, 0, 1, 3, 4, xops, yops);
-	ttable->attach(*m_NextBlockEntry, 1, 2, 3, 4, xops, yops);
+	ttable->attach(*m_NextBlockCB, 1, 2, 3, 4, xops, yops);
 	ttable->attach(*m_FollowLocLabel, 0, 1, 4, 5, xops, yops);
-	ttable->attach(*m_FollowLocEntry, 1, 2, 4, 5, xops, yops);
+	ttable->attach(*m_FollowLocCB, 1, 2, 4, 5, xops, yops);
+	ttable->attach(*m_XExamineBlockLabel, 0, 1, 5, 6, xops, yops);
+	ttable->attach(*m_XExamineCB, 1, 2, 5, 6, xops, yops);
 	
 	thb->pack_start(*ttable, Gtk::PACK_SHRINK);
 	
 	table->attach(*thb, 0, 3, 0, 1, xops, yops);
-	table->attach(*buttons, 0, 1, 1, 2, xops, yops);
-	table->attach(*m_PieceFrame, 0, 3, 2, 3, xops, yops);
+	table->attach(*m_PieceFrame, 0, 3, 1, 2, xops, yops);
 	
 	vb->pack_start(*table);
 	
@@ -251,8 +277,19 @@ void TestimonyEditor::update() {
 	
 	// update other entries
 	m_PresentIdEntry->set_text(piece.presentId);
-	m_PresentTargetEntry->set_text(piece.presentBlock);
-	m_PressEntry->set_text(piece.pressBlock);
+	
+	// we need to toggle certain widgets
+	bool b=piece.presentBlock=="null";
+	if (b)
+		m_PresentLabelCB->set_active(false);
+	else {
+		m_PresentLabelCB->set_active(true);
+		m_PresentTargetCB->set_active_text(piece.presentBlock);
+	}
+	
+	on_present_toggled();
+	
+	m_PressCB->set_active_text(piece.pressBlock);
 	m_HiddenCB->set_active(piece.hidden);
 	
 	// set text in buffer
@@ -369,9 +406,9 @@ void TestimonyEditor::on_amend_button_clicked() {
 	
 	// serialize all values
 	piece.text=m_TextView->get_buffer()->get_text();
-	piece.presentId=m_PresentIdEntry->get_text();
-	piece.presentBlock=m_PresentTargetEntry->get_text();
-	piece.pressBlock=m_PressEntry->get_text();
+	piece.presentId=(m_PresentLabelCB->get_active() ? "null" : m_PresentIdEntry->get_text());
+	piece.presentBlock=m_PresentTargetCB->get_selected_internal();
+	piece.pressBlock=m_PressCB->get_selected_internal();
 	piece.hidden=m_HiddenCB->get_active();
 }
 
@@ -404,6 +441,13 @@ void TestimonyEditor::on_text_view_populate_menu(Gtk::Menu *menu) {
 	list.push_back(Gtk::Menu_Helpers::SeparatorElem());
 	list.push_back(Gtk::Menu_Helpers::MenuElem("Insert Dialogue", 
 		       sigc::mem_fun(*this, &TestimonyEditor::on_list_button_pressed)));
+}
+
+// present check button toggled
+void TestimonyEditor::on_present_toggled() {
+	bool b=m_PresentLabelCB->get_active();
+	m_PresentIdEntry->set_sensitive(b);
+	m_PresentTargetCB->set_sensitive(b);
 }
 
 // handler for right clicks on list

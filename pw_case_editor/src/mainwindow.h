@@ -38,6 +38,12 @@ class MainWindow: public Gtk::Window {
 	public:
 		// constructor
 		MainWindow();
+		
+		// get the case object
+		Case::Case* get_case() { return &m_Case; }
+		
+		// return the buffers used in this case
+		BufferMap get_case_buffers() const { return m_ScriptWidget->get_buffers(); }
 	
 	private:
 		// build the ui
@@ -145,5 +151,8 @@ class MainWindow: public Gtk::Window {
 		// recent files
 		std::vector<StringPair> m_RecentFiles;
 };
+
+// global pointer to the only mainwindow object
+extern MainWindow *g_MainWnd;
 
 #endif

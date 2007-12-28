@@ -9,9 +9,9 @@ pw_case_editor_LDADD = -lgthread-2.0 -lMagick -lMagick++ -lWand -larchive \
 pw_case_editor_SOURCES = case.cpp casecombobox.cpp character.cpp clistview.cpp \
 	dialogs.cpp hotspotwidget.cpp iconmanager.cpp iohandler.cpp locationwidget.cpp \
 	main.cpp mainwindow.cpp scriptwidget.cpp splashscreen.cpp sprite.cpp \
-	spriteeditor.cpp testimonyeditor.cpp textboxdialog.cpp textboxeditor.cpp \
+	spriteeditor.cpp testimonyeditor.cpp textboxdialog.cpp textboxeditor.cpp tooltips.cpp \
 	triggerdialogs.cpp utilities.cpp
 noinst_HEADERS = case.h casecombobox.h character.h clistview.h dialogs.h \
 	exceptions.h hotspotwidget.h iconmanager.h iohandler.h locationwidget.h mainwindow.h \
 	scriptwidget.h splashscreen.h sprite.h spriteeditor.h testimonyeditor.h \
-	textboxdialog.h textboxeditor.h triggerdialogs.h triplet.h utilities.h
+	textboxdialog.h textboxeditor.h tooltips.h triggerdialogs.h triplet.h utilities.h

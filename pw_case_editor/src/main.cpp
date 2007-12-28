@@ -25,6 +25,7 @@
 #include "iohandler.h"
 #include "mainwindow.h"
 #include "splashscreen.h"
+#include "tooltips.h"
 #include "utilities.h"
 
 // routine for splash screen thread
@@ -45,6 +46,9 @@ int main(int argc, char *argv[]) {
 	// initialize threads and gtkmm
 	Glib::thread_init();
 	Gtk::Main app(argc, argv);
+	
+	// register tooltips for application
+	Tooltips::register_tooltips();
 	
 	Gtk::Window::set_auto_startup_notification(false);
 	
