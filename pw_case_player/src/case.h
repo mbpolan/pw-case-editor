@@ -124,6 +124,9 @@ struct _Testimony {
 	std::string nextBlock;
 	std::string followLocation;
 	
+	// next block to follow upon cross examination end
+	std::string xExamineEndBlock;
+	
 	// vector of testimony pieces
 	std::vector<TestimonyPiece> pieces;
 };

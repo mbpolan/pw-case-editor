@@ -140,6 +140,7 @@ class TextParser {
 		std::string m_QueuedFade;
 		std::string m_QueuedTestimony;
 		std::string m_QueuedExamination;
+		std::string m_QueuedResume;
 		
 		// generic events to perform
 		std::string m_QueuedEvent;

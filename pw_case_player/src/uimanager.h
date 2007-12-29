@@ -48,18 +48,28 @@ enum AnimType { ANIM_SIDE_HBOUNCE=0,
 		ANIM_FLASH,
 		ANIM_COURT_CAMERA,
 		ANIM_TESTIMONY_SPR,
-		ANIM_BLINK };
+		ANIM_BLINK,
+		ANIM_SYNC_BOUNCE };
 
 // a struct containing animation data (not all variables pertinent)
 struct _Animation {
-	// texture image associated with this animation
+	// texture images associated with this animation
 	std::string texture;
+	std::string texture2;
+	
+	// enabled textures
+	bool texture1Active;
+	bool texture2Active;
 	
 	// direct pointer to texture
 	SDL_Surface *surface;
 	
 	// current position of element
 	Point current;
+	
+	// points of origin for sync bounce animations
+	Point p1;
+	Point p2;
 	
 	// location differences
 	Point delta;
@@ -98,6 +108,14 @@ class Manager {
 		// reverse the velocity of a registered animation
 		void reverseVelocity(const std::string &id);
 		
+		// disable one texture of a synchronized bounce animation
+		// passing true disables left texture, false disables right
+		void unsyncBounceTexture(const std::string &id, bool left);
+		
+		// enable one texture of a synchronized bounce animation
+		// passing true enables left texture, false enables right
+		void resyncBounceTexture(const std::string &id, bool left);
+		
 		// register a ui animation that bounces the image from side to side
 		// limits are relative to origin; that is, if origin is (100, 100), and if the animation
 		// should bounce sideways 10 pixels in each direction, limits should be -10 and 10, respectively
@@ -121,6 +139,11 @@ class Manager {
 		
 		// register a blinking animation
 		void registerBlink(const std::string &id, const std::string &texture, const Point &p, int speed);
+		
+		// register a synchronized bounce animation
+		// offset: see registerSideBounceAnimation
+		void registerSyncBounce(const std::string &id, const std::string &tex1, const std::string &tex2,
+					const Point &p1, const Point &p2, int limA, int limB, int speed);
 		
 		// draw an animation
 		void drawAnimation(const std::string &id);
@@ -148,6 +171,9 @@ class Manager {
 		
 		// animate the cross examination sprite sequence
 		bool animateCrossExamineSequence(const std::string &id, SDL_Surface *leftLawyer, SDL_Surface *rightLawyer);
+		
+		// animate a synchronized bounce animation
+		bool animateSyncBounce(const std::string &id);
 		
 	private:
 		// pointer to current case

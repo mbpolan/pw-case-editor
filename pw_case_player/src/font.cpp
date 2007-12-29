@@ -225,12 +225,6 @@ int Fonts::drawString(int x, int y, const std::string &str, const std::string &f
 
 // draw a string with clamped restrictions
 int Fonts::drawString(int x, int y, int limit, int rightClamp, const std::string &str, const std::string &fontId) {
-	// check if the font exists
-	if (g_Fonts.find(fontId)==g_Fonts.end()) {
-		std::cout << "Fonts: font '" << fontId << "' not found in stack.\n";
-		return -1;
-	}
-	
 	// also, make sure the default video surface exists
 	SDL_Surface *screen=SDL_GetVideoSurface();
 	if (!screen) {

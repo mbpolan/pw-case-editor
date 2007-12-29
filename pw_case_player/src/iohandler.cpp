@@ -318,6 +318,9 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 		// read follow up location
 		testimony.followLocation=readString(f);
 		
+		// read cross examination follow block
+		testimony.xExamineEndBlock=readString(f);
+		
 		// read amount of pieces
 		int tpieceCount;
 		fread(&tpieceCount, sizeof(int), 1, f);

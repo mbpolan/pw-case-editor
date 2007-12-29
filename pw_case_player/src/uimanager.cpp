@@ -39,6 +39,24 @@ void UI::Manager::reverseVelocity(const std::string &id) {
 	}
 }
 
+// disable one texture of a synchronized bounce animation
+void UI::Manager::unsyncBounceTexture(const std::string &id, bool left) {
+	Animation &anim=m_Animations[id];
+	if (left)
+		anim.texture1Active=false;
+	else
+		anim.texture2Active=false;
+}
+
+// enable one texture of a synchronized bounce animation
+void UI::Manager::resyncBounceTexture(const std::string &id, bool left) {
+	Animation &anim=m_Animations[id];
+	if (left)
+		anim.texture1Active=true;
+	else
+		anim.texture2Active=true;
+}
+
 // register a ui animation that bounces the image from side to side
 void UI::Manager::registerSideBounceAnimation(const std::string &id, const std::string &texture, bool horizontal, 
 					      const Point &origin, int limitA, int limitB, int speed) {
@@ -164,6 +182,29 @@ void UI::Manager::registerBlink(const std::string &id, const std::string &textur
 	anim.ticks=0;
 	anim.velocity=1; // velocity here specifies either draw or hide
 	anim.texture=texture;
+	
+	// add the animation
+	m_Animations[id]=anim;
+}
+
+// register a synchronized bounce animation
+void UI::Manager::registerSyncBounce(const std::string &id, const std::string &tex1, const std::string &tex2,
+				     const Point &p1, const Point &p2, int limA, int limB, int speed) {
+	Animation anim;
+	
+	// fill in values
+	anim.speed=speed;
+	anim.lastDraw=0;
+	anim.velocity=1;
+	anim.delta=Point(0, 0);
+	anim.p1=p1;
+	anim.p2=p2;
+	anim.leftLimit=limA;
+	anim.rightLimit=limB;
+	anim.texture=tex1;
+	anim.texture2=tex2;
+	anim.texture1Active=true;
+	anim.texture2Active=true;
 	
 	// add the animation
 	m_Animations[id]=anim;
@@ -727,4 +768,46 @@ bool UI::Manager::animateCrossExamineSequence(const std::string &id,
 	}
 	
 	return false;
+}
+
+// animate a synchronized bounce animation
+bool UI::Manager::animateSyncBounce(const std::string &id) {
+	// get the animation
+	if (m_Animations.find(id)==m_Animations.end()) {
+		std::cout << "UIManager: animation '" << id << "' not registered\n";
+		return true;
+	}
+	
+	Animation &anim=m_Animations[id];
+	
+	// see if its time to progress the animation
+	int now=SDL_GetTicks();
+	if (now-anim.lastDraw>=anim.speed) {
+		anim.lastDraw=now;
+		
+		// moving outward
+		if (anim.velocity==1) {
+			if (anim.delta.x()>=anim.rightLimit)
+				anim.velocity=-1;
+		}
+		
+		// move inward
+		else {
+			if (anim.delta.x()<=anim.leftLimit)
+				anim.velocity=1;
+		}
+		
+		anim.delta.setX(anim.delta.x()+anim.velocity);
+	}
+	
+	// draw the first texture
+	if (anim.texture1Active)
+		Renderer::drawImage(anim.p1+anim.delta, Textures::queryTexture(anim.texture));
+	
+	// and then the second, with an inverted direction
+	if (anim.texture2Active) {
+		Point i=anim.delta;
+		i.invert();
+		Renderer::drawImage(anim.p2+i, Textures::queryTexture(anim.texture2));
+	}
 }

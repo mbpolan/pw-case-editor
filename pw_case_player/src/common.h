@@ -36,6 +36,17 @@ class Point {
 			m_Y=y;
 		}
 		
+		// add two points together
+		Point operator+(const Point &p) {
+			return Point(m_X+p.x(), m_Y+p.y());
+		}
+		
+		// reverse the signs on the coordinates
+		void invert() {
+			m_X=-m_X;
+			m_Y=-m_Y;
+		}
+		
 		// set coordinates
 		void setX(int x) { m_X=x; }
 		void setY(int y) { m_Y=y; }

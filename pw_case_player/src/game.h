@@ -49,7 +49,8 @@ enum GameFlags {
 	STATE_MOVE=			1 << 14,
 	STATE_TALK=			1 << 15,
 	STATE_PRESENT_TOP_BTN=		1 << 16,
-	STATE_CROSS_EXAMINE_BTNS=	1 << 17 };
+	STATE_CROSS_EXAMINE_BTNS=	1 << 17,
+	STATE_PRESS_BTN=		1 << 18 };
 
 // menu controls to draw
 enum Controls {
@@ -119,6 +120,7 @@ struct _GameState {
 	std::string curTestimony;
 	int curTestimonyPiece;
 	bool curExamination;
+	bool curExaminationPaused; // for temporarily breaking away from cross examinations
 	
 	// special effects
 	std::string fadeOut;
@@ -239,6 +241,9 @@ class Game {
 		
 		// top right button was clicked
 		void onTopRightButtonClicked();
+		
+		// top left button was clicked
+		void onTopLeftButtonClicked();
 		
 		// bottom left button was clicked
 		void onBottomLeftButtonClicked();

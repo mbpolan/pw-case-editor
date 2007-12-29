@@ -37,6 +37,7 @@ TextParser::TextParser(Game *game): m_Game(game) {
 	m_QueuedFade="null";
 	m_QueuedTestimony="null";
 	m_QueuedExamination="null";
+	m_QueuedResume="null";
 	m_QueuedEvent="null";
 	m_Direct=false;
 	m_TalkLocked=false;
@@ -329,6 +330,10 @@ std::string TextParser::parse() {
 		
 		// draw the string in plain formatting otherwise
 		else {
+			// make the color green for cross examinations
+			if (m_Game->m_State.curExamination && !m_Game->m_State.curExaminationPaused)
+				m_FontStyle.color="green";
+			
 			// draw the string
 			Fonts::drawString(8, 134+shift, m_StrPos, SDL_GetVideoSurface()->w-8, m_Dialogue, m_FontStyle.color);
 			
@@ -452,6 +457,20 @@ void TextParser::nextStep() {
 			m_Game->m_State.crossExamineLawyers.second=params[2];
 			
 			m_QueuedExamination="null";
+		}
+		
+		// resume a cross examination
+		else if (m_QueuedResume!="null") {
+			m_Game->m_State.curExaminationPaused=false;
+			m_Game->m_State.curTestimonyPiece=atoi(m_QueuedResume.c_str());
+			
+			m_Game->m_State.fadeOut="top";
+			
+			// always revert back to witness stand and prepare requested piece
+			m_Game->m_State.queuedLocation="witness_stand";
+			m_Game->m_State.queuedBlock="INTERNAL_testimony";
+			
+			m_QueuedResume="null";
 		}
 		
 		m_Pause=false;
@@ -895,6 +914,11 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		// present a new block, and start cross examination afterwards
 		m_NextBlock="INTERNAL_cross_examination";
 		m_Direct=true;
+	}
+	
+	// resume a cross examination
+	else if (trigger=="resume_cross_examination") {
+		m_QueuedResume=command;
 	}
 	
 	// end the current dialog

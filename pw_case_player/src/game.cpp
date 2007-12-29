@@ -62,6 +62,7 @@ Game::Game(const std::string &rootPath, Case::Case *pcase): m_RootPath(rootPath)
 	m_State.curTestimony="null";
 	m_State.curTestimonyPiece=0;
 	m_State.curExamination=false;
+	m_State.curExaminationPaused=false;
 	
 	// reset courtroom sprites
 	m_State.crOverviewDefense="null";
@@ -216,6 +217,10 @@ void Game::render() {
 	if (!renderSpecialEffects())
 		return;
 	
+	// that annoying black bar separating the top and bottom screens? yeah,
+	// we need to redraw it as well
+	Renderer::drawRect(SDL_GetVideoSurface(), Point(0, 192), 256, 5, 0);
+	
 	// once everything static is drawn, parse the block
 	std::string status=m_Parser->parse();
 	
@@ -244,6 +249,9 @@ void Game::render() {
 			flags |= STATE_PROFILES_BTN;
 			flags |= STATE_EVIDENCE_INFO_PAGE;
 			flags |= STATE_BACK_BTN;
+			
+			if (m_State.curExamination)
+				flags |= STATE_PRESENT_TOP_BTN;
 		}
 		
 		// draw profiles page
@@ -260,12 +268,25 @@ void Game::render() {
 			flags |= STATE_EVIDENCE_BTN;
 			flags |= STATE_PROFILE_INFO_PAGE;
 			flags |= STATE_BACK_BTN;
+			
+			if (m_State.curExamination)
+				flags |= STATE_PRESENT_TOP_BTN;
 		}
 		
 		// otherwise draw the dialog next button
 		else {
-			flags |= STATE_COURT_REC_BTN;
-			flags |= STATE_NEXT_BTN;
+			// only draw the cross examination buttons if we're going through
+			// the speaker's testimony, and if we didn't pause the examination
+			if (m_State.curExamination && !m_State.curExaminationPaused && m_Parser->getSpeaker()!="none") {
+				flags |= STATE_CROSS_EXAMINE_BTNS;
+				flags |= STATE_PRESENT_BTN;
+				flags |= STATE_PRESS_BTN;
+			}
+			
+			else {
+				flags |= STATE_NEXT_BTN;
+				flags |= STATE_COURT_REC_BTN;
+			}
 		}
 		
 		// remove certain flags in specific situations
@@ -464,6 +485,10 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 			if ((e->x>=176 && e->x<=176+80) && (e->y>=197 && e->y<=197+33))
 				onTopRightButtonClicked();
 			
+			// see if the click hit the top left button
+			else if ((e->x>=0 && e->x<=80) && (e->y>=197 && e->y<197+33))
+				onTopLeftButtonClicked();
+			
 			// see if the bottom left button was clicked
 			else if ((e->x>=0 && e->x<=79) && (e->y>=359 && e->y<=359+30))
 				onBottomLeftButtonClicked();
@@ -488,7 +513,7 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 				Case::Testimony *testimony=m_Case->getTestimony(m_State.curTestimony);
 				
 				// check if there's another piece
-				if (m_State.curTestimonyPiece>=testimony->pieces.size()) {
+				if (m_State.curTestimonyPiece>=testimony->pieces.size()-1) {
 					// schedule a fade out
 					m_State.fadeOut="top";
 					
@@ -507,9 +532,20 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 					// set the speaker
 					m_Parser->setSpeaker(testimony->speaker);
 					
+					// we need to make sure to show the first block and not automatically
+					// increment the counter
+					// FIXME: this is a nasty little hack job, maybe find a more elegant solution later
+					static bool once=true;
+					if (once) {
+						m_Parser->setBlock(testimony->pieces[m_State.curTestimonyPiece].text);
+						once=false;
+					}
+					
 					// set the next block and increment counter
-					m_Parser->setBlock(testimony->pieces[m_State.curTestimonyPiece].text);
-					m_State.curTestimonyPiece++;
+					else {
+						m_State.curTestimonyPiece++;	
+						m_Parser->setBlock(testimony->pieces[m_State.curTestimonyPiece].text);
+					}
 				}
 				
 				m_Parser->nextStep();
@@ -519,6 +555,53 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 			m_Parser->nextStep();
 			
 			return;
+		}
+		
+		// check if one of the cross examination buttons was clicked
+		else if (flagged(STATE_CROSS_EXAMINE_BTNS)) {
+			// if the parser is blocking the dialogue, don't skip
+			if (!m_Parser->dialogueDone() && (m_Parser->isBlocking() || m_State.curTestimony!="null"))
+				return;
+			
+			Case::Testimony *testimony=m_Case->getTestimony(m_State.curTestimony);
+			
+			// left button clicked
+			if ((e->x>=16 && e->x<=122) && (e->y>=261 && e->y<=341)) {
+				m_State.curTestimonyPiece--;
+				if (m_State.curTestimonyPiece<0)
+					m_State.curTestimonyPiece=0;
+				
+				m_Parser->setBlock(testimony->pieces[m_State.curTestimonyPiece].text);
+				
+				m_Parser->nextStep();
+				m_Parser->nextStep();
+			}
+			
+			// right button clicked
+			else if ((e->x>=134 && e->x<=240) && (e->y>=261 && e->y<=341)) {
+				// we've reached the end of the testimony
+				if (m_State.curTestimonyPiece>=testimony->pieces.size()-1) {
+					m_State.curExaminationPaused=true;
+					m_State.curTestimonyPiece=0;
+					
+					// now set the ending block
+					m_Parser->setBlock(m_Case->getBuffers()[testimony->xExamineEndBlock]);
+					
+					m_Parser->nextStep();
+					m_Parser->nextStep();
+				}
+				
+				// move to the next block of testimony
+				else {
+					// set the next block and increment counter
+					m_State.curTestimonyPiece++;
+					m_Parser->setBlock(testimony->pieces[m_State.curTestimonyPiece].text);
+					
+					m_Parser->nextStep();
+					m_Parser->nextStep();
+					
+				}
+			}
 		}
 		
 		// check if the centered, present button was clicked
@@ -546,9 +629,11 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 // register default animations for ui elements
 void Game::registerAnimations() {
 	// register some default animations
-	m_UI->registerSideBounceAnimation("an_button_arrow_next", "tc_button_arrow_next", true, Point(110, 284), -2, 2, 25);
-	m_UI->registerSideBounceAnimation("an_info_page_button_left", "tc_button_arrow_left", true, Point(3, 267), -2, 2, 25);
-	m_UI->registerSideBounceAnimation("an_info_page_button_right", "tc_button_arrow_right", true, Point(247, 267), -2, 2, 25);
+	m_UI->registerSideBounceAnimation("an_button_arrow_next", "tc_button_arrow_right", true, Point(110, 284), -2, 2, 25);
+	m_UI->registerSideBounceAnimation("an_info_page_button_left", "tc_button_arrow_small_left", true, Point(3, 267), -2, 2, 25);
+	m_UI->registerSideBounceAnimation("an_info_page_button_right", "tc_button_arrow_small_right", true, Point(247, 267), -2, 2, 25);
+	m_UI->registerSyncBounce("an_x_examine_arrows", "tc_button_arrow_left", "tc_button_arrow_right",
+				 Point(51, 285), Point(169, 285), -2, 2, 25);
 	
 	// register fade effects
 	m_UI->registerFadeOut("an_next_location_fade_top", 1, UI::ANIM_FADE_OUT_TOP);
@@ -567,6 +652,7 @@ void Game::registerAnimations() {
 	// register sprite sequences
 	m_UI->registerTestimonySequence("an_testimony_sequence");
 	m_UI->registerCrossExamineSequence("an_cross_examine_sequence");
+	
 	
 	// flip velocities on certain animations to reverse them
 	m_UI->reverseVelocity("an_info_page_button_left");
@@ -990,8 +1076,18 @@ void Game::renderMenuView() {
 	// draw testimony movement buttons
 	else if (flagged(STATE_CROSS_EXAMINE_BTNS)) {
 		// first, draw the two testimony movement buttons
-		Renderer::drawImage(Point(16, 64+192+5), "x_examine_btn");
-		Renderer::drawImage(Point(16+106+12, 64+192+5), "x_examine_btn");
+		Renderer::drawImage(Point(16, 261), "tc_x_examine_btn");
+		Renderer::drawImage(Point(134, 261), "tc_x_examine_btn");
+		
+		// don't draw the left arrow if there is not testimony piece
+		// that precedes this one
+		if (m_State.curTestimonyPiece==0)
+			m_UI->unsyncBounceTexture("an_x_examine_arrows", true);
+		else
+			m_UI->resyncBounceTexture("an_x_examine_arrows", true);
+		
+		// draw the arrows on the buttons
+		m_UI->animateSyncBounce("an_x_examine_arrows");
 	}
 	
 	// top everything off with scanlines
@@ -1020,6 +1116,8 @@ void Game::renderMenuView() {
 		Renderer::drawImage(Point(177, 197), "tc_evidence_btn");
 	else if (flagged(STATE_PROFILES_BTN))
 		Renderer::drawImage(Point(177, 197), "tc_profiles_btn");
+	if (flagged(STATE_PRESS_BTN))
+		Renderer::drawImage(Point(0, 197), "tc_press_btn");
 	
 	// draw the present evidence button, centered on the upper portion of the lower screen
 	if (flagged(STATE_PRESENT_TOP_BTN))
@@ -1058,7 +1156,15 @@ bool Game::renderSpecialEffects() {
 			
 			// set the next block, if requested
 			if (m_State.queuedBlock!="null") {
-				m_Parser->setBlock(m_Case->getBuffers()[m_State.queuedBlock]);
+				// return to the testimony
+				if (m_State.queuedBlock=="INTERNAL_testimony") {
+					m_Parser->setBlock(m_Case->getTestimony(m_State.curTestimony)->pieces[m_State.curTestimonyPiece].text);
+					m_Parser->nextStep();
+				}
+				
+				else
+					m_Parser->setBlock(m_Case->getBuffers()[m_State.queuedBlock]);
+				
 				m_Parser->nextStep();
 				m_State.queuedBlock="null";
 			}
@@ -1368,51 +1474,61 @@ void Game::onTopRightButtonClicked() {
 	
 	// if the present button is shown, present shown evidence
 	else if (flagged(STATE_PRESENT_BTN)) {
-		int flags=STATE_COURT_REC_BTN | STATE_CONTROLS;
+		int flags=0;
 		
-		// get the current location
-		Case::Location *location=m_Case->getLocation(m_State.currentLocation);
-		if (!location)
-			return;
-		
-		// and get the character here
-		Character *character=m_Case->getCharacter(location->character);
-		if (!character)
-			return;
-		
-		// get the current evidence/profile
-		std::string id;
-		if (flagged(STATE_EVIDENCE_INFO_PAGE) && !m_State.visibleEvidence.empty())
-			id=m_State.visibleEvidence[m_State.evidencePage*8+m_State.selectedEvidence].id;
-		
-		else if (!m_State.visibleProfiles.empty())
-			id=m_State.visibleProfiles[m_State.profilesPage*8+m_State.selectedProfile].getInternalName();
-		
-		// see if this evidence/profile can be presented
-		bool found=false;
-		std::vector<StringPair> presentables=character->getPresentableItems();
-		for (int i=0; i<presentables.size(); i++) {
-			if (presentables[i].first==id) {
-				// set the block to use
-				m_Parser->setBlock(m_Case->getBuffers()[presentables[i].second]);
-				m_Parser->nextStep();
-				
-				found=true;
+		// not in cross examination
+		if (!m_State.curExamination) {
+			flags=STATE_COURT_REC_BTN | STATE_CONTROLS;
+			
+			// get the current location
+			Case::Location *location=m_Case->getLocation(m_State.currentLocation);
+			if (!location)
+				return;
+			
+			// and get the character here
+			Character *character=m_Case->getCharacter(location->character);
+			if (!character)
+				return;
+			
+			// get the current evidence/profile
+			std::string id;
+			if (flagged(STATE_EVIDENCE_INFO_PAGE) && !m_State.visibleEvidence.empty())
+				id=m_State.visibleEvidence[m_State.evidencePage*8+m_State.selectedEvidence].id;
+			
+			else if (!m_State.visibleProfiles.empty())
+				id=m_State.visibleProfiles[m_State.profilesPage*8+m_State.selectedProfile].getInternalName();
+			
+			// see if this evidence/profile can be presented
+			bool found=false;
+			std::vector<StringPair> presentables=character->getPresentableItems();
+			for (int i=0; i<presentables.size(); i++) {
+				if (presentables[i].first==id) {
+					// set the block to use
+					m_Parser->setBlock(m_Case->getBuffers()[presentables[i].second]);
+					m_Parser->nextStep();
+					
+					found=true;
+				}
 			}
+			
+			// if the presentable evidence was not found, then fall back on appropriate block
+			if (!found && character->getBadPresentableBlock()!="null") {
+				m_Parser->setBlock(m_Case->getBuffers()[character->getBadPresentableBlock()]);
+				m_Parser->nextStep();
+			}
+			
+			// reset screen
+			m_State.prevScreen=SCREEN_MAIN;
+			
+			// if the text box is also present, draw it as well
+			if (flagged(STATE_TEXT_BOX))
+				flags |= STATE_TEXT_BOX;
 		}
 		
-		// if the presentable evidence was not found, then fall back on appropriate block
-		if (!found && character->getBadPresentableBlock()!="null") {
-			m_Parser->setBlock(m_Case->getBuffers()[character->getBadPresentableBlock()]);
-			m_Parser->nextStep();
-		}
-		
-		// reset screen
-		m_State.prevScreen=SCREEN_MAIN;
-		
-		// if the text box is also present, draw it as well
-		if (flagged(STATE_TEXT_BOX))
-			flags |= STATE_TEXT_BOX;
+		// while in cross examination, only the court record can be viewed
+		else
+			flags |= STATE_BACK_BTN | STATE_PROFILES_BTN | 
+				 STATE_EVIDENCE_PAGE | STATE_LOWER_BAR | STATE_TEXT_BOX;
 		
 		toggle(flags);
 	}
@@ -1457,6 +1573,10 @@ void Game::onTopRightButtonClicked() {
 		else
 			flags |= STATE_EVIDENCE_BTN;
 		
+		// for cross examinations, draw center present button
+		if (m_State.curExamination)
+			flags |= STATE_PRESENT_TOP_BTN;
+		
 		// if the text box is also present, draw it as well
 		if (flagged(STATE_TEXT_BOX))
 			flags |= STATE_TEXT_BOX;
@@ -1474,6 +1594,10 @@ void Game::onTopRightButtonClicked() {
 		else
 			flags |= STATE_PROFILES_BTN;
 		
+		// for cross examinations, draw center present button
+		if (m_State.curExamination)
+			flags |= STATE_PRESENT_TOP_BTN;
+		
 		// if the text box is also present, draw it as well
 		if (flagged(STATE_TEXT_BOX))
 			flags |= STATE_TEXT_BOX;
@@ -1483,6 +1607,11 @@ void Game::onTopRightButtonClicked() {
 	
 	// play a sound effect
 	Audio::playEffect("sfx_click", Audio::CHANNEL_GUI);
+}
+
+// top left button was clicked
+void Game::onTopLeftButtonClicked() {
+	
 }
 
 // bottom left button was clicked
