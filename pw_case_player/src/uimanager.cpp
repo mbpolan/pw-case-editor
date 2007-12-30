@@ -227,6 +227,20 @@ void UI::Manager::registerGreenBarControl(const std::string &id, const std::stri
 	m_Animations[id]=anim;
 }
 
+// register an exclamation animation ("Objection!", "Hold It!", and "Take That!")
+void UI::Manager::registerExclamation(const std::string &id, const std::string &texture, const Point &p) {
+	Animation anim;
+	
+	// fill in value
+	anim.speed=75; // 1.25 seconds at 60 fps
+	anim.ticks=0;
+	anim.texture=texture;
+	anim.current=p;
+	
+	// add the animation
+	m_Animations[id]=anim;
+}
+
 // draw an animation
 void UI::Manager::drawAnimation(const std::string &id) {
 	// get the requested animation
@@ -881,4 +895,43 @@ bool UI::Manager::animateGreenBar(const std::string &id) {
 	SDL_BlitSurface(texture, &src, SDL_GetVideoSurface(), &dest);
 	
 	return false;
+}
+
+// perform an exclamation animation
+bool UI::Manager::exclamation(const std::string &id, const Character *source) {
+	// get the animation
+	if (m_Animations.find(id)==m_Animations.end()) {
+		std::cout << "UIManager: animation '" << id << "' not registered\n";
+		return true;
+	}
+	
+	Animation &anim=m_Animations[id];
+	
+	// get the texture
+	SDL_Surface *texture=Textures::queryTexture(anim.texture);
+	if (!texture) {
+		std::cout << "UIManager: needed texture '" << anim.texture << "' for animation '" << id << "' not found\n";
+		return true;
+	}
+	
+	// play the sound effect, once only
+	if (anim.ticks==0)
+		Audio::playEffect("phoenix_holdit", Audio::CHANNEL_SCRIPT);
+	
+	// see if we should keep drawing
+	if (anim.ticks<anim.speed) {
+		// draw the texture
+		Renderer::drawImage(anim.current, texture);
+		
+		// increment tick counter
+		anim.ticks++;
+		
+		return false;
+	}
+	
+	// we're done
+	else {
+		anim.ticks=0;
+		return true;
+	}
 }

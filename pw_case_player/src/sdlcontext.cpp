@@ -57,6 +57,9 @@ bool SDLContext::init() {
 	}
 	atexit(SDL_Quit);
 	
+	// seed the random number sequence
+	srand(time(NULL));
+	
 	return true;
 }
 

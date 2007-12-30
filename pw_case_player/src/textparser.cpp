@@ -394,6 +394,8 @@ void TextParser::nextStep() {
 	// if this block is empty and we didn't find the next one,
 	// then we flag that we're done
 	if (m_Block.empty() && m_NextBlock=="null" && m_StrPos==m_Dialogue.size()) {
+		std::cout << "a\n";
+		
 		// draw the previous screen
 		if (m_Game->m_State.prevScreen==SCREEN_EXAMINE)
 			m_Game->toggle(STATE_EXAMINE | STATE_COURT_REC_BTN | STATE_LOWER_BAR | STATE_BACK_BTN);
@@ -415,6 +417,8 @@ void TextParser::nextStep() {
 	
 	// if the dialogue string is still being drawn, display it all (unless it's a date/location string)
 	if (m_StrPos!=m_Dialogue.size() && !m_Dialogue.empty()) {
+		std::cout << m_StrPos << "/" << m_Dialogue.size() << "\n";
+		
 		// although we skip the dialogue, we must execute all triggers
 		for (int i=m_StrPos-1; i<m_Dialogue.size(); i++) {
 			if (m_Dialogue[i]=='^')
@@ -426,6 +430,8 @@ void TextParser::nextStep() {
 	
 	// once again, date/location strings have to be fully drawn
 	else {
+		std::cout << "c\n";
+		
 		// reset string position and clear previous formatting
 		m_StrPos=0;
 		clearFormatting();

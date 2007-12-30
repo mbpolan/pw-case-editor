@@ -291,7 +291,7 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 		std::string afile=readString(f);
 		
 		// form full string and load the audio sample
-		if (Audio::loadSample(root+"/audio/"+afile, audio))
+		if (Audio::loadSample(root+"audio/"+afile, audio))
 			Audio::pushAudio(audio.id, audio);
 	}
 	

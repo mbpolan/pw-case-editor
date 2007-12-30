@@ -132,6 +132,7 @@ struct _GameState {
 	std::string courtCamera;
 	std::string testimonySequence;
 	std::string crossExamineSequence;
+	std::string exclamation;
 	
 	// lawyer images for cross examination sequences
 	StringPair crossExamineLawyers;

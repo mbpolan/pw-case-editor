@@ -148,6 +148,9 @@ class Manager {
 		// register a green bar control animation
 		void registerGreenBarControl(const std::string &id, const std::string &texture, const Point &p);
 		
+		// register an exclamation animation ("Objection!", "Hold It!", and "Take That!")
+		void registerExclamation(const std::string &id, const std::string &texture, const Point &p);
+		
 		// draw an animation
 		void drawAnimation(const std::string &id);
 		
@@ -165,6 +168,9 @@ class Manager {
 		
 		// perform a blinking animation
 		bool blink(const std::string &id);
+		
+		// perform an exclamation animation
+		bool exclamation(const std::string &id, const Character *source);
 		
 		// perform a court camera movement
 		bool moveCourtCamera(const std::string &id, SDL_Surface *panorama, Limit start, Limit end);

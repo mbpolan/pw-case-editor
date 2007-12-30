@@ -31,6 +31,9 @@ namespace Utils {
 // string should be in the form of: "location1,location2"
 void scriptToLimits(const std::string &str, UI::Limit &start, UI::Limit &end);
 
+// get a random number in the provided range
+int randomRange(int min, int max);
+
 // create a blank surface
 SDL_Surface* createSurface(int width, int height);
 

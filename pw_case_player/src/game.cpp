@@ -91,6 +91,7 @@ Game::Game(const std::string &rootPath, Case::Case *pcase): m_RootPath(rootPath)
 	m_State.courtCamera="none";
 	m_State.testimonySequence="none";
 	m_State.crossExamineSequence="none";
+	m_State.exclamation="none";
 	
 	// reset cross examination lawyer image ids
 	m_State.crossExamineLawyers.first="null";
@@ -659,6 +660,9 @@ void Game::registerAnimations() {
 	// register court camera effect
 	m_UI->registerCourtCameraMovement("an_court_camera");
 	
+	// register exclamations
+	m_UI->registerExclamation("an_hold_it", "tc_hold_it", Point(0, 0));
+	
 	// register green bars
 	m_UI->registerGreenBarControl("an_court_green_bar", "tc_court_green_bar", Point(172, 10));
 	
@@ -741,6 +745,10 @@ bool Game::shouldDrawTextBox() {
 	
 	// cross examination effect
 	if (m_State.crossExamineSequence!="none")
+		return false;
+	
+	// exclamations
+	if (m_State.exclamation!="none")
 		return false;
 	
 	return true;
@@ -968,7 +976,7 @@ void Game::renderTopView() {
 	}
 	
 	// draw the green court record bar, if needed
-	if (flagged(STATE_COURT_GREEN_BAR)) {
+	if (flagged(STATE_COURT_GREEN_BAR) && m_State.exclamation=="none") {
 		// first, draw the border
 		Renderer::drawImage(Point(170, 8), "tc_court_bar_border");
 		
@@ -1317,6 +1325,20 @@ bool Game::renderSpecialEffects() {
 		return false;
 	}
 	
+	// render exclamations
+	else if (m_State.exclamation!="none") {
+		bool ret=m_UI->exclamation(m_State.exclamation, NULL);
+		if (ret) {
+			m_Parser->setBlock(m_Case->getBuffers()[m_State.queuedBlock]);
+			m_Parser->nextStep();
+			m_Parser->nextStep();
+			
+			m_State.queuedBlock="null";
+			
+			m_State.exclamation="none";
+		}
+	}
+	
 	return true;
 }
 
@@ -1657,7 +1679,24 @@ void Game::onTopRightButtonClicked() {
 
 // top left button was clicked
 void Game::onTopLeftButtonClicked() {
-	
+	// the only button shown on the top left is the press button
+	if (flagged(STATE_PRESS_BTN)) {
+		// get the current testimony
+		Case::Testimony *testimony=m_Case->getTestimony(m_State.curTestimony);
+		
+		// make sure we are in active cross examination
+		if (testimony && m_State.curExamination && !m_State.curExaminationPaused) {
+			// get the press block for this piece of the testimony
+			std::string pBlock=testimony->pieces[m_State.curTestimonyPiece].pressBlock;
+			
+			// set that block to use after the "hold it!" animation
+			m_State.queuedBlock=pBlock;
+			
+			// and schedule said animation
+			m_State.exclamation="an_hold_it";
+			m_State.curExaminationPaused=true;
+		}
+	}
 }
 
 // bottom left button was clicked
@@ -1988,12 +2027,12 @@ void Game::onRecPageClickEvent(int x, int y) {
 		}
 		
 		// advance to next slot
-		ex+=40+8;
+		ex+=48;
 		
 		// reset for next row
 		if (i==3) {
 			ey=305;
-			ex=24+12;
+			ex=36;
 		}
 	}
 	

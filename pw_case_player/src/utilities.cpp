@@ -54,6 +54,23 @@ void Utils::scriptToLimits(const std::string &str, UI::Limit &start, UI::Limit &
 	}
 }
 
+// get a random number in the provided range
+int Utils::randomRange(int min, int max) {
+	// programmer stupidity check
+	if (min>max) {
+		int tmp=max;
+		max=min;
+		min=tmp;
+	}
+	
+	// ditto
+	if (min==max)
+		return min;
+	
+	// return a randomized number
+	return min+((max-min+1)*rand()/(RAND_MAX+1.0));
+}
+
 // create a blank surface
 SDL_Surface* Utils::createSurface(int width, int height) {
 	return SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 32, 0, 0, 0, 0);
