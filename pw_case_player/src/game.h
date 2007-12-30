@@ -50,7 +50,8 @@ enum GameFlags {
 	STATE_TALK=			1 << 15,
 	STATE_PRESENT_TOP_BTN=		1 << 16,
 	STATE_CROSS_EXAMINE_BTNS=	1 << 17,
-	STATE_PRESS_BTN=		1 << 18 };
+	STATE_PRESS_BTN=		1 << 18,
+	STATE_COURT_GREEN_BAR=		1 << 19 };
 
 // menu controls to draw
 enum Controls {
@@ -119,6 +120,7 @@ struct _GameState {
 	// testimony variables
 	std::string curTestimony;
 	int curTestimonyPiece;
+	int barPercent; // amount of green bar filled in
 	bool curExamination;
 	bool curExaminationPaused; // for temporarily breaking away from cross examinations
 	

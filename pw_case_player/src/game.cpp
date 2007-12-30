@@ -61,6 +61,7 @@ Game::Game(const std::string &rootPath, Case::Case *pcase): m_RootPath(rootPath)
 	// reset testimony variables
 	m_State.curTestimony="null";
 	m_State.curTestimonyPiece=0;
+	m_State.barPercent=100;
 	m_State.curExamination=false;
 	m_State.curExaminationPaused=false;
 	
@@ -241,6 +242,9 @@ void Game::render() {
 			flags |= STATE_PROFILES_BTN;
 			flags |= STATE_EVIDENCE_PAGE;
 			flags |= STATE_BACK_BTN;
+			
+			if (m_State.curExamination && !m_State.curExaminationPaused)
+				flags |= STATE_COURT_GREEN_BAR;
 		}
 		
 		// draw evidence info page
@@ -250,8 +254,12 @@ void Game::render() {
 			flags |= STATE_EVIDENCE_INFO_PAGE;
 			flags |= STATE_BACK_BTN;
 			
-			if (m_State.curExamination)
+			if (m_State.curExamination) {
 				flags |= STATE_PRESENT_TOP_BTN;
+				
+				if (!m_State.curExaminationPaused)
+					flags |= STATE_COURT_GREEN_BAR;
+			}
 		}
 		
 		// draw profiles page
@@ -260,6 +268,9 @@ void Game::render() {
 			flags |= STATE_EVIDENCE_BTN;
 			flags |= STATE_PROFILES_PAGE;
 			flags |= STATE_BACK_BTN;
+			
+			if (m_State.curExamination && !m_State.curExaminationPaused)
+				flags |= STATE_COURT_GREEN_BAR;
 		}
 		
 		// draw profile info page
@@ -269,8 +280,12 @@ void Game::render() {
 			flags |= STATE_PROFILE_INFO_PAGE;
 			flags |= STATE_BACK_BTN;
 			
-			if (m_State.curExamination)
+			if (m_State.curExamination) {
 				flags |= STATE_PRESENT_TOP_BTN;
+				
+				if (!m_State.curExaminationPaused)
+					flags |= STATE_COURT_GREEN_BAR;
+			}
 		}
 		
 		// otherwise draw the dialog next button
@@ -281,6 +296,7 @@ void Game::render() {
 				flags |= STATE_CROSS_EXAMINE_BTNS;
 				flags |= STATE_PRESENT_BTN;
 				flags |= STATE_PRESS_BTN;
+				flags |= STATE_COURT_GREEN_BAR;
 			}
 			
 			else {
@@ -643,6 +659,9 @@ void Game::registerAnimations() {
 	// register court camera effect
 	m_UI->registerCourtCameraMovement("an_court_camera");
 	
+	// register green bars
+	m_UI->registerGreenBarControl("an_court_green_bar", "tc_court_green_bar", Point(172, 10));
+	
 	// register blink effects
 	m_UI->registerBlink("an_testimony_blink", "testimony_logo", Point(2, 2), 1500);
 	
@@ -946,6 +965,15 @@ void Game::renderTopView() {
 	if (flagged(STATE_TEXT_BOX) && shouldDrawTextBox()) {
 		// draw the text box over everything
 		renderTextBox();
+	}
+	
+	// draw the green court record bar, if needed
+	if (flagged(STATE_COURT_GREEN_BAR)) {
+		// first, draw the border
+		Renderer::drawImage(Point(170, 8), "tc_court_bar_border");
+		
+		// now animate the green bar
+		m_UI->animateGreenBar("an_court_green_bar");
 	}
 	
 	// if we are required to present evidence, draw elements now
@@ -1527,7 +1555,7 @@ void Game::onTopRightButtonClicked() {
 		
 		// while in cross examination, only the court record can be viewed
 		else
-			flags |= STATE_BACK_BTN | STATE_PROFILES_BTN | 
+			flags |= STATE_BACK_BTN | STATE_PROFILES_BTN | STATE_COURT_GREEN_BAR |
 				 STATE_EVIDENCE_PAGE | STATE_LOWER_BAR | STATE_TEXT_BOX;
 		
 		toggle(flags);
@@ -1545,6 +1573,10 @@ void Game::onTopRightButtonClicked() {
 		if (m_State.requestingEvidence)
 			flags &= ~STATE_BACK_BTN;
 		
+		// draw cross examination elements
+		if (m_State.curExamination && !m_State.curExaminationPaused)
+			flags |= STATE_COURT_GREEN_BAR;
+		
 		toggle(flags);
 	}
 	
@@ -1560,6 +1592,10 @@ void Game::onTopRightButtonClicked() {
 		if (m_State.requestingEvidence)
 			flags &= ~STATE_BACK_BTN;
 		
+		// draw cross examination elements
+		if (m_State.curExamination && !m_State.curExaminationPaused)
+			flags |= STATE_COURT_GREEN_BAR;
+		
 		toggle(flags);
 	}
 	
@@ -1574,8 +1610,13 @@ void Game::onTopRightButtonClicked() {
 			flags |= STATE_EVIDENCE_BTN;
 		
 		// for cross examinations, draw center present button
-		if (m_State.curExamination)
+		if (m_State.curExamination) {
 			flags |= STATE_PRESENT_TOP_BTN;
+			
+			// also see if we should draw the green bar
+			if (!m_State.curExaminationPaused)
+				flags |= STATE_COURT_GREEN_BAR;
+		}
 		
 		// if the text box is also present, draw it as well
 		if (flagged(STATE_TEXT_BOX))
@@ -1595,8 +1636,13 @@ void Game::onTopRightButtonClicked() {
 			flags |= STATE_PROFILES_BTN;
 		
 		// for cross examinations, draw center present button
-		if (m_State.curExamination)
+		if (m_State.curExamination) {
 			flags |= STATE_PRESENT_TOP_BTN;
+			
+			// likewise
+			if (!m_State.curExaminationPaused)
+				flags |= STATE_COURT_GREEN_BAR;
+		}
 		
 		// if the text box is also present, draw it as well
 		if (flagged(STATE_TEXT_BOX))
@@ -1618,29 +1664,25 @@ void Game::onTopLeftButtonClicked() {
 void Game::onBottomLeftButtonClicked() {
 	// if the back button is shown, return to previous screen
 	if (flagged(STATE_BACK_BTN)) {
+		int flags=0;
+		
 		// if either evidence or profiles pages, or examination scene are shown, revert to main screen
 		if (flagged(STATE_EVIDENCE_PAGE) || flagged(STATE_PROFILES_PAGE)) {
 			// if the previous screen is the examine screen, then draw it instead
-			if (m_State.prevScreen==SCREEN_EXAMINE) {
-				int flags=STATE_EXAMINE | STATE_COURT_REC_BTN | STATE_LOWER_BAR | STATE_BACK_BTN;
-				toggle(flags);
-			}
+			if (m_State.prevScreen==SCREEN_EXAMINE)
+				flags=STATE_EXAMINE | STATE_COURT_REC_BTN | STATE_LOWER_BAR | STATE_BACK_BTN;
 			
 			// if the previous screen is the move screen, then draw it
-			else if (m_State.prevScreen==SCREEN_MOVE) {
-				int flags=STATE_MOVE | STATE_COURT_REC_BTN | STATE_LOWER_BAR | STATE_BACK_BTN;
-				toggle(flags);
-			}
+			else if (m_State.prevScreen==SCREEN_MOVE)
+				flags=STATE_MOVE | STATE_COURT_REC_BTN | STATE_LOWER_BAR | STATE_BACK_BTN;
 			
 			// if the previous screen is the talk screen, then draw it
-			else if (m_State.prevScreen==SCREEN_TALK) {
-				int flags=STATE_TALK | STATE_COURT_REC_BTN | STATE_LOWER_BAR | STATE_BACK_BTN;
-				toggle(flags);
-			}
+			else if (m_State.prevScreen==SCREEN_TALK)
+				flags=STATE_TALK | STATE_COURT_REC_BTN | STATE_LOWER_BAR | STATE_BACK_BTN;
 			
 			// must be the main screen
 			else {
-				int flags=STATE_COURT_REC_BTN | STATE_CONTROLS;
+				flags=STATE_COURT_REC_BTN | STATE_CONTROLS;
 				
 				// if the text box is also present, draw it as well
 				if (flagged(STATE_TEXT_BOX))
@@ -1648,8 +1690,6 @@ void Game::onBottomLeftButtonClicked() {
 				
 				// flag that were are now at the main screen
 				m_State.prevScreen=SCREEN_MAIN;
-				
-				toggle(flags);
 			}
 		}
 		
@@ -1657,30 +1697,34 @@ void Game::onBottomLeftButtonClicked() {
 		else if (flagged(STATE_EXAMINE) || flagged(STATE_MOVE) || flagged(STATE_TALK)) {
 			m_State.prevScreen=SCREEN_MAIN;
 			
-			toggle(STATE_COURT_REC_BTN | STATE_CONTROLS);
+			flags=STATE_COURT_REC_BTN | STATE_CONTROLS;
+			
 		}
 		
 		// if evidence info page is shown, revert back to evidence page
 		else if (flagged(STATE_EVIDENCE_INFO_PAGE)) {
-			int flags=STATE_PROFILES_BTN | STATE_BACK_BTN | STATE_EVIDENCE_PAGE | STATE_LOWER_BAR;
+			flags=STATE_PROFILES_BTN | STATE_BACK_BTN | STATE_EVIDENCE_PAGE | STATE_LOWER_BAR;
 			
 			// if the text box is also present, draw it as well
 			if (flagged(STATE_TEXT_BOX))
 				flags |= STATE_TEXT_BOX;
-			
-			toggle(flags);
 		}
 		
 		// if profile info page is shown, revert back to profiles page
 		else if (flagged(STATE_PROFILE_INFO_PAGE)) {
-			int flags=STATE_EVIDENCE_BTN | STATE_BACK_BTN | STATE_PROFILES_PAGE | STATE_LOWER_BAR;
+			flags=STATE_EVIDENCE_BTN | STATE_BACK_BTN | STATE_PROFILES_PAGE | STATE_LOWER_BAR;
 			
 			// if the text box is also present, draw it as well
 			if (flagged(STATE_TEXT_BOX))
 				flags |= STATE_TEXT_BOX;
-			
-			toggle(flags);
 		}
+		
+		// also, if we are in cross examination, toggle the green bar again
+		if (m_State.curExamination && !m_State.curExaminationPaused)
+			flags |= STATE_COURT_GREEN_BAR;
+		
+		// toggle the set flags now
+		toggle(flags);
 		
 		// play a sound effect
 		Audio::playEffect("sfx_return", Audio::CHANNEL_GUI);
@@ -1895,6 +1939,10 @@ void Game::onRecPageClickEvent(int x, int y) {
 				else
 					flags |= STATE_PROFILES_BTN;
 				
+				// also draw cross examination elements if needed
+				if (m_State.curExamination && !m_State.curExaminationPaused)
+					flags |= STATE_COURT_GREEN_BAR;
+				
 				// account for text box
 				if (flagged(STATE_TEXT_BOX))
 					flags |= STATE_TEXT_BOX;
@@ -1922,6 +1970,10 @@ void Game::onRecPageClickEvent(int x, int y) {
 					flags |= STATE_PRESENT_BTN;
 				else
 					flags |= STATE_EVIDENCE_BTN;
+				
+				// also draw cross examination elements if needed
+				if (m_State.curExamination && !m_State.curExaminationPaused)
+					flags |= STATE_COURT_GREEN_BAR;
 				
 				// also account for text box
 				if (flagged(STATE_TEXT_BOX))

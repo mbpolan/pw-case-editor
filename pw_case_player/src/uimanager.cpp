@@ -210,6 +210,23 @@ void UI::Manager::registerSyncBounce(const std::string &id, const std::string &t
 	m_Animations[id]=anim;
 }
 
+// register a green bar control animation
+void UI::Manager::registerGreenBarControl(const std::string &id, const std::string &texture, const Point &p) {
+	Animation anim;
+	
+	// fill values
+	anim.lastDraw=0;
+	anim.velocity=1;
+	anim.speed=10;
+	anim.texture=texture;
+	anim.current=p;
+	anim.rightLimit=100; // current amount fill in
+	anim.leftLimit=0; // amount to decrease
+	
+	// add the animation
+	m_Animations[id]=anim;
+}
+
 // draw an animation
 void UI::Manager::drawAnimation(const std::string &id) {
 	// get the requested animation
@@ -810,4 +827,58 @@ bool UI::Manager::animateSyncBounce(const std::string &id) {
 		i.invert();
 		Renderer::drawImage(anim.p2+i, Textures::queryTexture(anim.texture2));
 	}
+}
+
+// animate the green bar for cross examination attempts and other misc things
+bool UI::Manager::animateGreenBar(const std::string &id) {
+	// get the animation
+	if (m_Animations.find(id)==m_Animations.end()) {
+		std::cout << "UIManager: animation '" << id << "' not registered\n";
+		return true;
+	}
+	
+	Animation &anim=m_Animations[id];
+	
+	// get the texture
+	SDL_Surface *texture=Textures::queryTexture(anim.texture);
+	if (!texture) {
+		std::cout << "UIManager: needed texture for green bar '" << anim.texture << "' not found\n";
+		return true;
+	}
+	
+	// see if we need to progress the animation
+	int now=SDL_GetTicks();
+	if (now-anim.lastDraw>=anim.speed) {
+		anim.lastDraw=now;
+		
+		// decrease fill in percentage until leftLimit is 0
+		if (anim.leftLimit!=0) {
+			anim.rightLimit-=anim.velocity;
+			anim.leftLimit-=anim.velocity;
+			
+			// clamp the value
+			if (anim.leftLimit<0)
+				anim.leftLimit=0;
+		}
+	}
+	
+	// draw the correct percentage of the bar
+	int fill=texture->w*(anim.rightLimit/100);
+	
+	// prepare source rectangle
+	SDL_Rect src;
+	src.x=0;
+	src.y=0;
+	src.w=fill;
+	src.h=texture->h;
+	
+	// prepare destination rectangle
+	SDL_Rect dest;
+	dest.x=anim.current.x();
+	dest.y=anim.current.y();
+	
+	// blit the image
+	SDL_BlitSurface(texture, &src, SDL_GetVideoSurface(), &dest);
+	
+	return false;
 }

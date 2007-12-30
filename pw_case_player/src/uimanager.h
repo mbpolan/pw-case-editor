@@ -145,6 +145,9 @@ class Manager {
 		void registerSyncBounce(const std::string &id, const std::string &tex1, const std::string &tex2,
 					const Point &p1, const Point &p2, int limA, int limB, int speed);
 		
+		// register a green bar control animation
+		void registerGreenBarControl(const std::string &id, const std::string &texture, const Point &p);
+		
 		// draw an animation
 		void drawAnimation(const std::string &id);
 		
@@ -174,6 +177,9 @@ class Manager {
 		
 		// animate a synchronized bounce animation
 		bool animateSyncBounce(const std::string &id);
+		
+		// animate the green bar for cross examination attempts and other misc things
+		bool animateGreenBar(const std::string &id);
 		
 	private:
 		// pointer to current case
