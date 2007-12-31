@@ -80,7 +80,7 @@ class TextParser {
 		// parse the given control block
 		// returns: next text block to go to, std::string::null if this one is not done
 		// being parsed
-		std::string parse();
+		std::string parse(bool drawDialogue);
 		
 		// move on to the next break point
 		void nextStep();

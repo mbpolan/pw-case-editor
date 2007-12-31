@@ -130,7 +130,7 @@ void UI::Manager::registerCourtCameraMovement(const std::string &id) {
 	anim.speed=1;
 	anim.lastDraw=0;
 	anim.velocity=0;
-	anim.multiplier=85;
+	anim.multiplier=50;
 	anim.current=Point(0, 0);
 	
 	// add animation
@@ -915,8 +915,10 @@ bool UI::Manager::exclamation(const std::string &id, const Character *source) {
 	}
 	
 	// play the sound effect, once only
-	if (anim.ticks==0)
+	if (anim.ticks==0) {
+		// FIXME: remove this bit of debug code
 		Audio::playEffect("phoenix_holdit", Audio::CHANNEL_SCRIPT);
+	}
 	
 	// see if we should keep drawing
 	if (anim.ticks<anim.speed) {

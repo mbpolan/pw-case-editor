@@ -27,9 +27,15 @@
 // utilities namespace
 namespace Utils {
 
+// whether or not debugging is on
+extern bool g_DebugOn;
+
 // convert a court camera script string to animation limits
 // string should be in the form of: "location1,location2"
 void scriptToLimits(const std::string &str, UI::Limit &start, UI::Limit &end);
+
+// print a debug message
+void debugMessage(const std::string &object, const std::string &msg);
 
 // get a random number in the provided range
 int randomRange(int min, int max);

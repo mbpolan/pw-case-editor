@@ -30,6 +30,9 @@
 // class that controls toplevel functions
 class Application {
 	public:
+		// the version of this program
+		static std::string VERSION;
+		
 		// possible command line arguments
 		enum ArgFlags { ARG_NONE=0x00, ARG_NO_SOUND=0x01 };
 		

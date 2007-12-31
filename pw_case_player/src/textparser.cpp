@@ -72,12 +72,11 @@ void TextParser::reset() {
 	m_CurTag="";
 	m_NextBlock="null";
 	
-	m_StrPos=1;
 	m_LastChar=0;
 }
 
 // parse the given control block
-std::string TextParser::parse() {
+std::string TextParser::parse(bool drawDialogue) {
 	// if we are done parsing, return here
 	if (m_Done)
 		return "null";
@@ -101,6 +100,7 @@ std::string TextParser::parse() {
 		// reset variables
 		m_Dialogue="";
 		m_BlockDiag=false;
+		m_StrPos=1;
 		
 		// start going over block
 		while(1) {
@@ -335,7 +335,8 @@ std::string TextParser::parse() {
 				m_FontStyle.color="green";
 			
 			// draw the string
-			Fonts::drawString(8, 134+shift, m_StrPos, SDL_GetVideoSurface()->w-8, m_Dialogue, m_FontStyle.color);
+			if (drawDialogue)
+				Fonts::drawString(8, 134+shift, m_StrPos, SDL_GetVideoSurface()->w-8, m_Dialogue, m_FontStyle.color);
 			
 			// since the dialog is done, execute queued events
 			if (m_QueuedEvent!="null" && dialogueDone()) {
@@ -394,8 +395,6 @@ void TextParser::nextStep() {
 	// if this block is empty and we didn't find the next one,
 	// then we flag that we're done
 	if (m_Block.empty() && m_NextBlock=="null" && m_StrPos==m_Dialogue.size()) {
-		std::cout << "a\n";
-		
 		// draw the previous screen
 		if (m_Game->m_State.prevScreen==SCREEN_EXAMINE)
 			m_Game->toggle(STATE_EXAMINE | STATE_COURT_REC_BTN | STATE_LOWER_BAR | STATE_BACK_BTN);
@@ -417,8 +416,6 @@ void TextParser::nextStep() {
 	
 	// if the dialogue string is still being drawn, display it all (unless it's a date/location string)
 	if (m_StrPos!=m_Dialogue.size() && !m_Dialogue.empty()) {
-		std::cout << m_StrPos << "/" << m_Dialogue.size() << "\n";
-		
 		// although we skip the dialogue, we must execute all triggers
 		for (int i=m_StrPos-1; i<m_Dialogue.size(); i++) {
 			if (m_Dialogue[i]=='^')
@@ -430,10 +427,8 @@ void TextParser::nextStep() {
 	
 	// once again, date/location strings have to be fully drawn
 	else {
-		std::cout << "c\n";
-		
 		// reset string position and clear previous formatting
-		m_StrPos=0;
+		m_StrPos=1;
 		clearFormatting();
 		
 		// if we have queued effects, execute them now
@@ -607,6 +602,8 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		// make sure this evidence exists at all
 		if (pcase->getEvidence(command))
 			m_Game->m_State.visibleEvidence.push_back(*pcase->getEvidence(command));
+		else
+			Utils::debugMessage("TextParser", "Unable to add unknown evidence: "+command);
 	}
 	
 	// add a profile to court record
@@ -614,6 +611,8 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		// make sure this character exists
 		if (pcase->getCharacter(command))
 			m_Game->m_State.visibleProfiles.push_back(*pcase->getCharacter(command));
+		else
+			Utils::debugMessage("TextParser", "Unable to add profile for nonexistent character: "+command);
 	}
 	
 	// show evidence on screen
@@ -631,7 +630,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		}
 		
 		else
-			std::cout << "Warning: evidence '" << item << "' doesn't exist\n";
+			Utils::debugMessage("TextParser", "Unable to show nonexistent evidence: "+item);
 	}
 	
 	// hide shown evidence
@@ -658,7 +657,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		}
 		
 		else
-			std::cout << "Warning: trying to add location " << target << " to non existant " << location << " target\n";
+			Utils::debugMessage("TextParser", "Unable to add location '"+target+"' to non existant '"+location+"' target");
 	}
 	
 	// set a trigger block at a location
@@ -675,6 +674,9 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 			// set the trigger here
 			location->triggerBlock=block;
 		}
+		
+		else
+			Utils::debugMessage("TextParser", "Unable to set trigger in nonexistent location: "+target);
 	}
 	
 	// set a character's animation
@@ -688,6 +690,8 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		Character *character=pcase->getCharacter(charName);
 		if (character)
 			character->setRootAnimation(anim);
+		else
+			Utils::debugMessage("TextParser", "Trying to clear presentables for nonexistent character: "+command);
 	}
 	
 	// put a character at a location
@@ -701,7 +705,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		if (pcase->getLocation(target))
 			pcase->getLocation(target)->character=character;
 		else
-			std::cout << "Unable to put character at nonexistant location '" << target << "'\n";
+			Utils::debugMessage("TextParser", "Unable to put character '"+character+"' at nonexistant location: "+target);
 	}
 	
 	// add a talk option to a character
@@ -716,6 +720,8 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		Character *character=pcase->getCharacter(charName);
 		if (character)
 			character->addTalkOption(viewString, blockId);
+		else
+			Utils::debugMessage("TextParser", "Unable to add talk option '"+viewString+"' for nonexistent character: "+charName);
 	}
 	
 	// remove a talk option
@@ -729,6 +735,8 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		Character *character=pcase->getCharacter(charName);
 		if (character)
 			character->removeTalkOption(viewString);
+		else
+			Utils::debugMessage("TextParser", "Unable to remove talk option '"+viewString+"' for nonexistent character: "+charName);
 	}
 	
 	// clear talk options
@@ -737,6 +745,8 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		Character *character=pcase->getCharacter(command);
 		if (character)
 			character->clearTalkOptions();
+		else
+			Utils::debugMessage("TextParser", "Unable to clear talk options for nonexistent character: "+command);
 	}
 	
 	// add a presentable piece of evidence/profile to a character
@@ -751,6 +761,8 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		Character *character=pcase->getCharacter(charName);
 		if (character)
 			character->addPresentable(itemId, targetBlock);
+		else
+			Utils::debugMessage("TextParser", "Unable to add presentable '"+itemId+"' for nonexistent character: "+charName);
 	}
 	
 	// remove a piece of presentable evidence/profile
@@ -764,6 +776,8 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		Character *character=pcase->getCharacter(charName);
 		if (character)
 			character->removePresentable(itemId);
+		else
+			Utils::debugMessage("TextParser", "Unable to remove presentables for nonexistent character: "+charName);
 	}
 	
 	// clear character's presentable items
@@ -772,6 +786,8 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		Character *character=pcase->getCharacter(command);
 		if (character)
 			character->clearPresentableItems();
+		else
+			Utils::debugMessage("TextParser", "Unable to clear presentables for nonexistent character: "+command);
 	}
 	
 	// set the block to use when a useless item was presented
@@ -785,6 +801,8 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		Character *character=pcase->getCharacter(charName);
 		if (character)
 			character->setBadPresentableBlock(target);
+		else
+			Utils::debugMessage("TextParser", "Unable to set bad presentable block for nonexistent character: "+charName);
 	}
 	
 	// set music to be played a location
@@ -812,7 +830,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 			pcase->getLocation(target)->music=musicId;
 		
 		else
-			std::cout << "Warning: setting music " << musicId << " at unknown location " << target << std::endl;
+			Utils::debugMessage("TextParser", "Unable to set music "+musicId+" at unknown location: "+target);
 	}
 	
 	// clear any music set at a location
@@ -893,7 +911,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		else if (area=="witness")
 			m_Game->m_State.crOverviewWitness=image;
 		else
-			std::cout << "No such area in courtroom overview: '" << area << "'\n";
+			Utils::debugMessage("TextParser", "No such area in courtroom overview: '"+area);
 	}
 	
 	// set an image to be displayed over location background
@@ -925,11 +943,10 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	// resume a cross examination
 	else if (trigger=="resume_cross_examination") {
 		m_QueuedResume=command;
+		
+		// go to a blank block to resume
+		doTrigger("goto", "INTERNAL_blank");
 	}
-	
-	// end the current dialog
-	else if (trigger=="end_dialogue")
-		m_Done=true;
 	
 	return "null";
 }

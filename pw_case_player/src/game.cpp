@@ -143,7 +143,7 @@ bool Game::loadStockTextures() {
 	for (int i=0; i<fonts.size(); i++) {
 		Fonts::Font font;
 		if (!Fonts::loadFont(fonts[i].second, font)) {
-			std::cout << "Unable to load font '" << fonts[i].first << "': " << fonts[i].second << std::endl;
+			std::cout << "CRITICAL: Unable to load font '" << fonts[i].first << "': " << fonts[i].second << std::endl;
 			return false;
 		}
 		
@@ -153,7 +153,7 @@ bool Game::loadStockTextures() {
 	
 	// load stock assets
 	if (!IO::loadStockFile("stock.cfg", m_Case)) {
-		std::cout << "Unable to load stock assets from file\n";
+		std::cout << "CRITICAL: Unable to load stock assets from file\n";
 		return false;
 	}
 	
@@ -224,7 +224,7 @@ void Game::render() {
 	Renderer::drawRect(SDL_GetVideoSurface(), Point(0, 192), 256, 5, 0);
 	
 	// once everything static is drawn, parse the block
-	std::string status=m_Parser->parse();
+	std::string status=m_Parser->parse(shouldDrawTextBox());
 	
 	// new block ready for parsing
 	if (status!="null") {
@@ -526,7 +526,8 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 			
 			// if we are in the process of a testimony, set the next piece
 			// as the following block
-			if (m_State.curTestimony!="null") {
+			if ((m_State.curTestimony!="null" && !m_State.curExamination) || 
+			   (m_State.curExamination && !m_State.curExaminationPaused)) {
 				Case::Testimony *testimony=m_Case->getTestimony(m_State.curTestimony);
 				
 				// check if there's another piece
@@ -564,8 +565,6 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 						m_Parser->setBlock(testimony->pieces[m_State.curTestimonyPiece].text);
 					}
 				}
-				
-				m_Parser->nextStep();
 			}
 			
 			// proceed to the next block
@@ -591,7 +590,6 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 				m_Parser->setBlock(testimony->pieces[m_State.curTestimonyPiece].text);
 				
 				m_Parser->nextStep();
-				m_Parser->nextStep();
 			}
 			
 			// right button clicked
@@ -605,7 +603,6 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 					m_Parser->setBlock(m_Case->getBuffers()[testimony->xExamineEndBlock]);
 					
 					m_Parser->nextStep();
-					m_Parser->nextStep();
 				}
 				
 				// move to the next block of testimony
@@ -615,8 +612,6 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 					m_Parser->setBlock(testimony->pieces[m_State.curTestimonyPiece].text);
 					
 					m_Parser->nextStep();
-					m_Parser->nextStep();
-					
 				}
 			}
 		}
@@ -757,7 +752,7 @@ bool Game::shouldDrawTextBox() {
 // set the current backdrop location
 void Game::setLocation(const std::string &locationId) {
 	if (!m_Case->getLocation(locationId)) {
-		std::cout << "Game: no such location: '" << locationId << "'\n";
+		Utils::debugMessage("Game", "Unable to set nonexistent location: "+locationId);
 		return;
 	}
 	
@@ -810,13 +805,13 @@ void Game::displayTestimony(const std::string &id, bool crossExamine) {
 	// get the testimony, if it exists
 	Case::Testimony *testimony=m_Case->getTestimony(id);
 	if (!testimony) {
-		std::cout << "Game: display testimony '" << id << "' doesn't exist.\n";
+		Utils::debugMessage("Game", "Requested testimony '"+id+"' doesn't exist and can't be displayed.");
 		return;
 	}
 	
 	// now, check the speaker's character
 	if (!m_Case->getCharacter(testimony->speaker)) {
-		std::cout << "Game: speaker '" << testimony->speaker << "' for testimony '" << id << "' doesn't exist.\n";
+		Utils::debugMessage("Game", "Speaker '"+testimony->speaker+"' for testimony '"+id+"' doesn't exist");
 		return;
 	}
 	
@@ -899,7 +894,7 @@ void Game::renderTopView() {
 		// see if this image exists
 		Case::Image *temp=m_Case->getImage(m_State.tempImage);
 		if (!temp)
-			std::cout << "Game: unknown image: " << m_State.tempImage << std::endl;
+			Utils::debugMessage("Game", "Unknown temporary image requested: "+m_State.tempImage);
 		
 		else
 			Renderer::drawImage(Point(0, 0), temp->texture);
@@ -915,7 +910,7 @@ void Game::renderTopView() {
 		if (bg)
 			Renderer::drawImage(Point(0, 0), bg->texture);
 		else
-			std::cout << "Game: background for location '" << m_State.currentLocation << " not found\n";
+			Utils::debugMessage("Game", "Background for location '"+m_State.currentLocation+"' not found");
 		
 		// if there is a character set here, draw him now
 		if (m_Case->getCharacter(location->character)) {
@@ -925,11 +920,19 @@ void Game::renderTopView() {
 			// get character's current animation
 			std::string root=character->getRootAnimation();
 			
-			// set talk animation if the dialogue is still being drawn
-			if (!m_Parser->talkLocked() && !m_Parser->dialogueDone() && m_Parser->getSpeaker()==character->getInternalName())
-				sprite->setAnimation(character->getRootAnimation()+"_talk");
+			// if we are at either the defense stand, co-counsel stand, or prosecutor stand, automatically
+			// use the trial_* animations for characters
+			std::string trial="";
+			if (m_State.currentLocation=="defense_stand" || m_State.currentLocation=="defense_helper_stand" ||
+			    m_State.currentLocation=="prosecutor_stand")
+				trial="trial_";
+			
+			// set talk animation if the dialogue is still being drawn and if we're not in any fade outs
+			if (!m_Parser->talkLocked() && !m_Parser->dialogueDone() && 
+			    m_Parser->getSpeaker()==character->getInternalName() && m_State.fadeOut=="none")
+				sprite->setAnimation(trial+character->getRootAnimation()+"_talk");
 			else
-				sprite->setAnimation(character->getRootAnimation()+"_idle");
+				sprite->setAnimation(trial+character->getRootAnimation()+"_idle");
 			
 			// draw the sprite
 			sprite->animate(0, 0);
@@ -1239,7 +1242,7 @@ bool Game::renderSpecialEffects() {
 		
 		// verify locations
 		if (!pStand || !dStand || !wStand) {
-			std::cout << "Unable to get needed locations for court camera movement!\n";
+			Utils::debugMessage("Game", "Unable to get needed locations for court camera movement");
 			return true;
 		}
 		
@@ -1251,8 +1254,24 @@ bool Game::renderSpecialEffects() {
 			// flag that we're done
 			m_State.courtCamera="none";
 			
+			// set our ending location
+			switch(end) {
+				case UI::LIMIT_DEFENSE_STAND: setLocation("defense_stand"); break;
+				case UI::LIMIT_WITNESS_STAND: setLocation("witness_stand"); break;
+				case UI::LIMIT_PROSECUTOR_STAND: setLocation("prosecutor_stand"); break;
+			}
+			
 			// also, reset the animation for future use
 			m_UI->registerCourtCameraMovement("an_court_camera");
+			
+			// execute any queued cross examination blocks
+			if (m_State.curExamination && m_State.queuedBlock!="null") {
+				m_State.curExaminationPaused=true;
+				m_Parser->setBlock(m_Case->getBuffers()[m_State.queuedBlock]);
+				m_Parser->nextStep();
+				
+				m_State.queuedBlock="null";	
+			}
 			
 			return true;
 		}
@@ -1279,6 +1298,9 @@ bool Game::renderSpecialEffects() {
 		
 		bool ret=m_UI->animateTestimonySequence("an_testimony_sequence");
 		if (ret) {
+			// reset the animation
+			m_UI->registerTestimonySequence("an_testimony_sequence");
+			
 			Case::Testimony *testimony=m_Case->getTestimony(m_State.curTestimony);
 			
 			// now start the testimony blink animation
@@ -1303,7 +1325,7 @@ bool Game::renderSpecialEffects() {
 		Case::Image *leftImg=m_Case->getImage(m_State.crossExamineLawyers.first);
 		Case::Image *rightImg=m_Case->getImage(m_State.crossExamineLawyers.second);
 		if (!leftImg || !rightImg) {
-			std::cout << "Game: needed sprites 'cross_examine_top' and 'cross_examine_bottom' not found\n";
+			Utils::debugMessage("Game", "Needed sprites 'cross_examine_top' and 'cross_examine_bottom' not found");
 			m_State.crossExamineSequence="none";
 			return true;
 		}
@@ -1311,6 +1333,9 @@ bool Game::renderSpecialEffects() {
 		// animate the sequence
 		bool ret=m_UI->animateCrossExamineSequence("an_cross_examine_sequence", leftImg->texture, rightImg->texture);
 		if (ret) {
+			// reset the animation
+			m_UI->registerCrossExamineSequence("an_cross_examine_sequence");
+			
 			// get the testimony in question
 			Case::Testimony *testimony=m_Case->getTestimony(m_State.curTestimony);
 			
@@ -1329,12 +1354,7 @@ bool Game::renderSpecialEffects() {
 	else if (m_State.exclamation!="none") {
 		bool ret=m_UI->exclamation(m_State.exclamation, NULL);
 		if (ret) {
-			m_Parser->setBlock(m_Case->getBuffers()[m_State.queuedBlock]);
-			m_Parser->nextStep();
-			m_Parser->nextStep();
-			
-			m_State.queuedBlock="null";
-			
+			m_State.courtCamera="witness_stand,defense_stand";
 			m_State.exclamation="none";
 		}
 	}
@@ -1471,7 +1491,7 @@ void Game::renderCourtroomOverview() {
 		if (image)
 			Renderer::drawImage(Point(179, 90), image->texture);
 		else
-			std::cout << "Game: courtroom overview image '" << m_State.crOverviewDefense << "' not found\n";
+			Utils::debugMessage("Game", "Courtroom overview image '"+m_State.crOverviewDefense+"' not found");
 	}
 	
 	// draw prosecutor image
@@ -1481,7 +1501,7 @@ void Game::renderCourtroomOverview() {
 		if (image)
 			Renderer::drawImage(Point(48, 91), image->texture);
 		else
-			std::cout << "Game: courtroom overview image '" << m_State.crOverviewDefense << "' not found\n";
+			Utils::debugMessage("Game", "Courtroom overview image '"+m_State.crOverviewDefense+"' not found");
 	}
 	
 	// draw the judge

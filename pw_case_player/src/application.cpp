@@ -25,6 +25,9 @@
 #include "application.h"
 #include "audio.h"
 #include "iohandler.h"
+#include "utilities.h"
+
+std::string Application::VERSION="1.0b";
 
 // constructor
 Application::Application(int argc, char *argv[]) {
@@ -42,6 +45,10 @@ Application::Application(int argc, char *argv[]) {
 			// don't output audio
 			if (longArg=="no-sound" || shortArg=="ns")
 				m_ArgFlags |= ARG_NO_SOUND;
+			
+			// enable debug mode
+			else if (longArg=="debug" || shortArg=="d")
+				Utils::g_DebugOn=true;
 			
 			else
 				std::cout << "Unrecognized argument: " << arg << std::endl;

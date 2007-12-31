@@ -21,6 +21,10 @@
 
 #include "utilities.h"
 
+namespace Utils {
+	bool g_DebugOn=false;
+}
+
 // convert a court camera script string to animation limits
 void Utils::scriptToLimits(const std::string &str, UI::Limit &start, UI::Limit &end) {
 	// first split the string
@@ -52,6 +56,12 @@ void Utils::scriptToLimits(const std::string &str, UI::Limit &start, UI::Limit &
 		else
 			end=limit;
 	}
+}
+
+// print a debug message
+void Utils::debugMessage(const std::string &object, const std::string &msg) {
+	if (Utils::g_DebugOn)
+		std::cout << object << ": " << msg << std::endl;
 }
 
 // get a random number in the provided range
