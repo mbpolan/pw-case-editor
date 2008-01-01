@@ -21,9 +21,11 @@
 
 #include <sstream>
 #include "SDL.h"
+#include "SDL/SDL_ttf.h"
 
 #include "application.h"
 #include "audio.h"
+#include "font.h"
 #include "iohandler.h"
 #include "utilities.h"
 
@@ -78,6 +80,10 @@ void Application::run() {
 	if (!m_SDLContext->initVideo(256, 389))
 		return;
 	
+	// initialize ttf font library
+	if (TTF_Init()==-1)
+		return;
+	
 	// initialize game data
 	if (!m_SDLContext->initGame(m_CasePath))
 		return;
@@ -100,6 +106,12 @@ void Application::run() {
 		// calculate and display FPS
 		calculateFPS();
 	}
+	
+	// free ttf fonts
+	TTF_CloseFont(Fonts::g_Arial);
+	
+	// and clean up the library
+	TTF_Quit();
 }
 
 // process any events

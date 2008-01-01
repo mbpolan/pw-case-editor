@@ -32,7 +32,7 @@
 
 // game state flags
 enum GameFlags {
-	STATE_LOWER_BAR=		1 << 0,
+	STATE_COURT_GREEN_BAR=		1 << 0,
 	STATE_COURT_REC_BTN=		1 << 1,
 	STATE_EVIDENCE_BTN=		1 << 2,
 	STATE_PROFILES_BTN=		1 << 3,
@@ -50,8 +50,7 @@ enum GameFlags {
 	STATE_TALK=			1 << 15,
 	STATE_PRESENT_TOP_BTN=		1 << 16,
 	STATE_CROSS_EXAMINE_BTNS=	1 << 17,
-	STATE_PRESS_BTN=		1 << 18,
-	STATE_COURT_GREEN_BAR=		1 << 19 };
+	STATE_PRESS_BTN=		1 << 18 };
 
 // menu controls to draw
 enum Controls {

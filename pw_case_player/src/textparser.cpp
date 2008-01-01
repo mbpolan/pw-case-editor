@@ -347,7 +347,7 @@ std::string TextParser::parse(bool drawDialogue) {
 					m_Game->m_State.requestedEvidenceParams=m_QueuedEventArgs;
 					
 					// now, we also need to go directly to the evidence page
-					int flags=STATE_TEXT_BOX | STATE_LOWER_BAR | STATE_EVIDENCE_PAGE | STATE_PROFILES_PAGE;
+					int flags=STATE_TEXT_BOX | STATE_EVIDENCE_PAGE | STATE_PROFILES_PAGE;
 					m_Game->m_State.drawFlags=flags;
 				}
 				
@@ -376,7 +376,7 @@ std::string TextParser::parse(bool drawDialogue) {
 					}
 					
 					// now modify flags
-					int flags=STATE_TEXT_BOX | STATE_LOWER_BAR | STATE_TALK;
+					int flags=STATE_TEXT_BOX | STATE_TALK;
 					m_Game->m_State.drawFlags=flags;
 					
 					Audio::playEffect("sfx_return", Audio::CHANNEL_GUI);
@@ -397,7 +397,7 @@ void TextParser::nextStep() {
 	if (m_Block.empty() && m_NextBlock=="null" && m_StrPos==m_Dialogue.size()) {
 		// draw the previous screen
 		if (m_Game->m_State.prevScreen==SCREEN_EXAMINE)
-			m_Game->toggle(STATE_EXAMINE | STATE_COURT_REC_BTN | STATE_LOWER_BAR | STATE_BACK_BTN);
+			m_Game->toggle(STATE_EXAMINE | STATE_COURT_REC_BTN | STATE_BACK_BTN);
 		
 		else
 			m_Game->toggle(STATE_COURT_REC_BTN | STATE_CONTROLS);

@@ -24,14 +24,20 @@
 
 #include <iostream>
 #include <SDL/SDL.h>
+#include <SDL/SDL_ttf.h>
 #include <map>
 
 #include "case.h"
 
 namespace Fonts {
 
-// amount of pixels to skip following a line break
+// amount of pixels to skip following a line break, space, and in between characters
 const int g_LineBreakSize=17;
+const int g_SpaceSize=10;
+const int g_CharSpace=2;
+
+// arial font
+extern TTF_Font *g_Arial;
 
 // a single glyph
 struct _Glyph {
@@ -72,11 +78,14 @@ int drawString(int x, int y, int delimiter, int rightClamp, const std::string &s
 // draw a string centered on the screen
 int drawStringCentered(int y, int delimiter, const std::string &str, const std::string &fontId);
 
+// draw a ttf font string
+void drawTTF(const Point &p, const std::string &str);
+
 // get the width of a string
 int getWidth(const std::string &id, const std::string &str);
 
 // return a font from the map
-Font queryFont(const std::string &id);
+Font* queryFont(const std::string &id);
 
 // add a font to the map
 void pushFont(const std::string &id, const Font &font);

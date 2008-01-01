@@ -239,7 +239,6 @@ void Game::render() {
 		
 		// draw evidence page
 		if (flagged(STATE_EVIDENCE_PAGE)) {
-			flags |= STATE_LOWER_BAR;
 			flags |= STATE_PROFILES_BTN;
 			flags |= STATE_EVIDENCE_PAGE;
 			flags |= STATE_BACK_BTN;
@@ -250,7 +249,6 @@ void Game::render() {
 		
 		// draw evidence info page
 		else if (flagged(STATE_EVIDENCE_INFO_PAGE)) {
-			flags |= STATE_LOWER_BAR;
 			flags |= STATE_PROFILES_BTN;
 			flags |= STATE_EVIDENCE_INFO_PAGE;
 			flags |= STATE_BACK_BTN;
@@ -265,7 +263,6 @@ void Game::render() {
 		
 		// draw profiles page
 		else if (flagged(STATE_PROFILES_PAGE)) {
-			flags |= STATE_LOWER_BAR;
 			flags |= STATE_EVIDENCE_BTN;
 			flags |= STATE_PROFILES_PAGE;
 			flags |= STATE_BACK_BTN;
@@ -276,7 +273,6 @@ void Game::render() {
 		
 		// draw profile info page
 		else if (flagged(STATE_PROFILE_INFO_PAGE)) {
-			flags |= STATE_LOWER_BAR;
 			flags |= STATE_EVIDENCE_BTN;
 			flags |= STATE_PROFILE_INFO_PAGE;
 			flags |= STATE_BACK_BTN;
@@ -293,11 +289,16 @@ void Game::render() {
 		else {
 			// only draw the cross examination buttons if we're going through
 			// the speaker's testimony, and if we didn't pause the examination
-			if (m_State.curExamination && !m_State.curExaminationPaused && m_Parser->getSpeaker()!="none") {
-				flags |= STATE_CROSS_EXAMINE_BTNS;
-				flags |= STATE_PRESENT_BTN;
-				flags |= STATE_PRESS_BTN;
-				flags |= STATE_COURT_GREEN_BAR;
+			if (m_State.curExamination && !m_State.curExaminationPaused) {
+				if (m_Parser->getSpeaker()!="none") {
+					flags |= STATE_CROSS_EXAMINE_BTNS;
+					flags |= STATE_PRESENT_BTN;
+					flags |= STATE_PRESS_BTN;
+					flags |= STATE_COURT_GREEN_BAR;
+				}
+				
+				else
+					flags |= STATE_NEXT_BTN;
 			}
 			
 			else {
@@ -349,7 +350,7 @@ void Game::onKeyboardEvent(SDL_KeyboardEvent *e) {
 		// ask for more information about selected evidence
 		else if (e->keysym.sym==SDLK_RETURN)
 			// show the evidence info page for this evidence
-			toggle(STATE_EVIDENCE_INFO_PAGE | STATE_LOWER_BAR | STATE_BACK_BTN | STATE_PROFILES_BTN);
+			toggle(STATE_EVIDENCE_INFO_PAGE | STATE_BACK_BTN | STATE_PROFILES_BTN);
 	}
 	
 	// if controls are drawn, change the selection
@@ -507,7 +508,7 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 				onTopLeftButtonClicked();
 			
 			// see if the bottom left button was clicked
-			else if ((e->x>=0 && e->x<=79) && (e->y>=359 && e->y<=359+30))
+			else if ((e->x>=0 && e->x<=79) && (e->y>=359 && e->y<=389))
 				onBottomLeftButtonClicked();
 		}
 		
@@ -1132,19 +1133,15 @@ void Game::renderMenuView() {
 	// top everything off with scanlines
 	Renderer::drawImage(Point(0, 197), "scanlines_overlay");
 	
-	// draw the top border bar
+	// draw the top and lower border bar
 	Renderer::drawImage(Point(0, 197), "tc_top_bar"+append);
+	Renderer::drawImage(Point(0, 389-(Textures::queryTexture("tc_lower_bar"+append)->h)), "tc_lower_bar"+append);
 	
-	// draw border bars
-	if (flagged(STATE_LOWER_BAR)) {
-		// thin bar needs to be drawn lower
-		int y=357;
-		if (append=="_thin")
-			y+=10;
-		
-		// draw this lower bar border
-		Renderer::drawImage(Point(0, y), "tc_lower_bar"+append);
-	}
+	// draw titles bars, if needed
+	if (flagged(STATE_EVIDENCE_PAGE) || flagged(STATE_EVIDENCE_INFO_PAGE))
+		Renderer::drawImage(Point(0, 206), "tc_evidence_bar");
+	if (flagged(STATE_PROFILES_PAGE) || flagged(STATE_PROFILE_INFO_PAGE))
+		Renderer::drawImage(Point(0, 206), "tc_profiles_bar");
 	
 	// draw activated buttons
 	if (flagged(STATE_COURT_REC_BTN))
@@ -1533,7 +1530,7 @@ void Game::renderStand(const Stand stand) {
 void Game::onTopRightButtonClicked() {
 	// if the court record button is shown, activate evidence page
 	if (flagged(STATE_COURT_REC_BTN)) {
-		int flags=STATE_BACK_BTN | STATE_PROFILES_BTN | STATE_EVIDENCE_PAGE | STATE_LOWER_BAR;
+		int flags=STATE_BACK_BTN | STATE_PROFILES_BTN | STATE_EVIDENCE_PAGE;
 		
 		// if the text box is also present, draw it as well
 		if (flagged(STATE_TEXT_BOX))
@@ -1598,14 +1595,14 @@ void Game::onTopRightButtonClicked() {
 		// while in cross examination, only the court record can be viewed
 		else
 			flags |= STATE_BACK_BTN | STATE_PROFILES_BTN | STATE_COURT_GREEN_BAR |
-				 STATE_EVIDENCE_PAGE | STATE_LOWER_BAR | STATE_TEXT_BOX;
+				 STATE_EVIDENCE_PAGE | STATE_TEXT_BOX;
 		
 		toggle(flags);
 	}
 	
 	// if the profiles button is shown, activate profiles page
 	else if (flagged(STATE_PROFILES_BTN) && !flagged(STATE_EVIDENCE_INFO_PAGE)) {
-		int flags=STATE_BACK_BTN | STATE_EVIDENCE_BTN | STATE_PROFILES_PAGE | STATE_LOWER_BAR;
+		int flags=STATE_BACK_BTN | STATE_EVIDENCE_BTN | STATE_PROFILES_PAGE;
 		
 		// if the text box is also present, draw it as well
 		if (flagged(STATE_TEXT_BOX))
@@ -1624,7 +1621,7 @@ void Game::onTopRightButtonClicked() {
 	
 	// if the evidence button is shown, activate evidence page
 	else if (flagged(STATE_EVIDENCE_BTN) && !flagged(STATE_PROFILE_INFO_PAGE)) {
-		int flags=STATE_BACK_BTN | STATE_PROFILES_BTN | STATE_EVIDENCE_PAGE | STATE_LOWER_BAR;
+		int flags=STATE_BACK_BTN | STATE_PROFILES_BTN | STATE_EVIDENCE_PAGE;
 		
 		// if the text box is also present, draw it as well
 		if (flagged(STATE_TEXT_BOX))
@@ -1643,7 +1640,7 @@ void Game::onTopRightButtonClicked() {
 	
 	// if the profiles button is shown during evidence info screen, switch to profile info screen
 	else if (flagged(STATE_PROFILES_BTN) && flagged(STATE_EVIDENCE_INFO_PAGE)) {
-		int flags=STATE_BACK_BTN | STATE_PROFILE_INFO_PAGE | STATE_LOWER_BAR;
+		int flags=STATE_BACK_BTN | STATE_PROFILE_INFO_PAGE;
 		
 		// if the previous screen was the present screen, then draw present button instead
 		if (m_State.prevScreen==SCREEN_PRESENT)
@@ -1669,7 +1666,7 @@ void Game::onTopRightButtonClicked() {
 	
 	// if the evidence button is shown during profile info screen, switch to evidence info screen
 	else if (flagged(STATE_EVIDENCE_BTN) && flagged(STATE_PROFILE_INFO_PAGE)) {
-		int flags=STATE_BACK_BTN | STATE_EVIDENCE_INFO_PAGE | STATE_LOWER_BAR;
+		int flags=STATE_BACK_BTN | STATE_EVIDENCE_INFO_PAGE;
 		
 		// if the previous screen was the present screen, then draw present button instead
 		if (m_State.prevScreen==SCREEN_PRESENT)
@@ -1729,15 +1726,15 @@ void Game::onBottomLeftButtonClicked() {
 		if (flagged(STATE_EVIDENCE_PAGE) || flagged(STATE_PROFILES_PAGE)) {
 			// if the previous screen is the examine screen, then draw it instead
 			if (m_State.prevScreen==SCREEN_EXAMINE)
-				flags=STATE_EXAMINE | STATE_COURT_REC_BTN | STATE_LOWER_BAR | STATE_BACK_BTN;
+				flags=STATE_EXAMINE | STATE_COURT_REC_BTN | STATE_BACK_BTN;
 			
 			// if the previous screen is the move screen, then draw it
 			else if (m_State.prevScreen==SCREEN_MOVE)
-				flags=STATE_MOVE | STATE_COURT_REC_BTN | STATE_LOWER_BAR | STATE_BACK_BTN;
+				flags=STATE_MOVE | STATE_COURT_REC_BTN | STATE_BACK_BTN;
 			
 			// if the previous screen is the talk screen, then draw it
 			else if (m_State.prevScreen==SCREEN_TALK)
-				flags=STATE_TALK | STATE_COURT_REC_BTN | STATE_LOWER_BAR | STATE_BACK_BTN;
+				flags=STATE_TALK | STATE_COURT_REC_BTN | STATE_BACK_BTN;
 			
 			// must be the main screen
 			else {
@@ -1762,7 +1759,7 @@ void Game::onBottomLeftButtonClicked() {
 		
 		// if evidence info page is shown, revert back to evidence page
 		else if (flagged(STATE_EVIDENCE_INFO_PAGE)) {
-			flags=STATE_PROFILES_BTN | STATE_BACK_BTN | STATE_EVIDENCE_PAGE | STATE_LOWER_BAR;
+			flags=STATE_PROFILES_BTN | STATE_BACK_BTN | STATE_EVIDENCE_PAGE;
 			
 			// if the text box is also present, draw it as well
 			if (flagged(STATE_TEXT_BOX))
@@ -1771,7 +1768,7 @@ void Game::onBottomLeftButtonClicked() {
 		
 		// if profile info page is shown, revert back to profiles page
 		else if (flagged(STATE_PROFILE_INFO_PAGE)) {
-			flags=STATE_EVIDENCE_BTN | STATE_BACK_BTN | STATE_PROFILES_PAGE | STATE_LOWER_BAR;
+			flags=STATE_EVIDENCE_BTN | STATE_BACK_BTN | STATE_PROFILES_PAGE;
 			
 			// if the text box is also present, draw it as well
 			if (flagged(STATE_TEXT_BOX))
@@ -1828,7 +1825,7 @@ void Game::onPresentCenterClicked() {
 		m_State.requestedEvidenceParams="null";
 		
 		// and toggle flags
-		toggle(STATE_COURT_REC_BTN | STATE_NEXT_BTN | STATE_LOWER_BAR);
+		toggle(STATE_COURT_REC_BTN | STATE_NEXT_BTN);
 		
 		// play sound effect
 		Audio::playEffect("sfx_click", Audio::CHANNEL_GUI);
@@ -1990,7 +1987,7 @@ void Game::onRecPageClickEvent(int x, int y) {
 				m_State.selectedEvidence=i;
 				
 				// and view the evidence info page
-				int flags=STATE_EVIDENCE_INFO_PAGE | STATE_LOWER_BAR | STATE_BACK_BTN;
+				int flags=STATE_EVIDENCE_INFO_PAGE | STATE_BACK_BTN;
 				
 				// if the previous screen was the present screen, then draw present button instead
 				if (m_State.prevScreen==SCREEN_PRESENT)
@@ -2022,7 +2019,7 @@ void Game::onRecPageClickEvent(int x, int y) {
 				m_State.selectedProfile=i;
 				
 				// and view the profile info page
-				int flags=STATE_PROFILE_INFO_PAGE | STATE_LOWER_BAR | STATE_BACK_BTN | STATE_EVIDENCE_BTN;
+				int flags=STATE_PROFILE_INFO_PAGE | STATE_BACK_BTN | STATE_EVIDENCE_BTN;
 				
 				// if the previous screen was the present screen, then draw present button instead
 				if (m_State.prevScreen==SCREEN_PRESENT)
@@ -2116,7 +2113,7 @@ void Game::onRecInfoPageClickEvent(int x, int y) {
 // examine button activated handler
 void Game::onExamineButtonActivated() {
 	// toggle the examination scene
-	toggle(STATE_EXAMINE | STATE_COURT_REC_BTN | STATE_LOWER_BAR | STATE_BACK_BTN);
+	toggle(STATE_EXAMINE | STATE_COURT_REC_BTN | STATE_BACK_BTN);
 	
 	// also set this as the previous page
 	m_State.prevScreen=SCREEN_EXAMINE;
@@ -2125,7 +2122,7 @@ void Game::onExamineButtonActivated() {
 // move button activated handler
 void Game::onMoveButtonActivated() {
 	// toggle move scene
-	toggle(STATE_MOVE | STATE_COURT_REC_BTN | STATE_LOWER_BAR | STATE_BACK_BTN);
+	toggle(STATE_MOVE | STATE_COURT_REC_BTN | STATE_BACK_BTN);
 	
 	// also set this as the previous page
 	m_State.prevScreen=SCREEN_MOVE;
@@ -2134,7 +2131,7 @@ void Game::onMoveButtonActivated() {
 // talk button activated handler
 void Game::onTalkButtonActivated() {
 	// toggle talk scene
-	toggle(STATE_TALK | STATE_COURT_REC_BTN | STATE_LOWER_BAR | STATE_BACK_BTN);
+	toggle(STATE_TALK | STATE_COURT_REC_BTN | STATE_BACK_BTN);
 	
 	// also, set this as the previous scene
 	m_State.prevScreen=SCREEN_TALK;
@@ -2143,7 +2140,7 @@ void Game::onTalkButtonActivated() {
 // present button activated handler
 void Game::onPresentButtonActivated() {
 	// toggle present scene
-	toggle(STATE_EVIDENCE_PAGE | STATE_PROFILES_BTN | STATE_LOWER_BAR | STATE_BACK_BTN);
+	toggle(STATE_EVIDENCE_PAGE | STATE_PROFILES_BTN | STATE_BACK_BTN);
 	
 	// also, set this as the previous scene
 	m_State.prevScreen=SCREEN_PRESENT;

@@ -19,9 +19,11 @@
  ***************************************************************************/
 // glcontext.cpp: implementation of SDLContext class
 
+#include "SDL_ttf.h"
 #include "SDL_mixer.h"
 
 #include "audio.h"
+#include "font.h"
 #include "sdlcontext.h"
 #include "iohandler.h"
 #include "renderer.h"
@@ -135,6 +137,11 @@ bool SDLContext::initGame(const std::string &pathToCase) {
 	
 	// load stock textures
 	if (!m_Game->loadStockTextures())
+		return false;
+	
+	// load ttf fonts
+	Fonts::g_Arial=TTF_OpenFont("data/fonts/arial.ttf", 11);
+	if (!Fonts::g_Arial)
 		return false;
 	
 	return true;

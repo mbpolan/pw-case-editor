@@ -176,11 +176,8 @@ void Renderer::drawEvidencePage(const std::vector<Case::Evidence> &evidence, int
 	if (!screen)
 		return;
 	
-	// draw the title bar
-	Renderer::drawImage(Point(0, 197+9), "tc_evidence_bar");
-	
 	// draw the background
-	drawRect(screen, Point(24, 233), 208, 124, SDL_MapRGB(screen->format, 111, 86, 56));
+	drawRect(screen, Point(24, 233), 208, 124, SDL_MapRGB(screen->format, 134, 118, 69));
 	
 	// draw top info bar borders
 	drawRect(screen, Point(24, 233), 208, 20, SDL_MapRGB(screen->format, 252, 249, 244));
@@ -207,10 +204,10 @@ void Renderer::drawEvidencePage(const std::vector<Case::Evidence> &evidence, int
 	int y=259;
 	for (int i=0; i<8; i++) {
 		// draw the border
-		drawRect(screen, Point(x, y), 39, 39, SDL_MapRGB(screen->format, 145, 121, 93));
+		drawRect(screen, Point(x, y), 39, 39, SDL_MapRGB(screen->format, 211, 197, 148));
 		
 		// draw filled center
-		drawRect(screen, Point(x+2, y+2), 35, 35, SDL_MapRGB(screen->format, 117, 92, 62));
+		drawRect(screen, Point(x+2, y+2), 35, 35, SDL_MapRGB(screen->format, 134, 118, 69));
 		
 		// see if there is a piece of evidence at this slot
 		if (index<=evidence.size()-1 && !evidence.empty()) {
@@ -262,9 +259,6 @@ void Renderer::drawEvidenceInfoPage(UI::Manager *manager, const std::vector<Case
 	if (!screen)
 		return;
 	
-	// draw the title bar
-	Renderer::drawImage(Point(0, 197+9), "tc_evidence_bar");
-	
 	// get evidence to draw
 	Case::Evidence e=evidence[index];
 	
@@ -278,7 +272,8 @@ void Renderer::drawEvidenceInfoPage(UI::Manager *manager, const std::vector<Case
 	drawImage(Point(0, 197), opaqueBlack);
 	
 	// draw info strip background
-	drawRect(screen, Point(0, y+25), 256, 76, SDL_MapRGB(screen->format, 111, 86, 56));
+	drawRect(screen, Point(0, y+25), 256, 77, SDL_MapRGB(screen->format, 134, 118, 69));
+	drawRect(screen, Point(8, y+101), 240, 52, SDL_MapRGB(screen->format, 134, 118, 69));
 	
 	// draw upper border
 	drawRect(screen, Point(0, y+25), 256, 6, SDL_MapRGB(screen->format, 218, 218, 218));
@@ -299,7 +294,7 @@ void Renderer::drawEvidenceInfoPage(UI::Manager *manager, const std::vector<Case
 	drawRect(screen, Point(x+2, y+2), 144, 15, SDL_MapRGB(screen->format, 55, 55, 55));
 	
 	// calculate center position for name
-	int centerx=(Fonts::getWidth("orange", e.name)/3)+x;
+	int centerx=(x+72)-(Fonts::getWidth("orange", e.name)/2);
 	
 	// draw evidence name in title bar
 	Fonts::drawString(centerx, y+4, e.name, "orange");
@@ -308,7 +303,7 @@ void Renderer::drawEvidenceInfoPage(UI::Manager *manager, const std::vector<Case
 	drawRect(screen, Point(x+2, y+17), 144, 51, SDL_MapRGB(screen->format, 153, 192, 145));
 	
 	// draw evidence caption in this area
-	Fonts::drawString(x+4, y+18, e.caption.size(), x+147, e.caption, "black");
+	Fonts::drawTTF(Point(x+5, y+18), e.caption);
 	
 	// moving right along...
 	x+=148;
@@ -321,7 +316,7 @@ void Renderer::drawEvidenceInfoPage(UI::Manager *manager, const std::vector<Case
 	drawRect(screen, Point(0, 308), 256, 6, SDL_MapRGB(screen->format, 218, 218, 218));
 	
 	// draw evidence description in bottom area
-	Fonts::drawString(20, y+81, e.description, "white");
+	Fonts::drawString(16, y+81, e.description, "white");
 }
 
 // draw the profiles page
@@ -331,11 +326,8 @@ void Renderer::drawProfilesPage(const std::vector<Character> &chars, int page, i
 	if (!screen)
 		return;
 	
-	// draw the title bar
-	Renderer::drawImage(Point(0, 206), "tc_profiles_bar");
-	
 	// draw the background
-	drawRect(screen, Point(24, 233), 208, 124, SDL_MapRGB(screen->format, 111, 86, 56));
+	drawRect(screen, Point(24, 233), 208, 124, SDL_MapRGB(screen->format, 134, 118, 69));
 	
 	// draw top info bar borders
 	drawRect(screen, Point(24, 233), 208, 20, SDL_MapRGB(screen->format, 252, 249, 244));
@@ -362,10 +354,10 @@ void Renderer::drawProfilesPage(const std::vector<Character> &chars, int page, i
 	int y=259;
 	for (int i=0; i<8; i++) {
 		// draw the border
-		drawRect(screen, Point(x, y), 39, 39, SDL_MapRGB(screen->format, 145, 121, 93));
+		drawRect(screen, Point(x, y), 39, 39, SDL_MapRGB(screen->format, 211, 197, 148));
 		
 		// draw filled center
-		drawRect(screen, Point(x+2, y+2), 35, 35, SDL_MapRGB(screen->format, 117, 92, 62));
+		drawRect(screen, Point(x+2, y+2), 35, 35, SDL_MapRGB(screen->format, 134, 118, 69));
 		
 		// see if there is a profile at this slot
 		if (index<=chars.size()-1 && !chars.empty()) {
@@ -417,9 +409,6 @@ void Renderer::drawProfileInfoPage(UI::Manager *manager, const std::vector<Chara
 	if (!screen)
 		return;
 	
-	// draw the title bar
-	Renderer::drawImage(Point(0, 206), "tc_profiles_bar");
-	
 	// get character to draw
 	Character c=chars[index];
 	
@@ -433,7 +422,8 @@ void Renderer::drawProfileInfoPage(UI::Manager *manager, const std::vector<Chara
 	drawImage(Point(0, 197), opaqueBlack);
 	
 	// draw info strip background
-	drawRect(screen, Point(0, y+25), 256, 76, SDL_MapRGB(screen->format, 111, 86, 56));
+	drawRect(screen, Point(0, y+25), 256, 77, SDL_MapRGB(screen->format, 134, 118, 69));
+	drawRect(screen, Point(8, y+101), 240, 52, SDL_MapRGB(screen->format, 134, 118, 69));
 	
 	// draw upper border
 	drawRect(screen, Point(0, y+25), 256, 6, SDL_MapRGB(screen->format, 218, 218, 218));
@@ -454,7 +444,7 @@ void Renderer::drawProfileInfoPage(UI::Manager *manager, const std::vector<Chara
 	drawRect(screen, Point(x+2, y+2), 144, 15, SDL_MapRGB(screen->format, 55, 55, 55));
 	
 	// calculate center position for name
-	int centerx=(Fonts::getWidth("orange", c.getName())/3)+x;
+	int centerx=(x+72)-(Fonts::getWidth("orange", c.getName())/2);
 	
 	// draw evidence name in title bar
 	Fonts::drawString(centerx, y+4, c.getName(), "orange");
@@ -463,7 +453,7 @@ void Renderer::drawProfileInfoPage(UI::Manager *manager, const std::vector<Chara
 	drawRect(screen, Point(x+2, y+17), 144, 51, SDL_MapRGB(screen->format, 153, 192, 145));
 	
 	// draw character caption in this area
-	Fonts::drawString(x+4, y+18, c.getCaption().size(), x+2+145, c.getCaption(), "black");
+	Fonts::drawTTF(Point(x+5, y+18), c.getCaption());
 	
 	// moving right along...
 	x+=148;
@@ -476,7 +466,7 @@ void Renderer::drawProfileInfoPage(UI::Manager *manager, const std::vector<Chara
 	drawRect(screen, Point(0, 308), 256, 6, SDL_MapRGB(screen->format, 218, 218, 218));
 	
 	// draw evidence description in bottom area
-	Fonts::drawString(20, y+81, c.getDescription(), "white");
+	Fonts::drawString(16, y+81, c.getDescription(), "white");
 }
 
 // draw the examination scene
