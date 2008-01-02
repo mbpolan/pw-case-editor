@@ -1203,8 +1203,9 @@ void NewEvidenceDialog::on_browse_button_clicked() {
 
 // constructor
 EvidenceDialog::EvidenceDialog(const EvidenceMap &evidence,
+			       const ImageMap &images,
 			       const StringVector &evidenceIds) {
-	construct();
+	construct(images);
 	
 	// copy data
 	m_Evidence=evidence;
@@ -1218,7 +1219,7 @@ EvidenceDialog::EvidenceDialog(const EvidenceMap &evidence,
 }
 
 // build the ui
-void EvidenceDialog::construct() {
+void EvidenceDialog::construct(const ImageMap &images) {
 	// get default vbox
 	Gtk::VBox *vb=get_vbox();
 	vb->set_border_width(10);
@@ -1234,6 +1235,13 @@ void EvidenceDialog::construct() {
 	// allocate image
 	m_Image=manage(new Gtk::Image);
 	m_Image->set_size_request(70, 70);
+	
+	// allocate check buttons
+	m_HasImgCB=manage(new Gtk::CheckButton("Check Image"));
+	m_HasImgCB->signal_toggled().connect(sigc::mem_fun(*this, &EvidenceDialog::on_check_img_toggled));
+	
+	// allocate combo boxes
+	m_ImgCB=manage(new ImgComboBox(images));
 	
 	// allocate tree view and its model
 	m_Model=Gtk::ListStore::create(m_ColumnRec);
@@ -1281,8 +1289,8 @@ void EvidenceDialog::construct() {
 	table->attach(*m_EvidenceLabel, 0, 2, 0, 1, xops, yops);
 	table->attach(*m_AddButton, 0, 1, 1, 2, yops, yops);
 	table->attach(*m_DeleteButton, 1, 2, 1, 2, yops, yops);
-	table->attach(*m_SWindow, 0, 2, 2, 6);
-	table->attach(*manage(new Gtk::VSeparator), 2, 3, 0, 7);
+	table->attach(*m_SWindow, 0, 2, 2, 8);
+	table->attach(*manage(new Gtk::VSeparator), 2, 3, 0, 8);
 	table->attach(*m_PreviewLabel, 3, 5, 0, 1, xops, yops);
 	table->attach(*m_Image, 3, 5, 1, 2);
 	table->attach(*m_InternalLabel, 3, 4, 2, 3, xops, yops);
@@ -1293,9 +1301,14 @@ void EvidenceDialog::construct() {
 	table->attach(*m_CaptionEntry, 4, 5, 4, 5, xops, yops);
 	table->attach(*m_DescLabel, 3, 4, 5, 6, xops, yops);
 	table->attach(*m_DescEntry, 4, 5, 5, 6, xops, yops);
-	table->attach(*m_AmendButton, 4, 5, 6, 7, xops, yops);
+	table->attach(*m_HasImgCB, 3, 4, 6, 7, xops, yops);
+	table->attach(*m_ImgCB, 4, 5, 6, 7, xops, yops);
+	table->attach(*m_AmendButton, 4, 5, 7, 8, xops, yops);
 	
 	vb->pack_start(*table, Gtk::PACK_SHRINK);
+	
+	// set defaults
+	on_check_img_toggled();
 	
 	// add buttons
 	add_button("OK", Gtk::RESPONSE_OK);
@@ -1304,7 +1317,13 @@ void EvidenceDialog::construct() {
 	show_all_children();
 }
 
-// add a background
+// has check image button toggled
+void EvidenceDialog::on_check_img_toggled() {
+	if (!m_ImgCB->empty())
+		m_ImgCB->set_sensitive(m_HasImgCB->get_active());
+}
+
+// add evidence
 void EvidenceDialog::on_add() {
 	// bring up dialog
 	NewEvidenceDialog nd(m_EvidenceIds);
@@ -1329,6 +1348,7 @@ void EvidenceDialog::on_add() {
 			}
 			
 			// we're good to go
+			evidence.checkID="null";
 			evidence.pixbuf=pixbuf;
 			
 			// append a new row
@@ -1346,7 +1366,7 @@ void EvidenceDialog::on_add() {
 	}
 }
 
-// remove a background
+// remove evidence
 void EvidenceDialog::on_delete() {
 	// get the selection
 	Glib::RefPtr<Gtk::TreeView::Selection> selection=m_TreeView->get_selection();
@@ -1366,12 +1386,14 @@ void EvidenceDialog::on_amend_button_clicked() {
 	Glib::ustring name=m_NameEntry->get_text();
 	Glib::ustring cap=m_CaptionEntry->get_text();
 	Glib::ustring desc=m_DescEntry->get_text();
+	Glib::ustring checkID=(m_HasImgCB->get_active() ? m_ImgCB->get_selected_internal() : "null");
 	
 	// update this data
 	Case::Evidence &evidence=m_Evidence[id];
 	evidence.name=name;
 	evidence.caption=cap;
 	evidence.description=desc;
+	evidence.checkID=checkID;
 }
 
 // row changes handler
@@ -1392,6 +1414,15 @@ void EvidenceDialog::on_selection_changed() {
 			m_CaptionEntry->set_text(evidence.caption);
 			m_DescEntry->set_text(evidence.description);
 			m_Image->set(evidence.pixbuf);
+			
+			if (evidence.checkID!="null") {
+				m_HasImgCB->set_active(true);
+				m_ImgCB->set_active_text(evidence.checkID);
+			}
+			else
+				m_HasImgCB->set_active(false);
+			
+			on_check_img_toggled();
 		}
 	}
 	

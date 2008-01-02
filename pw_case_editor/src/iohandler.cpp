@@ -137,6 +137,9 @@ IO::Code IO::save_case_to_file(const Glib::ustring &path, const Case::Case &pcas
 		// write description
 		write_string(f, (*it).second.description);
 		
+		// write check id
+		write_string(f, (*it).second.checkID);
+		
 		// write pixbuf
 		write_pixbuf(f, (*it).second.pixbuf);
 	}
@@ -389,6 +392,9 @@ IO::Code IO::export_case_to_file(const Glib::ustring &path, const Case::Case &pc
 		
 		// write description
 		write_string(f, (*it).second.description);
+		
+		// write check id
+		write_string(f, (*it).second.checkID);
 		
 		// write bitmap
 		write_export_image(f, (*it).second.pixbuf);
@@ -671,6 +677,9 @@ IO::Code IO::load_case_from_file(const Glib::ustring &path, Case::Case &pcase,
 		
 		// read description
 		evidence.description=read_string(f);
+		
+		// read check image id
+		evidence.checkID=read_string(f);
 		
 		// read pixbuf data
 		evidence.pixbuf=read_pixbuf(f);

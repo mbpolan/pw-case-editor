@@ -37,6 +37,7 @@
 #include <gtkmm/textview.h>
 
 #include "case.h"
+#include "casecombobox.h"
 #include "character.h"
 #include "hotspotwidget.h"
 
@@ -457,6 +458,7 @@ class EvidenceDialog: public Gtk::Dialog {
 	public:
 		// constructor
 		EvidenceDialog(const EvidenceMap &evidence,
+			       const ImageMap &images,
 			       const StringVector &evidenceIds);
 		
 		// get the evidence data stored in the dialog
@@ -464,7 +466,10 @@ class EvidenceDialog: public Gtk::Dialog {
 		
 	private:
 		// build the ui
-		void construct();
+		void construct(const ImageMap &images);
+		
+		// has check image button toggled
+		void on_check_img_toggled();
 		
 		// add a background
 		void on_add();
@@ -501,6 +506,12 @@ class EvidenceDialog: public Gtk::Dialog {
 		Gtk::Entry *m_NameEntry;
 		Gtk::Entry *m_CaptionEntry;
 		Gtk::Entry *m_DescEntry;
+		
+		// check buttons
+		Gtk::CheckButton *m_HasImgCB;
+		
+		// combo boxes
+		ImgComboBox *m_ImgCB;
 		
 		// buttons
 		Gtk::Button *m_AddButton;

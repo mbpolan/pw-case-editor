@@ -69,6 +69,7 @@ struct _Evidence {
 	Glib::ustring name; // name of this piece of evidence
 	Glib::ustring caption; // who this evidence was received from, etc
 	Glib::ustring description; // string describing the image
+	Glib::ustring checkID; // check image id
 	Glib::RefPtr<Gdk::Pixbuf> pixbuf; // pixbuf containing image data
 };
 typedef struct _Evidence Evidence;

@@ -55,9 +55,6 @@ class MainWindow: public Gtk::Window {
 		// create the trigger submenu
 		void create_trigger_submenu(Gtk::Menu *menu);
 		
-		// create icons for menu items
-		void create_icons();
-		
 		// set an icon for a menu item
 		void set_menuitem_icon(const Glib::ustring &path, const Gtk::StockID &id);
 		
@@ -108,6 +105,9 @@ class MainWindow: public Gtk::Window {
 		
 		// change initial case text block
 		void on_case_change_initial_block();
+		
+		// customize case elements
+		void on_case_customize();
 		
 		// manage audio assets handler
 		void on_assets_manage_audio();

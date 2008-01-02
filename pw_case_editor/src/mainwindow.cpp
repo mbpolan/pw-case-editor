@@ -32,6 +32,7 @@
 #include <gtkmm/toolbar.h>
 #include <sstream>
 
+#include "customizedialog.h"
 #include "dialogs.h"
 #include "exceptions.h"
 #include "iohandler.h"
@@ -75,6 +76,9 @@ void MainWindow::construct() {
 	// allocate vbox
 	Gtk::VBox *vb=manage(new Gtk::VBox);
 	
+	// create our application icons
+	m_IconMgr.create_from_file(Utils::FS::cwd()+"dat.dpkg");
+	
 	// allocate action group
 	m_ActionGroup=Gtk::ActionGroup::create();
 	
@@ -94,29 +98,31 @@ void MainWindow::construct() {
 	m_ActionGroup->add(Gtk::Action::create("FileQuit", Gtk::Stock::QUIT, "_Quit"),
 			   sigc::mem_fun(*this, &MainWindow::on_quit));
 	
-	m_ActionGroup->add(Gtk::Action::create("ScriptInsertDialogue", "_Insert Dialogue"),
+	m_ActionGroup->add(Gtk::Action::create("ScriptInsertDialogue", AppStock::INSERT_DIALOGUE, "_Insert Dialogue"),
 			   sigc::mem_fun(*this, &MainWindow::on_script_insert_dialogue));
 	
-	m_ActionGroup->add(Gtk::Action::create("CaseAddChar", "_Add Character"),
+	m_ActionGroup->add(Gtk::Action::create("CaseAddChar", AppStock::ADD_CHARACTER, "_Add Character"),
 			   sigc::mem_fun(*this, &MainWindow::on_case_add_char));
-	m_ActionGroup->add(Gtk::Action::create("CaseBrowseChar", "_Browse Characters"),
+	m_ActionGroup->add(Gtk::Action::create("CaseBrowseChar", AppStock::BROWSE_CHARS, "_Browse Characters"),
 			   sigc::mem_fun(*this, &MainWindow::on_case_browse_chars));
-	m_ActionGroup->add(Gtk::Action::create("CaseManageTestimonies", "_Manage Testimonies"),
+	m_ActionGroup->add(Gtk::Action::create("CaseManageTestimonies", AppStock::TESTIMONY, "_Manage Testimonies"),
 			   sigc::mem_fun(*this, &MainWindow::on_case_manage_testimonies));
-	m_ActionGroup->add(Gtk::Action::create("CaseEditLocations", "_Edit Locations"),
+	m_ActionGroup->add(Gtk::Action::create("CaseEditLocations", AppStock::LOCATION, "_Edit Locations"),
 			   sigc::mem_fun(*this, &MainWindow::on_case_edit_locations));
 	m_ActionGroup->add(Gtk::Action::create("CaseEditOverview", Gtk::Stock::PROPERTIES, "_Edit Overview"),
 			   sigc::mem_fun(*this, &MainWindow::on_case_edit_overview));
-	m_ActionGroup->add(Gtk::Action::create("CaseInitialBlock", "_Initial Text Block"),
+	m_ActionGroup->add(Gtk::Action::create("CaseInitialBlock", AppStock::INITBLOCK, "_Initial Text Block"),
 			   sigc::mem_fun(*this, &MainWindow::on_case_change_initial_block));
+	m_ActionGroup->add(Gtk::Action::create("CaseCustomize", "_Customize"),
+			   sigc::mem_fun(*this, &MainWindow::on_case_customize));
 	
-	m_ActionGroup->add(Gtk::Action::create("AssetsManageAudio", "Manage _Audio"),
+	m_ActionGroup->add(Gtk::Action::create("AssetsManageAudio", AppStock::AUDIO, "Manage _Audio"),
 			   sigc::mem_fun(*this, &MainWindow::on_assets_manage_audio));
-	m_ActionGroup->add(Gtk::Action::create("AssetsManageBG", "Manage _Backgrounds"),
+	m_ActionGroup->add(Gtk::Action::create("AssetsManageBG", AppStock::BACKGROUND, "Manage _Backgrounds"),
 			   sigc::mem_fun(*this, &MainWindow::on_assets_manage_bg));
-	m_ActionGroup->add(Gtk::Action::create("AssetsManageEvidence", "Manage _Evidence"),
+	m_ActionGroup->add(Gtk::Action::create("AssetsManageEvidence", AppStock::EVIDENCE, "Manage _Evidence"),
 			   sigc::mem_fun(*this, &MainWindow::on_assets_manage_evidence));
-	m_ActionGroup->add(Gtk::Action::create("AssetsManageImages", "Manage _Images"),
+	m_ActionGroup->add(Gtk::Action::create("AssetsManageImages", AppStock::IMAGE, "Manage _Images"),
 			   sigc::mem_fun(*this, &MainWindow::on_assets_manage_images));
 	
 	m_ActionGroup->add(Gtk::Action::create("ToolsSpriteEditor", "_Sprite Editor"),
@@ -166,6 +172,8 @@ void MainWindow::construct() {
 			"		<menuitem action='CaseInitialBlock'/>"
 			"		<menuitem action='CaseEditLocations'/>"
 			"		<menuitem action='CaseEditOverview'/>"
+			"		<separator/>"
+			"		<menuitem action='CaseCustomize'/>"
 			"	</menu>"
 			"	<menu action='AssetsMenu'>"
 			"		<menuitem action='AssetsManageAudio'/>"
@@ -241,10 +249,6 @@ void MainWindow::construct() {
 					       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_open_recent), m_RecentFiles[i].first)));
 			}
 		}
-		
-		// now create icons for certain menu items
-		m_IconMgr.create_from_file(Utils::FS::cwd()+"dat.dpkg");
-		create_icons();
 	}
 	
 	// get the toolbar widgets
@@ -444,22 +448,6 @@ void MainWindow::create_trigger_submenu(Gtk::Menu *menu) {
 		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "hide_temp_image")));
 	list.push_back(Gtk::Menu_Helpers::MenuElem("Display Testimony", 
 		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "display_testimony")));
-}
-
-// create icons for menu items
-void MainWindow::create_icons() {
-	set_menuitem_icon("/MenuBar/AssetsMenu/AssetsManageAudio", AppStock::AUDIO);
-	set_menuitem_icon("/MenuBar/AssetsMenu/AssetsManageBG", AppStock::BACKGROUND);
-	set_menuitem_icon("/MenuBar/AssetsMenu/AssetsManageImages", AppStock::IMAGE);
-	set_menuitem_icon("/MenuBar/AssetsMenu/AssetsManageEvidence", AppStock::EVIDENCE);
-	
-	set_menuitem_icon("/MenuBar/ScriptMenu/ScriptInsertDialogue", AppStock::INSERT_DIALOGUE);
-	
-	set_menuitem_icon("/MenuBar/CaseMenu/CaseAddChar", AppStock::ADD_CHARACTER);
-	set_menuitem_icon("/MenuBar/CaseMenu/CaseBrowseChar", AppStock::BROWSE_CHARS);
-	set_menuitem_icon("/MenuBar/CaseMenu/CaseManageTestimonies", AppStock::TESTIMONY);
-	set_menuitem_icon("/MenuBar/CaseMenu/CaseInitialBlock", AppStock::INITBLOCK);
-	set_menuitem_icon("/MenuBar/CaseMenu/CaseEditLocations", AppStock::LOCATION);
 }
 
 // set an icon for a menu item
@@ -1438,6 +1426,14 @@ void MainWindow::on_case_edit_overview() {
 	}
 }
 
+// customize case elements
+void MainWindow::on_case_customize() {
+	// bring up the customize dialog
+	CustomizeDialog cd(m_Case.get_images());
+	if (cd.run()==Gtk::RESPONSE_OK) {
+	}
+}
+
 // change initial case text block
 void MainWindow::on_case_change_initial_block() {
 	// make sure there are any text blocks at all
@@ -1496,7 +1492,7 @@ void MainWindow::on_assets_manage_bg() {
 // manage evidence assets handler
 void MainWindow::on_assets_manage_evidence() {
 	// prepare evidence manager
-	EvidenceDialog ed(m_Case.get_evidence(), m_Case.get_evidence_ids());
+	EvidenceDialog ed(m_Case.get_evidence(), m_Case.get_images(), m_Case.get_evidence_ids());
 	
 	// run this dialog
 	if (ed.run()==Gtk::RESPONSE_OK) {

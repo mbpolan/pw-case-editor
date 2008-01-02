@@ -32,6 +32,9 @@ class CharComboBox: public Gtk::ComboBoxText {
 		// constructor
 		CharComboBox(const CharacterMap &characters);
 		
+		// see if the combo box is empty
+		bool empty() const { return m_Characters.empty(); }
+		
 		// set the active character by internal name
 		void set_active_internal(const Glib::ustring &name);
 		
@@ -55,6 +58,9 @@ class LocationComboBox: public Gtk::ComboBoxText {
 	public:
 		// constructor
 		LocationComboBox(const LocationMap &locations);
+		
+		// see if the combo box is empty
+		bool empty() const { return m_Locations.empty(); }
 		
 		// set the active location via internal name
 		void set_active_internal(const Glib::ustring &id);
@@ -86,6 +92,9 @@ class EvidenceComboBox: public Gtk::ComboBoxText {
 		// constructor
 		EvidenceComboBox(const EvidenceMap &ev);
 		
+		// see if the combo box is empty
+		bool empty() const { return m_Evidence.empty(); }
+		
 		// get the selected location's name
 		Glib::ustring get_selected_name() const;
 		
@@ -107,6 +116,9 @@ class BlockComboBox: public Gtk::ComboBoxText {
 		// constructor
 		BlockComboBox(const BufferMap &blocks);
 		
+		// see if the combo box is empty
+		bool empty() const { return m_Buffers.empty(); }
+		
 		// get the selected block internal name
 		Glib::ustring get_selected_internal() const;
 		
@@ -127,6 +139,9 @@ class AudioComboBox: public Gtk::ComboBoxText {
 		// constructor
 		AudioComboBox(const AudioMap &map, const Filter &filter=FILTER_NONE);
 		
+		// see if the combo box is empty
+		bool empty() const { return m_Audio.empty(); }
+		
 		// get the selected audio's internal name
 		Glib::ustring get_selected_internal() const;
 		
@@ -144,6 +159,9 @@ class ImgComboBox: public Gtk::ComboBoxText {
 	public:
 		// constructor
 		ImgComboBox(const ImageMap &map);
+		
+		// see if the combo box is empty
+		bool empty() const { return m_Images.empty(); }
 		
 		// get the selected image's internal name
 		Glib::ustring get_selected_internal() const;
