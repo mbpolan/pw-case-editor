@@ -194,6 +194,9 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 		// read description
 		evidence.description=readString(f);
 		
+		// read check image id
+		evidence.checkID=readString(f);
+		
 		// read pixbuf data
 		evidence.texture=Textures::createTexture("null", readImage(f));
 		
@@ -260,10 +263,12 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 			Case::Hotspot hspot;
 			
 			// read area
-			fread(&hspot.x, sizeof(int), 1, f);
-			fread(&hspot.y, sizeof(int), 1, f);
-			fread(&hspot.w, sizeof(int), 1, f);
-			fread(&hspot.h, sizeof(int), 1, f);
+			int x, y, w, h;
+			fread(&x, sizeof(int), 1, f);
+			fread(&y, sizeof(int), 1, f);
+			fread(&w, sizeof(int), 1, f);
+			fread(&h, sizeof(int), 1, f);
+			hspot.rect=Rect(Point(x, y), w, h+197);
 			
 			// read target block
 			hspot.block=readString(f);

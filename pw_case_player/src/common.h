@@ -61,4 +61,36 @@ class Point {
 		int m_Y;
 };
 
+// a rectangle
+class Rect {
+	public:
+		// default constructor
+		Rect() {
+			m_Corner=Point(0, 0);
+			m_Width=m_Height=0;
+		}
+		
+		// constructor
+		Rect(const Point &p, int w, int h) {
+			m_Corner=p;
+			m_Width=w;
+			m_Height=h;
+		}
+		
+		// get the geometry of the rectangle
+		void getGeometry(Point &p, int &w, int &h) const {
+			p=m_Corner;
+			w=m_Width;
+			h=m_Height;
+		}
+		
+	private:
+		// top left corner
+		Point m_Corner;
+		
+		// dimensions
+		int m_Width;
+		int m_Height;
+};
+
 #endif

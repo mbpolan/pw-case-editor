@@ -64,6 +64,20 @@ void Utils::debugMessage(const std::string &object, const std::string &msg) {
 		std::cout << object << ": " << msg << std::endl;
 }
 
+// see if a point is in a rectangle
+bool Utils::pointInRect(const Point &p, const Rect &rect) {
+	Point corner;
+	int w, h;
+	rect.getGeometry(corner, w, h);
+	
+	if ((p.x()>=corner.x() && p.x()<=corner.x()+w) &&
+	    (p.y()>=corner.y() && p.y()<=corner.y()+h))
+		return true;
+	
+	else
+		return false;
+}
+
 // get a random number in the provided range
 int Utils::randomRange(int min, int max) {
 	// programmer stupidity check

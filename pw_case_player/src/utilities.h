@@ -37,6 +37,9 @@ void scriptToLimits(const std::string &str, UI::Limit &start, UI::Limit &end);
 // print a debug message
 void debugMessage(const std::string &object, const std::string &msg);
 
+// see if a point is in a rectangle
+bool pointInRect(const Point &p, const Rect &rect);
+
 // get a random number in the provided range
 int randomRange(int min, int max);
 

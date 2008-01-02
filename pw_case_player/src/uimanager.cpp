@@ -311,6 +311,11 @@ int UI::Manager::fadeOut(const std::string &id) {
 			Renderer::drawImage(Point(0, 0), opaque);
 			Renderer::drawImage(Point(0, 197), opaque);
 		} break;
+		case UI::ANIM_FADE_OUT_BOTTOM_GUI: {
+			SDL_Rect srect={ 0, 0, 256, 156 };
+			SDL_Rect drect={ 0, 215 };
+			SDL_BlitSurface(opaque, &srect, SDL_GetVideoSurface(), &drect);
+		}; break;
 	}
 	
 	// if the alpha is 255, then begin fading in

@@ -52,8 +52,7 @@ Game::Game(const std::string &rootPath, Case::Case *pcase): m_RootPath(rootPath)
 	m_State.requestedAnswerParams="null";
 	
 	// reset examination cursor position
-	m_State.examineX=256/2;
-	m_State.examineY=192/2;
+	m_State.examinePt=Point(256/2, 192/2);
 	
 	// reset temporary state variables
 	m_State.hideTextBox=false;
@@ -80,6 +79,7 @@ Game::Game(const std::string &rootPath, Case::Case *pcase): m_RootPath(rootPath)
 	m_State.tempImage="null";
 	
 	// reset queued events
+	m_State.queuedFlags=0;
 	m_State.queuedLocation="null";
 	m_State.queuedBlock="null";
 	
@@ -237,8 +237,14 @@ void Game::render() {
 	if (m_Parser->paused()) {
 		int flags=STATE_TEXT_BOX;
 		
+		// draw check image screen
+		if (flagged(STATE_CHECK_EVIDENCE_IMAGE)) {
+			flags |= STATE_BACK_BTN;
+			flags |= STATE_CHECK_EVIDENCE_IMAGE;
+		}
+		
 		// draw evidence page
-		if (flagged(STATE_EVIDENCE_PAGE)) {
+		else if (flagged(STATE_EVIDENCE_PAGE)) {
 			flags |= STATE_PROFILES_BTN;
 			flags |= STATE_EVIDENCE_PAGE;
 			flags |= STATE_BACK_BTN;
@@ -252,6 +258,11 @@ void Game::render() {
 			flags |= STATE_PROFILES_BTN;
 			flags |= STATE_EVIDENCE_INFO_PAGE;
 			flags |= STATE_BACK_BTN;
+			
+			// check button for visible evidence with check images
+			if (!m_State.visibleEvidence.empty() &&
+			    m_State.visibleEvidence[m_State.selectedEvidence].checkID!="null")
+				flags |= STATE_CHECK_BTN;
 			
 			if (m_State.curExamination) {
 				flags |= STATE_PRESENT_TOP_BTN;
@@ -494,7 +505,14 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 			
 			// examine button clicked
 			else if ((e->x>=256-79 && e->x<=256) && (e->y>=369 && e->y<=369+21))
-				onExamineThing(m_State.examineX, m_State.examineY+197);
+				onExamineThing(m_State.examinePt.x(), m_State.examinePt.y()+197);
+		}
+		
+		// check for clicks on check image scene
+		else if (flagged(STATE_CHECK_EVIDENCE_IMAGE)) {
+			// back button
+			if ((e->x>=0 && e->x<=79) && (e->y>=369 && e->y<=369+21))
+				onBottomLeftButtonClicked();
 		}
 		
 		// buttons have different positions in the examine scene
@@ -652,6 +670,7 @@ void Game::registerAnimations() {
 	m_UI->registerFadeOut("an_next_location_fade_top", 1, UI::ANIM_FADE_OUT_TOP);
 	m_UI->registerFadeOut("an_next_location_fade_bottom", 1, UI::ANIM_FADE_OUT_BOTTOM);
 	m_UI->registerFadeOut("an_next_location_fade_both", 1, UI::ANIM_FADE_OUT_BOTH);
+	m_UI->registerFadeOut("an_gui_fade_bottom", 5, UI::ANIM_FADE_OUT_BOTTOM_GUI);
 	
 	// register court camera effect
 	m_UI->registerCourtCameraMovement("an_court_camera");
@@ -684,22 +703,25 @@ void Game::checkInputState() {
 		// get the current keyboard state
 		Uint8 *keys=SDL_GetKeyState(NULL);
 		
+		int ex=m_State.examinePt.x();
+		int ey=m_State.examinePt.y();
+		
 		// move cursor up
-		if (keys[SDLK_UP] && m_State.examineY!=0) {
-			m_State.examineY-=1;
+		if (keys[SDLK_UP] && ey!=0) {
+			m_State.examinePt.setY(ey-1);
 		}
 		
 		// move cursor down
-		if (keys[SDLK_DOWN] && m_State.examineY<256)
-			m_State.examineY+=1;
+		if (keys[SDLK_DOWN] && ey<256)
+			m_State.examinePt.setY(ey+1);
 		
 		// move cursor left
-		if (keys[SDLK_LEFT] && m_State.examineX!=0)
-			m_State.examineX-=1;
+		if (keys[SDLK_LEFT] && ex!=0)
+			m_State.examinePt.setX(ex-1);
 		
 		// move cursor right
-		if (keys[SDLK_RIGHT] && m_State.examineX<256)
-			m_State.examineX+=1;
+		if (keys[SDLK_RIGHT] && ex<256)
+			m_State.examinePt.setX(ex+1);
 		
 		// get the mouse state
 		int mx, my;
@@ -708,8 +730,8 @@ void Game::checkInputState() {
 		// move the cursors if the first button is pressed
 		if ((state & SDL_BUTTON(1)) && (my>=197+22 && my<=391-22)) {
 			// update position
-			m_State.examineX=mx;
-			m_State.examineY=192-(391-my);
+			m_State.examinePt.setX(mx);
+			m_State.examinePt.setY(192-(391-my));
 		}
 	}
 }
@@ -727,8 +749,8 @@ bool Game::flagged(int flag) {
 
 // see if the text box should be drawn
 bool Game::shouldDrawTextBox() {
-	// first of all, fade out effects need to be text-box free
-	if (m_State.fadeOut!="none")
+	// first of all, fade out effects (other than gui ones) need to be text-box free
+	if (m_State.fadeOut!="gui" && m_State.fadeOut!="none")
 		return false;
 	
 	// same applies to the court camera
@@ -748,6 +770,19 @@ bool Game::shouldDrawTextBox() {
 		return false;
 	
 	return true;
+}
+
+// checks to see if area under examine cursors can be examined
+bool Game::canExamineRegion() {
+	Case::Location *location=m_Case->getLocation(m_State.currentLocation);
+	
+	// iterate over hotspots
+	for (std::vector<Case::Hotspot>::iterator it=location->hotspots.begin(); it!=location->hotspots.end(); ++it) {
+		if (Utils::pointInRect(m_State.examinePt, (*it).rect))
+			return true;
+	}
+	
+	return false;
 }
 
 // set the current backdrop location
@@ -1016,7 +1051,7 @@ void Game::renderMenuView() {
 	// when dealing with drawing elements, some need to be drawn "thin"
 	// this is only true when the examine scene is being drawn
 	std::string append="";
-	if (flagged(STATE_EXAMINE))
+	if (flagged(STATE_EXAMINE) || flagged(STATE_CHECK_EVIDENCE_IMAGE))
 		append="_thin";
 	
 	// render the background texture (or location background if examining)
@@ -1031,6 +1066,15 @@ void Game::renderMenuView() {
 		
 		Renderer::drawImage(Point(0, 197), bg->texture);
 	}
+	
+	// render the requested image instead
+	else if (flagged(STATE_CHECK_EVIDENCE_IMAGE)) {
+		// get the image for the evidence
+		std::string checkID=m_State.visibleEvidence[m_State.selectedEvidence].checkID;
+		Renderer::drawImage(Point(0, 197), m_Case->getImage(checkID)->texture);
+	}
+	
+	// default to background
 	else
 		Renderer::drawImage(Point(0, 197), "court_overview_g");
 	
@@ -1056,7 +1100,7 @@ void Game::renderMenuView() {
 		Case::Location *location=m_Case->getLocation(m_State.currentLocation);
 		Case::Background *bg=m_Case->getBackground(location->bg);
 		
-		Renderer::drawExamineScene(bg->texture, m_State.examineX, m_State.examineY);
+		Renderer::drawExamineScene(bg->texture, m_State.examinePt.x(), m_State.examinePt.y());
 	}
 	
 	// draw the move scene
@@ -1137,41 +1181,49 @@ void Game::renderMenuView() {
 	Renderer::drawImage(Point(0, 197), "tc_top_bar"+append);
 	Renderer::drawImage(Point(0, 389-(Textures::queryTexture("tc_lower_bar"+append)->h)), "tc_lower_bar"+append);
 	
-	// draw titles bars, if needed
-	if (flagged(STATE_EVIDENCE_PAGE) || flagged(STATE_EVIDENCE_INFO_PAGE))
-		Renderer::drawImage(Point(0, 206), "tc_evidence_bar");
-	if (flagged(STATE_PROFILES_PAGE) || flagged(STATE_PROFILE_INFO_PAGE))
-		Renderer::drawImage(Point(0, 206), "tc_profiles_bar");
-	
-	// draw activated buttons
-	if (flagged(STATE_COURT_REC_BTN))
-		Renderer::drawImage(Point(176, 197), "tc_court_rec_btn"+append);
-	else if (flagged(STATE_PRESENT_BTN))
-		Renderer::drawImage(Point(176, 197), "tc_present_item_btn");
-	else if (flagged(STATE_EVIDENCE_BTN))
-		Renderer::drawImage(Point(177, 197), "tc_evidence_btn");
-	else if (flagged(STATE_PROFILES_BTN))
-		Renderer::drawImage(Point(177, 197), "tc_profiles_btn");
-	if (flagged(STATE_PRESS_BTN))
-		Renderer::drawImage(Point(0, 197), "tc_press_btn");
-	
-	// draw the present evidence button, centered on the upper portion of the lower screen
-	if (flagged(STATE_PRESENT_TOP_BTN))
-		Renderer::drawImage(Point(89, 197), "tc_present_top_btn");
-	
-	// draw examine button if needed
-	if (flagged(STATE_EXAMINE))
-		Renderer::drawImage(Point(256-79, 369), "tc_examine_btn_thin");
-	
-	// draw the back button
-	if (flagged(STATE_BACK_BTN)) {
-		// same applies here, draw the back button lower if it is the thin variety
-		int y=359;
-		if (append=="_thin")
-			y+=10;
+	// any elements other than the top/bottom bars are only drawn if there is no gui fade out in effect
+	if (m_State.fadeOut!="gui") {
+		// draw titles bars, if needed
+		if (flagged(STATE_EVIDENCE_PAGE) || flagged(STATE_EVIDENCE_INFO_PAGE))
+			Renderer::drawImage(Point(0, 206), "tc_evidence_bar");
+		if (flagged(STATE_PROFILES_PAGE) || flagged(STATE_PROFILE_INFO_PAGE))
+			Renderer::drawImage(Point(0, 206), "tc_profiles_bar");
 		
-		// draw the button
-		Renderer::drawImage(Point(0, y), "tc_back_btn"+append);
+		// draw activated buttons
+		if (flagged(STATE_COURT_REC_BTN))
+			Renderer::drawImage(Point(176, 197), "tc_court_rec_btn"+append);
+		else if (flagged(STATE_PRESENT_BTN))
+			Renderer::drawImage(Point(176, 197), "tc_present_item_btn");
+		else if (flagged(STATE_EVIDENCE_BTN))
+			Renderer::drawImage(Point(177, 197), "tc_evidence_btn");
+		else if (flagged(STATE_PROFILES_BTN))
+			Renderer::drawImage(Point(177, 197), "tc_profiles_btn");
+		
+		if (flagged(STATE_PRESS_BTN))
+			Renderer::drawImage(Point(0, 197), "tc_press_btn");
+		
+		// check evidence button, if needed
+		if (flagged(STATE_CHECK_BTN))
+			Renderer::drawImage(Point(177, 359), "tc_check_btn");
+	
+		// draw the present evidence button, centered on the upper portion of the lower screen
+		if (flagged(STATE_PRESENT_TOP_BTN))
+			Renderer::drawImage(Point(89, 197), "tc_present_top_btn");
+		
+		// draw examine button if needed
+		if (flagged(STATE_EXAMINE) && canExamineRegion())
+			Renderer::drawImage(Point(256-79, 369), "tc_examine_btn_thin");
+		
+		// draw the back button
+		if (flagged(STATE_BACK_BTN)) {
+			// same applies here, draw the back button lower if it is the thin variety
+			int y=359;
+			if (append=="_thin")
+				y+=10;
+			
+			// draw the button
+			Renderer::drawImage(Point(0, y), "tc_back_btn"+append);
+		}
 	}
 }
 
@@ -1180,10 +1232,20 @@ bool Game::renderSpecialEffects() {
 	// if we are still fading out, don't parse the text
 	if (m_State.fadeOut!="none") {
 		// see if we are done fading
-		int ret=m_UI->fadeOut("an_next_location_fade_"+m_State.fadeOut);
+		int ret;
+		if (m_State.fadeOut!="gui")
+			ret=m_UI->fadeOut("an_next_location_fade_"+m_State.fadeOut);
+		else
+			ret=m_UI->fadeOut("an_gui_fade_bottom");
 		
 		// midpoint of fade out reached
 		if (ret==0) {
+			// if there are any queued flags, toggle them now
+			if ((m_State.queuedFlags & STATE_QUEUED)) {
+				toggle(m_State.queuedFlags);
+				m_State.queuedFlags=0;
+			}
+			
 			// set a location, if requested
 			if (m_State.queuedLocation!="null") {
 				setLocation(m_State.queuedLocation);
@@ -1536,6 +1598,7 @@ void Game::onTopRightButtonClicked() {
 		if (flagged(STATE_TEXT_BOX))
 			flags |= STATE_TEXT_BOX;
 		
+		// toggle the flags
 		toggle(flags);
 	}
 	
@@ -1640,7 +1703,7 @@ void Game::onTopRightButtonClicked() {
 	
 	// if the profiles button is shown during evidence info screen, switch to profile info screen
 	else if (flagged(STATE_PROFILES_BTN) && flagged(STATE_EVIDENCE_INFO_PAGE)) {
-		int flags=STATE_BACK_BTN | STATE_PROFILE_INFO_PAGE;
+		int flags=STATE_BACK_BTN | STATE_PROFILE_INFO_PAGE | STATE_CHECK_BTN;
 		
 		// if the previous screen was the present screen, then draw present button instead
 		if (m_State.prevScreen==SCREEN_PRESENT)
@@ -1666,7 +1729,7 @@ void Game::onTopRightButtonClicked() {
 	
 	// if the evidence button is shown during profile info screen, switch to evidence info screen
 	else if (flagged(STATE_EVIDENCE_BTN) && flagged(STATE_PROFILE_INFO_PAGE)) {
-		int flags=STATE_BACK_BTN | STATE_EVIDENCE_INFO_PAGE;
+		int flags=STATE_BACK_BTN | STATE_EVIDENCE_INFO_PAGE | STATE_CHECK_BTN;
 		
 		// if the previous screen was the present screen, then draw present button instead
 		if (m_State.prevScreen==SCREEN_PRESENT)
@@ -1757,6 +1820,16 @@ void Game::onBottomLeftButtonClicked() {
 			
 		}
 		
+		// if check evidence image screen is shown, revert to evidence info page
+		else if (flagged(STATE_CHECK_EVIDENCE_IMAGE)) {
+			flags=STATE_EVIDENCE_INFO_PAGE | STATE_BACK_BTN | STATE_CHECK_BTN |
+				STATE_PROFILES_BTN;
+			
+			// if the text box is also present, draw it as well
+			if (flagged(STATE_TEXT_BOX))
+				flags |= STATE_TEXT_BOX;
+		}
+		
 		// if evidence info page is shown, revert back to evidence page
 		else if (flagged(STATE_EVIDENCE_INFO_PAGE)) {
 			flags=STATE_PROFILES_BTN | STATE_BACK_BTN | STATE_EVIDENCE_PAGE;
@@ -1832,6 +1905,23 @@ void Game::onPresentCenterClicked() {
 	}
 }
 
+// check evidence button clicked
+void Game::onCheckButtonClicked() {
+	// error checking
+	if (m_State.visibleEvidence.empty() || m_State.selectedEvidence>m_State.visibleEvidence.size()-1)
+		return;
+	
+	// schedule a fade out on the gui
+	m_State.fadeOut="gui";
+	
+	// and queue some flags for this image
+	m_State.queuedFlags=STATE_CHECK_EVIDENCE_IMAGE | STATE_BACK_BTN | STATE_QUEUED;
+	
+	// if the text box is also present, draw it as well
+	if (flagged(STATE_TEXT_BOX))
+		m_State.queuedFlags |= STATE_TEXT_BOX;
+}
+
 // click handler for controls
 void Game::onControlsClicked(int x, int y) {
 	// 8, 134
@@ -1867,8 +1957,13 @@ void Game::onControlsClicked(int x, int y) {
 	}
 	
 	// play a sound effect if something was clicked
-	if (clicked)
+	if (clicked) {
 		Audio::playEffect("sfx_click", Audio::CHANNEL_GUI);
+		
+		// also schedule a fade out, if needed
+		if (m_State.selectedControl==1 || m_State.selectedControl==2)
+			m_State.fadeOut="gui";
+	}
 }
 
 // click handler for move scene
@@ -1989,6 +2084,10 @@ void Game::onRecPageClickEvent(int x, int y) {
 				// and view the evidence info page
 				int flags=STATE_EVIDENCE_INFO_PAGE | STATE_BACK_BTN;
 				
+				// show check button where applicable
+				if (m_State.visibleEvidence[m_State.selectedEvidence].checkID!="null")
+					flags |= STATE_CHECK_BTN;
+				
 				// if the previous screen was the present screen, then draw present button instead
 				if (m_State.prevScreen==SCREEN_PRESENT)
 					flags |= STATE_PRESENT_BTN;
@@ -2108,6 +2207,10 @@ void Game::onRecInfoPageClickEvent(int x, int y) {
 	// right button
 	else if ((x>=240 && x<=240+16) && (y>=ey && y<=ey+63))
 		selectEvidence(!flagged(STATE_PROFILE_INFO_PAGE), true);
+	
+	// check button clicked, if it's displayed
+	else if ((x>=177 && x<=256) && (y>=359 && y<=389) && flagged(STATE_CHECK_BTN))
+		onCheckButtonClicked();
 }
 
 // examine button activated handler
@@ -2122,7 +2225,7 @@ void Game::onExamineButtonActivated() {
 // move button activated handler
 void Game::onMoveButtonActivated() {
 	// toggle move scene
-	toggle(STATE_MOVE | STATE_COURT_REC_BTN | STATE_BACK_BTN);
+	m_State.queuedFlags=STATE_MOVE | STATE_COURT_REC_BTN | STATE_BACK_BTN | STATE_QUEUED;
 	
 	// also set this as the previous page
 	m_State.prevScreen=SCREEN_MOVE;
@@ -2131,7 +2234,7 @@ void Game::onMoveButtonActivated() {
 // talk button activated handler
 void Game::onTalkButtonActivated() {
 	// toggle talk scene
-	toggle(STATE_TALK | STATE_COURT_REC_BTN | STATE_BACK_BTN);
+	m_State.queuedFlags=STATE_TALK | STATE_COURT_REC_BTN | STATE_BACK_BTN | STATE_QUEUED;
 	
 	// also, set this as the previous scene
 	m_State.prevScreen=SCREEN_TALK;
@@ -2158,7 +2261,8 @@ void Game::onExamineThing(int x, int y) {
 		Case::Hotspot hspot=location->hotspots[i];
 		
 		// see if the click occured in this area
-		if ((x>=hspot.x && x<=hspot.x+hspot.w) && (y>=197+hspot.y && y<=197+hspot.y+hspot.h)) {
+		//if ((x>=hspot.x && x<=hspot.x+hspot.w) && (y>=197+hspot.y && y<=197+hspot.y+hspot.h)) {
+		if (Utils::pointInRect(Point(x, y), hspot.rect)) {
 			if (m_Case->getBuffers().find(hspot.block)!=m_Case->getBuffers().end()) {
 				m_Parser->setBlock(m_Case->getBuffers()[hspot.block]);
 				m_Parser->nextStep();

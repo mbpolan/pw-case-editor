@@ -28,6 +28,7 @@
 #include "SDL_mixer.h"
 
 #include "character.h"
+#include "common.h"
 
 namespace Case {
 
@@ -59,6 +60,7 @@ struct _Evidence {
 	std::string name; // name of this piece of evidence
 	std::string caption; // caption displaying info about evidence
 	std::string description; // string describing the image
+	std::string checkID; // image id for check button
 	SDL_Surface *texture; // texture id
 	SDL_Surface *thumb; // scaled thumbnail for evidence window
 };
@@ -66,11 +68,7 @@ typedef struct _Evidence Evidence;
 
 // an examinable area in a location
 struct _Hotspot {
-	int x;
-	int y;
-	int w;
-	int h;
-	
+	Rect rect;
 	std::string block; // the block to execute if examined
 };
 typedef struct _Hotspot Hotspot;

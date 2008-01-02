@@ -32,7 +32,7 @@
 
 // game state flags
 enum GameFlags {
-	STATE_COURT_GREEN_BAR=		1 << 0,
+	STATE_QUEUED=			1 << 0,
 	STATE_COURT_REC_BTN=		1 << 1,
 	STATE_EVIDENCE_BTN=		1 << 2,
 	STATE_PROFILES_BTN=		1 << 3,
@@ -50,7 +50,10 @@ enum GameFlags {
 	STATE_TALK=			1 << 15,
 	STATE_PRESENT_TOP_BTN=		1 << 16,
 	STATE_CROSS_EXAMINE_BTNS=	1 << 17,
-	STATE_PRESS_BTN=		1 << 18 };
+	STATE_PRESS_BTN=		1 << 18,
+	STATE_COURT_GREEN_BAR=		1 << 19,
+	STATE_CHECK_BTN=		1 << 20,
+	STATE_CHECK_EVIDENCE_IMAGE=	1 << 21 };
 
 // menu controls to draw
 enum Controls {
@@ -105,7 +108,7 @@ struct _GameState {
 	std::string tempImage;
 	
 	// x,y coordinates or examination cursor
-	int examineX, examineY;
+	Point examinePt;
 	
 	// the previous screen displayed
 	int prevScreen;
@@ -149,6 +152,7 @@ struct _GameState {
 	std::string currentLocation;
 	
 	// scheduled events
+	int queuedFlags;
 	std::string queuedLocation;
 	std::string queuedBlock;
 	
@@ -205,6 +209,9 @@ class Game {
 		// see if the text box should be drawn
 		bool shouldDrawTextBox();
 		
+		// checks to see if area under examine cursors can be examined
+		bool canExamineRegion();
+		
 		// set the current backdrop location
 		void setLocation(const std::string &location);
 		
@@ -252,6 +259,9 @@ class Game {
 		
 		// centered present button clicked
 		void onPresentCenterClicked();
+		
+		// check evidence button clicked
+		void onCheckButtonClicked();
 		
 		// click handler for controls
 		void onControlsClicked(int x, int y);
