@@ -54,6 +54,10 @@ Game::Game(const std::string &rootPath, Case::Case *pcase): m_RootPath(rootPath)
 	// reset examination cursor position
 	m_State.examinePt=Point(256/2, 192/2);
 	
+	// reset contradiction image variables
+	m_State.contradictionImg="null";
+	m_State.contradictionRegion=Rect(Point(0, 0), 0, 0);
+	
 	// reset temporary state variables
 	m_State.hideTextBox=false;
 	
@@ -239,7 +243,11 @@ void Game::render() {
 		
 		// draw check image screen
 		if (flagged(STATE_CHECK_EVIDENCE_IMAGE)) {
-			flags |= STATE_BACK_BTN;
+			if (m_State.contradictionImg=="null")
+				flags |= STATE_BACK_BTN;
+			else
+				flags |= STATE_CONFIRM_BTN;
+			
 			flags |= STATE_CHECK_EVIDENCE_IMAGE;
 		}
 		
@@ -504,7 +512,7 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 				onBottomLeftButtonClicked();
 			
 			// examine button clicked
-			else if ((e->x>=256-79 && e->x<=256) && (e->y>=369 && e->y<=369+21))
+			else if ((e->x>=177 && e->x<=256) && (e->y>=369 && e->y<=369+21))
 				onExamineThing(m_State.examinePt.x(), m_State.examinePt.y()+197);
 		}
 		
@@ -513,6 +521,10 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 			// back button
 			if ((e->x>=0 && e->x<=79) && (e->y>=369 && e->y<=369+21))
 				onBottomLeftButtonClicked();
+			
+			// confirm selection button
+			else if ((e->x>=177 && e->x<=256) && (e->y>=359 && e->y<=389) && m_State.contradictionImg!="null")
+				onBottomRightButtonClicked();
 		}
 		
 		// buttons have different positions in the examine scene
@@ -699,7 +711,7 @@ void Game::registerAnimations() {
 // check input device state
 void Game::checkInputState() {
 	// if the examination scene is shown, move the crosshairs
-	if (flagged(STATE_EXAMINE)) {
+	if (flagged(STATE_EXAMINE) || (flagged(STATE_CHECK_EVIDENCE_IMAGE) && m_State.contradictionImg!="null")) {
 		// get the current keyboard state
 		Uint8 *keys=SDL_GetKeyState(NULL);
 		
@@ -707,9 +719,8 @@ void Game::checkInputState() {
 		int ey=m_State.examinePt.y();
 		
 		// move cursor up
-		if (keys[SDLK_UP] && ey!=0) {
+		if (keys[SDLK_UP] && ey!=0)
 			m_State.examinePt.setY(ey-1);
-		}
 		
 		// move cursor down
 		if (keys[SDLK_DOWN] && ey<256)
@@ -1069,9 +1080,24 @@ void Game::renderMenuView() {
 	
 	// render the requested image instead
 	else if (flagged(STATE_CHECK_EVIDENCE_IMAGE)) {
-		// get the image for the evidence
-		std::string checkID=m_State.visibleEvidence[m_State.selectedEvidence].checkID;
-		Renderer::drawImage(Point(0, 197), m_Case->getImage(checkID)->texture);
+		// we're not expecting the user to point out a contradiction
+		if (m_State.contradictionImg=="null") {
+			// get the image for the evidence
+			std::string checkID=m_State.visibleEvidence[m_State.selectedEvidence].checkID;
+			Renderer::drawImage(Point(0, 197), m_Case->getImage(checkID)->texture);
+		}
+		
+		// otherwise, we are, so use the stored id
+		else {
+			// get our image
+			Case::Image *img=m_Case->getImage(m_State.contradictionImg);
+			
+			if (img) {
+				// we can reuse the renderer for this purpose
+				Renderer::drawImage(Point(0, 197), img->texture);
+				Renderer::drawExamineScene(m_State.examinePt);
+			}
+		}
 	}
 	
 	// default to background
@@ -1100,7 +1126,7 @@ void Game::renderMenuView() {
 		Case::Location *location=m_Case->getLocation(m_State.currentLocation);
 		Case::Background *bg=m_Case->getBackground(location->bg);
 		
-		Renderer::drawExamineScene(bg->texture, m_State.examinePt.x(), m_State.examinePt.y());
+		Renderer::drawExamineScene(m_State.examinePt);
 	}
 	
 	// draw the move scene
@@ -1202,9 +1228,11 @@ void Game::renderMenuView() {
 		if (flagged(STATE_PRESS_BTN))
 			Renderer::drawImage(Point(0, 197), "tc_press_btn");
 		
-		// check evidence button, if needed
+		// check evidence or confirm button, if needed
 		if (flagged(STATE_CHECK_BTN))
 			Renderer::drawImage(Point(177, 359), "tc_check_btn");
+		else if (flagged(STATE_CONFIRM_BTN))
+			Renderer::drawImage(Point(177, 359), "tc_confirm_btn");
 	
 		// draw the present evidence button, centered on the upper portion of the lower screen
 		if (flagged(STATE_PRESENT_TOP_BTN))
@@ -1860,6 +1888,36 @@ void Game::onBottomLeftButtonClicked() {
 	}
 }
 
+// bottom right button was clicked
+void Game::onBottomRightButtonClicked() {
+	// confirm button was clicked
+	if (flagged(STATE_CONFIRM_BTN)) {
+		// during examining an image for contradiction
+		if (flagged(STATE_CHECK_EVIDENCE_IMAGE)) {
+			StringVector vec=Utils::explodeString(',', m_State.requestedContrParams);
+			
+			// see if the click was in the contradiction region
+			if (Utils::pointInRect(m_State.examinePt, m_State.contradictionRegion)) {
+				// the user got it right, so follow up on the correct block
+				m_Parser->setBlock(m_Case->getBuffers()[vec[0]]);
+			}
+			
+			// the user is wrong, nice try though
+			else
+				m_Parser->setBlock(m_Case->getBuffers()[vec[1]]);
+			
+			// reset our variables relating to this image contradiction
+			m_State.contradictionImg="null";
+			m_State.contradictionRegion=Rect(Point(0, 0), 0, 0);
+			m_State.requestedContrParams="null";
+			
+			m_State.drawFlags &= ~STATE_CHECK_EVIDENCE_IMAGE;
+			
+			m_Parser->nextStep();
+		}
+	}
+}
+
 // centered present button clicked
 void Game::onPresentCenterClicked() {
 	// we are presenting evidence
@@ -1926,7 +1984,7 @@ void Game::onCheckButtonClicked() {
 void Game::onControlsClicked(int x, int y) {
 	// 8, 134
 	bool clicked=false;
-	int dy=197+20+34;
+	int dy=251;
 	
 	// examine control
 	if ((x>=8 && x<=118) && (y>=dy && y<=dy+26)) {
@@ -1976,7 +2034,7 @@ void Game::onMoveSceneClicked(int x, int y) {
 	
 	// starting coordinates
 	int dx=256/3;
-	int dy=197+34+5;
+	int dy=236;
 	
 	// iterate over drawn locations and see if one of them was clicked
 	for (int i=0; i<location->moveLocations.size(); i++) {

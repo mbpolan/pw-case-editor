@@ -43,6 +43,9 @@ bool pointInRect(const Point &p, const Rect &rect);
 // get a random number in the provided range
 int randomRange(int min, int max);
 
+// get the location of the mouse pointer
+Point getMouseLocation();
+
 // create a blank surface
 SDL_Surface* createSurface(int width, int height);
 

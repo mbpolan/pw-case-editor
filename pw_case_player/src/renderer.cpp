@@ -470,7 +470,7 @@ void Renderer::drawProfileInfoPage(UI::Manager *manager, const std::vector<Chara
 }
 
 // draw the examination scene
-void Renderer::drawExamineScene(SDL_Surface *background, int cursorX, int cursorY) {
+void Renderer::drawExamineScene(const Point &cursor) {
 	// get pointer to screen surface
 	SDL_Surface *screen=SDL_GetVideoSurface();
 	if (!screen)
@@ -481,11 +481,11 @@ void Renderer::drawExamineScene(SDL_Surface *background, int cursorX, int cursor
 	SDL_FillRect(overlay, NULL, 0);
 	
 	// draw crosshairs
-	vlineRGBA(overlay, cursorX, 0, 192, 0, 0, 255, 200);
-	hlineRGBA(overlay, 0, 256, cursorY, 0, 0, 255, 200);
+	vlineRGBA(overlay, cursor.x(), 0, 192, 0, 0, 255, 200);
+	hlineRGBA(overlay, 0, 256, cursor.y(), 0, 0, 255, 200);
 	
 	// draw center rectangle
-	rectangleRGBA(overlay, cursorX-6, cursorY-6, cursorX+6, cursorY+6, 0, 0, 255, 200);
+	rectangleRGBA(overlay, cursor.x()-6, cursor.y()-6, cursor.x()+6, cursor.y()+6, 0, 0, 255, 200);
 	
 	// draw overlay
 	Renderer::drawImage(Point(0, 197), overlay);
@@ -500,7 +500,7 @@ void Renderer::drawMoveScene(const std::vector<std::string> &locations, Location
 	
 	// keep track of x,y changes
 	int x=256/3;
-	int y=197+34+5;
+	int y=236;
 	
 	// go over locations
 	for (int i=0; i<locations.size(); i++) {
@@ -523,8 +523,8 @@ void Renderer::drawMoveScene(const std::vector<std::string> &locations, Location
 		Renderer::drawRect(screen, Point(x+1, y+1), 148, 18, SDL_MapRGB(screen->format, 255, 255, 255));
 		
 		// draw the string
-		int centerx=(x+(150/2))-(Fonts::getWidth("black", location.name)/2)-4;
-		Fonts::drawString(centerx, y+4, location.name, "black");
+		int centerx=(x+(150/2))-(Fonts::getTTFWidth(location.name)/2)-4;
+		Fonts::drawTTF(Point(centerx, y+1), location.name);
 		
 		// increment y
 		y+=25;
@@ -560,7 +560,7 @@ void Renderer::drawTalkScene(const std::vector<StringPair> &options, int selecte
 		Renderer::drawRect(screen, Point(x+1, y+1), 200-2, 18, SDL_MapRGB(screen->format, 255, 255, 255));
 		
 		// calculate length of string
-		int length=Fonts::getWidth("black", options[i].first);
+		int length=Fonts::getTTFWidth(options[i].first);
 		
 		// draw the text, centered on the button
 		int centerx;
@@ -569,7 +569,7 @@ void Renderer::drawTalkScene(const std::vector<StringPair> &options, int selecte
 		else
 			centerx=100-(length/2);
 		
-		Fonts::drawString(centerx, y+4, options[i].first, "black");
+		Fonts::drawTTF(Point(centerx, y+1), options[i].first);
 		
 		// move down to next slot
 		y+=25;

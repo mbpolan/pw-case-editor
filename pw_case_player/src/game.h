@@ -53,7 +53,8 @@ enum GameFlags {
 	STATE_PRESS_BTN=		1 << 18,
 	STATE_COURT_GREEN_BAR=		1 << 19,
 	STATE_CHECK_BTN=		1 << 20,
-	STATE_CHECK_EVIDENCE_IMAGE=	1 << 21 };
+	STATE_CHECK_EVIDENCE_IMAGE=	1 << 21,
+	STATE_CONFIRM_BTN=		1 << 22 };
 
 // menu controls to draw
 enum Controls {
@@ -65,16 +66,16 @@ enum Controls {
 
 // position on screen
 enum Position {
-	POSITION_LEFT=1,
-	POSITION_RIGHT=2 };
+	POSITION_LEFT=	1,
+	POSITION_RIGHT=	2 };
 
 // screens to draw
 enum Screen {
-	SCREEN_MAIN=0,
-	SCREEN_EXAMINE=1,
-	SCREEN_MOVE=2,
-	SCREEN_TALK=3,
-	SCREEN_PRESENT=4 };
+	SCREEN_MAIN=	0,
+	SCREEN_EXAMINE=	1,
+	SCREEN_MOVE=	2,
+	SCREEN_TALK=	3,
+	SCREEN_PRESENT=	4 };
 
 // court location stand
 enum Stand {
@@ -103,12 +104,17 @@ struct _GameState {
 	bool requestingAnswer;
 	std::string requestedEvidenceParams;
 	std::string requestedAnswerParams;
+	std::string requestedContrParams;
 	
 	// temporary image to be displayed over location background
 	std::string tempImage;
 	
-	// x,y coordinates or examination cursor
+	// x,y coordinates of examination cursor
 	Point examinePt;
+	
+	// region of contradiction in provided image of evidence
+	std::string contradictionImg;
+	Rect contradictionRegion;
 	
 	// the previous screen displayed
 	int prevScreen;
@@ -256,6 +262,9 @@ class Game {
 		
 		// bottom left button was clicked
 		void onBottomLeftButtonClicked();
+		
+		// bottom right button was clicked
+		void onBottomRightButtonClicked();
 		
 		// centered present button clicked
 		void onPresentCenterClicked();

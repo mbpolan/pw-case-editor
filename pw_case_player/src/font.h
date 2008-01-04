@@ -82,7 +82,10 @@ int drawStringCentered(int y, int delimiter, const std::string &str, const std::
 void drawTTF(const Point &p, const std::string &str);
 
 // get the width of a string
-int getWidth(const std::string &id, const std::string &str);
+int getWidth(const std::string &fontId, const std::string &str);
+
+// get the width of a ttf string
+int getTTFWidth(const std::string &str);
 
 // return a font from the map
 Font* queryFont(const std::string &id);

@@ -95,6 +95,13 @@ int Utils::randomRange(int min, int max) {
 	return min+((max-min+1)*rand()/(RAND_MAX+1.0));
 }
 
+// get the location of the mouse pointer
+Point Utils::getMouseLocation() {
+	int x, y;
+	SDL_GetMouseState(&x, &y);
+	return Point(x, y);
+}
+
 // create a blank surface
 SDL_Surface* Utils::createSurface(int width, int height) {
 	return SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 32, 0, 0, 0, 0);

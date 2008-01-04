@@ -352,7 +352,7 @@ std::string TextParser::parse(bool drawDialogue) {
 				}
 				
 				// request an answer
-				if (m_QueuedEvent=="request_answer") {
+				else if (m_QueuedEvent=="request_answer") {
 					// set the variable in the game state
 					m_Game->m_State.requestingAnswer=true;
 					
@@ -380,6 +380,34 @@ std::string TextParser::parse(bool drawDialogue) {
 					m_Game->m_State.drawFlags=flags;
 					
 					Audio::playEffect("sfx_return", Audio::CHANNEL_GUI);
+				}
+				
+				// request to point out a contradiction with an evidence image
+				else if (m_QueuedEvent=="request_image_contradiction") {
+					// parameter format: image_id, rectangle [x, y, w, h], right block, wrong block
+					// first, explode the string
+					StringVector params=Utils::explodeString(',', m_QueuedEventArgs);
+					
+					// error check
+					if (params.size()!=7)
+						Utils::debugMessage("TextParser", "Parameters for request_image_contradiction aren't correct");
+					
+					else {
+						// define our contradiction region
+						m_Game->m_State.contradictionRegion=Rect(Point(atoi(params[1].c_str()),
+											 atoi(params[2].c_str())),
+											 atoi(params[3].c_str()),
+											 atoi(params[4].c_str()));
+						
+						// set our parameters
+						m_Game->m_State.requestedContrParams=params[5]+","+params[6];
+						
+						// and our image
+						m_Game->m_State.contradictionImg=params[0];
+						
+						// finally, flag our state
+						m_Game->m_State.drawFlags=STATE_CHECK_EVIDENCE_IMAGE | STATE_CONFIRM_BTN;
+					}
 				}
 				
 				m_QueuedEvent="null";
@@ -841,7 +869,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	}
 	
 	// flag that requires player to present evidence or answer
-	else if (trigger=="request_evidence" || trigger=="request_answer") {
+	else if (trigger=="request_evidence" || trigger=="request_answer" || trigger=="request_image_contradiction") {
 		m_QueuedEvent=trigger;
 		m_QueuedEventArgs=command;
 	}

@@ -68,7 +68,7 @@ void drawProfilesPage(const std::vector<Character> &chars, int page, int selecte
 void drawProfileInfoPage(UI::Manager *ui, const std::vector<Character> &chars, int index);
 
 // draw the examination scene
-void drawExamineScene(SDL_Surface *background, int cursorX, int cursorY);
+void drawExamineScene(const Point &cursor);
 
 // draw the movement scene
 void drawMoveScene(const std::vector<std::string> &locations, LocationMap lmap, int selected);

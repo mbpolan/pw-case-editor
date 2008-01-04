@@ -428,6 +428,25 @@ int Fonts::getWidth(const std::string &id, const std::string &str) {
 	return width;
 }
 
+// get the width of a ttf string
+int Fonts::getTTFWidth(const std::string &str) {
+	int width=0;
+	
+	for (int i=0; i<str.size(); i++) {
+		if (i==' ')
+			width+=g_SpaceSize;
+		
+		else {
+			// get the amount of pixels this glyph needs, and add it
+			int advance=0;
+			if (TTF_GlyphMetrics(g_Arial, str[i], NULL, NULL, NULL, NULL, &advance)!=-1)
+				width+=advance;
+		}
+	}
+	
+	return width;
+}
+
 // return a font from the map
 Fonts::Font* Fonts::queryFont(const std::string &id) {
 	return &g_Fonts[id];
