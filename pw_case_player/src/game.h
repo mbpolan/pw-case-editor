@@ -206,6 +206,12 @@ class Game {
 		// check the current input device state
 		void checkInputState();
 		
+		// get the id of the selected court record evidence
+		std::string getSelectedEvidence();
+		
+		// get the id of the selected court record profile
+		std::string getSelectedProfile();
+		
 		// toggle game state flags
 		void toggle(int flags);
 		

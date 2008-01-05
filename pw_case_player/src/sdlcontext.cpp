@@ -27,6 +27,8 @@
 #include "sdlcontext.h"
 #include "iohandler.h"
 #include "renderer.h"
+#include "theme.h"
+#include "utilities.h"
 
 int SDLContext::m_Width=640;
 int SDLContext::m_Height=480;
@@ -142,6 +144,10 @@ bool SDLContext::initGame(const std::string &pathToCase) {
 	// load ttf fonts
 	Fonts::g_Arial=TTF_OpenFont("data/fonts/arial.ttf", 11);
 	if (!Fonts::g_Arial)
+		return false;
+	
+	// load our theme
+	if (!IO::loadThemeXML("theme.xml", Theme::g_Theme))
 		return false;
 	
 	return true;

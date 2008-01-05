@@ -32,7 +32,7 @@
 namespace Renderer {
 
 // draw a colored rectangle
-void drawRect(SDL_Surface *surface, const Point &p, int w, int h, Uint32 color);
+void drawRect(SDL_Surface *surface, const Point &p, int w, int h, const Color &color);
 
 // draw a full image at a point
 void drawImage(const Point &p, const std::string &texId);
@@ -61,11 +61,11 @@ void drawEvidenceInfoPage(UI::Manager *ui, const std::vector<Case::Evidence> &ev
 
 // draw the profiles page
 // page should be based on index 0, and selected should be an index between 0 and 7
-void drawProfilesPage(const std::vector<Character> &chars, int page, int selected);
+void drawProfilesPage(const std::vector<Character> &uchars, int page, int selected);
 
 // draw profile information page
 // index is the current index into profiles vector
-void drawProfileInfoPage(UI::Manager *ui, const std::vector<Character> &chars, int index);
+void drawProfileInfoPage(UI::Manager *ui, const std::vector<Character> &uchars, int index);
 
 // draw the examination scene
 void drawExamineScene(const Point &cursor);

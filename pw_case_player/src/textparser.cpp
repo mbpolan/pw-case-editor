@@ -174,7 +174,7 @@ std::string TextParser::parse(bool drawDialogue) {
 			else if (ch=='\\' && m_Block[1]!='n') {
 				bool erase=true;
 				
-				// check the next character
+				// check the next ucharacter
 				switch(m_Block[1]) {
 					// dialogue break
 					case 'b': {
@@ -190,7 +190,7 @@ std::string TextParser::parse(bool drawDialogue) {
 					
 					// increase speed
 					case '+': {
-						int multiplier=atoi(Utils::charToStr(m_Block[2]).c_str());
+						int multiplier=atoi(Utils::ucharToStr(m_Block[2]).c_str());
 						
 						for (int i=0; i<multiplier; i++)
 							m_Dialogue+=TEXT_SPEED_INCR_CHAR;
@@ -201,7 +201,7 @@ std::string TextParser::parse(bool drawDialogue) {
 					
 					// decrease speed
 					case '-': {
-						int multiplier=atoi(Utils::charToStr(m_Block[2]).c_str());
+						int multiplier=atoi(Utils::ucharToStr(m_Block[2]).c_str());
 						
 						for (int i=0; i<multiplier; i++)
 							m_Dialogue+=TEXT_SPEED_DECR_CHAR;
@@ -216,16 +216,16 @@ std::string TextParser::parse(bool drawDialogue) {
 					}; break;
 				}
 				
-				// erase this sequence of characters
+				// erase this sequence of ucharacters
 				if (erase)
 					m_Block.erase(0, 2);
 			}
 			
-			// normal character
+			// normal ucharacter
 			else {
-				// make sure useless characters aren't dealt with
+				// make sure useless ucharacters aren't dealt with
 				if (ch!='\n') {
-					// add this character to the draw string
+					// add this ucharacter to the draw string
 					m_Dialogue+=(char) ch;
 					
 					// see if we are over the text limit and need to break
@@ -260,20 +260,20 @@ std::string TextParser::parse(bool drawDialogue) {
 		if (m_Game->m_State.requestingEvidence || m_Game->m_State.requestingAnswer)
 			shift=-24;
 		
-		// see if we should draw the next character in the string
+		// see if we should draw the next ucharacter in the string
 		int now=SDL_GetTicks();
 		if (now-m_LastChar>m_FontStyle.speed && m_StrPos<m_Dialogue.size()) {
 			// set the last draw time, and increment string position
 			m_LastChar=now;
 			
-			// our current character
+			// our current ucharacter
 			char curChar=m_Dialogue[m_StrPos-1];
 			
 			// see if we need to execute a trigger
 			if(curChar=='^')
 				executeNextTrigger();
 			
-			// cache the previous and next characters
+			// cache the previous and next ucharacters
 			char prevChar=(m_StrPos>1 ? m_Dialogue[m_StrPos-2] : '0');
 			char nextChar=m_Dialogue[m_StrPos];
 			
@@ -317,7 +317,7 @@ std::string TextParser::parse(bool drawDialogue) {
 			else if (m_FontStyle.type=="testimony-title")
 				sfx="sfx_male_talk";
 			
-			// play a sound effect if this next character is visible
+			// play a sound effect if this next ucharacter is visible
 			if (shouldPlayDialogueEffect(prevChar, curChar, nextChar))
 				Audio::playEffect(sfx, Audio::CHANNEL_DIALOGUE);
 			
@@ -358,12 +358,12 @@ std::string TextParser::parse(bool drawDialogue) {
 					
 					StringVector vec=Utils::explodeString(')', m_QueuedEventArgs);
 					for (int i=0; i<vec.size(); i++) {
-						// these strings have extra characters, so erase them first
+						// these strings have extra ucharacters, so erase them first
 						int npos=vec[i].find('(');
 						if (npos!=-1)
 							vec[i].erase(0, npos+1);
 						
-						// properly formatted strings always have a leading '(' character
+						// properly formatted strings always have a leading '(' ucharacter
 						else
 							continue;
 						
@@ -466,7 +466,7 @@ void TextParser::nextStep() {
 			m_QueuedFade="null";
 		}
 		
-		// display testimony from a character
+		// display testimony from a ucharacter
 		if (m_QueuedTestimony!="null") {
 			// set the testimony to the game engine
 			m_Game->displayTestimony(m_QueuedTestimony, false);
@@ -506,13 +506,13 @@ void TextParser::nextStep() {
 	}
 }
 
-// see if a dialogue sound effect should be played for a given character
+// see if a dialogue sound effect should be played for a given ucharacter
 bool TextParser::shouldPlayDialogueEffect(char prev, char ch, char next) {
 	// spaces are never played, nor trigger hooks
 	if (ch==' ' || ch=='^')
 		return false;
 	
-	// same applies for other script characters
+	// same applies for other script ucharacters
 	else if (ch=='}' || ch=='{')
 		return false;
 	
@@ -636,11 +636,11 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	
 	// add a profile to court record
 	else if (trigger=="add_profile") {
-		// make sure this character exists
+		// make sure this ucharacter exists
 		if (pcase->getCharacter(command))
 			m_Game->m_State.visibleProfiles.push_back(*pcase->getCharacter(command));
 		else
-			Utils::debugMessage("TextParser", "Unable to add profile for nonexistent character: "+command);
+			Utils::debugMessage("TextParser", "Unable to add profile for nonexistent ucharacter: "+command);
 	}
 	
 	// show evidence on screen
@@ -707,130 +707,130 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 			Utils::debugMessage("TextParser", "Unable to set trigger in nonexistent location: "+target);
 	}
 	
-	// set a character's animation
+	// set a ucharacter's animation
 	else if (trigger=="set_animation") {
 		// split this command string
 		std::vector<std::string> params=Utils::explodeString(',', command);
-		std::string charName=params[0];
+		std::string ucharName=params[0];
 		std::string anim=params[1];
 		
-		// get the character
-		Character *character=pcase->getCharacter(charName);
-		if (character)
-			character->setRootAnimation(anim);
+		// get the ucharacter
+		Character *ucharacter=pcase->getCharacter(ucharName);
+		if (ucharacter)
+			ucharacter->setRootAnimation(anim);
 		else
-			Utils::debugMessage("TextParser", "Trying to clear presentables for nonexistent character: "+command);
+			Utils::debugMessage("TextParser", "Trying to clear presentables for nonexistent ucharacter: "+command);
 	}
 	
-	// put a character at a location
-	else if (trigger=="put_character") {
+	// put a ucharacter at a location
+	else if (trigger=="put_ucharacter") {
 		// split this command string
 		std::vector<std::string> params=Utils::explodeString(',', command);
-		std::string character=params[0];
+		std::string ucharacter=params[0];
 		std::string target=params[1];
 		
 		// get the target location
 		if (pcase->getLocation(target))
-			pcase->getLocation(target)->character=character;
+			pcase->getLocation(target)->ucharacter=ucharacter;
 		else
-			Utils::debugMessage("TextParser", "Unable to put character '"+character+"' at nonexistant location: "+target);
+			Utils::debugMessage("TextParser", "Unable to put ucharacter '"+ucharacter+"' at nonexistant location: "+target);
 	}
 	
-	// add a talk option to a character
+	// add a talk option to a ucharacter
 	else if (trigger=="add_talk_option") {
 		// split this command string
 		std::vector<std::string> params=Utils::explodeString(',', command);
-		std::string charName=params[0];
+		std::string ucharName=params[0];
 		std::string viewString=params[1];
 		std::string blockId=params[2];
 		
-		// get the target character
-		Character *character=pcase->getCharacter(charName);
-		if (character)
-			character->addTalkOption(viewString, blockId);
+		// get the target ucharacter
+		Character *ucharacter=pcase->getCharacter(ucharName);
+		if (ucharacter)
+			ucharacter->addTalkOption(viewString, blockId);
 		else
-			Utils::debugMessage("TextParser", "Unable to add talk option '"+viewString+"' for nonexistent character: "+charName);
+			Utils::debugMessage("TextParser", "Unable to add talk option '"+viewString+"' for nonexistent ucharacter: "+ucharName);
 	}
 	
 	// remove a talk option
 	else if (trigger=="remove_talk_option") {
 		// split this command string
 		std::vector<std::string> params=Utils::explodeString(',', command);
-		std::string charName=params[0];
+		std::string ucharName=params[0];
 		std::string viewString=params[1];
 		
-		// get the target character
-		Character *character=pcase->getCharacter(charName);
-		if (character)
-			character->removeTalkOption(viewString);
+		// get the target ucharacter
+		Character *ucharacter=pcase->getCharacter(ucharName);
+		if (ucharacter)
+			ucharacter->removeTalkOption(viewString);
 		else
-			Utils::debugMessage("TextParser", "Unable to remove talk option '"+viewString+"' for nonexistent character: "+charName);
+			Utils::debugMessage("TextParser", "Unable to remove talk option '"+viewString+"' for nonexistent ucharacter: "+ucharName);
 	}
 	
 	// clear talk options
 	else if (trigger=="clear_talk_options") {
-		// get character
-		Character *character=pcase->getCharacter(command);
-		if (character)
-			character->clearTalkOptions();
+		// get ucharacter
+		Character *ucharacter=pcase->getCharacter(command);
+		if (ucharacter)
+			ucharacter->clearTalkOptions();
 		else
-			Utils::debugMessage("TextParser", "Unable to clear talk options for nonexistent character: "+command);
+			Utils::debugMessage("TextParser", "Unable to clear talk options for nonexistent ucharacter: "+command);
 	}
 	
-	// add a presentable piece of evidence/profile to a character
+	// add a presentable piece of evidence/profile to a ucharacter
 	else if (trigger=="add_presentable") {
 		// split this command string
 		std::vector<std::string> params=Utils::explodeString(',', command);
-		std::string charName=params[0];
+		std::string ucharName=params[0];
 		std::string itemId=params[1];
 		std::string targetBlock=params[2];
 		
-		// get the character
-		Character *character=pcase->getCharacter(charName);
-		if (character)
-			character->addPresentable(itemId, targetBlock);
+		// get the ucharacter
+		Character *ucharacter=pcase->getCharacter(ucharName);
+		if (ucharacter)
+			ucharacter->addPresentable(itemId, targetBlock);
 		else
-			Utils::debugMessage("TextParser", "Unable to add presentable '"+itemId+"' for nonexistent character: "+charName);
+			Utils::debugMessage("TextParser", "Unable to add presentable '"+itemId+"' for nonexistent ucharacter: "+ucharName);
 	}
 	
 	// remove a piece of presentable evidence/profile
 	else if (trigger=="remove_presentable") {
 		// split this command string
 		std::vector<std::string> params=Utils::explodeString(',', command);
-		std::string charName=params[0];
+		std::string ucharName=params[0];
 		std::string itemId=params[1];
 		
-		// get the character and remove presentable item
-		Character *character=pcase->getCharacter(charName);
-		if (character)
-			character->removePresentable(itemId);
+		// get the ucharacter and remove presentable item
+		Character *ucharacter=pcase->getCharacter(ucharName);
+		if (ucharacter)
+			ucharacter->removePresentable(itemId);
 		else
-			Utils::debugMessage("TextParser", "Unable to remove presentables for nonexistent character: "+charName);
+			Utils::debugMessage("TextParser", "Unable to remove presentables for nonexistent ucharacter: "+ucharName);
 	}
 	
-	// clear character's presentable items
+	// clear ucharacter's presentable items
 	else if (trigger=="clear_presentables") {
-		// get the character requested
-		Character *character=pcase->getCharacter(command);
-		if (character)
-			character->clearPresentableItems();
+		// get the ucharacter requested
+		Character *ucharacter=pcase->getCharacter(command);
+		if (ucharacter)
+			ucharacter->clearPresentableItems();
 		else
-			Utils::debugMessage("TextParser", "Unable to clear presentables for nonexistent character: "+command);
+			Utils::debugMessage("TextParser", "Unable to clear presentables for nonexistent ucharacter: "+command);
 	}
 	
 	// set the block to use when a useless item was presented
 	else if (trigger=="set_bad_presentable_block") {
 		// split this command string
 		std::vector<std::string> params=Utils::explodeString(',', command);
-		std::string charName=params[0];
+		std::string ucharName=params[0];
 		std::string target=params[1];
 		
-		// get the character
-		Character *character=pcase->getCharacter(charName);
-		if (character)
-			character->setBadPresentableBlock(target);
+		// get the ucharacter
+		Character *ucharacter=pcase->getCharacter(ucharName);
+		if (ucharacter)
+			ucharacter->setBadPresentableBlock(target);
 		else
-			Utils::debugMessage("TextParser", "Unable to set bad presentable block for nonexistent character: "+charName);
+			Utils::debugMessage("TextParser", "Unable to set bad presentable block for nonexistent ucharacter: "+ucharName);
 	}
 	
 	// set music to be played a location
@@ -919,7 +919,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		// copy speaker id
 		m_Speaker=command;
 		
-		// get character gender
+		// get ucharacter gender
 		if (pcase->getCharacter(m_Speaker))
 			m_SpeakerGender=pcase->getCharacter(m_Speaker)->getGender();
 	}

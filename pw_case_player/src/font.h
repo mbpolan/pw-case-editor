@@ -31,7 +31,7 @@
 
 namespace Fonts {
 
-// amount of pixels to skip following a line break, space, and in between characters
+// amount of pixels to skip following a line break, space, and in between ucharacters
 const int g_LineBreakSize=17;
 const int g_SpaceSize=10;
 const int g_CharSpace=2;

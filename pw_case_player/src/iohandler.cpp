@@ -21,6 +21,7 @@
 
 #include <cstdio>
 #include <iostream>
+#include <libxml/parser.h>
 #include "SDL_image.h"
 #include "SDL_rotozoom.h"
 
@@ -68,39 +69,39 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 	std::string initialBlock=readString(f);
 	pcase.setInitialBlockId(initialBlock);
 	
-	// read amount of characters
-	int charCount;
-	fread(&charCount, sizeof(int), 1, f);
+	// read amount of ucharacters
+	int ucharCount;
+	fread(&ucharCount, sizeof(int), 1, f);
 	
-	// read each character
-	for (int i=0; i<charCount; i++) {
-		Character character;
+	// read each ucharacter
+	for (int i=0; i<ucharCount; i++) {
+		Character ucharacter;
 		std::string str;
 		
 		// read internal name
 		str=readString(f);
-		character.setInternalName(str);
+		ucharacter.setInternalName(str);
 		
 		// read displayed name
 		str=readString(f);
-		character.setName(str);
+		ucharacter.setName(str);
 		
 		// read gender
 		int gender;
 		fread(&gender, sizeof(int), 1, f);
-		character.setGender((gender==0 ? Character::GENDER_MALE : Character::GENDER_FEMALE));
+		ucharacter.setGender((gender==0 ? Character::GENDER_MALE : Character::GENDER_FEMALE));
 		
 		// read caption
 		str=readString(f);
-		character.setCaption(str);
+		ucharacter.setCaption(str);
 		
 		// read description
 		str=readString(f);
-		character.setDescription(str);
+		ucharacter.setDescription(str);
 		
 		// read sprite name
 		str=readString(f);
-		character.setSpriteName(str);
+		ucharacter.setSpriteName(str);
 		
 		// if the sprite name is not invalid, try loading said sprite
 		if (str!="null" && str!="") {
@@ -110,16 +111,16 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 			// try to load it
 			Sprite sprite;
 			if (!IO::loadSpriteFromFile(sprPath, sprite))
-				std::cout << "Unable to load sprite for " << character.getInternalName() << ": " << sprPath << std::endl;
+				std::cout << "Unable to load sprite for " << ucharacter.getInternalName() << ": " << sprPath << std::endl;
 			
 			else
-				character.setSprite(sprite);
+				ucharacter.setSprite(sprite);
 		}
 		
-		// see if this character has a text box tag
+		// see if this ucharacter has a text box tag
 		bool tag;
 		fread(&tag, sizeof(bool), 1, f);
-		character.setHasTextBoxTag(tag);
+		ucharacter.setHasTextBoxTag(tag);
 		
 		// if the tag exists, read the image
 		if (tag) {
@@ -128,13 +129,13 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 			// set alpha to match that of the text box
 			SDL_SetAlpha(texTag, SDL_SRCALPHA, 165);
 			
-			character.setTextBoxTag(texTag);
+			ucharacter.setTextBoxTag(texTag);
 		}
 		
-		// see if this character has a headshot image
+		// see if this ucharacter has a headshot image
 		bool headshot;
 		fread(&headshot, sizeof(bool), 1, f);
-		character.setHasHeadshot(headshot);
+		ucharacter.setHasHeadshot(headshot);
 		
 		// if the headshot exists, read the image
 		if (headshot) {
@@ -144,11 +145,11 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 			// read scaled thumbnail
 			SDL_Surface *thumb=Textures::createTexture("null", readImage(f));
 			
-			character.setHeadshot(headshot, thumb);
+			ucharacter.setHeadshot(headshot, thumb);
 		}
 		
-		// include this character
-		pcase.addCharacter(character);
+		// include this ucharacter
+		pcase.addCharacter(ucharacter);
 	}
 	
 	// read amount of backgrounds
@@ -233,7 +234,7 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 	for (int i=0; i<locationCount; i++) {
 		Case::Location location;
 		location.triggerBlock="null";
-		location.character="null";
+		location.ucharacter="null";
 		location.music="null";
 		
 		// read id
@@ -502,28 +503,28 @@ bool IO::loadStockFile(const std::string &path, Case::Case *pcase) {
 			// extract data from string
 			StringVector vec=Utils::explodeString(',', sId);
 			
-			// create character struct
-			Character character(vec[0], vec[1], vec[2], vec[3]);
-			character.setSprite(sprite);
+			// create ucharacter struct
+			Character ucharacter(vec[0], vec[1], vec[2], vec[3]);
+			ucharacter.setSprite(sprite);
 			
 			// see if a text box tag is present
 			if (vec[4]!="null") {
 				SDL_Surface *tag=Textures::createTexture("null", "data/stock/"+vec[4]);
 				if (tag) {
 					// set this tag
-					character.setHasTextBoxTag(true);
-					character.setTextBoxTag(tag);
+					ucharacter.setHasTextBoxTag(true);
+					ucharacter.setTextBoxTag(tag);
 					
 					// along with its alpha
 					SDL_SetAlpha(tag, SDL_SRCALPHA, 165);
 				}
 				
 				else
-					std::cout << "Unable to load text box tag for character '" << vec[0] << "': " << vec[4] << std::endl;
+					std::cout << "Unable to load text box tag for ucharacter '" << vec[0] << "': " << vec[4] << std::endl;
 			}
 			
 			// add this sprite
-			pcase->addCharacter(character);
+			pcase->addCharacter(ucharacter);
 		}
 		
 		// location
@@ -536,7 +537,7 @@ bool IO::loadStockFile(const std::string &path, Case::Case *pcase) {
 			location.id=sId;
 			location.bg=sFile;
 			location.triggerBlock="null";
-			location.character="null";
+			location.ucharacter="null";
 			location.music="null";
 			
 			// add this location
@@ -579,13 +580,61 @@ bool IO::loadStockFile(const std::string &path, Case::Case *pcase) {
 	return true;
 }
 
+// load theme from xml
+bool IO::loadThemeXML(const std::string &path, Theme::ColorMap &map) {
+	xmlDocPtr doc=xmlParseFile(path.c_str());
+	if (!doc) {
+		std::cout << "CRITICAL: unable to load theme XML file: " << path << std::endl;
+		return false;
+	}
+	
+	// get our root element
+	xmlNodePtr root=xmlDocGetRootElement(doc);
+	xmlNodePtr child=root->children;
+	
+	// count how many nodes we've loaded
+	int count=0;
+	
+	// iterate over the child nodes
+	while(child) {
+		// element node
+		if (xmlStrcmp(child->name, (const xmlChar*) "element")==0) {
+			// get the id of the item
+			std::string id=(const char*) xmlGetProp(child, (const xmlChar*) "id");
+			
+			// get our rgba color
+			int r=atoi((const char*) xmlGetProp(child, (const xmlChar*) "r"));
+			int g=atoi((const char*) xmlGetProp(child, (const xmlChar*) "g"));
+			int b=atoi((const char*) xmlGetProp(child, (const xmlChar*) "b"));
+			
+			// sometimes, a node may not have an alpha value
+			int a=255;
+			if (xmlHasProp(child, (const xmlChar*) "a"))
+				a=atoi((const char*) xmlGetProp(child, (const xmlChar*) "a"));
+			
+			// add this color
+			Theme::g_Theme[id]=Color(r, g, b, a);
+			
+			count++;
+		}
+		
+		child=child->next;
+	}
+	
+	xmlFreeDoc(doc);
+	
+	std::cout << "Loaded " << count << " element(s) from theme file.\n";
+	
+	return true;
+}
+
 // read image data from file
 Textures::Texture IO::readImage(FILE *f) {
 	Textures::Texture tex;
 	
 	// read buffer size
-	unsigned int size;
-	fread(&size, sizeof(unsigned int), 1, f);
+	int size;
+	fread(&size, sizeof(int), 1, f);
 	
 	// read buffer
 	char *buffer=new char[size];

@@ -44,18 +44,18 @@ bool pointInRect(const Point &p, const Rect &rect);
 int randomRange(int min, int max);
 
 // get the location of the mouse pointer
-Point getMouseLocation();
+Point getMouseLocation(Uint8 *modState=NULL);
 
 // create a blank surface
 SDL_Surface* createSurface(int width, int height);
 
 // convert a char to a string
-std::string charToStr(char ch);
+std::string ucharToStr(char ch);
 
 // break a string apart based on a delimiting string
 StringVector explodeString(const std::string &delimiter, const std::string &str);
 
-// break a string apart based on a delimiting character
+// break a string apart based on a delimiting ucharacter
 StringVector explodeString(char delimiter, const std::string &str);
 
 // count occurrences of a substring in a string

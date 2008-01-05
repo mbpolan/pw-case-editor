@@ -27,6 +27,27 @@
 // a value,key string pair
 typedef std::pair<std::string, std::string> StringPair;
 
+// an rgba color
+class Color {
+	public:
+		// constructor
+		Color(char r=255, char g=255, char b=255, char a=255) {
+			m_R=r;
+			m_G=g;
+			m_B=b;
+			m_A=a;
+		}
+		
+		// accessors
+		char r() const { return m_R; }
+		char g() const { return m_G; }
+		char b() const { return m_B; }
+		char a() const { return m_A; }
+		
+	private:
+		char m_R, m_G, m_B, m_A;
+};
+
 // a point
 class Point {
 	public:

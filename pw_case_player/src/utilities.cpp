@@ -92,13 +92,15 @@ int Utils::randomRange(int min, int max) {
 		return min;
 	
 	// return a randomized number
-	return min+((max-min+1)*rand()/(RAND_MAX+1.0));
+	return (int) min+((max-min+1)*int(rand()/(RAND_MAX+1.0)));
 }
 
 // get the location of the mouse pointer
-Point Utils::getMouseLocation() {
+Point Utils::getMouseLocation(Uint8 *modState) {
 	int x, y;
-	SDL_GetMouseState(&x, &y);
+	Uint8 state=SDL_GetMouseState(&x, &y);
+	if (modState)
+		(*modState)=state;
 	return Point(x, y);
 }
 
@@ -108,7 +110,7 @@ SDL_Surface* Utils::createSurface(int width, int height) {
 }
 
 // convert a char to a string
-std::string Utils::charToStr(char ch) {
+std::string Utils::ucharToStr(char ch) {
 	std::string str="";
 	str+=ch;
 	return str;
@@ -139,7 +141,7 @@ StringVector Utils::explodeString(const std::string &delimiter, const std::strin
 	return split;
 }
 
-// break a string apart based on a delimiting character
+// break a string apart based on a delimiting ucharacter
 StringVector Utils::explodeString(char delimiter, const std::string &strc) {
 	std::string d;
 	d+=delimiter;

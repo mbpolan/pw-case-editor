@@ -17,49 +17,25 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-// texture.h: SDL texture functions
+// theme.h: theme functions
 
-#ifndef TEXTURE_H
-#define TEXTURE_H
+#ifndef THEME_H
+#define THEME_H
 
 #include <iostream>
 #include <map>
-#include "SDL.h"
 
 #include "common.h"
 
-namespace Textures {
+namespace Theme {
 
-struct _Texture {
-	int w;
-	int h;
-	short bpp;
-	char *pixels;
-	SDL_Surface *surface;
-};
-typedef struct _Texture Texture;
+// our global theme
+typedef std::map<std::string, Color> ColorMap;
+extern ColorMap g_Theme;
 
-// map of all allocated textures
-static std::map<std::string, SDL_Surface*> g_TextureMap;
+// get a color based on theme key
+Color lookup(const std::string &key);
 
-// get a texture from the map
-SDL_Surface* queryTexture(const std::string &id);
-
-// add a new texture
-void pushTexture(const std::string &id, SDL_Surface *texture);
-
-// remove a texture from the stack
-void popTexture(const std::string &id);
-
-// clear the texture stack
-void clearStack();
-
-// create a texture after loading an image from file
-SDL_Surface* createTexture(const std::string &id, const std::string &file);
-
-// create a texture from data
-SDL_Surface* createTexture(const std::string &id, const Texture &tex);
-
-}; // namespace Textures
+}; // namespace Theme
 
 #endif

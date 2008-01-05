@@ -53,17 +53,17 @@ bool Fonts::loadFont(const std::string &path, Fonts::Font &font) {
 		return false;
 	}
 	
-	// read amount of characters
+	// read amount of ucharacters
 	int amount;
 	fread(&amount, sizeof(int), 1, f);
 	
 	// iterate over glyphs
 	for (int i=0; i<amount; i++) {
-		// read character
+		// read ucharacter
 		char ch=fgetc(f);
 		
 		// read buffer size
-		unsigned int size;
+		int size;
 		fread(&size, sizeof(unsigned int), 1, f);
 		
 		// allocate space
@@ -171,7 +171,7 @@ bool Fonts::lineWillBreak(int x, int y, int rightClamp, const std::string &str, 
 			continue;
 		}
 		
-		// see if this is a literal new line character
+		// see if this is a literal new line ucharacter
 		if (ch=='\\' && str[i+1]=='n') {
 			// make sure we don't make any extra lines
 			if (breakCount==3)
@@ -181,7 +181,7 @@ bool Fonts::lineWillBreak(int x, int y, int rightClamp, const std::string &str, 
 			
 			breakCount++;
 			
-			// we skip the next character
+			// we skip the next ucharacter
 			i++;
 			
 			continue;
@@ -267,11 +267,11 @@ int Fonts::drawString(int x, int y, int limit, int rightClamp, const std::string
 	if (limit>str.size())
 		limit=str.size();
 	
-	// iterate over string and draw each character
+	// iterate over string and draw each ucharacter
 	for (int i=0; i<limit; i++) {
 		char ch=(char) str[i];
 		
-		// don't bother drawing unknown characters
+		// don't bother drawing unknown ucharacters
 		if (font.glyphs.find(ch)==font.glyphs.end())
 			continue;
 		
@@ -288,7 +288,7 @@ int Fonts::drawString(int x, int y, int limit, int rightClamp, const std::string
 			continue;
 		}
 		
-		// see if this is a literal new line character
+		// see if this is a literal new line ucharacter
 		if (ch=='\\' && str[i+1]=='n') {
 			// make sure we don't make any extra lines
 			if (breakCount==2)
@@ -299,7 +299,7 @@ int Fonts::drawString(int x, int y, int limit, int rightClamp, const std::string
 			
 			breakCount++;
 			
-			// we skip the next character
+			// we skip the next ucharacter
 			i++;
 			
 			continue;
@@ -327,7 +327,7 @@ int Fonts::drawString(int x, int y, int limit, int rightClamp, const std::string
 			drect.x=x;
 			drect.y+=g_LineBreakSize;
 			
-			// blit the character that was supposed to be here
+			// blit the ucharacter that was supposed to be here
 			SDL_BlitSurface(font.glyphs[ch].surface, NULL, screen, &drect);
 			
 			// move to next one
@@ -380,7 +380,7 @@ int Fonts::drawStringCentered(int y, int delimiter, const std::string &str, cons
 void Fonts::drawTTF(const Point &p, const std::string &str) {
 	SDL_Color black={ 0, 0, 0 };
 	
-	// SDL_ttf doesn't support newline characters, so we need to handle
+	// SDL_ttf doesn't support newline ucharacters, so we need to handle
 	// those ourselves
 	StringVector lines=Utils::explodeString("\\n", str);
 	
@@ -406,7 +406,7 @@ int Fonts::getWidth(const std::string &id, const std::string &str) {
 	// iterate over string
 	int width=0;
 	for (int i=0; i<str.size(); i++) {
-		// new line characters end the string
+		// new line ucharacters end the string
 		if (str[i]=='\n')
 			break;
 		

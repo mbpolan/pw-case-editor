@@ -27,6 +27,7 @@
 #include "case.h"
 #include "sprite.h"
 #include "texture.h"
+#include "theme.h"
 
 namespace IO {
 
@@ -46,6 +47,9 @@ bool loadSpriteFromFile(const std::string &path, Sprite &sprite);
 
 // load stock assets config file
 bool loadStockFile(const std::string &path, Case::Case *pcase);
+
+// load theme from xml
+bool loadThemeXML(const std::string &path, Theme::ColorMap &map);
 
 // read image data from file
 Textures::Texture readImage(FILE *f);

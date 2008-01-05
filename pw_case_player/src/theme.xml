@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+
+<!-- default theme for player renderings -->
+<theme name="default">
+	<element id="court_record_bg" r="134" g="118" b="69"/>
+	<element id="court_record_info_bar_top" r="252" g="249" b="244"/>
+	<element id="court_record_info_bar_bottom" r="168" g="167" b="163"/>
+	<element id="info_bar_bg" r="55" g="55" b="55"/>
+	<element id="selection_box" r="255" g="255" b="255"/>
+	<element id="selected_item_box" r="255" g="148" b="57"/>
+	<element id="unselected_item_box" r="189" g="148" b="132"/>
+	<element id="court_record_item_border" r="211" g="197" b="148"/>
+	<element id="info_box_border" r="218" g="218" b="218"/>
+	<element id="info_box_bg" r="153" g="192" b="145"/>
+	<element id="info_box_outline" r="255" g="255" b="255"/>
+	<element id="button_bg" r="255" g="255" b="255"/>
+</theme>

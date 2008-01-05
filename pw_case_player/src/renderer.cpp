@@ -25,17 +25,18 @@
 #include "font.h"
 #include "renderer.h"
 #include "texture.h"
+#include "theme.h"
 #include "utilities.h"
 
 // draw a colored rectangle
-void Renderer::drawRect(SDL_Surface *surface, const Point &p, int w, int h, Uint32 color) {
+void Renderer::drawRect(SDL_Surface *surface, const Point &p, int w, int h, const Color &color) {
 	SDL_Rect rect;
 	rect.x=p.x();
 	rect.y=p.y();
 	rect.w=w;
 	rect.h=h;
 	
-	SDL_FillRect(surface, &rect, color);
+	SDL_FillRect(surface, &rect, SDL_MapRGB(SDL_GetVideoSurface()->format, color.r(), color.g(), color.b()));
 }
 
 // draw a full image at a point
@@ -128,7 +129,7 @@ SDL_Surface* Renderer::generateCourtPanorama(Case::Case *pcase, const std::strin
 	
 	// now draw the sprites themselves, if they are requested
 	if (prosecutor!="null" && pcase->getCharacter(prosecutor)) {
-		// get the character's sprite
+		// get the ucharacter's sprite
 		Sprite *sProsecutor=pcase->getCharacter(prosecutor)->getSprite();
 		
 		// draw the prosecutor on the right
@@ -137,7 +138,7 @@ SDL_Surface* Renderer::generateCourtPanorama(Case::Case *pcase, const std::strin
 	}
 	
 	if (defense!="null" && pcase->getCharacter(defense)) {
-		// get the character's sprite
+		// get the ucharacter's sprite
 		Sprite *sDefense=pcase->getCharacter(defense)->getSprite();
 		
 		// draw the defense attorney on the left
@@ -146,7 +147,7 @@ SDL_Surface* Renderer::generateCourtPanorama(Case::Case *pcase, const std::strin
 	}
 	
 	if (witness!="null" && pcase->getCharacter(witness)) {
-		// get the character's sprite
+		// get the ucharacter's sprite
 		Sprite *sDefense=pcase->getCharacter(witness)->getSprite();
 		
 		// draw the witness in the center
@@ -177,14 +178,14 @@ void Renderer::drawEvidencePage(const std::vector<Case::Evidence> &evidence, int
 		return;
 	
 	// draw the background
-	drawRect(screen, Point(24, 233), 208, 124, SDL_MapRGB(screen->format, 134, 118, 69));
+	drawRect(screen, Point(24, 233), 208, 124, Theme::lookup("court_record_bg"));
 	
 	// draw top info bar borders
-	drawRect(screen, Point(24, 233), 208, 20, SDL_MapRGB(screen->format, 252, 249, 244));
-	drawRect(screen, Point(25, 234), 207, 19, SDL_MapRGB(screen->format, 168, 167, 163));
+	drawRect(screen, Point(24, 233), 208, 20, Theme::lookup("court_record_info_bar_top"));
+	drawRect(screen, Point(25, 234), 207, 19, Theme::lookup("court_record_info_bar_bottom"));
 	
 	// draw the top info bar
-	drawRect(screen, Point(26, 235), 204, 16, SDL_MapRGB(screen->format, 55, 55, 55));
+	drawRect(screen, Point(26, 235), 204, 16, Theme::lookup("info_bar_bg"));
 	
 	// draw buttons
 	drawImage(Point(1, 253), "tc_large_btn_left");
@@ -204,10 +205,10 @@ void Renderer::drawEvidencePage(const std::vector<Case::Evidence> &evidence, int
 	int y=259;
 	for (int i=0; i<8; i++) {
 		// draw the border
-		drawRect(screen, Point(x, y), 39, 39, SDL_MapRGB(screen->format, 211, 197, 148));
+		drawRect(screen, Point(x, y), 39, 39, Theme::lookup("court_record_item_border"));
 		
 		// draw filled center
-		drawRect(screen, Point(x+2, y+2), 35, 35, SDL_MapRGB(screen->format, 134, 118, 69));
+		drawRect(screen, Point(x+2, y+2), 35, 35, Theme::lookup("court_record_bg"));
 		
 		// see if there is a piece of evidence at this slot
 		if (index<=evidence.size()-1 && !evidence.empty()) {
@@ -229,7 +230,7 @@ void Renderer::drawEvidencePage(const std::vector<Case::Evidence> &evidence, int
 				Fonts::drawString(24+centerx, 238, name, "orange");
 				
 				// draw selection box
-				drawRect(screen, Point(x-1, y-1), 42, 42, SDL_MapRGB(screen->format, 255, 255, 255));
+				drawRect(screen, Point(x-1, y-1), 42, 42, Theme::lookup("selection_box"));
 			}
 			
 			// draw evidence thumbnail over the empty slot borders
@@ -272,11 +273,11 @@ void Renderer::drawEvidenceInfoPage(UI::Manager *manager, const std::vector<Case
 	drawImage(Point(0, 197), opaqueBlack);
 	
 	// draw info strip background
-	drawRect(screen, Point(0, y+25), 256, 77, SDL_MapRGB(screen->format, 134, 118, 69));
-	drawRect(screen, Point(8, y+101), 240, 52, SDL_MapRGB(screen->format, 134, 118, 69));
+	drawRect(screen, Point(0, y+25), 256, 77, Theme::lookup("court_record_bg"));
+	drawRect(screen, Point(8, y+101), 240, 52, Theme::lookup("court_record_bg"));
 	
 	// draw upper border
-	drawRect(screen, Point(0, y+25), 256, 6, SDL_MapRGB(screen->format, 218, 218, 218));
+	drawRect(screen, Point(0, y+25), 256, 6, Theme::lookup("info_box_border"));
 	y+=31;
 	
 	// draw button on left
@@ -288,10 +289,10 @@ void Renderer::drawEvidenceInfoPage(UI::Manager *manager, const std::vector<Case
 	x+=92;
 	
 	// draw info box's border
-	drawRect(screen, Point(x, y), 148, 70, SDL_MapRGB(screen->format, 255, 255, 255));
+	drawRect(screen, Point(x, y), 148, 70, Theme::lookup("info_box_outline"));
 	
 	// draw info box title bar
-	drawRect(screen, Point(x+2, y+2), 144, 15, SDL_MapRGB(screen->format, 55, 55, 55));
+	drawRect(screen, Point(x+2, y+2), 144, 15, Theme::lookup("info_bar_bg"));
 	
 	// calculate center position for name
 	int centerx=(x+72)-(Fonts::getWidth("orange", e.name)/2);
@@ -300,7 +301,7 @@ void Renderer::drawEvidenceInfoPage(UI::Manager *manager, const std::vector<Case
 	Fonts::drawString(centerx, y+4, e.name, "orange");
 	
 	// draw info box body
-	drawRect(screen, Point(x+2, y+17), 144, 51, SDL_MapRGB(screen->format, 153, 192, 145));
+	drawRect(screen, Point(x+2, y+17), 144, 51, Theme::lookup("info_box_bg"));
 	
 	// draw evidence caption in this area
 	Fonts::drawTTF(Point(x+5, y+18), e.caption);
@@ -313,35 +314,35 @@ void Renderer::drawEvidenceInfoPage(UI::Manager *manager, const std::vector<Case
 	manager->drawAnimation("an_info_page_button_right");
 	
 	// draw lower border
-	drawRect(screen, Point(0, 308), 256, 6, SDL_MapRGB(screen->format, 218, 218, 218));
+	drawRect(screen, Point(0, 308), 256, 6, Theme::lookup("info_box_border"));
 	
 	// draw evidence description in bottom area
 	Fonts::drawString(16, y+81, e.description, "white");
 }
 
 // draw the profiles page
-void Renderer::drawProfilesPage(const std::vector<Character> &chars, int page, int selected) {
+void Renderer::drawProfilesPage(const std::vector<Character> &uchars, int page, int selected) {
 	// get pointer to screen surface
 	SDL_Surface *screen=SDL_GetVideoSurface();
 	if (!screen)
 		return;
 	
 	// draw the background
-	drawRect(screen, Point(24, 233), 208, 124, SDL_MapRGB(screen->format, 134, 118, 69));
+	drawRect(screen, Point(24, 233), 208, 124, Theme::lookup("court_record_bg"));
 	
 	// draw top info bar borders
-	drawRect(screen, Point(24, 233), 208, 20, SDL_MapRGB(screen->format, 252, 249, 244));
-	drawRect(screen, Point(25, 234), 207, 19, SDL_MapRGB(screen->format, 168, 167, 163));
+	drawRect(screen, Point(24, 233), 208, 20, Theme::lookup("court_record_info_bar_top"));
+	drawRect(screen, Point(25, 234), 207, 19, Theme::lookup("court_record_info_bar_bottom"));
 	
 	// draw the top info bar
-	drawRect(screen, Point(26, 235), 204, 16, SDL_MapRGB(screen->format, 55, 55, 55));
+	drawRect(screen, Point(26, 235), 204, 16, Theme::lookup("info_bar_bg"));
 	
 	// draw buttons
 	drawImage(Point(1, 253), "tc_large_btn_left");
 	drawImage(Point(239, 253), "tc_large_btn_right");
 	
 	// draw arrows on buttons if there is more than one page
-	if (chars.size()>8) {
+	if (uchars.size()>8) {
 		drawImage(Point(4, 297), "tc_button_arrow_left");
 		drawImage(Point(244, 297), "tc_button_arrow_right");
 	}
@@ -354,19 +355,19 @@ void Renderer::drawProfilesPage(const std::vector<Character> &chars, int page, i
 	int y=259;
 	for (int i=0; i<8; i++) {
 		// draw the border
-		drawRect(screen, Point(x, y), 39, 39, SDL_MapRGB(screen->format, 211, 197, 148));
+		drawRect(screen, Point(x, y), 39, 39, Theme::lookup("court_record_item_border"));
 		
 		// draw filled center
-		drawRect(screen, Point(x+2, y+2), 35, 35, SDL_MapRGB(screen->format, 134, 118, 69));
+		drawRect(screen, Point(x+2, y+2), 35, 35, Theme::lookup("court_record_bg"));
 		
 		// see if there is a profile at this slot
-		if (index<=chars.size()-1 && !chars.empty()) {
-			Character c=chars[index];
+		if (index<=uchars.size()-1 && !uchars.empty()) {
+			Character c=uchars[index];
 			
 			// if this is the selected profile, write his name in the info
 			// bar, and draw selection box
 			if (i==selected) {
-				// get the name of this character
+				// get the name of this ucharacter
 				std::string name=c.getName();
 				
 				// calculate string length for this string
@@ -379,7 +380,7 @@ void Renderer::drawProfilesPage(const std::vector<Character> &chars, int page, i
 				Fonts::drawString(24+centerx, 238, name, "orange");
 				
 				// draw selection box
-				drawRect(screen, Point(x-1, y-1), 42, 42, SDL_MapRGB(screen->format, 255, 255, 255));
+				drawRect(screen, Point(x-1, y-1), 42, 42, Theme::lookup("selection_box"));
 			}
 			
 			// draw profile thumbnail over the empty slot borders
@@ -392,25 +393,25 @@ void Renderer::drawProfilesPage(const std::vector<Character> &chars, int page, i
 		}
 		
 		// advance to next slot
-		x+=40+8;
+		x+=48;
 		
 		// reset for next row
 		if (i==3) {
 			y=305;
-			x=24+12;
+			x=36;
 		}
 	}
 }
 
 // draw the profile info page
-void Renderer::drawProfileInfoPage(UI::Manager *manager, const std::vector<Character> &chars, int index) {
+void Renderer::drawProfileInfoPage(UI::Manager *manager, const std::vector<Character> &uchars, int index) {
 	// get pointer to screen surface
 	SDL_Surface *screen=SDL_GetVideoSurface();
 	if (!screen)
 		return;
 	
-	// get character to draw
-	Character c=chars[index];
+	// get ucharacter to draw
+	Character c=uchars[index];
 	
 	// keep track of y changes
 	int x=0;
@@ -422,11 +423,11 @@ void Renderer::drawProfileInfoPage(UI::Manager *manager, const std::vector<Chara
 	drawImage(Point(0, 197), opaqueBlack);
 	
 	// draw info strip background
-	drawRect(screen, Point(0, y+25), 256, 77, SDL_MapRGB(screen->format, 134, 118, 69));
-	drawRect(screen, Point(8, y+101), 240, 52, SDL_MapRGB(screen->format, 134, 118, 69));
+	drawRect(screen, Point(0, y+25), 256, 77, Theme::lookup("court_record_bg"));
+	drawRect(screen, Point(8, y+101), 240, 52, Theme::lookup("court_record_bg"));
 	
 	// draw upper border
-	drawRect(screen, Point(0, y+25), 256, 6, SDL_MapRGB(screen->format, 218, 218, 218));
+	drawRect(screen, Point(0, y+25), 256, 6, Theme::lookup("info_box_border"));
 	y+=31;
 	
 	// draw button on left
@@ -438,10 +439,10 @@ void Renderer::drawProfileInfoPage(UI::Manager *manager, const std::vector<Chara
 	x+=92;
 	
 	// draw info box's border
-	drawRect(screen, Point(x, y), 148, 70, SDL_MapRGB(screen->format, 255, 255, 255));
+	drawRect(screen, Point(x, y), 148, 70, Theme::lookup("info_box_outline"));
 	
 	// draw info box title bar
-	drawRect(screen, Point(x+2, y+2), 144, 15, SDL_MapRGB(screen->format, 55, 55, 55));
+	drawRect(screen, Point(x+2, y+2), 144, 15, Theme::lookup("info_bar_bg"));
 	
 	// calculate center position for name
 	int centerx=(x+72)-(Fonts::getWidth("orange", c.getName())/2);
@@ -450,9 +451,9 @@ void Renderer::drawProfileInfoPage(UI::Manager *manager, const std::vector<Chara
 	Fonts::drawString(centerx, y+4, c.getName(), "orange");
 	
 	// draw info box body
-	drawRect(screen, Point(x+2, y+17), 144, 51, SDL_MapRGB(screen->format, 153, 192, 145));
+	drawRect(screen, Point(x+2, y+17), 144, 51, Theme::lookup("info_box_bg"));
 	
-	// draw character caption in this area
+	// draw ucharacter caption in this area
 	Fonts::drawTTF(Point(x+5, y+18), c.getCaption());
 	
 	// moving right along...
@@ -463,7 +464,7 @@ void Renderer::drawProfileInfoPage(UI::Manager *manager, const std::vector<Chara
 	manager->drawAnimation("an_info_page_button_right");
 	
 	// draw lower border
-	drawRect(screen, Point(0, 308), 256, 6, SDL_MapRGB(screen->format, 218, 218, 218));
+	drawRect(screen, Point(0, 308), 256, 6, Theme::lookup("info_box_border"));
 	
 	// draw evidence description in bottom area
 	Fonts::drawString(16, y+81, c.getDescription(), "white");
@@ -509,7 +510,7 @@ void Renderer::drawMoveScene(const std::vector<std::string> &locations, Location
 		// see if this is the selected button
 		if (selected==i) {
 			// draw a gold border around it
-			Renderer::drawRect(screen, Point(x, y), 150, 20, SDL_MapRGB(screen->format, 255, 148, 57));
+			Renderer::drawRect(screen, Point(x, y), 150, 20, Theme::lookup("selected_item_box"));
 			
 			// draw the preview to the left
 			Renderer::drawImage(Point(0, 263), location.bgScaled);
@@ -517,10 +518,10 @@ void Renderer::drawMoveScene(const std::vector<std::string> &locations, Location
 		
 		// otherwise, draw only a white border
 		else
-			Renderer::drawRect(screen, Point(x, y), 150, 20, SDL_MapRGB(screen->format, 189, 148, 132));
+			Renderer::drawRect(screen, Point(x, y), 150, 20, Theme::lookup("unselected_item_box"));
 		
 		// draw the button
-		Renderer::drawRect(screen, Point(x+1, y+1), 148, 18, SDL_MapRGB(screen->format, 255, 255, 255));
+		Renderer::drawRect(screen, Point(x+1, y+1), 148, 18, Theme::lookup("button_bg"));
 		
 		// draw the string
 		int centerx=(x+(150/2))-(Fonts::getTTFWidth(location.name)/2)-4;
@@ -550,14 +551,14 @@ void Renderer::drawTalkScene(const std::vector<StringPair> &options, int selecte
 	for (int i=0; i<options.size(); i++) {
 		// if this is the selected option, draw a gold border around it
 		if (selected==i)
-			Renderer::drawRect(screen, Point(x, y), 200, 20, SDL_MapRGB(screen->format, 255, 148, 57));
+			Renderer::drawRect(screen, Point(x, y), 200, 20, Theme::lookup("selected_item_box"));
 			
 		// otherwise, draw a white border
 		else
-			Renderer::drawRect(screen, Point(x, y), 200, 20, SDL_MapRGB(screen->format, 189, 148, 132));
+			Renderer::drawRect(screen, Point(x, y), 200, 20, Theme::lookup("unselected_item_box"));
 		
 		// draw the button
-		Renderer::drawRect(screen, Point(x+1, y+1), 200-2, 18, SDL_MapRGB(screen->format, 255, 255, 255));
+		Renderer::drawRect(screen, Point(x+1, y+1), 200-2, 18, Theme::lookup("button_bg"));
 		
 		// calculate length of string
 		int length=Fonts::getTTFWidth(options[i].first);

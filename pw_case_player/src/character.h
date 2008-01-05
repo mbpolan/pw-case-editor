@@ -17,7 +17,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-// character.h: the Character class
+// ucharacter.h: the Character class
 
 #ifndef CHARACTER_H
 #define CHARACTER_H
@@ -28,10 +28,10 @@
 #include "common.h"
 #include "sprite.h"
 
-// class representing a character and its associated sprites
+// class representing a ucharacter and its associated sprites
 class Character {
 	public:
-		// character gender
+		// ucharacter gender
 		enum Gender { GENDER_MALE=0, GENDER_FEMALE };
 		
 		// constructor
@@ -68,10 +68,10 @@ class Character {
 		// return evidence that can be presented
 		std::vector<StringPair> getPresentableItems() const { return m_AcceptedItems; }
 		
-		// set the internal character name
+		// set the internal ucharacter name
 		void setInternalName(const std::string &name) { m_InternalName=name; }
 		
-		// get the internal character name
+		// get the internal ucharacter name
 		std::string getInternalName() const { return m_InternalName; }
 		
 		// set the displayed name
@@ -80,10 +80,10 @@ class Character {
 		// get the displayed name
 		std::string getName() const { return m_Name; }
 		
-		// set the character's gender
+		// set the ucharacter's gender
 		void setGender(const Gender &g) { m_Gender=g; }
 		
-		// get the character's gender
+		// get the ucharacter's gender
 		Gender getGender() const { return m_Gender; }
 		
 		// set the caption
@@ -98,7 +98,7 @@ class Character {
 		// get the description
 		std::string getDescription() const { return m_Description; }
 		
-		// set the sprite for this character
+		// set the sprite for this ucharacter
 		void setSprite(const Sprite &spr) { m_Sprite=spr; }
 		
 		// get the sprite for this animation
@@ -116,10 +116,10 @@ class Character {
 		// get the root sprite animation
 		std::string getRootAnimation() const { return m_RootAnim; }
 		
-		// set if this character has a text box tag
+		// set if this ucharacter has a text box tag
 		void setHasTextBoxTag(bool b) { m_HasTextBoxTag=b; }
 		
-		// check if this character has a text box tag
+		// check if this ucharacter has a text box tag
 		bool hasTextBoxTag() const { return m_HasTextBoxTag; }
 		
 		// set the text box image
@@ -128,10 +128,10 @@ class Character {
 		// get the text box tag image
 		SDL_Surface* getTextBoxTag() { return m_TextBoxTag; }
 		
-		// set if this character has a headshot image
+		// set if this ucharacter has a headshot image
 		void setHasHeadshot(bool b) { m_HasHeadshot=b; }
 		
-		// check if this character has a headshot image
+		// check if this ucharacter has a headshot image
 		bool hasHeadshot() const { return m_HasHeadshot; }
 		
 		// set the headshot image
@@ -167,7 +167,7 @@ class Character {
 		// sprite
 		Sprite m_Sprite;
 		
-		// character gender
+		// ucharacter gender
 		Gender m_Gender;
 		
 		// vector of talk options
