@@ -69,39 +69,39 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 	std::string initialBlock=readString(f);
 	pcase.setInitialBlockId(initialBlock);
 	
-	// read amount of ucharacters
+	// read amount of characters
 	int ucharCount;
 	fread(&ucharCount, sizeof(int), 1, f);
 	
-	// read each ucharacter
+	// read each character
 	for (int i=0; i<ucharCount; i++) {
-		Character ucharacter;
+		Character character;
 		std::string str;
 		
 		// read internal name
 		str=readString(f);
-		ucharacter.setInternalName(str);
+		character.setInternalName(str);
 		
 		// read displayed name
 		str=readString(f);
-		ucharacter.setName(str);
+		character.setName(str);
 		
 		// read gender
 		int gender;
 		fread(&gender, sizeof(int), 1, f);
-		ucharacter.setGender((gender==0 ? Character::GENDER_MALE : Character::GENDER_FEMALE));
+		character.setGender((gender==0 ? Character::GENDER_MALE : Character::GENDER_FEMALE));
 		
 		// read caption
 		str=readString(f);
-		ucharacter.setCaption(str);
+		character.setCaption(str);
 		
 		// read description
 		str=readString(f);
-		ucharacter.setDescription(str);
+		character.setDescription(str);
 		
 		// read sprite name
 		str=readString(f);
-		ucharacter.setSpriteName(str);
+		character.setSpriteName(str);
 		
 		// if the sprite name is not invalid, try loading said sprite
 		if (str!="null" && str!="") {
@@ -111,16 +111,16 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 			// try to load it
 			Sprite sprite;
 			if (!IO::loadSpriteFromFile(sprPath, sprite))
-				std::cout << "Unable to load sprite for " << ucharacter.getInternalName() << ": " << sprPath << std::endl;
+				std::cout << "Unable to load sprite for " << character.getInternalName() << ": " << sprPath << std::endl;
 			
 			else
-				ucharacter.setSprite(sprite);
+				character.setSprite(sprite);
 		}
 		
-		// see if this ucharacter has a text box tag
+		// see if this character has a text box tag
 		bool tag;
 		fread(&tag, sizeof(bool), 1, f);
-		ucharacter.setHasTextBoxTag(tag);
+		character.setHasTextBoxTag(tag);
 		
 		// if the tag exists, read the image
 		if (tag) {
@@ -129,13 +129,13 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 			// set alpha to match that of the text box
 			SDL_SetAlpha(texTag, SDL_SRCALPHA, 165);
 			
-			ucharacter.setTextBoxTag(texTag);
+			character.setTextBoxTag(texTag);
 		}
 		
-		// see if this ucharacter has a headshot image
+		// see if this character has a headshot image
 		bool headshot;
 		fread(&headshot, sizeof(bool), 1, f);
-		ucharacter.setHasHeadshot(headshot);
+		character.setHasHeadshot(headshot);
 		
 		// if the headshot exists, read the image
 		if (headshot) {
@@ -145,11 +145,11 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 			// read scaled thumbnail
 			SDL_Surface *thumb=Textures::createTexture("null", readImage(f));
 			
-			ucharacter.setHeadshot(headshot, thumb);
+			character.setHeadshot(headshot, thumb);
 		}
 		
-		// include this ucharacter
-		pcase.addCharacter(ucharacter);
+		// include this character
+		pcase.addCharacter(character);
 	}
 	
 	// read amount of backgrounds
@@ -234,7 +234,7 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 	for (int i=0; i<locationCount; i++) {
 		Case::Location location;
 		location.triggerBlock="null";
-		location.ucharacter="null";
+		location.character="null";
 		location.music="null";
 		
 		// read id
@@ -503,28 +503,28 @@ bool IO::loadStockFile(const std::string &path, Case::Case *pcase) {
 			// extract data from string
 			StringVector vec=Utils::explodeString(',', sId);
 			
-			// create ucharacter struct
-			Character ucharacter(vec[0], vec[1], vec[2], vec[3]);
-			ucharacter.setSprite(sprite);
+			// create character struct
+			Character character(vec[0], vec[1], vec[2], vec[3]);
+			character.setSprite(sprite);
 			
 			// see if a text box tag is present
 			if (vec[4]!="null") {
 				SDL_Surface *tag=Textures::createTexture("null", "data/stock/"+vec[4]);
 				if (tag) {
 					// set this tag
-					ucharacter.setHasTextBoxTag(true);
-					ucharacter.setTextBoxTag(tag);
+					character.setHasTextBoxTag(true);
+					character.setTextBoxTag(tag);
 					
 					// along with its alpha
 					SDL_SetAlpha(tag, SDL_SRCALPHA, 165);
 				}
 				
 				else
-					std::cout << "Unable to load text box tag for ucharacter '" << vec[0] << "': " << vec[4] << std::endl;
+					std::cout << "Unable to load text box tag for character '" << vec[0] << "': " << vec[4] << std::endl;
 			}
 			
 			// add this sprite
-			pcase->addCharacter(ucharacter);
+			pcase->addCharacter(character);
 		}
 		
 		// location
@@ -537,7 +537,7 @@ bool IO::loadStockFile(const std::string &path, Case::Case *pcase) {
 			location.id=sId;
 			location.bg=sFile;
 			location.triggerBlock="null";
-			location.ucharacter="null";
+			location.character="null";
 			location.music="null";
 			
 			// add this location

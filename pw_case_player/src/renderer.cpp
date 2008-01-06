@@ -129,7 +129,7 @@ SDL_Surface* Renderer::generateCourtPanorama(Case::Case *pcase, const std::strin
 	
 	// now draw the sprites themselves, if they are requested
 	if (prosecutor!="null" && pcase->getCharacter(prosecutor)) {
-		// get the ucharacter's sprite
+		// get the character's sprite
 		Sprite *sProsecutor=pcase->getCharacter(prosecutor)->getSprite();
 		
 		// draw the prosecutor on the right
@@ -138,7 +138,7 @@ SDL_Surface* Renderer::generateCourtPanorama(Case::Case *pcase, const std::strin
 	}
 	
 	if (defense!="null" && pcase->getCharacter(defense)) {
-		// get the ucharacter's sprite
+		// get the character's sprite
 		Sprite *sDefense=pcase->getCharacter(defense)->getSprite();
 		
 		// draw the defense attorney on the left
@@ -147,7 +147,7 @@ SDL_Surface* Renderer::generateCourtPanorama(Case::Case *pcase, const std::strin
 	}
 	
 	if (witness!="null" && pcase->getCharacter(witness)) {
-		// get the ucharacter's sprite
+		// get the character's sprite
 		Sprite *sDefense=pcase->getCharacter(witness)->getSprite();
 		
 		// draw the witness in the center
@@ -367,7 +367,7 @@ void Renderer::drawProfilesPage(const std::vector<Character> &uchars, int page, 
 			// if this is the selected profile, write his name in the info
 			// bar, and draw selection box
 			if (i==selected) {
-				// get the name of this ucharacter
+				// get the name of this character
 				std::string name=c.getName();
 				
 				// calculate string length for this string
@@ -410,7 +410,7 @@ void Renderer::drawProfileInfoPage(UI::Manager *manager, const std::vector<Chara
 	if (!screen)
 		return;
 	
-	// get ucharacter to draw
+	// get character to draw
 	Character c=uchars[index];
 	
 	// keep track of y changes
@@ -453,7 +453,7 @@ void Renderer::drawProfileInfoPage(UI::Manager *manager, const std::vector<Chara
 	// draw info box body
 	drawRect(screen, Point(x+2, y+17), 144, 51, Theme::lookup("info_box_bg"));
 	
-	// draw ucharacter caption in this area
+	// draw character caption in this area
 	Fonts::drawTTF(Point(x+5, y+18), c.getCaption());
 	
 	// moving right along...

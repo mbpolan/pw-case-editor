@@ -141,7 +141,7 @@ StringVector Utils::explodeString(const std::string &delimiter, const std::strin
 	return split;
 }
 
-// break a string apart based on a delimiting ucharacter
+// break a string apart based on a delimiting character
 StringVector Utils::explodeString(char delimiter, const std::string &strc) {
 	std::string d;
 	d+=delimiter;

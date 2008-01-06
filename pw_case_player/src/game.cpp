@@ -378,8 +378,8 @@ void Game::onKeyboardEvent(SDL_KeyboardEvent *e) {
 		if (!location)
 			return;
 		
-		// check the ucharacter set here, if any
-		bool all=(location->ucharacter!="null");
+		// check the character set here, if any
+		bool all=(location->character!="null");
 		
 		// select the right control
 		if (e->keysym.sym==SDLK_RIGHT) {
@@ -466,13 +466,13 @@ void Game::onKeyboardEvent(SDL_KeyboardEvent *e) {
 		if (!location)
 			return;
 		
-		// and get the ucharacter
-		Character *ucharacter=m_Case->getCharacter(location->ucharacter);
-		if (!ucharacter)
+		// and get the character
+		Character *character=m_Case->getCharacter(location->character);
+		if (!character)
 			return;
 		
 		// get a count of how many talk options he has
-		int amount=ucharacter->getTalkOptions().size();
+		int amount=character->getTalkOptions().size();
 		
 		// move up
 		if (e->keysym.sym==SDLK_UP && m_State.selectedTalkOption>0)
@@ -484,7 +484,7 @@ void Game::onKeyboardEvent(SDL_KeyboardEvent *e) {
 		
 		// select option
 		else if (e->keysym.sym==SDLK_RETURN) {// get the target block id
-			std::string target=ucharacter->getTalkOptions()[m_State.selectedTalkOption].second;
+			std::string target=character->getTalkOptions()[m_State.selectedTalkOption].second;
 			
 			// set this block
 			m_Parser->setBlock(m_Case->getBuffers()[target]);
@@ -866,7 +866,7 @@ void Game::displayTestimony(const std::string &id, bool crossExamine) {
 		return;
 	}
 	
-	// now, check the speaker's ucharacter
+	// now, check the speaker's character
 	if (!m_Case->getCharacter(testimony->speaker)) {
 		Utils::debugMessage("Game", "Speaker '"+testimony->speaker+"' for testimony '"+id+"' doesn't exist");
 		return;
@@ -877,7 +877,7 @@ void Game::displayTestimony(const std::string &id, bool crossExamine) {
 	m_State.curExamination=crossExamine;
 	
 	// set the speaker at this location
-	m_Case->getLocation("witness_stand")->ucharacter=testimony->speaker;
+	m_Case->getLocation("witness_stand")->character=testimony->speaker;
 	m_Parser->setSpeaker("none");
 	
 	// go to witness stand
@@ -961,38 +961,58 @@ void Game::renderTopView() {
 	else if (m_State.currentLocation!="null" && m_Case->getLocation(m_State.currentLocation)) {
 		// get the background surface
 		Case::Location *location=m_Case->getLocation(m_State.currentLocation);
-		Case::Background *bg=m_Case->getBackground(location->bg);
 		
-		// and draw it
-		if (bg)
-			Renderer::drawImage(Point(0, 0), bg->texture);
-		else
-			Utils::debugMessage("Game", "Background for location '"+m_State.currentLocation+"' not found");
-		
-		// if there is a ucharacter set here, draw him now
-		if (m_Case->getCharacter(location->ucharacter)) {
-			Character *ucharacter=m_Case->getCharacter(location->ucharacter);
-			Sprite *sprite=ucharacter->getSprite();
+		// just a static background
+		if (location->bg[0]!='&') {
+			Case::Background *bg=m_Case->getBackground(location->bg);
 			
-			// get ucharacter's current animation
-			std::string root=ucharacter->getRootAnimation();
+			// and draw it
+			if (bg)
+				Renderer::drawImage(Point(0, 0), bg->texture);
+			else
+				Utils::debugMessage("Game", "Background for location '"+m_State.currentLocation+"' not found");
+		}
+		
+		// sprite background otherwise
+		else {
+			Sprite *bg=m_Case->getCharacter(location->bg.substr(1, location->bg.size()))->getSprite();
+			bg->animate(0, 0);
+		}
+		
+		// if there is a character set here, draw him now
+		if (m_Case->getCharacter(location->character)) {
+			Character *character=m_Case->getCharacter(location->character);
+			Sprite *sprite=character->getSprite();
+			
+			// get character's current animation
+			std::string root=character->getRootAnimation();
 			
 			// if we are at either the defense stand, co-counsel stand, or prosecutor stand, automatically
-			// use the trial_* animations for ucharacters
-			std::string trial="";
+			// use the trial_* animations for characters
+			std::string prepend="";
 			if (m_State.currentLocation=="defense_stand" || m_State.currentLocation=="defense_helper_stand" ||
 			    m_State.currentLocation=="prosecutor_stand")
-				trial="trial_";
+				prepend="trial_";
+			
+			// if we are in a zoom special effect, use the zoom_ root animation instead
+			else if (m_State.currentLocation.find("zoom")!=-1)
+				root="zoom";
 			
 			// set talk animation if the dialogue is still being drawn and if we're not in any fade outs
 			if (!m_Parser->talkLocked() && !m_Parser->dialogueDone() && 
-			    m_Parser->getSpeaker()==ucharacter->getInternalName() && m_State.fadeOut=="none")
-				sprite->setAnimation(trial+ucharacter->getRootAnimation()+"_talk");
+			    m_Parser->getSpeaker()==character->getInternalName() && m_State.fadeOut=="none")
+				sprite->setAnimation(prepend+root+"_talk");
 			else
-				sprite->setAnimation(trial+ucharacter->getRootAnimation()+"_idle");
+				sprite->setAnimation(prepend+root+"_idle");
 			
 			// draw the sprite
-			sprite->animate(0, 0);
+			// if the sprite's general size is not 256x192, try to center it
+			Frame *fr=sprite->getCurrentFrame();
+			if (fr && (fr->image->w!=256 || fr->image->h!=192))
+				sprite->animate(256-(fr->image->w/2), 192-(fr->image->h));
+			
+			else
+				sprite->animate(0, 0);
 		}
 		
 		// handle special locations
@@ -1154,13 +1174,13 @@ void Game::renderMenuView() {
 			Renderer::drawTalkScene(m_State.talkOptions, 0, true);
 		
 		else {
-			// get current ucharacter at location
+			// get current character at location
 			Case::Location *location=m_Case->getLocation(m_State.currentLocation);
-			Character *ucharacter=m_Case->getCharacter(location->ucharacter);
+			Character *character=m_Case->getCharacter(location->character);
 			
 			// draw the talk scene
-			if (ucharacter)
-				Renderer::drawTalkScene(ucharacter->getTalkOptions(), m_State.selectedTalkOption);
+			if (character)
+				Renderer::drawTalkScene(character->getTalkOptions(), m_State.selectedTalkOption);
 		}
 	}
 	
@@ -1186,11 +1206,11 @@ void Game::renderMenuView() {
 	
 	// draw controls, if needed
 	else if (flagged(STATE_CONTROLS)) {
-		// get the ucharacter at this location, if any
+		// get the character at this location, if any
 		if (m_Case->getLocation(m_State.currentLocation)) {
-			// if there is a ucharacter set, enable the talk and present controls
+			// if there is a character set, enable the talk and present controls
 			Case::Location *location=m_Case->getLocation(m_State.currentLocation);
-			if (location->ucharacter!="null")
+			if (location->character!="null")
 				renderControls(CONTROLS_ALL);
 			else
 				renderControls(CONTROLS_EXAMINE | CONTROLS_MOVE);
@@ -1348,7 +1368,7 @@ bool Game::renderSpecialEffects() {
 		}
 		
 		// get a new panorama
-		SDL_Surface *panorama=Renderer::generateCourtPanorama(m_Case, pStand->ucharacter, dStand->ucharacter, wStand->ucharacter);
+		SDL_Surface *panorama=Renderer::generateCourtPanorama(m_Case, pStand->character, dStand->character, wStand->character);
 		
 		// animate the camera
 		if (m_UI->moveCourtCamera("an_court_camera", Textures::queryTexture("court_panorama_filled"), start, end)) {
@@ -1476,7 +1496,7 @@ void Game::renderTextBox() {
 	// draw the actual text box body
 	Renderer::drawImage(Point(0, 128+shift), "tc_text_box");
 	
-	// ucharacter speaking
+	// character speaking
 	if (speaker!="none" && speaker!="" && m_Case->getCharacter(speaker)) {
 		// get the tag
 		SDL_Surface *tag=m_Case->getCharacter(speaker)->getTextBoxTag();
@@ -1498,11 +1518,11 @@ void Game::renderTextBox() {
 		// get the speaker of the current block
 		std::string cspeaker=m_Parser->getSpeaker();
 		
-		// see if this ucharacter exists
+		// see if this character exists
 		if (m_Case->getCharacter(cspeaker)) {
-			// get this ucharacter's text box tag, if he has one
-			Character *ucharacter=m_Case->getCharacter(cspeaker);
-			if (ucharacter->hasTextBoxTag())
+			// get this character's text box tag, if he has one
+			Character *character=m_Case->getCharacter(cspeaker);
+			if (character->hasTextBoxTag())
 				speaker=cspeaker;
 		}
 		
@@ -1657,9 +1677,9 @@ void Game::onTopRightButtonClicked() {
 			if (!location)
 				return;
 			
-			// and get the ucharacter here
-			Character *ucharacter=m_Case->getCharacter(location->ucharacter);
-			if (!ucharacter)
+			// and get the character here
+			Character *character=m_Case->getCharacter(location->character);
+			if (!character)
 				return;
 			
 			// get the current evidence/profile
@@ -1672,7 +1692,7 @@ void Game::onTopRightButtonClicked() {
 			
 			// see if this evidence/profile can be presented
 			bool found=false;
-			std::vector<StringPair> presentables=ucharacter->getPresentableItems();
+			std::vector<StringPair> presentables=character->getPresentableItems();
 			for (int i=0; i<presentables.size(); i++) {
 				if (presentables[i].first==id) {
 					// set the block to use
@@ -1684,8 +1704,8 @@ void Game::onTopRightButtonClicked() {
 			}
 			
 			// if the presentable evidence was not found, then fall back on appropriate block
-			if (!found && ucharacter->getBadPresentableBlock()!="null") {
-				m_Parser->setBlock(m_Case->getBuffers()[ucharacter->getBadPresentableBlock()]);
+			if (!found && character->getBadPresentableBlock()!="null") {
+				m_Parser->setBlock(m_Case->getBuffers()[character->getBadPresentableBlock()]);
 				m_Parser->nextStep();
 			}
 			
@@ -2091,9 +2111,9 @@ void Game::onTalkSceneClicked(int x, int y) {
 	if (!location)
 		return;
 	
-	// get ucharacter
-	Character *ucharacter=m_Case->getCharacter(location->ucharacter);
-	if (!ucharacter && !m_State.requestingAnswer)
+	// get character
+	Character *character=m_Case->getCharacter(location->character);
+	if (!character && !m_State.requestingAnswer)
 		return;
 	
 	// keep track of x,y changes
@@ -2101,7 +2121,7 @@ void Game::onTalkSceneClicked(int x, int y) {
 	int dy=197+34+5;
 	
 	// find amount of talk options
-	int amount=(m_State.requestingAnswer? m_State.talkOptions.size() : ucharacter->getTalkOptions().size());
+	int amount=(m_State.requestingAnswer? m_State.talkOptions.size() : character->getTalkOptions().size());
 	
 	// iterate over options
 	for (int i=0; i<amount; i++) {
@@ -2126,7 +2146,7 @@ void Game::onTalkSceneClicked(int x, int y) {
 			}
 			
 			else
-				target=ucharacter->getTalkOptions()[i].second;
+				target=character->getTalkOptions()[i].second;
 			
 			// set this block
 			m_Parser->setBlock(m_Case->getBuffers()[target]);

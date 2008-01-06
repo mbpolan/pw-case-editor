@@ -55,7 +55,7 @@ std::string ucharToStr(char ch);
 // break a string apart based on a delimiting string
 StringVector explodeString(const std::string &delimiter, const std::string &str);
 
-// break a string apart based on a delimiting ucharacter
+// break a string apart based on a delimiting character
 StringVector explodeString(char delimiter, const std::string &str);
 
 // count occurrences of a substring in a string

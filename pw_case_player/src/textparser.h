@@ -74,7 +74,7 @@ class TextParser {
 		// manually set the speaker
 		void setSpeaker(const std::string &speaker) { m_Speaker=speaker; }
 		
-		// return the currently speaking ucharacter, if any
+		// return the currently speaking character, if any
 		std::string getSpeaker() const { return m_Speaker; }
 		
 		// parse the given control block
@@ -86,7 +86,7 @@ class TextParser {
 		void nextStep();
 		
 	private:
-		// see if a dialogue sound effect should be played for a given ucharacter
+		// see if a dialogue sound effect should be played for a given character
 		bool shouldPlayDialogueEffect(char prev, char ch, char next);
 		
 		// see if a trigger should be executed right away
@@ -108,7 +108,7 @@ class TextParser {
 		std::string m_Block;
 		std::string m_NextBlock;
 		
-		// current speaking ucharacter (internal name)
+		// current speaking character (internal name)
 		std::string m_Speaker;
 		Character::Gender m_SpeakerGender;
 		
@@ -123,7 +123,7 @@ class TextParser {
 		// current dialog string data
 		std::string m_Dialogue;
 		int m_StrPos; // position in current dialogue
-		int m_LastChar; // last time the ucharacter was drawn
+		int m_LastChar; // last time the character was drawn
 		int m_Speed; // speed of font drawing
 		
 		// is a styling tag open?

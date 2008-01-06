@@ -17,7 +17,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-// ucharacter.cpp: implementation of Character class
+// character.cpp: implementation of Character class
 
 #include "character.h"
 

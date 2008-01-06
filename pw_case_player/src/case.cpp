@@ -39,9 +39,9 @@ Case::Case::~Case() {
 	m_Locations.clear();
 }
 
-// add a ucharacter
-void Case::Case::addCharacter(const Character &ucharacter) {
-	m_Characters[ucharacter.getInternalName()]=ucharacter;
+// add a character
+void Case::Case::addCharacter(const Character &character) {
+	m_Characters[character.getInternalName()]=character;
 }
 
 // add a piece of evidence
@@ -74,7 +74,7 @@ void Case::Case::addBuffer(const std::string &id, const std::string &contents) {
 	m_Buffers[id]=contents;
 }
 
-// get a ucharacter
+// get a character
 Character* Case::Case::getCharacter(const std::string &id) {
 	if (m_Characters.find(id)!=m_Characters.end())
 		return &m_Characters[id];

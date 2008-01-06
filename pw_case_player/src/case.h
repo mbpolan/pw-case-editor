@@ -79,7 +79,7 @@ struct _Location {
 	std::string name; // name of this location
 	std::string triggerBlock; // block to execute upon next arrival at location
 	
-	std::string ucharacter; // ucharacter located here
+	std::string character; // character located here
 	std::string music; // music being played at this location
 	
 	std::string bg; // background id referenced from within script
@@ -107,7 +107,7 @@ struct _TestimonyPiece {
 };
 typedef struct _TestimonyPiece TestimonyPiece;
 
-// a single testimony from a ucharacter
+// a single testimony from a character
 struct _Testimony {
 	// id of this testimony
 	std::string id;
@@ -161,8 +161,8 @@ class Case {
 		// get the initial text block id
 		std::string getInitialBlockId() const { return m_InitialBlockId; }
 		
-		// add a ucharacter
-		void addCharacter(const Character &ucharacter);
+		// add a character
+		void addCharacter(const Character &character);
 		
 		// add a background
 		void addBackground(const Background &bg);
@@ -182,7 +182,7 @@ class Case {
 		// add a text buffer
 		void addBuffer(const std::string &id, const std::string &contents);
 		
-		// get a ucharacter
+		// get a character
 		Character* getCharacter(const std::string &id);
 		
 		// get a background
@@ -209,7 +209,7 @@ class Case {
 		// return the current case overview
 		Overview getOverview() const { return m_Overview; }
 		
-		// return full map of ucharacters
+		// return full map of characters
 		CharacterMap getCharacters() const { return m_Characters; }
 		
 		// return full map of backgrounds
@@ -237,7 +237,7 @@ class Case {
 		// initial text block that will be displayed when the case starts
 		std::string m_InitialBlockId;
 		
-		// map of ucharacters
+		// map of characters
 		CharacterMap m_Characters;
 		
 		// map of backgrounds
