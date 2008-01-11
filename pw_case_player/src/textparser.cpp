@@ -270,8 +270,17 @@ std::string TextParser::parse(bool drawDialogue) {
 			char curChar=m_Dialogue[m_StrPos-1];
 			
 			// see if we need to execute a trigger
-			if(curChar=='^')
-				executeNextTrigger();
+			if(curChar=='^') {
+				bool b=true;
+				// don't execute certain triggers during cross examination
+				if (m_Game->m_State.curExamination && !m_Game->m_State.curExaminationPaused) {
+					b=!filterTrigger(m_QueuedTriggers.front().first, FILTER_CROSS_EXAMINE);
+					m_QueuedTriggers.pop();
+				}
+				
+				if (b)
+					executeNextTrigger();
+			}
 			
 			// cache the previous and next characters
 			char prevChar=(m_StrPos>1 ? m_Dialogue[m_StrPos-2] : '0');
@@ -536,6 +545,16 @@ bool TextParser::preparseTrigger(const std::string &trigger) {
 	
 	else
 		return false;
+}
+
+// see if a trigger matches a filter
+bool TextParser::filterTrigger(const std::string &id, const Filter &filter) {
+	switch(filter) {
+		default:
+		case FILTER_NONE: return false;
+		
+		case FILTER_CROSS_EXAMINE: return true;
+	}
 }
 
 // parse a tag and apply styling

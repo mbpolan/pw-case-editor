@@ -19,6 +19,8 @@
  ***************************************************************************/
 // iohandler.cpp: implementation of I/O functions
 
+#include <archive.h>
+#include <archive_entry.h>
 #include <cstdio>
 #include <iostream>
 #include <libxml/parser.h>
@@ -29,6 +31,49 @@
 #include "font.h"
 #include "iohandler.h"
 #include "utilities.h"
+
+// unpack the resource file
+bool IO::unpackResourceFile(const std::string &path) {
+	FILE *f=fopen(path.c_str(), "rb");
+	if (!f) {
+		std::cout << "CRITICAL: unable to open resource file: " << path << std::endl;
+		return false;
+	}
+	
+	// create a new archive handle
+	struct archive *ar=archive_read_new();
+	
+	// add compression and tar support
+	archive_read_support_compression_gzip(ar);
+	archive_read_support_format_tar(ar);
+	
+	// open the archive
+	if (archive_read_open_FILE(ar, f)!=ARCHIVE_OK) {
+		fclose(f);
+		return false;
+	}
+	
+	// create a new file entry handle
+	struct archive_entry *entry=archive_entry_new();
+	
+	// make our temporary directory
+	Utils::FS::mkdir(".temp");
+	
+	// read each file, and extract it
+	while(archive_read_next_header(ar, &entry)==ARCHIVE_OK) {
+		archive_read_extract(ar, entry, 0);
+		archive_read_data_skip(ar);
+	}
+	
+	// move our data directory, to the hidden temporary directory
+	Utils::FS::move("data", ".temp");
+	
+	// wrap up
+	archive_read_finish(ar);
+	fclose(f);
+	
+	return true;
+}
 
 // load a case from file
 bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
@@ -478,7 +523,7 @@ bool IO::loadStockFile(const std::string &path, Case::Case *pcase) {
 			
 			// try to load this sample
 			Audio::Sample sample;
-			if (!Audio::loadSample(sFile, sample))
+			if (!Audio::loadSample(std::string(".temp/")+sFile, sample))
 				return false;
 			
 			// add this sample
@@ -492,7 +537,7 @@ bool IO::loadStockFile(const std::string &path, Case::Case *pcase) {
 			
 			// try to load the sprite
 			Sprite sprite;
-			if (!IO::loadSpriteFromFile(sFile, sprite)) {
+			if (!IO::loadSpriteFromFile(std::string(".temp/")+sFile, sprite)) {
 				std::cout << "Unable to load sprite: " << sFile << std::endl;
 				return false;
 			}
@@ -509,7 +554,7 @@ bool IO::loadStockFile(const std::string &path, Case::Case *pcase) {
 			
 			// see if a text box tag is present
 			if (vec[4]!="null") {
-				SDL_Surface *tag=Textures::createTexture("null", "data/stock/"+vec[4]);
+				SDL_Surface *tag=Textures::createTexture("null", ".temp/data/stock/"+vec[4]);
 				if (tag) {
 					// set this tag
 					character.setHasTextBoxTag(true);
@@ -556,7 +601,7 @@ bool IO::loadStockFile(const std::string &path, Case::Case *pcase) {
 			}
 			
 			// create a surface
-			SDL_Surface *surface=Textures::createTexture(sId, file);
+			SDL_Surface *surface=Textures::createTexture(sId, std::string(".temp/")+file);
 			if (!surface)
 				return false;
 			

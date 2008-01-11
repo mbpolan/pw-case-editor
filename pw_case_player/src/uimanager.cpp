@@ -22,10 +22,12 @@
 #include "SDL_gfxPrimitives.h"
 
 #include "audio.h"
+#include "game.h"
 #include "renderer.h"
 #include "texture.h"
 #include "theme.h"
 #include "uimanager.h"
+#include "utilities.h"
 
 // constructor
 UI::Manager::Manager(Case::Case *pcase): m_Case(pcase) {
@@ -56,6 +58,37 @@ void UI::Manager::resyncBounceTexture(const std::string &id, bool left) {
 		anim.texture1Active=true;
 	else
 		anim.texture2Active=true;
+}
+
+// check to see if the mouse is over a button
+bool UI::Manager::mouseOverButton(const std::string &id, const Point &p) {
+	UI::Animation &anim=m_Animations[id];
+	
+	Rect rect(anim.current, anim.w, 26);
+	return Utils::pointInRect(p, rect);
+}
+
+// set a gui button's state to clicked
+void UI::Manager::clickGUIButton(const std::string &id) {
+	UI::Animation &anim=m_Animations[id];
+	anim.velocity=1;
+}
+
+// register a gui button
+void UI::Manager::registerGUIButton(const std::string &id, int w, const std::string &text, const Point &p, UI::Callback slot) {
+	UI::Animation anim;
+	
+	anim.type=ANIM_GUI_BUTTON;
+	anim.current=p;
+	anim.callback=slot;
+	anim.w=w;
+	anim.texture1Active=true;
+	anim.speed=100;
+	anim.txt=text;
+	anim.ticks=50;
+	anim.velocity=0; // 0 for idle, 1 for clicked
+	
+	m_Animations[id]=anim;
 }
 
 // register a ui animation that bounces the image from side to side
@@ -306,31 +339,46 @@ int UI::Manager::fadeOut(const std::string &id) {
 	
 	// draw this surface, depending on screen
 	switch(anim.type) {
+		case UI::ANIM_FADE_OUT_TOP_HALF:
 		case UI::ANIM_FADE_OUT_TOP: Renderer::drawImage(Point(0, 0), opaque); break;
+		
+		case UI::ANIM_FADE_OUT_BOTTOM_HALF:
 		case UI::ANIM_FADE_OUT_BOTTOM: Renderer::drawImage(Point(0, 197), opaque); break;
+		
+		case UI::ANIM_FADE_OUT_BOTH_HALF:
 		case UI::ANIM_FADE_OUT_BOTH: {
 			Renderer::drawImage(Point(0, 0), opaque);
 			Renderer::drawImage(Point(0, 197), opaque);
 		} break;
+		
 		case UI::ANIM_FADE_OUT_BOTTOM_GUI: {
 			SDL_Rect srect={ 0, 0, 256, 156 };
 			SDL_Rect drect={ 0, 215 };
 			SDL_BlitSurface(opaque, &srect, SDL_GetVideoSurface(), &drect);
-		}; break;
+		} break;
 	}
 	
 	// if the alpha is 255, then begin fading in
 	if (anim.alpha>=255 && anim.velocity==1) {
 		anim.alpha=255;
 		anim.velocity=-1;
-		return 0;
+		
+		// for half animations, end here
+		if (anim.type==UI::ANIM_FADE_OUT_TOP_HALF ||
+		    anim.type==UI::ANIM_FADE_OUT_BOTTOM_HALF ||
+		    anim.type==UI::ANIM_FADE_OUT_BOTH_HALF) {
+			UI::Manager::registerFadeOut(id, anim.speed, anim.type);
+			return 1;
+		}
+		
+		else
+			return 0;
 	}
 	
 	// we're done with this special effect
 	else if (anim.alpha<=0 && anim.velocity==-1) {
 		// reset for next time
-		anim.alpha=0;
-		anim.velocity=1;
+		UI::Manager::registerFadeOut(id, anim.speed, anim.type);
 		
 		return 1;
 	}
@@ -942,4 +990,41 @@ bool UI::Manager::exclamation(const std::string &id, const Character *source) {
 		anim.ticks=0;
 		return true;
 	}
+}
+
+// animate a gui button
+bool UI::Manager::animateGUIButton(const std::string &id) {
+	// get the animation
+	if (m_Animations.find(id)==m_Animations.end()) {
+		std::cout << "UIManager: animation '" << id << "' not registered\n";
+		return true;
+	}
+	
+	Animation &anim=m_Animations[id];
+	
+	// if velocity is 1, then the button was clicked
+	if (anim.velocity==1) {
+		int now=SDL_GetTicks();
+		if (now-anim.lastDraw>anim.speed) {
+			anim.lastDraw=now;
+			anim.texture1Active=!anim.texture1Active;
+		}
+		
+		anim.ticks-=1;
+		if (anim.ticks<=0) {
+			registerGUIButton(id, anim.w, anim.txt, anim.current, anim.callback);
+			
+			// if a callback is registered, call it now
+			if (anim.callback!=NULL)
+				(Game::instance()->*anim.callback)(id);
+			
+			return true;
+		}
+	}
+	
+	// draw the button
+	if (anim.texture1Active)
+		Renderer::drawButton(anim.current, anim.w, anim.txt);
+	
+	return false;
 }

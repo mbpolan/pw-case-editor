@@ -110,6 +110,28 @@ void Renderer::drawImage(const Point &p1, int w, int h, const Point &p2, const s
 	SDL_BlitSurface(tex, &srcRect, screen, &destRect);
 }
 
+// draw a button with text
+void Renderer::drawButton(const Point &p1, int w, const std::string &text) {
+	// verify that we have enough room for the text
+	int fw=Fonts::getTTFWidth(text, Renderer::BUTTON_TEXT_FONT);
+	if (fw>w-4)
+		w=Fonts::getTTFWidth(text, Renderer::BUTTON_TEXT_FONT);
+	
+	// first, draw the border at the left
+	Renderer::drawImage(p1, "tc_choice_btn_left");
+	Renderer::drawImage(Point(p1.x()+w-2, p1.y()), "tc_choice_btn_right");
+	
+	// draw only as much of the button body as we need
+	SDL_Rect srect={ 0, 0, w-4, 26 };
+	SDL_Rect drect={ p1.x()+2, p1.y() };
+	SDL_BlitSurface(Textures::queryTexture("tc_choice_btn_body"), &srect, SDL_GetVideoSurface(), &drect);
+	
+	// now draw the text
+	int centerX=(p1.x()+(w/2))-(fw/2);
+	int centerY=p1.y()+((26-Fonts::getTTFHeight(Renderer::BUTTON_TEXT_FONT))/2)-2;
+	Fonts::drawTTF(Point(centerX, centerY), text, Renderer::BUTTON_TEXT_FONT, Theme::lookup("button_text"));
+}
+
 // generate a correctly rendered court panorama based on shown sprites
 SDL_Surface* Renderer::generateCourtPanorama(Case::Case *pcase, const std::string &prosecutor, 
 					     const std::string &defense, const std::string &witness) {
@@ -168,6 +190,20 @@ SDL_Surface* Renderer::generateCourtPanorama(Case::Case *pcase, const std::strin
 	Renderer::drawImage(Point(472, 0), wb->w, wb->h, wb, panorama);
 	
 	return panorama;
+}
+
+// draw the initial game screen
+void Renderer::drawInitialScreen(UI::Manager *ui) {
+	// first, draw the background
+	Renderer::drawImage(Point(0, 197), "court_overview_g");
+	
+	// draw two buttons, one for New Game, and one for Continue
+	//Renderer::drawButton(Point(53, 240), 150, "New Game");
+	ui->animateGUIButton("an_new_game_btn");
+	Renderer::drawButton(Point(53, 280), 150, "Continue");
+	
+	// draw scanlines to top it off
+	Renderer::drawImage(Point(0, 197), "scanlines_overlay");
 }
 
 // draw the evidence page
@@ -304,7 +340,7 @@ void Renderer::drawEvidenceInfoPage(UI::Manager *manager, const std::vector<Case
 	drawRect(screen, Point(x+2, y+17), 144, 51, Theme::lookup("info_box_bg"));
 	
 	// draw evidence caption in this area
-	Fonts::drawTTF(Point(x+5, y+18), e.caption);
+	Fonts::drawTTF(Point(x+5, y+18), e.caption, Renderer::INFO_PAGE_FONT, Color(0, 0, 0));
 	
 	// moving right along...
 	x+=148;
@@ -454,7 +490,7 @@ void Renderer::drawProfileInfoPage(UI::Manager *manager, const std::vector<Chara
 	drawRect(screen, Point(x+2, y+17), 144, 51, Theme::lookup("info_box_bg"));
 	
 	// draw character caption in this area
-	Fonts::drawTTF(Point(x+5, y+18), c.getCaption());
+	Fonts::drawTTF(Point(x+5, y+18), c.getCaption(), Renderer::INFO_PAGE_FONT, Color(0, 0, 0));
 	
 	// moving right along...
 	x+=148;
@@ -524,8 +560,8 @@ void Renderer::drawMoveScene(const std::vector<std::string> &locations, Location
 		Renderer::drawRect(screen, Point(x+1, y+1), 148, 18, Theme::lookup("button_bg"));
 		
 		// draw the string
-		int centerx=(x+(150/2))-(Fonts::getTTFWidth(location.name)/2)-4;
-		Fonts::drawTTF(Point(centerx, y+1), location.name);
+		int centerx=(x+(150/2))-(Fonts::getTTFWidth(location.name, Renderer::INFO_PAGE_FONT)/2)-4;
+		Fonts::drawTTF(Point(centerx, y+1), location.name, Renderer::INFO_PAGE_FONT, Color(0, 0, 0));
 		
 		// increment y
 		y+=25;
@@ -561,7 +597,7 @@ void Renderer::drawTalkScene(const std::vector<StringPair> &options, int selecte
 		Renderer::drawRect(screen, Point(x+1, y+1), 200-2, 18, Theme::lookup("button_bg"));
 		
 		// calculate length of string
-		int length=Fonts::getTTFWidth(options[i].first);
+		int length=Fonts::getTTFWidth(options[i].first, Renderer::INFO_PAGE_FONT);
 		
 		// draw the text, centered on the button
 		int centerx;
@@ -570,7 +606,7 @@ void Renderer::drawTalkScene(const std::vector<StringPair> &options, int selecte
 		else
 			centerx=100-(length/2);
 		
-		Fonts::drawTTF(Point(centerx, y+1), options[i].first);
+		Fonts::drawTTF(Point(centerx, y+1), options[i].first, Renderer::INFO_PAGE_FONT, Color(0, 0, 0));
 		
 		// move down to next slot
 		y+=25;

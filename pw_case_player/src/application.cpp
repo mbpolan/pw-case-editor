@@ -72,6 +72,9 @@ void Application::run() {
 	if (!m_SDLContext->init())
 		return;
 	
+	// see how much time has elapsed since the program started loading
+	int start=SDL_GetTicks();
+	
 	// initialize audio, unless NO_SOUND was passed
 	if (!m_ArgFlags & ARG_NO_SOUND)
 		Audio::g_Output=m_SDLContext->initAudio();
@@ -87,6 +90,13 @@ void Application::run() {
 	// initialize game data
 	if (!m_SDLContext->initGame(m_CasePath))
 		return;
+	
+	// remove the resource directory
+	Utils::FS::removeDir(".temp");
+	
+	// calculate elapsed time
+	int time=(SDL_GetTicks()-start);
+	std::cout << "Loading time was " << float((time/1000)) << " seconds.\n";
 	
 	// set the window manager title
 	SDL_WM_SetCaption("PW Case Player", 0);
@@ -107,10 +117,7 @@ void Application::run() {
 		calculateFPS();
 	}
 	
-	// free ttf fonts
-	TTF_CloseFont(Fonts::g_Arial);
-	
-	// and clean up the library
+	// and clean up the ttf library
 	TTF_Quit();
 }
 

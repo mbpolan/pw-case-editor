@@ -31,6 +31,10 @@
 
 namespace Renderer {
 
+// default font sizes for elements
+static const int BUTTON_TEXT_FONT=16;
+static const int INFO_PAGE_FONT=11;
+
 // draw a colored rectangle
 void drawRect(SDL_Surface *surface, const Point &p, int w, int h, const Color &color);
 
@@ -47,9 +51,15 @@ void drawImage(const Point &p, int w, int h, SDL_Surface *src, SDL_Surface *dest
 // (x1,y1) are source coordinate pair; (x2,y2) are destination
 void drawImage(const Point &p1, int w, int h, const Point &p2, const std::string &texId);
 
+// draw a button with text
+void drawButton(const Point &p1, int w, const std::string &text);
+
 // generate a correctly rendered court panorama based on shown sprites
 SDL_Surface* generateCourtPanorama(Case::Case *pcase, const std::string &prosecutor, 
 				   const std::string &attorney, const std::string &witness);
+
+// draw the initial game screen
+void drawInitialScreen(UI::Manager *ui);
 
 // draw the evidence page
 // page should be based on index 0, and selected should be an index between 0 and 7

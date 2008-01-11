@@ -29,6 +29,8 @@
 #include "texture.h"
 #include "utilities.h"
 
+static Game *g_Game=NULL;
+
 // constructor
 Game::Game(const std::string &rootPath, Case::Case *pcase): m_RootPath(rootPath), m_Case(pcase) {
 	// reset draw flags
@@ -110,6 +112,8 @@ Game::Game(const std::string &rootPath, Case::Case *pcase): m_RootPath(rootPath)
 	
 	// allocate ui manager
 	m_UI=new UI::Manager(m_Case);
+	
+	g_Game=this;
 }
 
 // destructor
@@ -133,15 +137,20 @@ Game::~Game() {
 	delete m_UI;
 }
 
+// get a pointer to an instance of this object
+Game* Game::instance() {
+	return g_Game;
+}
+
 // load stock textures
 bool Game::loadStockTextures() {
 	// vector of fonts to load
 	std::vector<std::pair<std::string, std::string> > fonts;
-	fonts.push_back(std::make_pair<std::string, std::string>("white", "data/fonts/white.pwf"));
-	fonts.push_back(std::make_pair<std::string, std::string>("black", "data/fonts/black.pwf"));
-	fonts.push_back(std::make_pair<std::string, std::string>("blue", "data/fonts/blue.pwf"));
-	fonts.push_back(std::make_pair<std::string, std::string>("orange", "data/fonts/orange.pwf"));
-	fonts.push_back(std::make_pair<std::string, std::string>("green", "data/fonts/green.pwf"));
+	fonts.push_back(std::make_pair<std::string, std::string>("white", ".temp/data/fonts/white.pwf"));
+	fonts.push_back(std::make_pair<std::string, std::string>("black", ".temp/data/fonts/black.pwf"));
+	fonts.push_back(std::make_pair<std::string, std::string>("blue", ".temp/data/fonts/blue.pwf"));
+	fonts.push_back(std::make_pair<std::string, std::string>("orange", ".temp/data/fonts/orange.pwf"));
+	fonts.push_back(std::make_pair<std::string, std::string>("green", ".temp/data/fonts/green.pwf"));
 	
 	// iterate over fonts and load them
 	for (int i=0; i<fonts.size(); i++) {
@@ -203,10 +212,9 @@ bool Game::loadStockTextures() {
 	// register stock texture animations
 	registerAnimations();
 	
-	// begin parsing the game script
-	BufferMap bmap=m_Case->getBuffers();
-	m_Parser->setBlock(bmap[m_Case->getInitialBlockId()]);
-	m_Parser->nextStep();
+	// set our title screen to begin with
+	toggle(STATE_INITIAL_SCREEN);
+	m_State.fadeIn="both";
 	
 	return true;
 }
@@ -239,109 +247,12 @@ void Game::render() {
 	// pause here and wait for next step
 	// while waiting, be sure to keep redrawing the already present screen
 	if (m_Parser->paused()) {
-		int flags=STATE_TEXT_BOX;
+		// set flags according to what's toggled right now
+		updateFlags();
 		
-		// draw check image screen
-		if (flagged(STATE_CHECK_EVIDENCE_IMAGE)) {
-			if (m_State.contradictionImg=="null")
-				flags |= STATE_BACK_BTN;
-			else
-				flags |= STATE_CONFIRM_BTN;
-			
-			flags |= STATE_CHECK_EVIDENCE_IMAGE;
-		}
-		
-		// draw evidence page
-		else if (flagged(STATE_EVIDENCE_PAGE)) {
-			flags |= STATE_PROFILES_BTN;
-			flags |= STATE_EVIDENCE_PAGE;
-			flags |= STATE_BACK_BTN;
-			
-			if (m_State.curExamination && !m_State.curExaminationPaused)
-				flags |= STATE_COURT_GREEN_BAR;
-		}
-		
-		// draw evidence info page
-		else if (flagged(STATE_EVIDENCE_INFO_PAGE)) {
-			flags |= STATE_PROFILES_BTN;
-			flags |= STATE_EVIDENCE_INFO_PAGE;
-			flags |= STATE_BACK_BTN;
-			
-			// check button for visible evidence with check images
-			if (!m_State.visibleEvidence.empty() &&
-			    m_State.visibleEvidence[m_State.selectedEvidence].checkID!="null")
-				flags |= STATE_CHECK_BTN;
-			
-			if (m_State.curExamination) {
-				flags |= STATE_PRESENT_TOP_BTN;
-				
-				if (!m_State.curExaminationPaused)
-					flags |= STATE_COURT_GREEN_BAR;
-			}
-		}
-		
-		// draw profiles page
-		else if (flagged(STATE_PROFILES_PAGE)) {
-			flags |= STATE_EVIDENCE_BTN;
-			flags |= STATE_PROFILES_PAGE;
-			flags |= STATE_BACK_BTN;
-			
-			if (m_State.curExamination && !m_State.curExaminationPaused)
-				flags |= STATE_COURT_GREEN_BAR;
-		}
-		
-		// draw profile info page
-		else if (flagged(STATE_PROFILE_INFO_PAGE)) {
-			flags |= STATE_EVIDENCE_BTN;
-			flags |= STATE_PROFILE_INFO_PAGE;
-			flags |= STATE_BACK_BTN;
-			
-			if (m_State.curExamination) {
-				flags |= STATE_PRESENT_TOP_BTN;
-				
-				if (!m_State.curExaminationPaused)
-					flags |= STATE_COURT_GREEN_BAR;
-			}
-		}
-		
-		// otherwise draw the dialog next button
-		else {
-			// only draw the cross examination buttons if we're going through
-			// the speaker's testimony, and if we didn't pause the examination
-			if (m_State.curExamination && !m_State.curExaminationPaused) {
-				if (m_Parser->getSpeaker()!="none") {
-					flags |= STATE_CROSS_EXAMINE_BTNS;
-					flags |= STATE_PRESENT_BTN;
-					flags |= STATE_PRESS_BTN;
-					flags |= STATE_COURT_GREEN_BAR;
-				}
-				
-				else
-					flags |= STATE_NEXT_BTN;
-			}
-			
-			else {
-				flags |= STATE_NEXT_BTN;
-				flags |= STATE_COURT_REC_BTN;
-			}
-		}
-		
-		// remove certain flags in specific situations
-		if (m_State.requestingEvidence) {
-			// back button should not be shown when record pages are shown
-			if (flags & STATE_EVIDENCE_PAGE || flags & STATE_PROFILES_PAGE)
-				flags &= ~STATE_BACK_BTN;
-			
-			// add the present top button
-			if (flags & STATE_EVIDENCE_INFO_PAGE || flags & STATE_PROFILE_INFO_PAGE)
-				flags |= STATE_PRESENT_TOP_BTN;
-		}
-		
-		// toggle certain flags if there is an answer requested
-		if (m_State.requestingAnswer)
-			flags |= STATE_TALK;
-		
-		toggle(flags);
+		// also, if we're in cross examination, update the speaker
+		if (m_State.curExamination && !m_State.curExaminationPaused && m_Parser->getSpeaker()!="none")
+			m_Parser->setSpeaker(m_Case->getTestimonies()[m_State.curTestimony].speaker);
 	}
 	
 	// check input state at this point
@@ -497,6 +408,15 @@ void Game::onKeyboardEvent(SDL_KeyboardEvent *e) {
 void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 	// button pressed down
 	if (e->type==SDL_MOUSEBUTTONDOWN && m_State.fadeOut=="none") {
+		Point mouse=Utils::getMouseLocation();
+		
+		// initial screen clicks
+		if (flagged(STATE_INITIAL_SCREEN)) {
+			// new game button clicked
+			if (m_UI->mouseOverButton("an_new_game_btn", mouse))
+				m_UI->clickGUIButton("an_new_game_btn");
+		}
+		
 		// check for clicks on locations in move scene
 		if (flagged(STATE_MOVE))
 			onMoveSceneClicked(e->x, e->y);
@@ -682,6 +602,9 @@ void Game::registerAnimations() {
 	m_UI->registerFadeOut("an_next_location_fade_top", 1, UI::ANIM_FADE_OUT_TOP);
 	m_UI->registerFadeOut("an_next_location_fade_bottom", 1, UI::ANIM_FADE_OUT_BOTTOM);
 	m_UI->registerFadeOut("an_next_location_fade_both", 1, UI::ANIM_FADE_OUT_BOTH);
+	m_UI->registerFadeOut("an_fade_top_half", 1, UI::ANIM_FADE_OUT_TOP_HALF);
+	m_UI->registerFadeOut("an_fade_bottom_half", 1, UI::ANIM_FADE_OUT_BOTTOM_HALF);
+	m_UI->registerFadeOut("an_fade_both_half", 1, UI::ANIM_FADE_OUT_BOTH_HALF);
 	m_UI->registerFadeOut("an_gui_fade_bottom", 5, UI::ANIM_FADE_OUT_BOTTOM_GUI);
 	
 	// register court camera effect
@@ -698,6 +621,9 @@ void Game::registerAnimations() {
 	
 	// register flash effects
 	m_UI->registerFlash("an_flash", 5);
+	
+	// register gui animations
+	m_UI->registerGUIButton("an_new_game_btn", 150, "New Game", Point(53, 240), &Game::onInitialScreenClicked);
 	
 	// register sprite sequences
 	m_UI->registerTestimonySequence("an_testimony_sequence");
@@ -944,8 +870,133 @@ bool Game::isCourtLocation(const std::string &id) {
 		return false;
 }
 
+// update current game state flags
+void Game::updateFlags() {
+	int flags=STATE_TEXT_BOX;
+	
+	// draw check image screen
+	if (flagged(STATE_CHECK_EVIDENCE_IMAGE)) {
+		if (m_State.contradictionImg=="null")
+			flags |= STATE_BACK_BTN;
+		else
+			flags |= STATE_CONFIRM_BTN;
+			
+		flags |= STATE_CHECK_EVIDENCE_IMAGE;
+	}
+	
+	// draw evidence page
+	else if (flagged(STATE_EVIDENCE_PAGE)) {
+		flags |= STATE_PROFILES_BTN;
+		flags |= STATE_EVIDENCE_PAGE;
+		flags |= STATE_BACK_BTN;
+			
+		if (m_State.curExamination && !m_State.curExaminationPaused)
+			flags |= STATE_COURT_GREEN_BAR;
+	}
+	
+	// draw evidence info page
+	else if (flagged(STATE_EVIDENCE_INFO_PAGE)) {
+		flags |= STATE_PROFILES_BTN;
+		flags |= STATE_EVIDENCE_INFO_PAGE;
+		flags |= STATE_BACK_BTN;
+		
+		// check button for visible evidence with check images
+		if (!m_State.visibleEvidence.empty() &&
+		    m_State.visibleEvidence[m_State.selectedEvidence].checkID!="null")
+			flags |= STATE_CHECK_BTN;
+			
+		if (m_State.curExamination) {
+			flags |= STATE_PRESENT_TOP_BTN;
+				
+			if (!m_State.curExaminationPaused)
+				flags |= STATE_COURT_GREEN_BAR;
+		}
+	}
+	
+	// draw profiles page
+	else if (flagged(STATE_PROFILES_PAGE)) {
+		flags |= STATE_EVIDENCE_BTN;
+		flags |= STATE_PROFILES_PAGE;
+		flags |= STATE_BACK_BTN;
+			
+		if (m_State.curExamination && !m_State.curExaminationPaused)
+			flags |= STATE_COURT_GREEN_BAR;
+	}
+	
+	// draw profile info page
+	else if (flagged(STATE_PROFILE_INFO_PAGE)) {
+		flags |= STATE_EVIDENCE_BTN;
+		flags |= STATE_PROFILE_INFO_PAGE;
+		flags |= STATE_BACK_BTN;
+		
+		if (m_State.curExamination) {
+			flags |= STATE_PRESENT_TOP_BTN;
+			
+			if (!m_State.curExaminationPaused)
+				flags |= STATE_COURT_GREEN_BAR;
+		}
+	}
+	
+	// otherwise draw the dialog next button
+	else {
+		// only draw the cross examination buttons if we're going through
+		// the speaker's testimony, and if we didn't pause the examination
+		if (m_State.curExamination && !m_State.curExaminationPaused) {
+			if (m_Parser->getSpeaker()!="none") {
+				flags |= STATE_CROSS_EXAMINE_BTNS;
+				flags |= STATE_PRESENT_BTN;
+				flags |= STATE_PRESS_BTN;
+				flags |= STATE_COURT_GREEN_BAR;
+			}
+			
+			else
+				flags |= STATE_NEXT_BTN;
+		}
+		
+		else {
+			flags |= STATE_NEXT_BTN;
+			flags |= STATE_COURT_REC_BTN;
+		}
+	}
+	
+	// remove certain flags in specific situations
+	if (m_State.requestingEvidence) {
+		// back button should not be shown when record pages are shown
+		if ((flags & STATE_EVIDENCE_PAGE) || (flags & STATE_PROFILES_PAGE))
+			flags &= ~STATE_BACK_BTN;
+		
+		// add the present top button
+		if ((flags & STATE_EVIDENCE_INFO_PAGE) || (flags & STATE_PROFILE_INFO_PAGE))
+			flags |= STATE_PRESENT_TOP_BTN;
+	}
+	
+	// toggle certain flags if there is an answer requested
+	if (m_State.requestingAnswer)
+		flags |= STATE_TALK;
+	
+	toggle(flags);
+}
+
 // render the game view (top screen)
 void Game::renderTopView() {
+	// if we are toggled in an initial screen, draw only the title on the top view
+	if (flagged(STATE_INITIAL_SCREEN)) {
+		Renderer::drawImage(Point(0, 0), "stock_title");
+		
+		// get the case overview
+		Case::Overview overview=m_Case->getOverview();
+		
+		// also draw case name, and author
+		Fonts::drawTTF(Point(128-(Fonts::getTTFWidth(overview.name, Renderer::BUTTON_TEXT_FONT)/2), 130), 
+				     overview.name, Renderer::BUTTON_TEXT_FONT, Color(255, 255, 255));
+		
+		Fonts::drawTTF(Point(128-(Fonts::getTTFWidth(overview.author,
+			       Renderer::BUTTON_TEXT_FONT)/2), 130+Fonts::getTTFHeight(Renderer::BUTTON_TEXT_FONT)),
+				overview.author, Renderer::BUTTON_TEXT_FONT, Color(255, 255, 255));
+		
+		return;
+	}
+	
 	// temporary image has priority over background
 	if (m_State.tempImage!="null") {
 		// see if this image exists
@@ -1084,6 +1135,12 @@ void Game::renderTopView() {
 
 // render the menu view (lower screen)
 void Game::renderMenuView() {
+	// for initial screen, draw the New Game and Continue buttons
+	if (flagged(STATE_INITIAL_SCREEN)) {
+		Renderer::drawInitialScreen(m_UI);
+		return;
+	}
+	
 	// if the cross examination sequence is being animated, don't draw anything;
 	// graphics are handled by the UIManager function
 	if (m_State.crossExamineSequence!="none")
@@ -1293,15 +1350,26 @@ void Game::renderMenuView() {
 bool Game::renderSpecialEffects() {
 	// if we are still fading out, don't parse the text
 	if (m_State.fadeOut!="none") {
+		// see if this fade out should end half way
+		bool half=(m_State.fadeOut.rfind("_half")!=-1);
+		
 		// see if we are done fading
 		int ret;
-		if (m_State.fadeOut!="gui")
+		
+		// half fade out
+		if (half)
+			ret=m_UI->fadeOut("an_fade_"+m_State.fadeOut);
+		
+		// gui fade out
+		else if (m_State.fadeOut!="gui")
 			ret=m_UI->fadeOut("an_next_location_fade_"+m_State.fadeOut);
+		
+		// location fade out
 		else
 			ret=m_UI->fadeOut("an_gui_fade_bottom");
 		
-		// midpoint of fade out reached
-		if (ret==0) {
+		// midpoint of fade out reached, or done if half fade
+		if (ret==0 || (ret==1 && half)) {
 			// if there are any queued flags, toggle them now
 			if ((m_State.queuedFlags & STATE_QUEUED)) {
 				toggle(m_State.queuedFlags);
@@ -1327,6 +1395,14 @@ bool Game::renderSpecialEffects() {
 				
 				m_Parser->nextStep();
 				m_State.queuedBlock="null";
+			}
+			
+			// end half animations here
+			if (half) {
+				// disable certain flags as this point
+				m_State.drawFlags &= ~STATE_INITIAL_SCREEN;
+				
+				m_State.fadeOut="none";
 			}
 		}
 		
@@ -1648,6 +1724,16 @@ void Game::renderStand(const Stand stand) {
 	
 	// draw the image
 	Renderer::drawImage(Point(0, 0), sId);
+}
+
+// initial screen button activated handler
+void Game::onInitialScreenClicked(const std::string &id) {
+	// new game button clicked
+	if (id=="an_new_game_btn") {
+		// begin parsing the game script
+		m_State.fadeOut="both_half";
+		m_State.queuedBlock=m_Case->getInitialBlockId();
+	}
 }
 
 // top right button was clicked

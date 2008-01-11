@@ -30,6 +30,8 @@
 #include "textparser.h"
 #include "uimanager.h"
 
+class Game;
+
 // game state flags
 enum GameFlags {
 	STATE_QUEUED=			1 << 0,
@@ -54,7 +56,10 @@ enum GameFlags {
 	STATE_COURT_GREEN_BAR=		1 << 19,
 	STATE_CHECK_BTN=		1 << 20,
 	STATE_CHECK_EVIDENCE_IMAGE=	1 << 21,
-	STATE_CONFIRM_BTN=		1 << 22 };
+	STATE_CONFIRM_BTN=		1 << 22,
+	STATE_INITIAL_SCREEN=		1 << 23,
+	STATE_EPISODE_SELECTION=	1 << 24,
+	STATE_CONTINUE_SCREEN=		1 << 25 };
 
 // menu controls to draw
 enum Controls {
@@ -134,6 +139,7 @@ struct _GameState {
 	
 	// special effects
 	std::string fadeOut;
+	std::string fadeIn;
 	std::string flash;
 	std::string blink;
 	std::string gavel;
@@ -183,6 +189,9 @@ class Game {
 		
 		// destructor
 		~Game();
+		
+		// get a pointer to an instance of this object
+		static Game* instance();
 		
 		// load stock textures
 		bool loadStockTextures();
@@ -239,6 +248,9 @@ class Game {
 		// see if a location is a court location
 		bool isCourtLocation(const std::string &id);
 		
+		// update current flags for game state
+		void updateFlags();
+		
 		// render the game view (top screen)
 		void renderTopView();
 		
@@ -259,6 +271,9 @@ class Game {
 		
 		// render the attorney's stand
 		void renderStand(const Stand stand);
+		
+		// initial screen button activated handler
+		void onInitialScreenClicked(const std::string &id);
 		
 		// top right button was clicked
 		void onTopRightButtonClicked();

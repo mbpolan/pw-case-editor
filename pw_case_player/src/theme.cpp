@@ -19,7 +19,7 @@
  ***************************************************************************/
 // theme.cpp: theme function implementations
 
-#include "theme.h";
+#include "theme.h"
 
 namespace Theme {
 

@@ -23,6 +23,7 @@
 #define COMMON_H
 
 #include <iostream>
+#include "SDL.h"
 
 // a value,key string pair
 typedef std::pair<std::string, std::string> StringPair;
@@ -37,6 +38,9 @@ class Color {
 			m_B=b;
 			m_A=a;
 		}
+		
+		// convert this color to an SDL color
+		SDL_Color toSDLColor() const {SDL_Color color={ m_R, m_G, m_B }; return color; }
 		
 		// accessors
 		char r() const { return m_R; }

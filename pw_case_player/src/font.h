@@ -36,8 +36,8 @@ const int g_LineBreakSize=17;
 const int g_SpaceSize=10;
 const int g_CharSpace=2;
 
-// arial font
-extern TTF_Font *g_Arial;
+// ttf fonts
+extern std::map<int, TTF_Font*> g_FontsTTF;
 
 // a single glyph
 struct _Glyph {
@@ -79,16 +79,22 @@ int drawString(int x, int y, int delimiter, int rightClamp, const std::string &s
 int drawStringCentered(int y, int delimiter, const std::string &str, const std::string &fontId);
 
 // draw a ttf font string
-void drawTTF(const Point &p, const std::string &str);
+void drawTTF(const Point &p, const std::string &str, int size, const Color &color);
 
 // get the width of a string
 int getWidth(const std::string &fontId, const std::string &str);
 
 // get the width of a ttf string
-int getTTFWidth(const std::string &str);
+int getTTFWidth(const std::string &str, int size);
+
+// get the height of a ttf font
+int getTTFHeight(int size);
 
 // return a font from the map
 Font* queryFont(const std::string &id);
+
+// return a ttf font from the map
+TTF_Font* queryTTF(int size);
 
 // add a font to the map
 void pushFont(const std::string &id, const Font &font);

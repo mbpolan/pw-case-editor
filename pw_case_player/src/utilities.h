@@ -30,6 +30,26 @@ namespace Utils {
 // whether or not debugging is on
 extern bool g_DebugOn;
 
+// general filesystem functions for cross-platform compatability
+namespace FS {
+
+// get the current working directory
+std::string cwd();
+
+// move a file on the filesystem
+void move(const std::string &from, const std::string &to);
+
+// check if a directory exists
+bool dirExists(const std::string &path);
+
+// create a directory
+void mkdir(const std::string &path);
+
+// remove a directory
+void removeDir(const std::string &path);
+
+} // namespace FS
+
 // convert a court camera script string to animation limits
 // string should be in the form of: "location1,location2"
 void scriptToLimits(const std::string &str, UI::Limit &start, UI::Limit &end);

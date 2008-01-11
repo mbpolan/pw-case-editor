@@ -19,10 +19,75 @@
  ***************************************************************************/
 // utilities.cpp: implementation of Utils namespace
 
+#include <dirent.h>
+
 #include "utilities.h"
 
 namespace Utils {
 	bool g_DebugOn=false;
+}
+
+// get the current working directory
+std::string Utils::FS::cwd() {
+#ifndef __WIN32__
+	char path[255];
+	return std::string(getcwd(path, 255))+"/";
+#else
+	// TODO: Windows code for getting working directory
+#endif
+}
+
+// move a file on the filesystem
+void Utils::FS::move(const std::string &from, const std::string &to) {
+	std::string cmd;
+#ifndef __WIN32__
+	cmd="mv ";
+#else
+	cmd="move ";
+#endif
+	cmd+=from+" "+to;
+	
+	system(cmd.c_str());
+}
+
+// check if a directory exists
+bool Utils::FS::dirExists(const std::string &path) {
+	// simply try to open the directory
+	DIR *dir=opendir(path.c_str());
+	if (dir) {
+		closedir(dir);
+		return true;
+	}
+	
+	else
+		return false;
+}
+
+// create a directory
+void Utils::FS::mkdir(const std::string &path) {
+	// no point in recreating an already existing directory
+	if (!dirExists(path)) {
+		std::string cmd="mkdir ";
+		cmd+=path;
+		system(cmd.c_str());
+	}
+}
+
+// remove a directory
+void Utils::FS::removeDir(const std::string &path) {
+	// make sure that the directory even exists
+	if (dirExists(path)) {
+		std::string cmd;
+	
+#ifndef __WIN32__
+		cmd="rm -rf ";
+		cmd+=path;
+#else
+		// TODO: Windows code for removing directory
+#endif
+		
+		system(cmd.c_str());
+	}
 }
 
 // convert a court camera script string to animation limits

@@ -142,9 +142,8 @@ bool SDLContext::initGame(const std::string &pathToCase) {
 		return false;
 	
 	// load ttf fonts
-	Fonts::g_Arial=TTF_OpenFont("data/fonts/arial.ttf", 11);
-	if (!Fonts::g_Arial)
-		return false;
+	Fonts::g_FontsTTF[11]=TTF_OpenFont(".temp/data/fonts/arial.ttf", 11);
+	Fonts::g_FontsTTF[16]=TTF_OpenFont(".temp/data/fonts/arial.ttf", 16);
 	
 	// load our theme
 	if (!IO::loadThemeXML("theme.xml", Theme::g_Theme))

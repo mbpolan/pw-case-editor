@@ -14,4 +14,5 @@
 	<element id="info_box_bg" r="153" g="192" b="145"/>
 	<element id="info_box_outline" r="255" g="255" b="255"/>
 	<element id="button_bg" r="255" g="255" b="255"/>
+	<element id="button_text" r="123" g="41" b="0"/>
 </theme>

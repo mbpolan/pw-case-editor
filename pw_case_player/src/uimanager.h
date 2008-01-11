@@ -29,9 +29,12 @@
 #include "common.h"
 
 class Case::Case;
+class Game;
 
 // the UI namespace
 namespace UI {
+
+typedef void (Game::*Callback) (const std::string &);
 
 // define limits for special animations
 enum Limit { LIMIT_NONE=0,
@@ -46,11 +49,15 @@ enum AnimType { ANIM_SIDE_HBOUNCE=0,
 		ANIM_FADE_OUT_BOTTOM,
 		ANIM_FADE_OUT_BOTTOM_GUI, // doesn't fade out the top/bottom gui bars
 		ANIM_FADE_OUT_BOTH,
+		ANIM_FADE_OUT_TOP_HALF,
+		ANIM_FADE_OUT_BOTTOM_HALF,
+		ANIM_FADE_OUT_BOTH_HALF,
 		ANIM_FLASH,
 		ANIM_COURT_CAMERA,
 		ANIM_TESTIMONY_SPR,
 		ANIM_BLINK,
-		ANIM_SYNC_BOUNCE };
+		ANIM_SYNC_BOUNCE,
+		ANIM_GUI_BUTTON };
 
 // a struct containing animation data (not all variables pertinent)
 struct _Animation {
@@ -65,12 +72,19 @@ struct _Animation {
 	// direct pointer to texture
 	SDL_Surface *surface;
 	
+	// dimensions
+	int w;
+	int h;
+	
 	// current position of element
 	Point current;
 	
 	// points of origin for sync bounce animations
 	Point p1;
 	Point p2;
+	
+	// string of text
+	std::string txt;
 	
 	// location differences
 	Point delta;
@@ -83,6 +97,9 @@ struct _Animation {
 	int rightLimit;
 	int topLimit;
 	int bottomLimit;
+	
+	// callback function for events
+	Callback callback;
 	
 	// the velocity and its speed multiplier of the animation
 	int velocity;
@@ -116,6 +133,15 @@ class Manager {
 		// enable one texture of a synchronized bounce animation
 		// passing true enables left texture, false enables right
 		void resyncBounceTexture(const std::string &id, bool left);
+		
+		// check to see if the mouse is over a button
+		bool mouseOverButton(const std::string &id, const Point &p);
+		
+		// set a gui button's state to clicked
+		void clickGUIButton(const std::string &id);
+		
+		// register a gui button
+		void registerGUIButton(const std::string &id, int w, const std::string &text, const Point &p, Callback slot);
 		
 		// register a ui animation that bounces the image from side to side
 		// limits are relative to origin; that is, if origin is (100, 100), and if the animation
@@ -187,6 +213,9 @@ class Manager {
 		
 		// animate the green bar for cross examination attempts and other misc things
 		bool animateGreenBar(const std::string &id);
+		
+		// animate a gui button
+		bool animateGUIButton(const std::string &id);
 		
 	private:
 		// pointer to current case

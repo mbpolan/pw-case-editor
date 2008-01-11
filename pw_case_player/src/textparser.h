@@ -38,6 +38,11 @@ typedef struct _FontStyle FontStyle;
 // class that parsers text blocks and executes them
 class TextParser {
 	public:
+		// filters for trigger classification
+		enum Filter { FILTER_NONE=0,		// don't filter anything
+			      FILTER_CROSS_EXAMINE	// any trigger that shouldn't show up in cross examination
+			    };
+		
 		// constants
 		static const int NORMAL_FONT_SPEED=50;
 		static const char TEXT_SPEED_INCR_CHAR='[';
@@ -91,6 +96,9 @@ class TextParser {
 		
 		// see if a trigger should be executed right away
 		bool preparseTrigger(const std::string &trigger);
+		
+		// see if a trigger matches a filter
+		bool filterTrigger(const std::string &trigger, const Filter &filter);
 		
 		// parse a tag and apply styling
 		void parseTag(const std::string &tag);

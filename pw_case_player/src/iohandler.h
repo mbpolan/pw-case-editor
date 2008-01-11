@@ -39,6 +39,9 @@ const int FILE_VERSION=10;
 const std::string SPR_MAGIC_NUM="SPR";
 const int SPR_VERSION=10;
 
+// unpack the resource file
+bool unpackResourceFile(const std::string &path);
+
 // load a case from file
 bool loadCaseFromFile(const std::string &path, Case::Case &pcase);
 

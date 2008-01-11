@@ -29,7 +29,7 @@
 #include "utilities.h"
 
 namespace Fonts {
-	TTF_Font *g_Arial=NULL;
+	std::map<int, TTF_Font*> g_FontsTTF;
 }
 
 // load a font from file
@@ -377,8 +377,13 @@ int Fonts::drawStringCentered(int y, int delimiter, const std::string &str, cons
 }
 
 // draw a ttf font string
-void Fonts::drawTTF(const Point &p, const std::string &str) {
-	SDL_Color black={ 0, 0, 0 };
+void Fonts::drawTTF(const Point &p, const std::string &str, int size, const Color &color) {
+	// get the font
+	TTF_Font *font=queryTTF(size);
+	if (!font) {
+		std::cout << "Fonts: requested TTF font size '" << size << "' doesn't exist.\n";
+		return;
+	}
 	
 	// SDL_ttf doesn't support newline characters, so we need to handle
 	// those ourselves
@@ -387,8 +392,8 @@ void Fonts::drawTTF(const Point &p, const std::string &str) {
 	// draw the lines
 	for (int i=0; i<lines.size(); i++) {
 		// render a solid text line, calculate its position, and blit it
-		SDL_Surface *rendered=TTF_RenderText_Solid(g_Arial, lines[i].c_str(), black);
-		SDL_Rect drect={ p.x(), p.y()+TTF_FontLineSkip(g_Arial)*i+3 };
+		SDL_Surface *rendered=TTF_RenderText_Blended(font, lines[i].c_str(), color.toSDLColor());
+		SDL_Rect drect={ p.x(), p.y()+TTF_FontLineSkip(font)*i+3 };
 		SDL_BlitSurface(rendered, NULL, SDL_GetVideoSurface(), &drect);
 		SDL_FreeSurface(rendered);
 	}
@@ -429,7 +434,12 @@ int Fonts::getWidth(const std::string &id, const std::string &str) {
 }
 
 // get the width of a ttf string
-int Fonts::getTTFWidth(const std::string &str) {
+int Fonts::getTTFWidth(const std::string &str, int size) {
+	TTF_Font *font=queryTTF(size);
+	if (!font) {
+		std::cout << "Fonts:: requested TTF font size '" << size << "' doesn't exist.\n";
+		return 0;
+	}
 	int width=0;
 	
 	for (int i=0; i<str.size(); i++) {
@@ -439,7 +449,7 @@ int Fonts::getTTFWidth(const std::string &str) {
 		else {
 			// get the amount of pixels this glyph needs, and add it
 			int advance=0;
-			if (TTF_GlyphMetrics(g_Arial, str[i], NULL, NULL, NULL, NULL, &advance)!=-1)
+			if (TTF_GlyphMetrics(font, str[i], NULL, NULL, NULL, NULL, &advance)!=-1)
 				width+=advance;
 		}
 	}
@@ -447,9 +457,25 @@ int Fonts::getTTFWidth(const std::string &str) {
 	return width;
 }
 
+// get the height of a ttf font
+int Fonts::getTTFHeight(int size) {
+	TTF_Font *font=queryTTF(size);
+	if (!font) {
+		std::cout << "Fonts: requested TTF font size '" << size << "' not found.\n";
+		return 0;
+	}
+	
+	return TTF_FontHeight(font);
+}
+
 // return a font from the map
 Fonts::Font* Fonts::queryFont(const std::string &id) {
 	return &g_Fonts[id];
+}
+
+// return a ttf font from the map
+TTF_Font* Fonts::queryTTF(int size) {
+	return g_FontsTTF[size];
 }
 
 // add a font to the map
@@ -470,6 +496,11 @@ void Fonts::popFont(const std::string &id) {
 
 // clear the font map
 void Fonts::clearFontStack() {
+	for (std::map<int, TTF_Font*>::iterator it=g_FontsTTF.begin(); it!=g_FontsTTF.end(); ++it) {
+		if ((*it).second)
+			TTF_CloseFont((*it).second);
+	}
+	
 	for (FontMap::iterator it=g_Fonts.begin(); it!=g_Fonts.end(); ++it) {
 		for (std::map<char, Glyph>::iterator g=(*it).second.glyphs.begin(); g!=(*it).second.glyphs.end(); ++g)
 			SDL_FreeSurface((*g).second.surface);
