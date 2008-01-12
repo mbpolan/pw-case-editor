@@ -17,48 +17,35 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-// textboxeditor.h: the TextboxEditor widget
+// alphaimge.h: the AlphaImage class
 
-#ifndef TEXTBOXWIDGET_H
-#define TEXTBOXWIDGET_H
+#ifndef ALPHAIMAGE_H
+#define ALPHAIMAGE_H
 
 #include <cairomm/surface.h>
 #include <gtkmm/drawingarea.h>
-#include <map>
 
-// widget that allows for editing a character's text box dialogue
-class TextBoxEditor: public Gtk::DrawingArea {
+// image widget with optional alpha value
+class AlphaImage: public Gtk::DrawingArea {
 	public:
-		// define formats for text
-		enum Format { FORMAT_PLAIN=0, FORMAT_BLUE, FORMAT_DATE, FORMAT_TESTIMONY_TITLE };
-		
 		// constructor
-		TextBoxEditor();
+		AlphaImage(const std::string &file);
 		
-		// set text for a given line
-		void set_text(int line, const Glib::ustring &text);
+		// set the alpha value
+		void set_alpha(double alpha);
 		
-		// set the format to use for text
-		void set_format(const Format &format) { m_Format=format; }
+		// get the alpha value
+		double get_alpha() const { return m_Alpha; }
 		
 	private:
 		// expose event handler
-		virtual bool on_expose_event(GdkEventExpose *e);
+		virtual bool on_expose_event(GdkEventExpose*);
 		
-		// draw a single line of text
-		void draw_line(Cairo::RefPtr<Cairo::Context> cr, const std::string &text, int x, int y);
+		// our background image
+		Cairo::RefPtr<Cairo::ImageSurface> m_Image;
 		
-		// background image
-		Cairo::RefPtr<Cairo::ImageSurface> m_BG;
-		
-		// default text format
-		Format m_Format;
-		
-		// height of a line of text
-		int m_TextHeight;
-		
-		// lines of text
-		std::map<int, Glib::ustring> m_Text;
+		// alpha value
+		double m_Alpha;
 };
 
 #endif

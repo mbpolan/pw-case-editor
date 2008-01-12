@@ -55,6 +55,13 @@ IO::Code IO::save_case_to_file(const Glib::ustring &path, const Case::Case &pcas
 	write_string(f, overview.author);
 	fwrite(&overview.lawSys, sizeof(int), 1, f);
 	
+	// get overrides
+	Case::Overrides ov=pcase.get_overrides();
+	
+	// write override details
+	fwrite(&ov.textboxAlpha, sizeof(int), 1, f);
+	write_string(f, ov.titleScreen);
+	
 	// write initial block id
 	write_string(f, pcase.get_initial_block_id());
 	
@@ -304,6 +311,13 @@ IO::Code IO::export_case_to_file(const Glib::ustring &path, const Case::Case &pc
 	write_string(f, overview.name);
 	write_string(f, overview.author);
 	fwrite(&overview.lawSys, sizeof(int), 1, f);
+	
+	// get overrides
+	Case::Overrides ov=pcase.get_overrides();
+	
+	// write override details
+	fwrite(&ov.textboxAlpha, sizeof(int), 1, f);
+	write_string(f, ov.titleScreen);
 	
 	// write initial block id
 	write_string(f, pcase.get_initial_block_id());
@@ -571,6 +585,16 @@ IO::Code IO::load_case_from_file(const Glib::ustring &path, Case::Case &pcase,
 	overview.name=read_string(f);
 	overview.author=read_string(f);
 	fread(&overview.lawSys, sizeof(int), 1, f);
+	
+	// create new overrides object
+	Case::Overrides ov;
+	
+	// read override details
+	fread(&ov.textboxAlpha, sizeof(int), 1, f);
+	ov.titleScreen=read_string(f);
+	
+	// set the overrides
+	pcase.set_overrides(ov);
 	
 	// set the overview
 	pcase.set_overview(overview);

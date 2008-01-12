@@ -284,6 +284,7 @@ void TestimonyEditor::update() {
 		m_PresentLabelCB->set_active(false);
 	else {
 		m_PresentLabelCB->set_active(true);
+		m_PresentIdEntry->set_text(piece.presentId);
 		m_PresentTargetCB->set_active_text(piece.presentBlock);
 	}
 	
@@ -406,8 +407,8 @@ void TestimonyEditor::on_amend_button_clicked() {
 	
 	// serialize all values
 	piece.text=m_TextView->get_buffer()->get_text();
-	piece.presentId=(m_PresentLabelCB->get_active() ? "null" : m_PresentIdEntry->get_text());
-	piece.presentBlock=m_PresentTargetCB->get_selected_internal();
+	piece.presentId=(m_PresentLabelCB->get_active() ? m_PresentIdEntry->get_text() : "null");
+	piece.presentBlock=(m_PresentLabelCB->get_active() ? m_PresentTargetCB->get_selected_internal() : "null");
 	piece.pressBlock=m_PressCB->get_selected_internal();
 	piece.hidden=m_HiddenCB->get_active();
 }

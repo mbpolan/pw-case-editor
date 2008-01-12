@@ -17,48 +17,46 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-// textboxeditor.h: the TextboxEditor widget
+// alphaimage.cpp: implementations of AlphaImage class
 
-#ifndef TEXTBOXWIDGET_H
-#define TEXTBOXWIDGET_H
+#include "alphaimage.h"
 
-#include <cairomm/surface.h>
-#include <gtkmm/drawingarea.h>
-#include <map>
+// constructor
+AlphaImage::AlphaImage(const std::string &file) {
+	m_Image=Cairo::ImageSurface::create_from_png(file);
+	m_Alpha=1.0;
+	
+	set_size_request(m_Image->get_width(), m_Image->get_height());
+	
+	add_events(Gdk::EXPOSURE_MASK);
+}
 
-// widget that allows for editing a character's text box dialogue
-class TextBoxEditor: public Gtk::DrawingArea {
-	public:
-		// define formats for text
-		enum Format { FORMAT_PLAIN=0, FORMAT_BLUE, FORMAT_DATE, FORMAT_TESTIMONY_TITLE };
-		
-		// constructor
-		TextBoxEditor();
-		
-		// set text for a given line
-		void set_text(int line, const Glib::ustring &text);
-		
-		// set the format to use for text
-		void set_format(const Format &format) { m_Format=format; }
-		
-	private:
-		// expose event handler
-		virtual bool on_expose_event(GdkEventExpose *e);
-		
-		// draw a single line of text
-		void draw_line(Cairo::RefPtr<Cairo::Context> cr, const std::string &text, int x, int y);
-		
-		// background image
-		Cairo::RefPtr<Cairo::ImageSurface> m_BG;
-		
-		// default text format
-		Format m_Format;
-		
-		// height of a line of text
-		int m_TextHeight;
-		
-		// lines of text
-		std::map<int, Glib::ustring> m_Text;
-};
+// set the alpha value
+void AlphaImage::set_alpha(double alpha) {
+	m_Alpha=alpha;
+	queue_draw();
+}
 
-#endif
+// expose event handler
+bool AlphaImage::on_expose_event(GdkEventExpose *e) {
+	bool ret=Gtk::DrawingArea::on_expose_event(e);
+	
+	// get our window
+	Glib::RefPtr<Gdk::Window> window=get_window();
+	if (!window)
+		return ret;
+	
+	// create a new cairo drawing context
+	Cairo::RefPtr<Cairo::Context> cr=window->create_cairo_context();
+	
+	// set the image as the source
+	cr->set_source(m_Image, 0, 0);
+	
+	// move to the top left corner
+	cr->move_to(0, 0);
+	
+	// and draw the image, converting the char alpha to double
+	cr->paint_with_alpha(m_Alpha);
+	
+	return ret;
+}

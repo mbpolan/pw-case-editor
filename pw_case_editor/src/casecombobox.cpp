@@ -185,6 +185,16 @@ Glib::ustring EvidenceComboBox::get_selected_name() const {
 	return get_active_text();
 }
 
+// set the active evidence via internal id
+void EvidenceComboBox::set_active_internal(const Glib::ustring &id) {
+	for (EvidenceMap::iterator it=m_Evidence.begin(); it!=m_Evidence.end(); ++it) {
+		if ((*it).second.id==id) {
+			set_active_text((*it).second.name);
+			return;
+		}
+	}
+}
+
 // get the selected evidence's internal name
 Glib::ustring EvidenceComboBox::get_selected_internal() const {
 	Glib::ustring name=get_active_text();
@@ -268,6 +278,11 @@ ImgComboBox::ImgComboBox(const ImageMap &map): m_Images(map) {
 		append_text((*it).second.id);
 	
 	set_active(0);
+}
+
+// set the active image via internal id
+void ImgComboBox::set_active_internal(const Glib::ustring &id) {
+	set_active_text(id);
 }
 
 // get the selected image's internal name

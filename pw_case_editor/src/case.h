@@ -55,6 +55,13 @@ struct _Overview {
 };
 typedef struct _Overview Overview;
 
+// user-defined overrides
+struct _Overrides {
+	int textboxAlpha; // alpha value for text box
+	Glib::ustring titleScreen; // custom title screen image
+};
+typedef struct _Overrides Overrides;
+
 // background data
 struct _Background {
 	Glib::ustring id; // id referenced from within the script
@@ -159,6 +166,12 @@ class Case {
 	public:
 		// constructor
 		Case();
+		
+		// set the case overrides
+		void set_overrides(const Overrides &ov) { m_Overrides=ov; }
+		
+		// get the case overrides
+		Overrides get_overrides() const { return m_Overrides; }
 		
 		// set the initial text block id
 		void set_initial_block_id(const Glib::ustring &id) { m_InitialBlockId=id; }
@@ -278,6 +291,9 @@ class Case {
 		TestimonyMap get_testimonies() const { return m_Testimonies; }
 	
 	private:
+		// user-defined overrides
+		Overrides m_Overrides;
+		
 		// general case data
 		Overview m_Overview;
 		

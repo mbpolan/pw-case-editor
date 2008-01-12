@@ -206,6 +206,10 @@ void Case::Case::clear() {
 	m_Overview.author="";
 	m_Overview.lawSys=TWO_DAY;
 	
+	// clear out overrides
+	m_Overrides.textboxAlpha=-1;
+	m_Overrides.titleScreen="null";
+	
 	m_InitialBlockId="null";
 	
 	// clear out the rest of the pertinent stuff

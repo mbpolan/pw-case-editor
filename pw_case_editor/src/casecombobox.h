@@ -95,6 +95,9 @@ class EvidenceComboBox: public Gtk::ComboBoxText {
 		// see if the combo box is empty
 		bool empty() const { return m_Evidence.empty(); }
 		
+		// set the active evidence via internal id
+		void set_active_internal(const Glib::ustring &id);
+		
 		// get the selected location's name
 		Glib::ustring get_selected_name() const;
 		
@@ -162,6 +165,9 @@ class ImgComboBox: public Gtk::ComboBoxText {
 		
 		// see if the combo box is empty
 		bool empty() const { return m_Images.empty(); }
+		
+		// set the active image via internal id
+		void set_active_internal(const Glib::ustring &id);
 		
 		// get the selected image's internal name
 		Glib::ustring get_selected_internal() const;

@@ -384,70 +384,79 @@ void MainWindow::create_trigger_submenu(Gtk::Menu *menu) {
 	Gtk::Menu_Helpers::MenuList &list=menu->items();
 	
 	// populate the menu
-	list.push_back(Gtk::Menu_Helpers::MenuElem("Speaker", 
-		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "speaker")));
-	list.push_back(Gtk::Menu_Helpers::MenuElem("Goto", 
-		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "goto")));
 	list.push_back(Gtk::Menu_Helpers::MenuElem("Add Evidence/Profile", 
 		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "add_evidence/profile")));
-	list.push_back(Gtk::Menu_Helpers::MenuElem("Show Evidence", 
-		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "show_evidence")));
-	list.push_back(Gtk::Menu_Helpers::MenuElem("Hide Evidence", 
-		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "hide_evidence")));
-	list.push_back(Gtk::Menu_Helpers::MenuElem("Set Location", 
-		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "set_location")));
 	list.push_back(Gtk::Menu_Helpers::MenuElem("Add Location", 
 		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "add_location")));
-	list.push_back(Gtk::Menu_Helpers::MenuElem("Set Location Trigger", 
-		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "set_location_trigger")));
-	list.push_back(Gtk::Menu_Helpers::MenuElem("Set Animation", 
-		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "set_animation")));
-	list.push_back(Gtk::Menu_Helpers::MenuElem("Put Character", 
-		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "put_character")));
-	list.push_back(Gtk::Menu_Helpers::MenuElem("Add Talk Option", 
-		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "add_talk_option")));
-	list.push_back(Gtk::Menu_Helpers::MenuElem("Remove Talk Option", 
-		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "remove_talk_option")));
-	list.push_back(Gtk::Menu_Helpers::MenuElem("Clear Talk Options", 
-		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "clear_talk_options")));
 	list.push_back(Gtk::Menu_Helpers::MenuElem("Add Presentable", 
 		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "add_presentable")));
-	list.push_back(Gtk::Menu_Helpers::MenuElem("Remove Presentable", 
-		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "remove_presentable")));
-	list.push_back(Gtk::Menu_Helpers::MenuElem("Clear Presentables", 
-		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "clear_presentables")));
-	list.push_back(Gtk::Menu_Helpers::MenuElem("Set Bad Presentable Block", 
-		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "set_bad_presentable_block")));
-	list.push_back(Gtk::Menu_Helpers::MenuElem("Set Location Music", 
-		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "set_location_music")));
+	list.push_back(Gtk::Menu_Helpers::MenuElem("Add Talk Option", 
+		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "add_talk_option")));
+	
 	list.push_back(Gtk::Menu_Helpers::MenuElem("Clear Location Music", 
 		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "clear_location_music")));
-	list.push_back(Gtk::Menu_Helpers::MenuElem("Request Evidence", 
-		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "request_evidence")));
-	list.push_back(Gtk::Menu_Helpers::MenuElem("Request Answer", 
-		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "request_answer")));
-	list.push_back(Gtk::Menu_Helpers::MenuElem("Play Music", 
-		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "play_music")));
-	list.push_back(Gtk::Menu_Helpers::MenuElem("Halt Music", 
-		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "halt_music")));
-	list.push_back(Gtk::Menu_Helpers::MenuElem("Sound Effect", 
-		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "sfx")));
+	list.push_back(Gtk::Menu_Helpers::MenuElem("Clear Presentables", 
+		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "clear_presentables")));
+	list.push_back(Gtk::Menu_Helpers::MenuElem("Clear Talk Options", 
+		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "clear_talk_options")));
+	
+	list.push_back(Gtk::Menu_Helpers::MenuElem("Display Testimony", 
+		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "display_testimony")));
+	
 	list.push_back(Gtk::Menu_Helpers::MenuElem("Fade Out", 
 		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "fade_out")));
 	list.push_back(Gtk::Menu_Helpers::MenuElem("Flash", 
 		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "flash")));
-	list.push_back(Gtk::Menu_Helpers::MenuElem("Special Effect", 
-		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "special_effect")));
-	list.push_back(Gtk::Menu_Helpers::MenuElem("Move Court Camera", 
-		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "move_court_camera")));
-	list.push_back(Gtk::Menu_Helpers::MenuElem("Set Court Overview Image", 
-		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "set_court_overview_image")));
-	list.push_back(Gtk::Menu_Helpers::MenuElem("Set Temp Image", 
-		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "set_temp_image")));
+	
+	list.push_back(Gtk::Menu_Helpers::MenuElem("Goto", 
+		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "goto")));
+	
+	list.push_back(Gtk::Menu_Helpers::MenuElem("Halt Music", 
+		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "halt_music")));
+	list.push_back(Gtk::Menu_Helpers::MenuElem("Hide Evidence", 
+		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "hide_evidence")));
 	list.push_back(Gtk::Menu_Helpers::MenuElem("Hide Temp Image", 
 		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "hide_temp_image")));
-	list.push_back(Gtk::Menu_Helpers::MenuElem("Display Testimony", 
-		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "display_testimony")));
+	
+	list.push_back(Gtk::Menu_Helpers::MenuElem("Move Court Camera", 
+		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "move_court_camera")));
+	
+	list.push_back(Gtk::Menu_Helpers::MenuElem("Play Music", 
+		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "play_music")));
+	list.push_back(Gtk::Menu_Helpers::MenuElem("Put Character", 
+		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "put_character")));
+	
+	list.push_back(Gtk::Menu_Helpers::MenuElem("Request Answer", 
+		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "request_answer")));
+	list.push_back(Gtk::Menu_Helpers::MenuElem("Request Evidence", 
+		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "request_evidence")));
+	list.push_back(Gtk::Menu_Helpers::MenuElem("Remove Presentable", 
+		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "remove_presentable")));
+	list.push_back(Gtk::Menu_Helpers::MenuElem("Remove Talk Option", 
+		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "remove_talk_option")));
+	
+	list.push_back(Gtk::Menu_Helpers::MenuElem("Set Animation", 
+		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "set_animation")));
+	list.push_back(Gtk::Menu_Helpers::MenuElem("Set Bad Presentable Block", 
+		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "set_bad_presentable_block")));
+	list.push_back(Gtk::Menu_Helpers::MenuElem("Set Court Overview Image", 
+		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "set_court_overview_image")));
+	list.push_back(Gtk::Menu_Helpers::MenuElem("Set Location", 
+		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "set_location")));
+	list.push_back(Gtk::Menu_Helpers::MenuElem("Set Location Music", 
+		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "set_location_music")));
+	list.push_back(Gtk::Menu_Helpers::MenuElem("Set Location Trigger", 
+		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "set_location_trigger")));
+	list.push_back(Gtk::Menu_Helpers::MenuElem("Set Temp Image", 
+		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "set_temp_image")));
+	list.push_back(Gtk::Menu_Helpers::MenuElem("Show Evidence", 
+		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "show_evidence")));
+	list.push_back(Gtk::Menu_Helpers::MenuElem("Speaker", 
+		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "speaker")));
+	list.push_back(Gtk::Menu_Helpers::MenuElem("Special Effect", 
+		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "special_effect")));
+	list.push_back(Gtk::Menu_Helpers::MenuElem("Sound Effect", 
+		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "sfx")));
 }
 
 // set an icon for a menu item
@@ -1429,8 +1438,10 @@ void MainWindow::on_case_edit_overview() {
 // customize case elements
 void MainWindow::on_case_customize() {
 	// bring up the customize dialog
-	CustomizeDialog cd(m_Case.get_images());
+	CustomizeDialog cd(m_Case.get_overrides(), m_Case.get_images());
 	if (cd.run()==Gtk::RESPONSE_OK) {
+		// update the overrides data
+		m_Case.set_overrides(cd.get_data());
 	}
 }
 
