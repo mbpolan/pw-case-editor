@@ -170,11 +170,15 @@ bool Game::loadStockTextures() {
 		return false;
 	}
 	
+	// text box alpha
+	Case::Overrides ov=m_Case->getOverrides();
+	int tbAlpha=(ov.textboxAlpha!=-1 ? ov.textboxAlpha : 165);
+	
 	// modify certain textures
 	SDL_SetAlpha(Textures::queryTexture("scanlines_overlay"), SDL_SRCALPHA, 30);
 	SDL_SetAlpha(Textures::queryTexture("tc_next_btn"), SDL_SRCALPHA, 225);
-	SDL_SetAlpha(Textures::queryTexture("tc_text_box"), SDL_SRCALPHA, 165);
-	SDL_SetAlpha(Textures::queryTexture("tc_text_box_border"), SDL_SRCALPHA, 165);
+	SDL_SetAlpha(Textures::queryTexture("tc_text_box"), SDL_SRCALPHA, tbAlpha);
+	SDL_SetAlpha(Textures::queryTexture("tc_text_box_border"), SDL_SRCALPHA, tbAlpha);
 	
 	SDL_SetAlpha(Textures::queryTexture("tc_select_tl"), SDL_SRCALPHA, 225);
 	SDL_SetAlpha(Textures::queryTexture("tc_select_tr"), SDL_SRCALPHA, 225);
@@ -981,18 +985,26 @@ void Game::updateFlags() {
 void Game::renderTopView() {
 	// if we are toggled in an initial screen, draw only the title on the top view
 	if (flagged(STATE_INITIAL_SCREEN)) {
-		Renderer::drawImage(Point(0, 0), "stock_title");
+		// see if there is a user defined override
+		if (m_Case->getOverrides().titleScreen!="null") {
+			Renderer::drawImage(Point(0, 0), m_Case->getImage(m_Case->getOverrides().titleScreen)->texture);
+		}
 		
-		// get the case overview
-		Case::Overview overview=m_Case->getOverview();
-		
-		// also draw case name, and author
-		Fonts::drawTTF(Point(128-(Fonts::getTTFWidth(overview.name, Renderer::BUTTON_TEXT_FONT)/2), 130), 
-				     overview.name, Renderer::BUTTON_TEXT_FONT, Color(255, 255, 255));
-		
-		Fonts::drawTTF(Point(128-(Fonts::getTTFWidth(overview.author,
-			       Renderer::BUTTON_TEXT_FONT)/2), 130+Fonts::getTTFHeight(Renderer::BUTTON_TEXT_FONT)),
-				overview.author, Renderer::BUTTON_TEXT_FONT, Color(255, 255, 255));
+		// otherwise, fall back on the stock title screen set
+		else {
+			Renderer::drawImage(Point(0, 0), "stock_title");
+			
+			// get the case overview
+			Case::Overview overview=m_Case->getOverview();
+			
+			// also draw case name, and author
+			Fonts::drawTTF(Point(128-(Fonts::getTTFWidth(overview.name, Renderer::BUTTON_TEXT_FONT)/2), 130), 
+					     overview.name, Renderer::BUTTON_TEXT_FONT, Color(255, 255, 255));
+			
+			Fonts::drawTTF(Point(128-(Fonts::getTTFWidth(overview.author, Renderer::BUTTON_TEXT_FONT)/2), 	
+				             135+Fonts::getTTFHeight(Renderer::BUTTON_TEXT_FONT)),
+				             overview.author, Renderer::BUTTON_TEXT_FONT, Color(255, 255, 255));
+		}
 		
 		return;
 	}

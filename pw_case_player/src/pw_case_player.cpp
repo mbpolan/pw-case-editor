@@ -23,7 +23,6 @@
 #include "SDL.h"
 
 #include "application.h"
-#include "iohandler.h"
 
 int main(int argc, char *argv[]) {
 	// check arguments or display help message
@@ -38,10 +37,6 @@ int main(int argc, char *argv[]) {
 		std::cout << "Official website: http://pw-case-editor.sourceforge.net\n";
 		return 0;
 	}
-	
-	// unpack the resource file before anything
-	if (!IO::unpackResourceFile("data.dpkg"))
-		return 0;
 	
 	// create application object
 	Application app(argc, argv);

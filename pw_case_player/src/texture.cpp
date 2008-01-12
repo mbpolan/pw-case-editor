@@ -31,6 +31,8 @@ SDL_Surface* Textures::queryTexture(const std::string &id) {
 
 // add a new texture
 void Textures::pushTexture(const std::string &id, SDL_Surface *texture) {
+	if (queryTexture(id))
+		popTexture(id);
 	g_TextureMap[id]=texture;
 }
 

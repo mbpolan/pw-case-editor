@@ -46,6 +46,13 @@ struct _Overview {
 };
 typedef struct _Overview Overview;
 
+// user-defined overrides
+struct _Overrides {
+	int textboxAlpha; // alpha value for text box
+	std::string titleScreen; // custom title screen image
+};
+typedef struct _Overrides Overrides;
+
 // background data
 struct _Background {
 	std::string id; // id referenced from within the script
@@ -155,6 +162,12 @@ class Case {
 		// destructor
 		~Case();
 		
+		// set the case overrides
+		void setOverrides(const Overrides &ov) { m_Overrides=ov; }
+		
+		// get the case overrides
+		Overrides getOverrides() const { return m_Overrides; }
+		
 		// set the initial text block id
 		void setInitialBlockId(const std::string &id) { m_InitialBlockId=id; }
 		
@@ -231,6 +244,9 @@ class Case {
 		BufferMap getBuffers() const { return m_Buffers; }
 	
 	private:
+		// overrides
+		Overrides m_Overrides;
+		
 		// general case data
 		Overview m_Overview;
 		

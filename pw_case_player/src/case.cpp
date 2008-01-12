@@ -124,6 +124,10 @@ Case::Testimony* Case::Case::getTestimony(const std::string &id) {
 
 // clear the case information
 void Case::Case::clear() {
+	// clear out overrides
+	m_Overrides.textboxAlpha=-1;
+	m_Overrides.titleScreen="null";
+	
 	// clear out overview
 	m_Overview.name="";
 	m_Overview.author="";

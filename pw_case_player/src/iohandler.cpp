@@ -107,6 +107,16 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 	overview.author=readString(f);
 	fread(&overview.lawSys, sizeof(int), 1, f);
 	
+	// create a new overrides object
+	Case::Overrides ov;
+	
+	// read data
+	fread(&ov.textboxAlpha, sizeof(int), 1, f);
+	ov.titleScreen=readString(f);
+	
+	// set overrides
+	pcase.setOverrides(ov);
+	
 	// set the overview
 	pcase.setOverview(overview);
 	

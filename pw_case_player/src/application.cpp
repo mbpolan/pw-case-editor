@@ -75,6 +75,10 @@ void Application::run() {
 	// see how much time has elapsed since the program started loading
 	int start=SDL_GetTicks();
 	
+	// unpack the resource file before anything
+	if (!IO::unpackResourceFile("data.dpkg"))
+		return;
+	
 	// initialize audio, unless NO_SOUND was passed
 	if (!m_ArgFlags & ARG_NO_SOUND)
 		Audio::g_Output=m_SDLContext->initAudio();
