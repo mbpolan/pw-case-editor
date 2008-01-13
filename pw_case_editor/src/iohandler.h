@@ -42,8 +42,27 @@ enum Code { CODE_OK=		 	 1,
 	    CODE_VALIDATE_FAILED=	-3
 };
 
+// the pwt file header
+struct _PWTHeader {
+	int ident; // magic number
+	int version; // file version
+	
+	// byte offsets in data (relative to start of file)
+	int overviewOffset;
+	int overridesOffset;
+	int charOffset;
+	int imgOffset;
+	int bgOffset;
+	int evidenceOffset;
+	int locationOffset;
+	int audioOffset;
+	int testimonyOffset;
+	int blockOffset;
+};
+typedef struct _PWTHeader PWTHeader;
+
 // case file information
-const Glib::ustring FILE_MAGIC_NUM="PWT";
+const int FILE_MAGIC_NUM=(('T' << 16) + ('W' << 8) + 'P');
 const int FILE_VERSION=10;
 
 // sprite file information

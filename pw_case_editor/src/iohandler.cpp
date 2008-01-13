@@ -300,14 +300,15 @@ IO::Code IO::export_case_to_file(const Glib::ustring &path, const Case::Case &pc
 	if (!f)
 		return IO::CODE_OPEN_FAILED;
 	
-	// first and foremost, we write the file information
-	write_string(f, FILE_MAGIC_NUM);
-	fwrite(&FILE_VERSION, sizeof(int), 1, f);
+	// write the header
+	PWTHeader header;
+	fwrite(&header, sizeof(PWTHeader), 1, f);
 	
 	// get case overview
 	Case::Overview overview=pcase.get_overview();
 	
 	// write overview details
+	header.overviewOffset=ftell(f);
 	write_string(f, overview.name);
 	write_string(f, overview.author);
 	fwrite(&overview.lawSys, sizeof(int), 1, f);
@@ -316,6 +317,7 @@ IO::Code IO::export_case_to_file(const Glib::ustring &path, const Case::Case &pc
 	Case::Overrides ov=pcase.get_overrides();
 	
 	// write override details
+	header.overridesOffset=ftell(f);
 	fwrite(&ov.textboxAlpha, sizeof(int), 1, f);
 	write_string(f, ov.titleScreen);
 	
@@ -323,6 +325,7 @@ IO::Code IO::export_case_to_file(const Glib::ustring &path, const Case::Case &pc
 	write_string(f, pcase.get_initial_block_id());
 	
 	// get character data and write the amount of objects
+	header.charOffset=ftell(f);
 	std::map<Glib::ustring, Character> characters=pcase.get_characters();
 	int charCount=characters.size();
 	fwrite(&charCount, sizeof(int), 1, f);
@@ -372,6 +375,7 @@ IO::Code IO::export_case_to_file(const Glib::ustring &path, const Case::Case &pc
 	}
 	
 	// get background map and write the amount of objects
+	header.bgOffset=ftell(f);
 	BackgroundMap backgrounds=pcase.get_backgrounds();
 	int bgCount=backgrounds.size();
 	fwrite(&bgCount, sizeof(int), 1, f);
@@ -389,6 +393,7 @@ IO::Code IO::export_case_to_file(const Glib::ustring &path, const Case::Case &pc
 	}
 	
 	// get evidence map and write the amount of objects
+	header.evidenceOffset=ftell(f);
 	EvidenceMap evidence=pcase.get_evidence();
 	int evidenceCount=evidence.size();
 	fwrite(&evidenceCount, sizeof(int), 1, f);
@@ -419,6 +424,7 @@ IO::Code IO::export_case_to_file(const Glib::ustring &path, const Case::Case &pc
 	}
 	
 	// get image map and write amount of objects
+	header.imgOffset=ftell(f);
 	ImageMap images=pcase.get_images();
 	int imageCount=images.size();
 	fwrite(&imageCount, sizeof(int), 1, f);
@@ -433,6 +439,7 @@ IO::Code IO::export_case_to_file(const Glib::ustring &path, const Case::Case &pc
 	}
 	
 	// get location map and write amount of objects
+	header.locationOffset=ftell(f);
 	LocationMap locations=pcase.get_locations();
 	int locationCount=locations.size();
 	fwrite(&locationCount, sizeof(int), 1, f);
@@ -468,6 +475,7 @@ IO::Code IO::export_case_to_file(const Glib::ustring &path, const Case::Case &pc
 	}
 	
 	// get audio map and write count of samples
+	header.audioOffset=ftell(f);
 	AudioMap amap=pcase.get_audio();
 	int audioCount=amap.size();
 	fwrite(&audioCount, sizeof(int), 1, f);
@@ -482,6 +490,7 @@ IO::Code IO::export_case_to_file(const Glib::ustring &path, const Case::Case &pc
 	}
 	
 	// write count of testimonies
+	header.testimonyOffset=ftell(f);
 	TestimonyMap tmap=pcase.get_testimonies();
 	int testimonyCount=tmap.size();
 	fwrite(&testimonyCount, sizeof(int), 1, f);
@@ -532,6 +541,7 @@ IO::Code IO::export_case_to_file(const Glib::ustring &path, const Case::Case &pc
 	}
 	
 	// write count of blocks
+	header.blockOffset=ftell(f);
 	int bufferCount=buffers.size();
 	fwrite(&bufferCount, sizeof(int), 1, f);
 	
@@ -551,6 +561,12 @@ IO::Code IO::export_case_to_file(const Glib::ustring &path, const Case::Case &pc
 		// write the text
 		write_string(f, bufText);
 	}
+	
+	// go back and fix the header
+	rewind(f);
+	header.ident=FILE_MAGIC_NUM;
+	header.version=FILE_VERSION;
+	fwrite(&header, sizeof(PWTHeader), 1, f);
 	
 	// wrap up
 	fclose(f);
