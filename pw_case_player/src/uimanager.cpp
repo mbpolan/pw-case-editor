@@ -19,6 +19,7 @@
  ***************************************************************************/
 // uimanager.cpp: implementations of UI namespace
 
+#include <cstdarg>
 #include "SDL_gfxPrimitives.h"
 
 #include "audio.h"
@@ -29,8 +30,42 @@
 #include "uimanager.h"
 #include "utilities.h"
 
+UI::Manager *g_Manager;
+
 // constructor
 UI::Manager::Manager(Case::Case *pcase): m_Case(pcase) {
+	g_Manager=this;
+}
+
+// return an instance of the ui manager
+UI::Manager* UI::Manager::instance() {
+	return g_Manager;
+}
+
+// handle any mouse events on gui elements
+void UI::Manager::handleGUIClick(const Point &p, int num, ...) {
+	// this shouldn't happen
+	if (num==0)
+		return;
+	
+	// argument lists
+	va_list a;
+	va_start(a, num);
+	
+	// iterate over provided buttons
+	for (int i=0; i<num; i++) {
+		std::string button=std::string(va_arg(a, const char*));
+		
+		// see if this button was clicked, and if it was, flag it
+		if (mouseOverButton(button, p)) {
+			clickGUIButton(button);
+			
+			// don't check anything afterwards if this was clicked
+			return;
+		}
+	}
+	
+	va_end(a);
 }
 
 // reverse the velocity of a registered animation
@@ -58,6 +93,21 @@ void UI::Manager::resyncBounceTexture(const std::string &id, bool left) {
 		anim.texture1Active=true;
 	else
 		anim.texture2Active=true;
+}
+
+// see if any gui animations are still occurring
+bool UI::Manager::isGUIBusy() {
+	for (std::map<std::string, Animation>::iterator it=m_Animations.begin(); it!=m_Animations.end(); ++it) {
+		if ((*it).second.type==ANIM_GUI_BUTTON && (*it).second.velocity==1)
+			return true;
+	}
+	
+	return false;
+}
+
+// set button text for a gui button
+void UI::Manager::setGUIButtonText(const std::string &id, const std::string &text) {
+	m_Animations[id].txt=text;
 }
 
 // check to see if the mouse is over a button
@@ -133,6 +183,7 @@ void UI::Manager::registerFadeOut(const std::string &id, int speed, const AnimTy
 	Animation anim;
 	
 	// fill in values
+	anim.type=type;
 	anim.alpha=0;
 	anim.speed=speed;
 	anim.lastDraw=0;
@@ -148,6 +199,7 @@ void UI::Manager::registerFlash(const std::string &id, int speed) {
 	Animation anim;
 	
 	// fill in values
+	anim.type=ANIM_FLASH;
 	anim.speed=speed;
 	anim.lastDraw=0;
 	anim.ticks=0;
@@ -161,6 +213,7 @@ void UI::Manager::registerCourtCameraMovement(const std::string &id) {
 	Animation anim;
 	
 	// fill in values
+	anim.type=ANIM_COURT_CAMERA;
 	anim.speed=1;
 	anim.lastDraw=0;
 	anim.velocity=0;
@@ -176,6 +229,7 @@ void UI::Manager::registerTestimonySequence(const std::string &id) {
 	Animation anim;
 	
 	// fill in values
+	anim.type=ANIM_TESTIMONY_SPR;
 	anim.speed=10;
 	anim.lastDraw=0;
 	anim.topLimit=0;
@@ -192,6 +246,7 @@ void UI::Manager::registerCrossExamineSequence(const std::string &id) {
 	Animation anim;
 	
 	// fill in values
+	anim.type=ANIM_CROSS_EXAMINE_SPR;
 	anim.speed=10;
 	anim.lastDraw=0;
 	anim.rightLimit=256; // x value of right lawyer image
@@ -210,6 +265,7 @@ void UI::Manager::registerBlink(const std::string &id, const std::string &textur
 	Animation anim;
 	
 	// fill in values
+	anim.type=ANIM_BLINK;
 	anim.speed=speed;
 	anim.lastDraw=0;
 	anim.current=p;
@@ -227,6 +283,7 @@ void UI::Manager::registerSyncBounce(const std::string &id, const std::string &t
 	Animation anim;
 	
 	// fill in values
+	anim.type=ANIM_SYNC_BOUNCE;
 	anim.speed=speed;
 	anim.lastDraw=0;
 	anim.velocity=1;
@@ -249,6 +306,7 @@ void UI::Manager::registerGreenBarControl(const std::string &id, const std::stri
 	Animation anim;
 	
 	// fill values
+	anim.type=ANIM_GREEN_BAR;
 	anim.lastDraw=0;
 	anim.velocity=1;
 	anim.speed=10;
@@ -266,6 +324,7 @@ void UI::Manager::registerExclamation(const std::string &id, const std::string &
 	Animation anim;
 	
 	// fill in value
+	anim.type=ANIM_EXCLAMATION;
 	anim.speed=75; // 1.25 seconds at 60 fps
 	anim.ticks=0;
 	anim.texture=texture;

@@ -20,6 +20,7 @@
 // renderer.cpp: implementations of Renderer namespace
 
 #include <cmath>
+#include <sstream>
 #include "SDL_gfxPrimitives.h"
 
 #include "font.h"
@@ -112,10 +113,15 @@ void Renderer::drawImage(const Point &p1, int w, int h, const Point &p2, const s
 
 // draw a button with text
 void Renderer::drawButton(const Point &p1, int w, const std::string &text) {
+	int fsize=Renderer::BUTTON_TEXT_FONT;
+	
 	// verify that we have enough room for the text
-	int fw=Fonts::getTTFWidth(text, Renderer::BUTTON_TEXT_FONT);
-	if (fw>w-4)
-		w=Fonts::getTTFWidth(text, Renderer::BUTTON_TEXT_FONT);
+	int fw=Fonts::getTTFWidth(text, fsize);
+	if (fw>w-4) {
+		// step the font down a size
+		fsize=Renderer::INFO_PAGE_FONT;
+		fw=Fonts::getTTFWidth(text, fsize);
+	}
 	
 	// first, draw the border at the left
 	Renderer::drawImage(p1, "tc_choice_btn_left");
@@ -127,9 +133,9 @@ void Renderer::drawButton(const Point &p1, int w, const std::string &text) {
 	SDL_BlitSurface(Textures::queryTexture("tc_choice_btn_body"), &srect, SDL_GetVideoSurface(), &drect);
 	
 	// now draw the text
-	int centerX=(p1.x()+(w/2))-(fw/2);
-	int centerY=p1.y()+((26-Fonts::getTTFHeight(Renderer::BUTTON_TEXT_FONT))/2)-2;
-	Fonts::drawTTF(Point(centerX, centerY), text, Renderer::BUTTON_TEXT_FONT, Theme::lookup("button_text"));
+	int centerX=(p1.x()+(w/2)-(fw/2));
+	int centerY=p1.y()+((26-Fonts::getTTFHeight(fsize))/2)-2;
+	Fonts::drawTTF(Point(centerX, centerY), text, fsize, Theme::lookup("button_text"));
 }
 
 // generate a correctly rendered court panorama based on shown sprites
@@ -532,39 +538,23 @@ void Renderer::drawExamineScene(const Point &cursor) {
 void Renderer::drawMoveScene(const std::vector<std::string> &locations, LocationMap lmap, int selected) {
 	// get pointer to screen surface
 	SDL_Surface *screen=SDL_GetVideoSurface();
-	if (!screen)
-		return;
-	
-	// keep track of x,y changes
-	int x=256/3;
-	int y=236;
 	
 	// go over locations
 	for (int i=0; i<locations.size(); i++) {
 		Case::Location location=lmap[locations[i]];
 		
-		// see if this is the selected button
-		if (selected==i) {
-			// draw a gold border around it
-			Renderer::drawRect(screen, Point(x, y), 150, 20, Theme::lookup("selected_item_box"));
-			
-			// draw the preview to the left
+		std::stringstream ss;
+		ss << "an_move_loc" << i+1 << "_btn";
+		
+		// draw the preview to the left
+		if (selected==i)
 			Renderer::drawImage(Point(0, 263), location.bgScaled);
-		}
 		
-		// otherwise, draw only a white border
-		else
-			Renderer::drawRect(screen, Point(x, y), 150, 20, Theme::lookup("unselected_item_box"));
+		// update text in button
+		UI::Manager::instance()->setGUIButtonText(ss.str(), location.name);
 		
-		// draw the button
-		Renderer::drawRect(screen, Point(x+1, y+1), 148, 18, Theme::lookup("button_bg"));
-		
-		// draw the string
-		int centerx=(x+(150/2))-(Fonts::getTTFWidth(location.name, Renderer::INFO_PAGE_FONT)/2)-4;
-		Fonts::drawTTF(Point(centerx, y+1), location.name, Renderer::INFO_PAGE_FONT, Color(0, 0, 0));
-		
-		// increment y
-		y+=25;
+		// and draw the button
+		UI::Manager::instance()->animateGUIButton(ss.str());
 	}
 }
 
@@ -575,40 +565,15 @@ void Renderer::drawTalkScene(const std::vector<StringPair> &options, int selecte
 	if (!screen)
 		return;
 	
-	// keep track of drawing
-	int x=5;
-	int y=236;
-	
-	// if centering was requested, set a center x point
-	if (centered)
-		x=28;
-	
-	// iterate over options
+	// iterate over options, and draw each one
 	for (int i=0; i<options.size(); i++) {
-		// if this is the selected option, draw a gold border around it
-		if (selected==i)
-			Renderer::drawRect(screen, Point(x, y), 200, 20, Theme::lookup("selected_item_box"));
-			
-		// otherwise, draw a white border
-		else
-			Renderer::drawRect(screen, Point(x, y), 200, 20, Theme::lookup("unselected_item_box"));
+		std::stringstream ss;
+		ss << "an_talk_op" << i+1 << "_btn";
 		
-		// draw the button
-		Renderer::drawRect(screen, Point(x+1, y+1), 200-2, 18, Theme::lookup("button_bg"));
+		// update the text
+		UI::Manager::instance()->setGUIButtonText(ss.str(), options[i].first);
 		
-		// calculate length of string
-		int length=Fonts::getTTFWidth(options[i].first, Renderer::INFO_PAGE_FONT);
-		
-		// draw the text, centered on the button
-		int centerx;
-		if (centered)
-			centerx=128-(length/2);
-		else
-			centerx=100-(length/2);
-		
-		Fonts::drawTTF(Point(centerx, y+1), options[i].first, Renderer::INFO_PAGE_FONT, Color(0, 0, 0));
-		
-		// move down to next slot
-		y+=25;
+		// and draw the button itself
+		UI::Manager::instance()->animateGUIButton(ss.str());
 	}
 }

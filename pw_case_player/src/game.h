@@ -297,10 +297,10 @@ class Game {
 		void onControlsClicked(int x, int y);
 		
 		// click handler for move scene
-		void onMoveSceneClicked(int x, int y);
+		void onMoveSceneClicked(const std::string &button);
 		
 		// click handler for talk scene
-		void onTalkSceneClicked(int x, int y);
+		void onTalkSceneClicked(const std::string &button);
 		
 		// court record page click handler
 		void onRecPageClickEvent(int x, int y);

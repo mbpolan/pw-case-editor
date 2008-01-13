@@ -163,6 +163,7 @@ std::string TextParser::parse(bool drawDialogue) {
 				}
 				
 				else {
+				
 					// execute the trigger right away
 					doTrigger(trigOp, trigComm);
 				}

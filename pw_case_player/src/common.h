@@ -86,6 +86,12 @@ class Point {
 		int m_Y;
 };
 
+// overloaded stream operator for point value output
+static std::ostream& operator<<(std::ostream &s, const Point &p) {
+	s << "(" << p.x() << "," << p.y() << ")\n";
+	return s;
+}
+
 // a rectangle
 class Rect {
 	public:
@@ -117,5 +123,15 @@ class Rect {
 		int m_Width;
 		int m_Height;
 };
+
+// overloaded stream operator for rectangle value output
+static std::ostream& operator<<(std::ostream &s, const Rect &rect) {
+	Point p;
+	int w, h;
+	rect.getGeometry(p, w, h);
+	
+	s << "(" << p.x() << "," << p.y() << "), " << w << "x" << h << std::endl;
+	return s;
+}
 
 #endif

@@ -55,8 +55,11 @@ enum AnimType { ANIM_SIDE_HBOUNCE=0,
 		ANIM_FLASH,
 		ANIM_COURT_CAMERA,
 		ANIM_TESTIMONY_SPR,
+		ANIM_CROSS_EXAMINE_SPR,
 		ANIM_BLINK,
 		ANIM_SYNC_BOUNCE,
+		ANIM_GREEN_BAR,
+		ANIM_EXCLAMATION,
 		ANIM_GUI_BUTTON };
 
 // a struct containing animation data (not all variables pertinent)
@@ -72,6 +75,12 @@ struct _Animation {
 	// direct pointer to texture
 	SDL_Surface *surface;
 	
+	// text for gui
+	std::string txt;
+	
+	// callback for gui clicks
+	Callback callback;
+	
 	// dimensions
 	int w;
 	int h;
@@ -82,9 +91,6 @@ struct _Animation {
 	// points of origin for sync bounce animations
 	Point p1;
 	Point p2;
-	
-	// string of text
-	std::string txt;
 	
 	// location differences
 	Point delta;
@@ -97,9 +103,6 @@ struct _Animation {
 	int rightLimit;
 	int topLimit;
 	int bottomLimit;
-	
-	// callback function for events
-	Callback callback;
 	
 	// the velocity and its speed multiplier of the animation
 	int velocity;
@@ -123,6 +126,13 @@ class Manager {
 		// constructor
 		Manager(Case::Case *pcase);
 		
+		// get the only instance of the ui manager
+		static Manager* instance();
+		
+		// handle any mouse events on gui elements
+		// mouse: mouse pointer location; num: number of buttons to test
+		void handleGUIClick(const Point &mouse, int num, ...);
+		
 		// reverse the velocity of a registered animation
 		void reverseVelocity(const std::string &id);
 		
@@ -133,6 +143,12 @@ class Manager {
 		// enable one texture of a synchronized bounce animation
 		// passing true enables left texture, false enables right
 		void resyncBounceTexture(const std::string &id, bool left);
+		
+		// see if any gui animations are still occurring
+		bool isGUIBusy();
+		
+		// set button text for a gui button
+		void setGUIButtonText(const std::string &id, const std::string &text);
 		
 		// check to see if the mouse is over a button
 		bool mouseOverButton(const std::string &id, const Point &p);

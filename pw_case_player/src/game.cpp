@@ -411,19 +411,20 @@ void Game::onKeyboardEvent(SDL_KeyboardEvent *e) {
 // handle mouse click event
 void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 	// button pressed down
-	if (e->type==SDL_MOUSEBUTTONDOWN && m_State.fadeOut=="none") {
+	if (e->type==SDL_MOUSEBUTTONDOWN && m_State.fadeOut=="none" && !m_UI->isGUIBusy()) {
 		Point mouse=Utils::getMouseLocation();
 		
 		// initial screen clicks
-		if (flagged(STATE_INITIAL_SCREEN)) {
-			// new game button clicked
-			if (m_UI->mouseOverButton("an_new_game_btn", mouse))
-				m_UI->clickGUIButton("an_new_game_btn");
-		}
+		if (flagged(STATE_INITIAL_SCREEN))
+			m_UI->handleGUIClick(mouse, 1, "an_new_game_btn");
 		
 		// check for clicks on locations in move scene
 		if (flagged(STATE_MOVE))
-			onMoveSceneClicked(e->x, e->y);
+			m_UI->handleGUIClick(mouse, 4, "an_move_loc1_btn", "an_move_loc2_btn", "an_move_loc3_btn", "an_move_loc4_btn");
+		
+		// check for clicks on talk scene
+		else if (flagged(STATE_TALK))
+			m_UI->handleGUIClick(mouse, 4, "an_talk_op1_btn", "an_talk_op2_btn", "an_talk_op3_btn", "an_talk_op4_btn");
 		
 		// check for clicks on examine scene
 		if (flagged(STATE_EXAMINE)) {
@@ -579,10 +580,6 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 		else if (flagged(STATE_CONTROLS))
 			onControlsClicked(e->x, e->y);
 		
-		// if talk scene is drawn, see if one option was clicked
-		else if (flagged(STATE_TALK))
-			onTalkSceneClicked(e->x, e->y);
-		
 		// if the court record page is up, see if anything was clicked
 		if (flagged(STATE_EVIDENCE_PAGE) || flagged(STATE_PROFILES_PAGE))
 			onRecPageClickEvent(e->x, e->y);
@@ -628,6 +625,15 @@ void Game::registerAnimations() {
 	
 	// register gui animations
 	m_UI->registerGUIButton("an_new_game_btn", 150, "New Game", Point(53, 240), &Game::onInitialScreenClicked);
+	m_UI->registerGUIButton("an_talk_op1_btn", 200, "", Point(28, 236), &Game::onTalkSceneClicked);
+	m_UI->registerGUIButton("an_talk_op2_btn", 200, "", Point(28, 267), &Game::onTalkSceneClicked);
+	m_UI->registerGUIButton("an_talk_op3_btn", 200, "", Point(28, 298), &Game::onTalkSceneClicked);
+	m_UI->registerGUIButton("an_talk_op4_btn", 200, "", Point(28, 329), &Game::onTalkSceneClicked);
+	
+	m_UI->registerGUIButton("an_move_loc1_btn", 150, "", Point(85, 236), &Game::onMoveSceneClicked);
+	m_UI->registerGUIButton("an_move_loc2_btn", 150, "", Point(85, 267), &Game::onMoveSceneClicked);
+	m_UI->registerGUIButton("an_move_loc3_btn", 150, "", Point(85, 298), &Game::onMoveSceneClicked);
+	m_UI->registerGUIButton("an_move_loc4_btn", 150, "", Point(85, 329), &Game::onMoveSceneClicked);
 	
 	// register sprite sequences
 	m_UI->registerTestimonySequence("an_testimony_sequence");
@@ -1740,6 +1746,9 @@ void Game::renderStand(const Stand stand) {
 
 // initial screen button activated handler
 void Game::onInitialScreenClicked(const std::string &id) {
+	if (!flagged(STATE_INITIAL_SCREEN))
+		return;
+	
 	// new game button clicked
 	if (id=="an_new_game_btn") {
 		// begin parsing the game script
@@ -2162,48 +2171,42 @@ void Game::onControlsClicked(int x, int y) {
 }
 
 // click handler for move scene
-void Game::onMoveSceneClicked(int x, int y) {
+void Game::onMoveSceneClicked(const std::string &button) {
 	if (!m_Case->getLocation(m_State.currentLocation))
 		return;
 	
 	// get our current location
 	Case::Location *location=m_Case->getLocation(m_State.currentLocation);
 	
-	// starting coordinates
-	int dx=256/3;
-	int dy=236;
+	// calculate the index (an_move_locX_btn)
+	std::string tmp=button;
+	tmp.erase(0, 11);
+	tmp.erase(1, 4);
+	int index=atoi(tmp.c_str());
 	
-	// iterate over drawn locations and see if one of them was clicked
-	for (int i=0; i<location->moveLocations.size(); i++) {
-		// see if this button was clicked
-		if ((x>=dx+1 && x<=dx+148) && (y>=dy+1 && y<=dy+18)) {
-			// set this as our selected location
-			m_State.selectedLocation=i;
-			
-			// play a sound effect
-			Audio::playEffect("sfx_click", Audio::CHANNEL_GUI);
-			
-			// schedule a fade effect, only if moving outside of court locations
-			if (!isCourtLocation(m_State.currentLocation) && !isCourtLocation(location->moveLocations[i]))
-				m_State.fadeOut="both";
-			
-			// set our new location
-			m_State.queuedLocation=location->moveLocations[i];
-			
-			// once this is done, we need to revert back to main screen
-			m_State.prevScreen=SCREEN_MAIN;
-			toggle(STATE_CONTROLS | STATE_COURT_REC_BTN);
-			
-			break;
-		}
-		
-		// move on to next button
-		dy+=25;
-	}
+	// set this as our selected location
+	m_State.selectedLocation=index-1;
+	
+	// play a sound effect
+	Audio::playEffect("sfx_click", Audio::CHANNEL_GUI);
+	
+	// schedule a fade effect, only if moving outside of court locations
+	if (!isCourtLocation(m_State.currentLocation) && !isCourtLocation(location->moveLocations[index-1]))
+		m_State.fadeOut="both";
+	
+	// set our new location
+	m_State.queuedLocation=location->moveLocations[index-1];
+	
+	// once this is done, we need to revert back to main screen
+	m_State.prevScreen=SCREEN_MAIN;
+	toggle(STATE_CONTROLS | STATE_COURT_REC_BTN);
 }
 
 // click handler for talk scene
-void Game::onTalkSceneClicked(int x, int y) {
+void Game::onTalkSceneClicked(const std::string &button) {
+	if (!flagged(STATE_TALK) || (flagged(STATE_TALK) && m_State.fadeOut!="none"))
+		return;
+	
 	// get current location
 	Case::Location *location=m_Case->getLocation(m_State.currentLocation);
 	if (!location)
@@ -2214,48 +2217,27 @@ void Game::onTalkSceneClicked(int x, int y) {
 	if (!character && !m_State.requestingAnswer)
 		return;
 	
-	// keep track of x,y changes
-	int dx=5;
-	int dy=197+34+5;
+	// calculate the index (an_talk_opX_btn)
+	std::string tmp=button;
+	tmp.erase(0, 10);
+	tmp.erase(1, 4);
+	int index=atoi(tmp.c_str());
 	
-	// find amount of talk options
-	int amount=(m_State.requestingAnswer? m_State.talkOptions.size() : character->getTalkOptions().size());
+	std::string target;
 	
-	// iterate over options
-	for (int i=0; i<amount; i++) {
-		// see if this one was clicked
-		if ((x>=dx && x<=dx+200) && (y>=dy && y<=dy+20)) {
-			m_State.selectedTalkOption=i;
-			
-			// play a sound effect
-			Audio::playEffect("sfx_click", Audio::CHANNEL_GUI);
-			
-			// get the target block id
-			std::string target;
-			if (m_State.requestingAnswer) {
-				target=m_State.talkOptions[i].second;
-				
-				// also, reset the request answer flag
-				m_State.requestingAnswer=false;
-				m_State.talkOptions.clear();
-				
-				// we need to skip the current block
-				m_Parser->nextStep();
-			}
-			
-			else
-				target=character->getTalkOptions()[i].second;
-			
-			// set this block
-			m_Parser->setBlock(m_Case->getBuffers()[target]);
-			m_Parser->nextStep();
-			
-			break;
-		}
-		
-		// move down to next slot
-		dy+=25;
+	// if we are requesting an answer, select the appropriate option
+	if (m_State.requestingAnswer) {
+		m_State.requestingAnswer=false; // flag that we're done
+		target=m_State.talkOptions[index-1].second;
 	}
+	
+	// otherwise, select the target block
+	else
+		target=character->getTalkOptions()[index-1].second;
+	
+	// move along
+	m_Parser->setBlock(m_Case->getBuffers()[target]);
+	m_Parser->nextStep();
 }
 
 // court record page click handler
