@@ -19,12 +19,16 @@
  ***************************************************************************/
 // textboxeditor.cpp: implementation of TextBoxEditor widget
 
+#include <sstream>
+
 #include "textboxeditor.h"
 
 // constructor
-TextBoxEditor::TextBoxEditor() {
+TextBoxEditor::TextBoxEditor(): m_MouseX(0), m_MouseY(0) {
 	// default format
 	m_Format=FORMAT_PLAIN;
+	
+	set_tooltip_text("(0,0)");
 	
 	// allocate colors
 	//m_Blue=Gdk::Color("#6BC6F7");
@@ -38,7 +42,7 @@ TextBoxEditor::TextBoxEditor() {
 	//set_size_request(m_BG->get_width(), m_BG->get_height());
 	set_size_request(256, 64);
 	
-	add_events(Gdk::EXPOSURE_MASK);
+	add_events(Gdk::EXPOSURE_MASK | Gdk::POINTER_MOTION_MASK);
 }
 
 // set the line text
@@ -81,14 +85,10 @@ bool TextBoxEditor::on_expose_event(GdkEventExpose *e) {
 	cr->select_font_face("Arial", Cairo::FONT_SLANT_NORMAL, Cairo::FONT_WEIGHT_NORMAL);
 	cr->set_font_size(13);
 	
-	// only once, calculate static text height
-	static bool once=true;
-	if (once) {
-		Cairo::TextExtents te;
-		cr->get_text_extents("W", te); // use largest character
-		m_TextHeight=te.height;
-		once=!once;
-	}
+	// calculate static text height
+	Cairo::TextExtents te;
+	cr->get_text_extents("W", te); // use largest character
+	m_TextHeight=te.height;
 	
 	// cache the lines
 	Glib::ustring line1=m_Text[1];
@@ -100,7 +100,29 @@ bool TextBoxEditor::on_expose_event(GdkEventExpose *e) {
 	
 	draw_line(cr, m_Text[1], x1, y+4);
 	draw_line(cr, m_Text[2], x1, y2);
-	draw_line(cr, m_Text[3], x1, y2+m_TextHeight+2);
+	draw_line(cr, m_Text[3], x1, y2+m_TextHeight+4);
+	
+	// draw a line down x=221 to signify break point
+	cr->move_to(221, 0);
+	cr->set_source_rgb(1.0, 0.0, 0.0);
+	cr->line_to(221, get_height());
+	cr->set_line_width(1);
+	cr->stroke();
+	
+	return ret;
+}
+
+// mouse movement handler
+bool TextBoxEditor::on_motion_notify_event(GdkEventMotion *e) {
+	bool ret=Gtk::DrawingArea::on_motion_notify_event(e);
+	
+	m_MouseX=e->x;
+	m_MouseY=e->y;
+	
+	// update tooltip text
+	std::stringstream ss;
+	ss << "(" << m_MouseX << "," << m_MouseY << ")";
+	set_tooltip_text(ss.str());
 	
 	return ret;
 }

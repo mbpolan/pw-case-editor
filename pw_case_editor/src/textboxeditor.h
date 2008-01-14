@@ -45,6 +45,9 @@ class TextBoxEditor: public Gtk::DrawingArea {
 		// expose event handler
 		virtual bool on_expose_event(GdkEventExpose *e);
 		
+		// mouse movement handler
+		virtual bool on_motion_notify_event(GdkEventMotion *e);
+		
 		// draw a single line of text
 		void draw_line(Cairo::RefPtr<Cairo::Context> cr, const std::string &text, int x, int y);
 		
@@ -56,6 +59,9 @@ class TextBoxEditor: public Gtk::DrawingArea {
 		
 		// height of a line of text
 		int m_TextHeight;
+		
+		// mouse location
+		int m_MouseX, m_MouseY;
 		
 		// lines of text
 		std::map<int, Glib::ustring> m_Text;

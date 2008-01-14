@@ -1547,15 +1547,12 @@ void MainWindow::on_tools_sprite_editor() {
 		// get sprite mode
 		SpriteChooserDialog::SpriteMode mode=scd.get_sprite_mode();
 		
-		// prepare sprite editor
-		SpriteEditor se;
-		
 		// if we are opening a sprite, specify so now
 		if (mode==SpriteChooserDialog::SPRITE_EXISTING) {
 			// load the sprite from file
 			Sprite spr;
 			if (IO::load_sprite_from_file(scd.get_path(), spr))
-				se.set_sprite_data(spr);
+				m_SprEditor.set_sprite_data(spr);
 			else {
 				Gtk::MessageDialog md(*this, "Unable to open sprite.", false, Gtk::MESSAGE_ERROR);
 				md.run();
@@ -1575,81 +1572,11 @@ void MainWindow::on_tools_sprite_editor() {
 			}
 			
 			else
-				se.set_sprite_data(spr);
+				m_SprEditor.set_sprite_data(spr);
 		}
 		
-		// run the dialog
-		int ret=se.run();
-		if (ret==Gtk::RESPONSE_OK) {
-			// get the sprite
-			Sprite sprite=se.get_sprite_data();
-			
-			// prepare file chooser
-			Gtk::FileChooserDialog fcd(*this, "Save Sprite", Gtk::FILE_CHOOSER_ACTION_SAVE);
-			fcd.add_button("Save", Gtk::RESPONSE_OK);
-			fcd.add_button("Cancel", Gtk::RESPONSE_CANCEL);
-			
-			// add a filter
-			Gtk::FileFilter filter;
-			filter.add_pattern("*.spr");
-			filter.set_name("Sprites (*.spr)");
-			fcd.add_filter(filter);
-			
-			// run the dialog
-			if (fcd.run()==Gtk::RESPONSE_OK) {
-				// get the path
-				Glib::ustring path=fcd.get_filename();
-				
-				// check extension
-				Glib::ustring ext=path.substr(path.size()-4, path.size()-1);
-				ext=ext.lowercase();
-				if (ext!=".spr")
-					path+=".spr";
-				
-				// save this sprite
-				if (!IO::save_sprite_to_file(path, sprite)) {
-					// yet another vague error
-					Gtk::MessageDialog md(*this, "Unable to save sprite.", false, Gtk::MESSAGE_ERROR);
-					md.run();
-				}
-			}
-		}
-		
-		// export request
-		else if (ret==Gtk::RESPONSE_YES) {
-			// get the sprite
-			Sprite sprite=se.get_sprite_data();
-			
-			// prepare file chooser
-			Gtk::FileChooserDialog fcd(*this, "Export Sprite", Gtk::FILE_CHOOSER_ACTION_SAVE);
-			fcd.add_button("Export", Gtk::RESPONSE_OK);
-			fcd.add_button("Cancel", Gtk::RESPONSE_CANCEL);
-			
-			// add a filter
-			Gtk::FileFilter filter;
-			filter.add_pattern("*.pws");
-			filter.set_name("Phoenix Wright sprites (*.pws)");
-			fcd.add_filter(filter);
-			
-			// run the dialog
-			if (fcd.run()==Gtk::RESPONSE_OK) {
-				// get the path
-				Glib::ustring path=fcd.get_filename();
-				
-				// check extension
-				Glib::ustring ext=path.substr(path.size()-4, path.size()-1);
-				ext=ext.lowercase();
-				if (ext!=".pws")
-					path+=".pws";
-				
-				// save this sprite
-				if (!IO::export_sprite_to_file(path, sprite)) {
-					// yet another vague error
-					Gtk::MessageDialog md(*this, "Unable to export sprite.", false, Gtk::MESSAGE_ERROR);
-					md.run();
-				}
-			}
-		}
+		// show the sprite editor
+		m_SprEditor.show();
 	}
 }
 

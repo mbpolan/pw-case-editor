@@ -32,6 +32,7 @@
 #include "case.h"
 #include "iconmanager.h"
 #include "scriptwidget.h"
+#include "spriteeditor.h"
 
 // the core application window
 class MainWindow: public Gtk::Window {
@@ -140,6 +141,9 @@ class MainWindow: public Gtk::Window {
 		
 		// icon manager
 		IconManager m_IconMgr;
+		
+		// sprite editor
+		SpriteEditor m_SprEditor;
 		
 		// internal case data
 		Case::Case m_Case;

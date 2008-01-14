@@ -29,11 +29,13 @@
 #include <gtkmm/entry.h>
 #include <gtkmm/label.h>
 #include <gtkmm/image.h>
+#include <gtkmm/progressbar.h>
+#include <gtkmm/window.h>
 
 #include "sprite.h"
 
 // window used to edit sprites
-class SpriteEditor: public Gtk::Dialog {
+class SpriteEditor: public Gtk::Window {
 	public:
 		// constructor
 		SpriteEditor();
@@ -50,6 +52,18 @@ class SpriteEditor: public Gtk::Dialog {
 		
 		// update the progress label
 		void update_progress_label();
+		
+		// save the current sprite
+		void on_save();
+		
+		// export the current sprite
+		void on_export();
+		
+		// close the window
+		void on_close();
+		
+		// preview an animation
+		void on_preview_animation();
 		
 		// handler for loop check button toggle
 		void on_loop_cb_toggled();
@@ -95,6 +109,10 @@ class SpriteEditor: public Gtk::Dialog {
 		Gtk::Image *m_Image;
 		
 		// buttons
+		Gtk::Button *m_SaveButton;
+		Gtk::Button *m_ExportButton;
+		Gtk::Button *m_CloseButton;
+		Gtk::Button *m_PreviewButton;
 		Gtk::Button *m_NewAnimButton;
 		Gtk::Button *m_DeleteAnimButton;
 		Gtk::Button *m_AddFrameButton;
@@ -114,6 +132,48 @@ class SpriteEditor: public Gtk::Dialog {
 		
 		// current frame of animation
 		int m_CurFrame;
+};
+
+// animation player to previews
+class AnimPlayer: public Gtk::Dialog {
+	public:
+		// constructor
+		AnimPlayer(const Animation &anim);
+		
+	private:
+		// build the interface
+		void construct();
+		
+		// timeout for new frame
+		bool on_timeout();
+		
+		// play button click handler
+		void on_play_clicked();
+		
+		// stop button click handler
+		void on_stop_clicked();
+		
+		// image for viewing a frame
+		Gtk::Image *m_FrameImg;
+		
+		// labels
+		Gtk::Label *m_AnimLabel;
+		
+		// progress bar
+		Gtk::ProgressBar *m_ProgBar;
+		
+		// buttons for control
+		Gtk::Button *m_PlayButton;
+		Gtk::Button *m_StopButton;
+		
+		// connection to timer slot
+		sigc::connection m_TimerSlot;
+		
+		// the current frame
+		int m_CurFrame;
+		
+		// internal animation
+		Animation m_Animation;
 };
 
 #endif

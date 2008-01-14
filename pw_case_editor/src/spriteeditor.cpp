@@ -23,11 +23,15 @@
 #include <gtkmm/frame.h>
 #include <gtkmm/filechooserdialog.h>
 #include <gtkmm/messagedialog.h>
-#include <sstream>
+#include <gtkmm/separator.h>
+#include <gtkmm/stock.h>
 #include <gtkmm/table.h>
+#include <sstream>
 
 #include "dialogs.h"
+#include "iohandler.h"
 #include "spriteeditor.h"
+#include "utilities.h"
 
 // constructor
 SpriteEditor::SpriteEditor() {
@@ -60,8 +64,8 @@ void SpriteEditor::set_sprite_data(const Sprite &spr) {
 // build the ui
 void SpriteEditor::construct() {
 	// get the vbox
-	Gtk::VBox *vb=get_vbox();
-	vb->set_border_width(10);
+	Gtk::VBox *vb=manage(new Gtk::VBox);
+	vb->set_spacing(5);
 	
 	// allocate table
 	Gtk::Table *table=manage(new Gtk::Table);
@@ -84,6 +88,10 @@ void SpriteEditor::construct() {
 	m_Image->set_size_request(256, 192);
 	
 	// allocate buttons
+	m_SaveButton=manage(new Gtk::Button("Save"));
+	m_CloseButton=manage(new Gtk::Button("Close"));
+	m_ExportButton=manage(new Gtk::Button("Export"));
+	m_PreviewButton=manage(new Gtk::Button("Preview"));
 	m_NewAnimButton=manage(new Gtk::Button("New Animation"));
 	m_DeleteAnimButton=manage(new Gtk::Button("Delete Animation"));
 	m_AddFrameButton=manage(new Gtk::Button("Add Frames"));
@@ -93,6 +101,10 @@ void SpriteEditor::construct() {
 	m_AmendButton=manage(new Gtk::Button("Amend"));
 	
 	// connect the plethora of signals
+	m_SaveButton->signal_clicked().connect(sigc::mem_fun(*this, &SpriteEditor::on_save));
+	m_ExportButton->signal_clicked().connect(sigc::mem_fun(*this, &SpriteEditor::on_export));
+	m_CloseButton->signal_clicked().connect(sigc::mem_fun(*this, &SpriteEditor::on_close));
+	m_PreviewButton->signal_clicked().connect(sigc::mem_fun(*this, &SpriteEditor::on_preview_animation));
 	m_NewAnimButton->signal_clicked().connect(sigc::mem_fun(*this, &SpriteEditor::on_new_animation_button_clicked));
 	m_DeleteAnimButton->signal_clicked().connect(sigc::mem_fun(*this, &SpriteEditor::on_delete_animation_button_clicked));
 	m_AddFrameButton->signal_clicked().connect(sigc::mem_fun(*this, &SpriteEditor::on_add_frame_button_clicked));
@@ -123,6 +135,14 @@ void SpriteEditor::construct() {
 	// connect signals
 	m_AnimCB->signal_changed().connect(sigc::mem_fun(*this, &SpriteEditor::on_anim_cb_changed));
 	
+	// button box for control buttons
+	Gtk::HButtonBox *hbb=manage(new Gtk::HButtonBox);
+	hbb->set_layout(Gtk::BUTTONBOX_END);
+	hbb->set_child_ipadding_x(2);
+	hbb->pack_start(*m_SaveButton);
+	hbb->pack_start(*m_ExportButton);
+	hbb->pack_start(*m_CloseButton);
+	
 	// attach options
 	Gtk::AttachOptions xops=Gtk::FILL | Gtk::EXPAND;
 	Gtk::AttachOptions yops=Gtk::SHRINK | Gtk::SHRINK;
@@ -142,7 +162,8 @@ void SpriteEditor::construct() {
 	
 	// place widgets
 	table->attach(*m_AnimLabel, 0, 1, 0, 1, xops, yops);
-	table->attach(*m_AnimCB, 1, 4, 0, 1, xops, yops);
+	table->attach(*m_AnimCB, 1, 3, 0, 1, xops, yops);
+	table->attach(*m_PreviewButton, 3, 4, 0, 1, xops, yops);
 	table->attach(*m_NewAnimButton, 0, 1, 1, 2, xops, yops);
 	table->attach(*m_DeleteAnimButton, 1, 2, 1, 2, xops, yops);
 	table->attach(*m_AddFrameButton, 2, 3, 1, 2, xops, yops);
@@ -156,10 +177,12 @@ void SpriteEditor::construct() {
 	
 	vb->pack_start(*table, Gtk::PACK_SHRINK);
 	
-	// add buttons
-	add_button("Save", Gtk::RESPONSE_OK);
-	add_button("Export", Gtk::RESPONSE_YES); // this shouldn't use RESPONSE_YES
-	add_button("Cancel", Gtk::RESPONSE_CANCEL);
+	// separator for buttons
+	vb->pack_start(*manage(new Gtk::HSeparator), Gtk::PACK_SHRINK);
+	
+	vb->pack_start(*hbb, Gtk::PACK_SHRINK);
+	
+	add(*vb);
 	
 	show_all_children();
 }
@@ -188,6 +211,90 @@ void SpriteEditor::update_progress_label() {
 	
 	// and update check button
 	m_LoopCB->set_active(anim.loop);
+}
+
+// save the current sprite
+void SpriteEditor::on_save() {
+	// get the sprite
+	Sprite sprite=get_sprite_data();
+	
+	// prepare file chooser
+	Gtk::FileChooserDialog fcd(*this, "Save Sprite", Gtk::FILE_CHOOSER_ACTION_SAVE);
+	fcd.add_button("Save", Gtk::RESPONSE_OK);
+	fcd.add_button("Cancel", Gtk::RESPONSE_CANCEL);
+	
+	// add a filter
+	Gtk::FileFilter filter;
+	filter.add_pattern("*.spr");
+	filter.set_name("Sprites (*.spr)");
+	fcd.add_filter(filter);
+	
+	// run the dialog
+	if (fcd.run()==Gtk::RESPONSE_OK) {
+		// get the path
+		Glib::ustring path=fcd.get_filename();
+		
+		// check extension
+		Glib::ustring ext=path.substr(path.size()-4, path.size()-1);
+		ext=ext.lowercase();
+		if (ext!=".spr")
+			path+=".spr";
+		
+		// save this sprite
+		if (!IO::save_sprite_to_file(path, sprite)) {
+			// yet another vague error
+			Gtk::MessageDialog md(*this, "Unable to save sprite.", false, Gtk::MESSAGE_ERROR);
+			md.run();
+		}
+	}
+}
+
+// export the current sprite
+void SpriteEditor::on_export() {
+	// get the sprite
+	Sprite sprite=get_sprite_data();
+	
+	// prepare file chooser
+	Gtk::FileChooserDialog fcd(*this, "Export Sprite", Gtk::FILE_CHOOSER_ACTION_SAVE);
+	fcd.add_button("Export", Gtk::RESPONSE_OK);
+	fcd.add_button("Cancel", Gtk::RESPONSE_CANCEL);
+	
+	// add a filter
+	Gtk::FileFilter filter;
+	filter.add_pattern("*.pws");
+	filter.set_name("Phoenix Wright sprites (*.pws)");
+	fcd.add_filter(filter);
+	
+	// run the dialog
+	if (fcd.run()==Gtk::RESPONSE_OK) {
+		// get the path
+		Glib::ustring path=fcd.get_filename();
+		
+		// check extension
+		Glib::ustring ext=path.substr(path.size()-4, path.size()-1);
+		ext=ext.lowercase();
+		if (ext!=".pws")
+			path+=".pws";
+		
+		// save this sprite
+		if (!IO::export_sprite_to_file(path, sprite)) {
+			// yet another vague error
+			Gtk::MessageDialog md(*this, "Unable to export sprite.", false, Gtk::MESSAGE_ERROR);
+			md.run();
+		}
+	}
+}
+
+// close the window
+void SpriteEditor::on_close() {
+	hide();
+}
+
+// preview an animation
+void SpriteEditor::on_preview_animation() {
+	// bring up the preview dialog
+	AnimPlayer player(m_Sprite.get_animation(m_AnimCB->get_active_text()));
+	player.run();
 }
 
 // handler for loop check button toggle
@@ -387,4 +494,134 @@ void SpriteEditor::on_next_frame_button_clicked() {
 	}
 	
 	update_progress_label();
+}
+
+/*****************************************************************************************/
+
+// constructor
+AnimPlayer::AnimPlayer(const Animation &anim): m_Animation(anim) {
+	construct();
+}
+
+// build the interface
+void AnimPlayer::construct() {
+	// get the vbox
+	Gtk::VBox *vb=get_vbox();
+	vb->set_spacing(5);
+	
+	// allocate table
+	Gtk::Table *table=manage(new Gtk::Table);
+	table->set_spacings(5);
+	
+	// allocate buttons
+	m_PlayButton=manage(new Gtk::Button(Gtk::Stock::MEDIA_PLAY));
+	m_StopButton=manage(new Gtk::Button(Gtk::Stock::MEDIA_STOP));
+	
+	// connect button signals
+	m_PlayButton->signal_clicked().connect(sigc::mem_fun(*this, &AnimPlayer::on_play_clicked));
+	m_StopButton->signal_clicked().connect(sigc::mem_fun(*this, &AnimPlayer::on_stop_clicked));
+	
+	// allocate labels
+	m_AnimLabel=manage(new Gtk::Label);
+	m_AnimLabel->set_markup("Animation: <i>"+m_Animation.id+"</i>");
+	
+	// allocate image
+	m_FrameImg=manage(new Gtk::Image(m_Animation.frames[0].pixbuf));
+	m_FrameImg->set_size_request(256, 192);
+	
+	// allocate progress bar
+	m_ProgBar=manage(new Gtk::ProgressBar);
+	std::stringstream ss;
+	ss << "Frame 1 of " << m_Animation.frames.size();
+	m_ProgBar->set_text(ss.str());
+	
+	// button box for media control
+	Gtk::HButtonBox *hbb=manage(new Gtk::HButtonBox);
+	hbb->set_spacing(5);
+	hbb->pack_start(*m_PlayButton);
+	hbb->pack_start(*m_StopButton);
+	
+	// attach options
+	Gtk::AttachOptions xops=Gtk::FILL | Gtk::EXPAND;
+	Gtk::AttachOptions yops=Gtk::SHRINK;
+	
+	// pack widgets
+	table->attach(*m_AnimLabel, 0, 1, 0, 1, xops, yops);
+	table->attach(*hbb, 0, 1, 1, 2, xops, yops);
+	table->attach(*m_ProgBar, 0, 1, 2, 3, xops, yops);
+	table->attach(*manage(new Gtk::HSeparator), 0, 1, 3, 4, xops, yops);
+	table->attach(*m_FrameImg, 0, 1, 4, 5, xops, yops);
+	
+	vb->pack_start(*table);
+	
+	add_button("Close", Gtk::RESPONSE_OK);
+	
+	show_all_children();
+}
+
+// timeout for new frame
+bool AnimPlayer::on_timeout() {
+	// get the next frame
+	if (m_CurFrame+1>=m_Animation.frames.size())
+		m_CurFrame=0;
+	else
+		m_CurFrame++;
+	
+	// get timeout for this frame
+	int timeout=m_Animation.frames[m_CurFrame].time;
+	
+	// update progress bar text and move it
+	std::stringstream ss;
+	ss << "Frame " << m_CurFrame+1 << " of " << m_Animation.frames.size();
+	m_ProgBar->set_text(ss.str());
+	
+	
+	Utils::flush_events();
+	
+	// calculate progress, and update the progress bar
+	double progress=(double)(m_CurFrame+1)/m_Animation.frames.size();
+	m_ProgBar->set_fraction(progress);
+	
+	Utils::flush_events();
+	
+	// disconnect old timer, and set reconnect new one
+	m_TimerSlot.disconnect();
+	m_TimerSlot=Glib::signal_timeout().connect(sigc::mem_fun(*this, &AnimPlayer::on_timeout), timeout);
+	
+	// update image
+	m_FrameImg->set(m_Animation.frames[m_CurFrame].pixbuf);
+	
+	return true;
+}
+
+// play button click handler
+void AnimPlayer::on_play_clicked() {
+	// get the timeout for the first frame
+	int timeout=m_Animation.frames[0].time;
+	
+	// connect our timer
+	m_TimerSlot=Glib::signal_timeout().connect(sigc::mem_fun(*this, &AnimPlayer::on_timeout), timeout);
+	
+	// disable play button, enable stop
+	m_PlayButton->set_sensitive(false);
+	m_StopButton->set_sensitive(true);
+}
+
+// stop button click handler
+void AnimPlayer::on_stop_clicked() {
+	// reset frame
+	m_CurFrame=0;
+	
+	// reset progress bar
+	std::stringstream ss;
+	ss << "Frame 1 of " << m_Animation.frames.size();
+	m_ProgBar->set_text(ss.str());
+	m_ProgBar->set_fraction(0);
+	
+	// disconnect our timer
+	m_TimerSlot.disconnect();
+	
+	// and enable play button
+	m_PlayButton->set_sensitive(true);
+	m_StopButton->set_sensitive(false);
 }
