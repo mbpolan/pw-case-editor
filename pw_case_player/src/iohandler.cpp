@@ -86,26 +86,35 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 	int npos=path.rfind('/');
 	std::string root=path.substr(0, npos+1);
 	
-	// read magic number and verify it
-	std::string magicNum=readString(f);
-	if (magicNum!=FILE_MAGIC_NUM) {
-		printf("IO: Incorrect magic number. Expected '%s', read '%s'.", FILE_MAGIC_NUM.c_str(), magicNum.c_str());
+	// read the header
+	PWTHeader header;
+	fread(&header, sizeof(PWTHeader), 1, f);
+	
+	// compare magic number
+	if (header.ident!=FILE_MAGIC_NUM) {
+		fclose(f);
 		return false;
 	}
 	
-	// read file version and verify it
-	int version;
-	fread(&version, sizeof(int), 1, f);
-	if (version!=FILE_VERSION)
+	// compare version
+	if (header.version!=FILE_VERSION) {
+		fclose(f);
 		return false;
+	}
 	
 	// create a new overview struct
 	Case::Overview overview;
+	
+	// skip to overview
+	fseek(f, header.overviewOffset, SEEK_SET);
 	
 	// read in data
 	overview.name=readString(f);
 	overview.author=readString(f);
 	fread(&overview.lawSys, sizeof(int), 1, f);
+	
+	// skip to overrides
+	fseek(f, header.overridesOffset, SEEK_SET);
 	
 	// create a new overrides object
 	Case::Overrides ov;
@@ -123,6 +132,9 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 	// read initial block id
 	std::string initialBlock=readString(f);
 	pcase.setInitialBlockId(initialBlock);
+	
+	// skip to characters
+	fseek(f, header.charOffset, SEEK_SET);
 	
 	// read amount of characters
 	int ucharCount;
@@ -207,6 +219,9 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 		pcase.addCharacter(character);
 	}
 	
+	// skip to background
+	fseek(f, header.bgOffset, SEEK_SET);
+	
 	// read amount of backgrounds
 	int bgCount;
 	fread(&bgCount, sizeof(int), 1, f);
@@ -229,6 +244,9 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 		// add this background
 		pcase.addBackground(bg);
 	}
+	
+	// skip to evidence
+	fseek(f, header.evidenceOffset, SEEK_SET);
 	
 	// read amount of evidence
 	int evidenceCount;
@@ -263,6 +281,9 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 		pcase.addEvidence(evidence);
 	}
 	
+	// skip to images
+	fseek(f, header.imgOffset, SEEK_SET);
+	
 	// read amount of images
 	int imageCount;
 	fread(&imageCount, sizeof(int), 1, f);
@@ -280,6 +301,9 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 		// add this image
 		pcase.addImage(img);
 	}
+	
+	// skip to locations
+	fseek(f, header.locationOffset, SEEK_SET);
 	
 	// read amount of locations
 	int locationCount;
@@ -337,6 +361,9 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 		pcase.addLocation(location);
 	}
 	
+	// skip to audio
+	fseek(f, header.audioOffset, SEEK_SET);
+	
 	// read amount of audio samples
 	int audioCount;
 	fread(&audioCount, sizeof(int), 1, f);
@@ -355,6 +382,9 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 		if (Audio::loadSample(root+"audio/"+afile, audio))
 			Audio::pushAudio(audio.id, audio);
 	}
+	
+	// skip to testimonies
+	fseek(f, header.testimonyOffset, SEEK_SET);
 	
 	// read count of testimonies
 	int testimonyCount;
@@ -413,6 +443,9 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 		pcase.addTestimony(testimony);
 	}
 	
+	// skip to blocks
+	fseek(f, header.blockOffset, SEEK_SET);
+	
 	// read amount of text blocks
 	int bufferCount;
 	fread(&bufferCount, sizeof(int), 1, f);
@@ -431,7 +464,7 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 	
 	// wrap up
 	fclose(f);
-	std::cout << "Done loading case\n";
+	std::cout << "Done loading case.\n";
 	return true;
 }
 

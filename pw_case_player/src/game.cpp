@@ -849,6 +849,12 @@ void Game::selectEvidence(bool evidence, bool increment) {
 			if (m_State.selectedEvidence<0)
 				m_State.selectedEvidence=amount-1;
 		}
+		
+		// see if the check button should still be shown
+		if (m_Case->getEvidence(getSelectedEvidence())->checkID!="null")
+			m_State.drawFlags |= STATE_CHECK_BTN;
+		else
+			m_State.drawFlags &= ~STATE_CHECK_BTN;
 	}
 	
 	else {
@@ -910,11 +916,6 @@ void Game::updateFlags() {
 		flags |= STATE_EVIDENCE_INFO_PAGE;
 		flags |= STATE_BACK_BTN;
 		
-		// check button for visible evidence with check images
-		if (!m_State.visibleEvidence.empty() &&
-		    m_State.visibleEvidence[m_State.selectedEvidence].checkID!="null")
-			flags |= STATE_CHECK_BTN;
-			
 		if (m_State.curExamination) {
 			flags |= STATE_PRESENT_TOP_BTN;
 				
@@ -1309,8 +1310,9 @@ void Game::renderMenuView() {
 		m_UI->animateSyncBounce("an_x_examine_arrows");
 	}
 	
-	// top everything off with scanlines
-	Renderer::drawImage(Point(0, 197), "scanlines_overlay");
+	// top everything off with scanlines, except when presenting an image contradiction
+	if (!flagged(STATE_CHECK_EVIDENCE_IMAGE) || (flagged(STATE_CHECK_EVIDENCE_IMAGE) && m_State.contradictionImg=="null"))
+		Renderer::drawImage(Point(0, 197), "scanlines_overlay");
 	
 	// draw the top and lower border bar
 	Renderer::drawImage(Point(0, 197), "tc_top_bar"+append);
@@ -1996,8 +1998,8 @@ void Game::onBottomLeftButtonClicked() {
 		
 		// if check evidence image screen is shown, revert to evidence info page
 		else if (flagged(STATE_CHECK_EVIDENCE_IMAGE)) {
-			flags=STATE_EVIDENCE_INFO_PAGE | STATE_BACK_BTN | STATE_CHECK_BTN |
-				STATE_PROFILES_BTN;
+			flags=STATE_EVIDENCE_INFO_PAGE | STATE_BACK_BTN | STATE_PROFILES_BTN |
+			      STATE_CHECK_BTN;
 			
 			// if the text box is also present, draw it as well
 			if (flagged(STATE_TEXT_BOX))
@@ -2262,7 +2264,7 @@ void Game::onRecPageClickEvent(int x, int y) {
 				int flags=STATE_EVIDENCE_INFO_PAGE | STATE_BACK_BTN;
 				
 				// show check button where applicable
-				if (m_State.visibleEvidence[m_State.selectedEvidence].checkID!="null")
+				if (m_Case->getEvidence(getSelectedEvidence())->checkID!="null")
 					flags |= STATE_CHECK_BTN;
 				
 				// if the previous screen was the present screen, then draw present button instead

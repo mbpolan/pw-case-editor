@@ -19,6 +19,7 @@
  ***************************************************************************/
 // glcontext.cpp: implementation of SDLContext class
 
+#include <sstream>
 #include "SDL_ttf.h"
 #include "SDL_mixer.h"
 
@@ -196,6 +197,14 @@ void SDLContext::onKeyboardEvent(SDL_KeyboardEvent *e) {
 		}
 		
 		once=!once;
+	}
+	
+	// take a screenshot
+	else if (e->keysym.sym==SDLK_F3) {
+		// format a unique file name, and save the screen as a bmp
+		std::stringstream ss;
+		ss << "screenshot_" << time(NULL) << ".bmp";
+		SDL_SaveBMP(m_Screen, ss.str().c_str());
 	}
 	
 	m_Game->onKeyboardEvent(e);
