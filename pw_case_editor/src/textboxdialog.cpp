@@ -74,21 +74,21 @@ void TextBoxDialog::construct() {
 	vb->set_border_width(10);
 	
 	// allocate check button
-	m_BreakCB=manage(new Gtk::CheckButton("Insert break (\\b) after this dialogue"));
+	m_BreakCB=Gtk::manage(new Gtk::CheckButton("Insert break (\\b) after this dialogue"));
 	
 	// allocate labels
-	m_IntroLabel=manage(new Gtk::Label("Format character dialogue by entering\ntext into the following entries."));
-	m_Line1Label=manage(new Gtk::Label("Line 1"));
-	m_Line2Label=manage(new Gtk::Label("Line 2"));
-	m_Line3Label=manage(new Gtk::Label("Line 3"));
+	m_IntroLabel=Gtk::manage(new Gtk::Label("Format character dialogue by entering\ntext into the following entries."));
+	m_Line1Label=Gtk::manage(new Gtk::Label("Line 1"));
+	m_Line2Label=Gtk::manage(new Gtk::Label("Line 2"));
+	m_Line3Label=Gtk::manage(new Gtk::Label("Line 3"));
 	
 	// allocate entries
-	m_Line1Entry=manage(new Gtk::Entry);
-	m_Line2Entry=manage(new Gtk::Entry);
-	m_Line3Entry=manage(new Gtk::Entry);
+	m_Line1Entry=Gtk::manage(new Gtk::Entry);
+	m_Line2Entry=Gtk::manage(new Gtk::Entry);
+	m_Line3Entry=Gtk::manage(new Gtk::Entry);
 	
 	// allocate text box preview
-	m_TextBox=manage(new TextBoxEditor);
+	m_TextBox=Gtk::manage(new TextBoxEditor);
 	
 	// connect signals
 	m_Line1Entry->signal_changed().connect(sigc::bind(sigc::mem_fun(*this, &TextBoxDialog::on_entry_changed), 1));
@@ -96,7 +96,7 @@ void TextBoxDialog::construct() {
 	m_Line3Entry->signal_changed().connect(sigc::bind(sigc::mem_fun(*this, &TextBoxDialog::on_entry_changed), 3));
 	
 	// allocate layout table
-	Gtk::Table *table=manage(new Gtk::Table);
+	Gtk::Table *table=Gtk::manage(new Gtk::Table);
 	table->set_spacings(5);
 	
 	// place widgets

@@ -177,19 +177,19 @@ std::map<Glib::ustring, Glib::ustring> ScriptWidget::get_buffer_descriptions() {
 // build the ui
 void ScriptWidget::construct() {
 	// allocate label
-	m_CurBlockLabel=manage(new Gtk::Label("Current Text Block: "));
+	m_CurBlockLabel=Gtk::manage(new Gtk::Label("Current Text Block: "));
 	
 	// allocate the text view widget
-	m_TextView=manage(new Gtk::TextView);
+	m_TextView=Gtk::manage(new Gtk::TextView);
 	
 	// disable editing
 	m_TextView->set_editable(false);
 	
 	// allocate vbox
-	Gtk::VBox *vb=manage(new Gtk::VBox);
+	Gtk::VBox *vb=Gtk::manage(new Gtk::VBox);
 	
 	// allocate its containing window
-	m_TextSWindow=manage(new Gtk::ScrolledWindow);
+	m_TextSWindow=Gtk::manage(new Gtk::ScrolledWindow);
 	m_TextSWindow->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_ALWAYS);
 	
 	// pack widgets
@@ -211,23 +211,23 @@ void ScriptWidget::construct() {
 	}
 	
 	// allocate combo box
-	m_DayCB=manage(new Gtk::ComboBoxText);
+	m_DayCB=Gtk::manage(new Gtk::ComboBoxText);
 	reset_combo_box();
 	
 	// connect signals
 	m_DayCB->signal_changed().connect(sigc::mem_fun(*this, &ScriptWidget::on_combo_box_changed));
 	
 	// allocate notebook
-	m_StageNB=manage(new Gtk::Notebook);
+	m_StageNB=Gtk::manage(new Gtk::Notebook);
 	
 	// allocate scrolled window
-	Gtk::ScrolledWindow *sw1=manage(new Gtk::ScrolledWindow);
-	Gtk::ScrolledWindow *sw2=manage(new Gtk::ScrolledWindow);
+	Gtk::ScrolledWindow *sw1=Gtk::manage(new Gtk::ScrolledWindow);
+	Gtk::ScrolledWindow *sw2=Gtk::manage(new Gtk::ScrolledWindow);
 	sw1->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
 	sw2->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
 	
 	// allocate left vbox
-	Gtk::VBox *leftVb=manage(new Gtk::VBox);
+	Gtk::VBox *leftVb=Gtk::manage(new Gtk::VBox);
 	leftVb->pack_start(*m_DayCB, Gtk::PACK_SHRINK);
 	leftVb->pack_start(*m_StageNB);
 	
@@ -240,7 +240,7 @@ void ScriptWidget::construct() {
 	m_StageNB->append_page(*sw2, "Trial");
 	
 	// allocate parent pane
-	m_HPane=manage(new Gtk::HPaned);
+	m_HPane=Gtk::manage(new Gtk::HPaned);
 	m_HPane->pack1(*leftVb);
 	m_HPane->pack2(*vb);
 	

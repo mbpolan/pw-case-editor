@@ -1291,34 +1291,34 @@ IO::Code IO::unpack_resource_file(const Glib::ustring &file) {
 	fseek(f, 0, SEEK_END);
 	long size=ftell(f);
 	rewind(f);
-	
-	// and compare it with our hardcoded size
-	if (size!=IO::RESOURCE_FILE_SIZE) {
-		// no use for this file anymore
-		fclose(f);
-		return IO::CODE_VALIDATE_FAILED;
-	}
+
+	fclose(f);
 	
 	// first, create a new archive and entry
 	struct archive *ar=archive_read_new();
+	if (!ar) {
+		g_message("Failed to create handle");
+		return IO::CODE_OPEN_FAILED;
+	}
 	
 	// the file is in gzip'd tar format
 	archive_read_support_compression_gzip(ar);
 	archive_read_support_format_tar(ar);
 	
 	// try to open the archive from our file
-	if (archive_read_open_FILE(ar, f)!=ARCHIVE_OK)
+	if (archive_read_open_file(ar, file.c_str(), 1024)!=ARCHIVE_OK)
 		return IO::CODE_OPEN_FAILED;
 		
 	struct archive_entry *entry=archive_entry_new();
 	
 	// make our temporary directory
-	Utils::FS::mkdir(Utils::FS::cwd()+".temp");
+	system("mkdir .temp");
 	
 	// windows is a jerk and doesn't hide by prefixed dot, so we
 	// need to set some attributes
 #ifdef __WIN32__
-	system(Glib::ustring("attrib +h +s ")+Utils::FS::cwd()+".temp");
+	Glib::ustring wincmd=Glib::ustring("attrib +h +s ")+Utils::FS::cwd()+".temp";
+	system(wincmd.c_str());
 #endif
 	
 	// iterate over files in archive

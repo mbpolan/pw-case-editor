@@ -66,11 +66,11 @@ Case::Overrides CustomizeDialog::get_data() {
 // build the dialog
 void CustomizeDialog::construct(const ImageMap &images) {
 	// allocate notebook
-	m_NB=manage(new Gtk::Notebook);
+	m_NB=Gtk::manage(new Gtk::Notebook);
 	
 	// allocate any map dependent combo boxes now
-	m_TextBoxImgCB=manage(new ImgComboBox(images));
-	m_TitleScreenImgCB=manage(new ImgComboBox(images));
+	m_TextBoxImgCB=Gtk::manage(new ImgComboBox(images));
+	m_TitleScreenImgCB=Gtk::manage(new ImgComboBox(images));
 	
 	// create and append pages
 	m_NB->append_page(*build_text_box_page(), "Text Box");
@@ -99,30 +99,30 @@ void CustomizeDialog::construct(const ImageMap &images) {
 // build the text box page
 Gtk::Widget* CustomizeDialog::build_text_box_page() {
 	// allocate table
-	Gtk::Table *table=manage(new Gtk::Table);
+	Gtk::Table *table=Gtk::manage(new Gtk::Table);
 	table->set_spacings(5);
 	
 	// allocate check button
-	m_TextBoxCB=manage(new Gtk::CheckButton("Customize"));
+	m_TextBoxCB=Gtk::manage(new Gtk::CheckButton("Customize"));
 	m_TextBoxCB->set_active(false);
 	m_TextBoxCB->signal_toggled().connect(sigc::mem_fun(*this, &CustomizeDialog::on_text_box_customize_toggled));
 	
-	m_CustomImageCB=manage(new Gtk::CheckButton("Text Box Image"));
+	m_CustomImageCB=Gtk::manage(new Gtk::CheckButton("Text Box Image"));
 	m_CustomImageCB->set_sensitive(false); // FIXME: fix this once this feature works
 	m_CustomImageCB->set_active(false);
 	m_CustomImageCB->signal_toggled().connect(sigc::mem_fun(*this, &CustomizeDialog::on_text_box_custom_image_toggled));
 	
 	// allocate image
-	m_TextBoxPreview=manage(new AlphaImage("textbox.png"));
+	m_TextBoxPreview=Gtk::manage(new AlphaImage("textbox.png"));
 	m_TextBoxPreview->set_size_request(256, 64);
 	
 	// allocate spin button
-	Gtk::Adjustment *adj=manage(new Gtk::Adjustment(255, 0, 255));
-	m_TextBoxAlphaSB=manage(new Gtk::SpinButton(*adj, 1));
+	Gtk::Adjustment *adj=Gtk::manage(new Gtk::Adjustment(255, 0, 255));
+	m_TextBoxAlphaSB=Gtk::manage(new Gtk::SpinButton(*adj, 1));
 	m_TextBoxAlphaSB->signal_value_changed().connect(sigc::mem_fun(*this, &CustomizeDialog::on_text_box_alpha_changed));
 	
 	// allocate labels
-	m_TextBoxAlphaLabel=manage(new Gtk::Label("Transparency"));
+	m_TextBoxAlphaLabel=Gtk::manage(new Gtk::Label("Transparency"));
 	
 	// attach options
 	Gtk::AttachOptions xops=Gtk::FILL | Gtk::EXPAND;
@@ -141,19 +141,19 @@ Gtk::Widget* CustomizeDialog::build_text_box_page() {
 
 // build the title screen page
 Gtk::Widget* CustomizeDialog::build_title_screen_page() {
-	Gtk::Table *table=manage(new Gtk::Table);
+	Gtk::Table *table=Gtk::manage(new Gtk::Table);
 	table->set_spacings(5);
 	
 	// allocate check buttons
-	m_TitleScreenCB=manage(new Gtk::CheckButton("Customize"));
+	m_TitleScreenCB=Gtk::manage(new Gtk::CheckButton("Customize"));
 	m_TitleScreenCB->set_active(false);
 	m_TitleScreenCB->signal_toggled().connect(sigc::mem_fun(*this, &CustomizeDialog::on_title_screen_customize_toggled));
 	
 	// allocate labels
-	m_TitleScreenLabel=manage(new Gtk::Label("Custom Image"));
+	m_TitleScreenLabel=Gtk::manage(new Gtk::Label("Custom Image"));
 	
 	// allocate images
-	m_TitleScreenPreview=manage(new Gtk::Image);
+	m_TitleScreenPreview=Gtk::manage(new Gtk::Image);
 	m_TitleScreenPreview->set_size_request(256, 192);
 	
 	// attach options

@@ -29,22 +29,17 @@
 
 // get the current working directory
 Glib::ustring Utils::FS::cwd() {
-#ifndef __WIN32__
-	char path[255];
-	return Glib::ustring(getcwd(path, 255))+"/";
-#else
-	// TODO: Windows code for getting working directory
-#endif
+	// NOTE: this function is kinda useless since the current directory will be
+	// automatically detected in 99.9% of cases. maybe deprecate this function
+	// in the future
+	return "";
 }
 
 // move a file on the filesystem
 void Utils::FS::move(const Glib::ustring &from, Glib::ustring &to) {
 	Glib::ustring cmd;
-#ifndef __WIN32__
+
 	cmd="mv ";
-#else
-	cmd="move ";
-#endif
 	cmd+=from+" "+to;
 	
 	system(cmd.c_str());
@@ -63,15 +58,6 @@ bool Utils::FS::dir_exists(const Glib::ustring &path) {
 		return false;
 }
 
-// create a directory
-void Utils::FS::mkdir(const Glib::ustring &path) {
-	// no point in recreating an already existing directory
-	if (!dir_exists(path)) {
-		Glib::ustring cmd="mkdir ";
-		cmd+=path;
-		system(cmd.c_str());
-	}
-}
 
 // remove a directory
 void Utils::FS::remove_dir(const Glib::ustring &path) {
@@ -83,7 +69,8 @@ void Utils::FS::remove_dir(const Glib::ustring &path) {
 		cmd="rm -rf ";
 		cmd+=path;
 #else
-		// TODO: Windows code for removing directory
+		cmd="rmdir /S /Q ";
+		cmd+=path;
 #endif
 		
 		system(cmd.c_str());

@@ -37,7 +37,7 @@ void on_thread(SplashScreen *sp) {
 // the "famous" entry point for the program
 int main(int argc, char *argv[]) {
 	// before we go anywhere, we need to unpack the resource file
-	if (!IO::unpack_resource_file(Utils::FS::cwd()+"dat.dpkg")) {
+	if (IO::unpack_resource_file(Utils::FS::cwd()+"dat.dpkg")!=IO::CODE_OK) {
 		// FIXME: maybe show a message box of some sort here?
 		g_message("Unable to unpack resource file!");
 		return 0;

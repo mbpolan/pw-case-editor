@@ -87,21 +87,21 @@ void TestimonyEditor::construct(const CharacterMap &chars, const LocationMap &lo
 	vb->set_border_width(10);
 	
 	// allocate layout table
-	Gtk::Table *table=manage(new Gtk::Table);
-	Gtk::Table *fTable=manage(new Gtk::Table);
+	Gtk::Table *table=Gtk::manage(new Gtk::Table);
+	Gtk::Table *fTable=Gtk::manage(new Gtk::Table);
 	table->set_spacings(5);
 	
 	fTable->set_spacings(5);
 	fTable->set_border_width(10);
 	
 	// allocate buttons
-	m_FormatTitleButton=manage(new Gtk::Button("Format"));
-	m_PrevButton=manage(new Gtk::Button("<<"));
-	m_NextButton=manage(new Gtk::Button(">>"));
-	m_AppendButton=manage(new Gtk::Button("Append"));
-	m_InsertButton=manage(new Gtk::Button("Insert"));
-	m_DeleteButton=manage(new Gtk::Button("Delete"));
-	m_AmendButton=manage(new Gtk::Button("Amend"));
+	m_FormatTitleButton=Gtk::manage(new Gtk::Button("Format"));
+	m_PrevButton=Gtk::manage(new Gtk::Button("<<"));
+	m_NextButton=Gtk::manage(new Gtk::Button(">>"));
+	m_AppendButton=Gtk::manage(new Gtk::Button("Append"));
+	m_InsertButton=Gtk::manage(new Gtk::Button("Insert"));
+	m_DeleteButton=Gtk::manage(new Gtk::Button("Delete"));
+	m_AmendButton=Gtk::manage(new Gtk::Button("Amend"));
 	
 	// connect signals
 	m_FormatTitleButton->signal_clicked().connect(sigc::mem_fun(*this, &TestimonyEditor::on_format_title_button_clicked));
@@ -113,67 +113,67 @@ void TestimonyEditor::construct(const CharacterMap &chars, const LocationMap &lo
 	m_AmendButton->signal_clicked().connect(sigc::mem_fun(*this, &TestimonyEditor::on_amend_button_clicked));
 	
 	// allocate labels
-	m_IdLabel=manage(new Gtk::Label("Testimony ID"));
-	m_TitleLabel=manage(new Gtk::Label("Title"));
-	m_SpeakerLabel=manage(new Gtk::Label("Speaker"));
-	m_NextBlockLabel=manage(new Gtk::Label("Testimony End Block"));
-	m_FollowLocLabel=manage(new Gtk::Label("Testimony End Location"));
-	m_XExamineBlockLabel=manage(new Gtk::Label("Cross Examination End Block"));
-	m_PieceLabel=manage(new Gtk::Label("1/1"));
-	m_PressLabel=manage(new Gtk::Label("Witness Pressed"));
+	m_IdLabel=Gtk::manage(new Gtk::Label("Testimony ID"));
+	m_TitleLabel=Gtk::manage(new Gtk::Label("Title"));
+	m_SpeakerLabel=Gtk::manage(new Gtk::Label("Speaker"));
+	m_NextBlockLabel=Gtk::manage(new Gtk::Label("Testimony End Block"));
+	m_FollowLocLabel=Gtk::manage(new Gtk::Label("Testimony End Location"));
+	m_XExamineBlockLabel=Gtk::manage(new Gtk::Label("Cross Examination End Block"));
+	m_PieceLabel=Gtk::manage(new Gtk::Label("1/1"));
+	m_PressLabel=Gtk::manage(new Gtk::Label("Witness Pressed"));
 	
 	// allocate entries
-	m_IdEntry=manage(new Gtk::Entry);
-	m_TitleEntry=manage(new Gtk::Entry);
-	m_PresentIdEntry=manage(new Gtk::Entry);
+	m_IdEntry=Gtk::manage(new Gtk::Entry);
+	m_TitleEntry=Gtk::manage(new Gtk::Entry);
+	m_PresentIdEntry=Gtk::manage(new Gtk::Entry);
 	
 	// set tooltips for entries
-	m_IdEntry->set_tooltip_text(Tooltips::lookup("TestimonyEditor::m_IdEntry"));
-	m_TitleEntry->set_tooltip_text(Tooltips::lookup("TestimonyEditor::m_TitleEntry"));
+//	m_IdEntry->set_tooltip_text(Tooltips::lookup("TestimonyEditor::m_IdEntry"));
+//	m_TitleEntry->set_tooltip_text(Tooltips::lookup("TestimonyEditor::m_TitleEntry"));
 	
 	// allocate combo boxes
-	m_SpeakerCB=manage(new CharComboBox(chars));
-	m_PresentTargetCB=manage(new BlockComboBox(buffers));
-	m_PressCB=manage(new BlockComboBox(buffers));
-	m_XExamineCB=manage(new BlockComboBox(buffers));
-	m_NextBlockCB=manage(new BlockComboBox(buffers));
-	m_FollowLocCB=manage(new LocationComboBox(locations));
+	m_SpeakerCB=Gtk::manage(new CharComboBox(chars));
+	m_PresentTargetCB=Gtk::manage(new BlockComboBox(buffers));
+	m_PressCB=Gtk::manage(new BlockComboBox(buffers));
+	m_XExamineCB=Gtk::manage(new BlockComboBox(buffers));
+	m_NextBlockCB=Gtk::manage(new BlockComboBox(buffers));
+	m_FollowLocCB=Gtk::manage(new LocationComboBox(locations));
 	
 	// connect signals
 	m_IdEntry->signal_changed().connect(sigc::mem_fun(*this, &TestimonyEditor::on_id_entry_changed));
 	
 	// allocate check buttons
-	m_HiddenCB=manage(new Gtk::CheckButton("Piece is Hidden"));
-	m_PresentLabelCB=manage(new Gtk::CheckButton("Evidence Presented"));
+	m_HiddenCB=Gtk::manage(new Gtk::CheckButton("Piece is Hidden"));
+	m_PresentLabelCB=Gtk::manage(new Gtk::CheckButton("Evidence Presented"));
 	
 	// connect signals
 	m_PresentLabelCB->signal_toggled().connect(sigc::mem_fun(*this, &TestimonyEditor::on_present_toggled));
 	
 	// allocate text view
-	m_TextView=manage(new Gtk::TextView);
+	m_TextView=Gtk::manage(new Gtk::TextView);
 	
 	// connect signals
 	m_TextView->signal_populate_popup().connect(sigc::mem_fun(*this, &TestimonyEditor::on_text_view_populate_menu));
 	
 	// allocate containers
-	m_PieceFrame=manage(new Gtk::Frame("Testimony Piece"));
+	m_PieceFrame=Gtk::manage(new Gtk::Frame("Testimony Piece"));
 	
-	m_SWindow=manage(new Gtk::ScrolledWindow);
+	m_SWindow=Gtk::manage(new Gtk::ScrolledWindow);
 	m_SWindow->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_ALWAYS);
 	m_SWindow->set_size_request(200, 200);
 	m_SWindow->add(*m_TextView);
 	
 	// hbox and table for testimony data
-	Gtk::HBox *thb=manage(new Gtk::HBox);
-	Gtk::Table *ttable=manage(new Gtk::Table);
+	Gtk::HBox *thb=Gtk::manage(new Gtk::HBox);
+	Gtk::Table *ttable=Gtk::manage(new Gtk::Table);
 	ttable->set_spacings(5);
 	
 	// hbox for testimony piece control
-	Gtk::HBox *hb=manage(new Gtk::HBox);
+	Gtk::HBox *hb=Gtk::manage(new Gtk::HBox);
 	hb->set_spacing(5);
 	
 	// vbox for frame
-	Gtk::VBox *fvb=manage(new Gtk::VBox);
+	Gtk::VBox *fvb=Gtk::manage(new Gtk::VBox);
 	fvb->set_spacing(5);
 	
 	// pack widgets
@@ -182,7 +182,7 @@ void TestimonyEditor::construct(const CharacterMap &chars, const LocationMap &lo
 	hb->pack_start(*m_NextButton, Gtk::PACK_SHRINK);
 	
 	// hbuttonbox for buttons
-	Gtk::HButtonBox *buttons=manage(new Gtk::HButtonBox);
+	Gtk::HButtonBox *buttons=Gtk::manage(new Gtk::HButtonBox);
 	buttons->set_layout(Gtk::BUTTONBOX_SPREAD);
 	
 	buttons->pack_start(*m_InsertButton);
@@ -198,7 +198,7 @@ void TestimonyEditor::construct(const CharacterMap &chars, const LocationMap &lo
 	fTable->attach(*m_HiddenCB, 0, 3, 1, 2, xops, yops);
 	
 	// allocate table for testimony piece widgets
-	Gtk::Table *tpTable=manage(new Gtk::Table);
+	Gtk::Table *tpTable=Gtk::manage(new Gtk::Table);
 	tpTable->set_spacings(5);
 	tpTable->set_homogeneous(true);
 	

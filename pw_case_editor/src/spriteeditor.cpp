@@ -64,41 +64,41 @@ void SpriteEditor::set_sprite_data(const Sprite &spr) {
 // build the ui
 void SpriteEditor::construct() {
 	// get the vbox
-	Gtk::VBox *vb=manage(new Gtk::VBox);
+	Gtk::VBox *vb=Gtk::manage(new Gtk::VBox);
 	vb->set_spacing(5);
 	
 	// allocate table
-	Gtk::Table *table=manage(new Gtk::Table);
+	Gtk::Table *table=Gtk::manage(new Gtk::Table);
 	table->set_spacings(5);
 	table->set_homogeneous(false);
 	
 	// allocate labels
-	m_AnimLabel=manage(new Gtk::Label("Animation"));
-	m_FrameLabel=manage(new Gtk::Label("1/0"));
-	m_TimeLabel=manage(new Gtk::Label("Time Delay (in milliseconds)"));
-	m_SfxLabel=manage(new Gtk::Label("Sound Effect"));
+	m_AnimLabel=Gtk::manage(new Gtk::Label("Animation"));
+	m_FrameLabel=Gtk::manage(new Gtk::Label("1/0"));
+	m_TimeLabel=Gtk::manage(new Gtk::Label("Time Delay (in milliseconds)"));
+	m_SfxLabel=Gtk::manage(new Gtk::Label("Sound Effect"));
 	
 	// allocate entries
-	m_TimeEntry=manage(new Gtk::Entry);
-	m_SfxEntry=manage(new Gtk::Entry);
+	m_TimeEntry=Gtk::manage(new Gtk::Entry);
+	m_SfxEntry=Gtk::manage(new Gtk::Entry);
 	m_TimeEntry->set_text("200");
 	
 	// allocate image
-	m_Image=manage(new Gtk::Image);
+	m_Image=Gtk::manage(new Gtk::Image);
 	m_Image->set_size_request(256, 192);
 	
 	// allocate buttons
-	m_SaveButton=manage(new Gtk::Button("Save"));
-	m_CloseButton=manage(new Gtk::Button("Close"));
-	m_ExportButton=manage(new Gtk::Button("Export"));
-	m_PreviewButton=manage(new Gtk::Button("Preview"));
-	m_NewAnimButton=manage(new Gtk::Button("New Animation"));
-	m_DeleteAnimButton=manage(new Gtk::Button("Delete Animation"));
-	m_AddFrameButton=manage(new Gtk::Button("Add Frames"));
-	m_DeleteFrameButton=manage(new Gtk::Button("Delete Frame"));
-	m_PrevFrameButton=manage(new Gtk::Button("<<"));
-	m_NextFrameButton=manage(new Gtk::Button(">>"));
-	m_AmendButton=manage(new Gtk::Button("Amend"));
+	m_SaveButton=Gtk::manage(new Gtk::Button("Save"));
+	m_CloseButton=Gtk::manage(new Gtk::Button("Close"));
+	m_ExportButton=Gtk::manage(new Gtk::Button("Export"));
+	m_PreviewButton=Gtk::manage(new Gtk::Button("Preview"));
+	m_NewAnimButton=Gtk::manage(new Gtk::Button("New Animation"));
+	m_DeleteAnimButton=Gtk::manage(new Gtk::Button("Delete Animation"));
+	m_AddFrameButton=Gtk::manage(new Gtk::Button("Add Frames"));
+	m_DeleteFrameButton=Gtk::manage(new Gtk::Button("Delete Frame"));
+	m_PrevFrameButton=Gtk::manage(new Gtk::Button("<<"));
+	m_NextFrameButton=Gtk::manage(new Gtk::Button(">>"));
+	m_AmendButton=Gtk::manage(new Gtk::Button("Amend"));
 	
 	// connect the plethora of signals
 	m_SaveButton->signal_clicked().connect(sigc::mem_fun(*this, &SpriteEditor::on_save));
@@ -114,14 +114,14 @@ void SpriteEditor::construct() {
 	m_AmendButton->signal_clicked().connect(sigc::mem_fun(*this, &SpriteEditor::on_amend_button_clicked));
 	
 	// allocate check button
-	m_LoopCB=manage(new Gtk::CheckButton("Loop Animation Upon Completion"));
+	m_LoopCB=Gtk::manage(new Gtk::CheckButton("Loop Animation Upon Completion"));
 	m_LoopCB->set_active(true);
 	
 	// connect signal
 	m_LoopCB->signal_toggled().connect(sigc::mem_fun(*this, &SpriteEditor::on_loop_cb_toggled));
 	
 	// allocate combo box
-	m_AnimCB=manage(new Gtk::ComboBoxText);
+	m_AnimCB=Gtk::manage(new Gtk::ComboBoxText);
 	
 	// append default animation
 	m_AnimCB->append_text("normal_idle");
@@ -136,7 +136,7 @@ void SpriteEditor::construct() {
 	m_AnimCB->signal_changed().connect(sigc::mem_fun(*this, &SpriteEditor::on_anim_cb_changed));
 	
 	// button box for control buttons
-	Gtk::HButtonBox *hbb=manage(new Gtk::HButtonBox);
+	Gtk::HButtonBox *hbb=Gtk::manage(new Gtk::HButtonBox);
 	hbb->set_layout(Gtk::BUTTONBOX_END);
 	hbb->set_child_ipadding_x(2);
 	hbb->pack_start(*m_SaveButton);
@@ -148,8 +148,8 @@ void SpriteEditor::construct() {
 	Gtk::AttachOptions yops=Gtk::SHRINK | Gtk::SHRINK;
 	
 	// create container frame and its table for frame options
-	Gtk::Frame *frame=manage(new Gtk::Frame("Frame Options"));
-	Gtk::Table *ftable=manage(new Gtk::Table);
+	Gtk::Frame *frame=Gtk::manage(new Gtk::Frame("Frame Options"));
+	Gtk::Table *ftable=Gtk::manage(new Gtk::Table);
 	ftable->set_spacings(5);
 	
 	// place widgets in frame
@@ -178,7 +178,7 @@ void SpriteEditor::construct() {
 	vb->pack_start(*table, Gtk::PACK_SHRINK);
 	
 	// separator for buttons
-	vb->pack_start(*manage(new Gtk::HSeparator), Gtk::PACK_SHRINK);
+	vb->pack_start(*Gtk::manage(new Gtk::HSeparator), Gtk::PACK_SHRINK);
 	
 	vb->pack_start(*hbb, Gtk::PACK_SHRINK);
 	
@@ -510,33 +510,33 @@ void AnimPlayer::construct() {
 	vb->set_spacing(5);
 	
 	// allocate table
-	Gtk::Table *table=manage(new Gtk::Table);
+	Gtk::Table *table=Gtk::manage(new Gtk::Table);
 	table->set_spacings(5);
 	
 	// allocate buttons
-	m_PlayButton=manage(new Gtk::Button(Gtk::Stock::MEDIA_PLAY));
-	m_StopButton=manage(new Gtk::Button(Gtk::Stock::MEDIA_STOP));
+	m_PlayButton=Gtk::manage(new Gtk::Button(Gtk::Stock::MEDIA_PLAY));
+	m_StopButton=Gtk::manage(new Gtk::Button(Gtk::Stock::MEDIA_STOP));
 	
 	// connect button signals
 	m_PlayButton->signal_clicked().connect(sigc::mem_fun(*this, &AnimPlayer::on_play_clicked));
 	m_StopButton->signal_clicked().connect(sigc::mem_fun(*this, &AnimPlayer::on_stop_clicked));
 	
 	// allocate labels
-	m_AnimLabel=manage(new Gtk::Label);
+	m_AnimLabel=Gtk::manage(new Gtk::Label);
 	m_AnimLabel->set_markup("Animation: <i>"+m_Animation.id+"</i>");
 	
 	// allocate image
-	m_FrameImg=manage(new Gtk::Image(m_Animation.frames[0].pixbuf));
+	m_FrameImg=Gtk::manage(new Gtk::Image(m_Animation.frames[0].pixbuf));
 	m_FrameImg->set_size_request(256, 192);
 	
 	// allocate progress bar
-	m_ProgBar=manage(new Gtk::ProgressBar);
+	m_ProgBar=Gtk::manage(new Gtk::ProgressBar);
 	std::stringstream ss;
 	ss << "Frame 1 of " << m_Animation.frames.size();
 	m_ProgBar->set_text(ss.str());
 	
 	// button box for media control
-	Gtk::HButtonBox *hbb=manage(new Gtk::HButtonBox);
+	Gtk::HButtonBox *hbb=Gtk::manage(new Gtk::HButtonBox);
 	hbb->set_spacing(5);
 	hbb->pack_start(*m_PlayButton);
 	hbb->pack_start(*m_StopButton);
@@ -549,7 +549,7 @@ void AnimPlayer::construct() {
 	table->attach(*m_AnimLabel, 0, 1, 0, 1, xops, yops);
 	table->attach(*hbb, 0, 1, 1, 2, xops, yops);
 	table->attach(*m_ProgBar, 0, 1, 2, 3, xops, yops);
-	table->attach(*manage(new Gtk::HSeparator), 0, 1, 3, 4, xops, yops);
+	table->attach(*Gtk::manage(new Gtk::HSeparator), 0, 1, 3, 4, xops, yops);
 	table->attach(*m_FrameImg, 0, 1, 4, 5, xops, yops);
 	
 	vb->pack_start(*table);

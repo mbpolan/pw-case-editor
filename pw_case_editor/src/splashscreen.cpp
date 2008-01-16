@@ -31,10 +31,10 @@ SplashScreen::SplashScreen(const Glib::ustring &file) {
 	// ask to receive button presses
 	add_events(Gdk::BUTTON_PRESS_MASK);
 	
-	Gtk::VBox *vb=manage(new Gtk::VBox);
+	Gtk::VBox *vb=Gtk::manage(new Gtk::VBox);
 	
 	// allocate the image
-	m_Image=manage(new Gtk::Image(file));
+	m_Image=Gtk::manage(new Gtk::Image(file));
 	
 	// pack widgets
 	vb->pack_start(*m_Image, Gtk::PACK_SHRINK);
@@ -56,7 +56,9 @@ SplashScreen::SplashScreen(const Glib::ustring &file) {
 
 // mouse button click handler
 bool SplashScreen::on_button_press_event(GdkEventButton *e) {
-	Gtk::Window::on_button_press_event(e);
+	bool ret=Gtk::Window::on_button_press_event(e);
 	
 	hide();
+
+	return ret;
 }

@@ -27,25 +27,25 @@
 // constructor
 LocationWidget::LocationWidget(const LocationMap &locations) {
 	// allocate table for custom location page
-	Gtk::Table *ctable=manage(new Gtk::Table);
+	Gtk::Table *ctable=Gtk::manage(new Gtk::Table);
 	ctable->set_spacings(5);
 	
 	// allocate labels
-	m_LocLabel=manage(new Gtk::Label("Location"));
+	m_LocLabel=Gtk::manage(new Gtk::Label("Location"));
 	
 	// allocate combo box
-	m_LocCB=manage(new LocationComboBox(locations));
+	m_LocCB=Gtk::manage(new LocationComboBox(locations));
 	
 	// allocate radio buttons
-	m_ProsecutorRB=manage(new Gtk::RadioButton(m_Group, "Prosecutor Stand"));
-	m_DefenseRB=manage(new Gtk::RadioButton(m_Group, "Defense Stand"));
-	m_DefenseHelperRB=manage(new Gtk::RadioButton(m_Group, "Co-Counsel Stand"));
-	m_WitnessRB=manage(new Gtk::RadioButton(m_Group, "Witness Stand"));
-	m_JudgeRB=manage(new Gtk::RadioButton(m_Group, "Judge's Stand"));
-	m_CourtRB=manage(new Gtk::RadioButton(m_Group, "Courtroom Overview"));
+	m_ProsecutorRB=Gtk::manage(new Gtk::RadioButton(m_Group, "Prosecutor Stand"));
+	m_DefenseRB=Gtk::manage(new Gtk::RadioButton(m_Group, "Defense Stand"));
+	m_DefenseHelperRB=Gtk::manage(new Gtk::RadioButton(m_Group, "Co-Counsel Stand"));
+	m_WitnessRB=Gtk::manage(new Gtk::RadioButton(m_Group, "Witness Stand"));
+	m_JudgeRB=Gtk::manage(new Gtk::RadioButton(m_Group, "Judge's Stand"));
+	m_CourtRB=Gtk::manage(new Gtk::RadioButton(m_Group, "Courtroom Overview"));
 	
 	// allocate button box
-	Gtk::VButtonBox *vbb=manage(new Gtk::VButtonBox);
+	Gtk::VButtonBox *vbb=Gtk::manage(new Gtk::VButtonBox);
 	
 	// place widgets
 	ctable->attach(*m_LocLabel, 0, 1, 0, 1, Gtk::FILL | Gtk::EXPAND, Gtk::SHRINK);

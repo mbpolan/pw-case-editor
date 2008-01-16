@@ -28,7 +28,7 @@ TextBoxEditor::TextBoxEditor(): m_MouseX(0), m_MouseY(0) {
 	// default format
 	m_Format=FORMAT_PLAIN;
 	
-	set_tooltip_text("(0,0)");
+//	set_tooltip_text("(0,0)");
 	
 	// allocate colors
 	//m_Blue=Gdk::Color("#6BC6F7");
@@ -37,6 +37,8 @@ TextBoxEditor::TextBoxEditor(): m_MouseX(0), m_MouseY(0) {
 	//m_White=Gdk::Color("white"); cm->alloc_color(m_White);
 	
 	m_BG=Cairo::ImageSurface::create_from_png("textbox.png");
+	if (!m_BG)
+		g_message("Unable to create background for text box!");
 	
 	// set the size request of this widget
 	//set_size_request(m_BG->get_width(), m_BG->get_height());
@@ -69,8 +71,10 @@ bool TextBoxEditor::on_expose_event(GdkEventExpose *e) {
 	cr->clip();
 	
 	// first, draw the textbox background
-	cr->set_source(m_BG, 0, 0);
-	cr->paint();
+	if (m_BG) {
+		cr->set_source(m_BG, 0, 0);
+		cr->paint();
+	}
 	
 	// calculate x based on format
 	int x1, x2, x3;
@@ -122,7 +126,7 @@ bool TextBoxEditor::on_motion_notify_event(GdkEventMotion *e) {
 	// update tooltip text
 	std::stringstream ss;
 	ss << "(" << m_MouseX << "," << m_MouseY << ")";
-	set_tooltip_text(ss.str());
+//	set_tooltip_text(ss.str());
 	
 	return ret;
 }

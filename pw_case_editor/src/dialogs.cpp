@@ -57,10 +57,10 @@ void ProgressDialog::construct() {
 	vb->set_border_width(10);
 	
 	// allocate label
-	m_Label=manage(new Gtk::Label);
+	m_Label=Gtk::manage(new Gtk::Label);
 	
 	// allocate progress bar
-	m_ProgBar=manage(new Gtk::ProgressBar);
+	m_ProgBar=Gtk::manage(new Gtk::ProgressBar);
 	
 	// pack widgets
 	vb->pack_start(*m_Label, Gtk::PACK_SHRINK);
@@ -93,18 +93,18 @@ void TestimonyManager::construct() {
 	vb->set_border_width(10);
 	
 	// allocate layout table
-	Gtk::Table *table=manage(new Gtk::Table);
+	Gtk::Table *table=Gtk::manage(new Gtk::Table);
 	table->set_spacings(5);
 	
 	// allocate labels
-	m_TitleLabel=manage(new Gtk::Label("Testimonies in this Case"));
-	m_PreviewLabel=manage(new Gtk::Label);
+	m_TitleLabel=Gtk::manage(new Gtk::Label("Testimonies in this Case"));
+	m_PreviewLabel=Gtk::manage(new Gtk::Label);
 	m_PreviewLabel->set_markup("<b>Preview</b>");
 	
 	// allocate buttons
-	m_AddButton=manage(new Gtk::Button("Add"));
-	m_EditButton=manage(new Gtk::Button("Edit"));
-	m_DeleteButton=manage(new Gtk::Button("Delete"));
+	m_AddButton=Gtk::manage(new Gtk::Button("Add"));
+	m_EditButton=Gtk::manage(new Gtk::Button("Edit"));
+	m_DeleteButton=Gtk::manage(new Gtk::Button("Delete"));
 	
 	// connect signals
 	m_AddButton->signal_clicked().connect(sigc::mem_fun(*this, &TestimonyManager::on_add_button_clicked));
@@ -112,12 +112,12 @@ void TestimonyManager::construct() {
 	m_DeleteButton->signal_clicked().connect(sigc::mem_fun(*this, &TestimonyManager::on_delete_button_clicked));
 	
 	// allocate scrolled window
-	m_SWindow=manage(new Gtk::ScrolledWindow);
+	m_SWindow=Gtk::manage(new Gtk::ScrolledWindow);
 	m_SWindow->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_ALWAYS);
 	m_SWindow->set_size_request(200, 200);
 	
 	// allocate listview
-	m_ListView=manage(new Gtk::ListViewText(2));
+	m_ListView=Gtk::manage(new Gtk::ListViewText(2));
 	m_SWindow->add(*m_ListView);
 	
 	// connect signals
@@ -128,7 +128,7 @@ void TestimonyManager::construct() {
 	m_ListView->set_column_title(1, "Title");
 	
 	// allocate button box
-	Gtk::VButtonBox *buttons=manage(new Gtk::VButtonBox(Gtk::BUTTONBOX_SPREAD));
+	Gtk::VButtonBox *buttons=Gtk::manage(new Gtk::VButtonBox(Gtk::BUTTONBOX_SPREAD));
 	
 	// pack widgets
 	buttons->pack_start(*m_AddButton);
@@ -271,27 +271,27 @@ void ImageDialog::construct() {
 	vb->set_border_width(10);
 	
 	// allocate layout table
-	Gtk::Table *table=manage(new Gtk::Table);
+	Gtk::Table *table=Gtk::manage(new Gtk::Table);
 	table->set_spacings(5);
 	
 	// allocate labels
-	m_ImageLabel=manage(new Gtk::Label("Image Assets"));
-	m_PreviewLabel=manage(new Gtk::Label("Preview"));
+	m_ImageLabel=Gtk::manage(new Gtk::Label("Image Assets"));
+	m_PreviewLabel=Gtk::manage(new Gtk::Label("Preview"));
 	
 	// allocate buttons
-	m_AddButton=manage(new Gtk::Button("Add"));
-	m_DeleteButton=manage(new Gtk::Button("Delete"));
+	m_AddButton=Gtk::manage(new Gtk::Button("Add"));
+	m_DeleteButton=Gtk::manage(new Gtk::Button("Delete"));
 	
 	// connect signals
 	m_AddButton->signal_clicked().connect(sigc::mem_fun(*this, &ImageDialog::on_add_clicked));
 	m_DeleteButton->signal_clicked().connect(sigc::mem_fun(*this, &ImageDialog::on_delete_clicked));
 	
 	// allocate list and its container
-	m_SWindow=manage(new Gtk::ScrolledWindow);
+	m_SWindow=Gtk::manage(new Gtk::ScrolledWindow);
 	m_SWindow->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
 	m_SWindow->set_size_request(100, 150);
 	
-	m_ImageList=manage(new Gtk::ListViewText(1));
+	m_ImageList=Gtk::manage(new Gtk::ListViewText(1));
 	m_ImageList->set_column_title(0, "Internal ID");
 	m_SWindow->add(*m_ImageList);
 	
@@ -299,7 +299,7 @@ void ImageDialog::construct() {
 	m_ImageList->get_selection()->signal_changed().connect(sigc::mem_fun(*this, &ImageDialog::on_selection_changed));
 	
 	// allocate image
-	m_Image=manage(new Gtk::Image);
+	m_Image=Gtk::manage(new Gtk::Image);
 	
 	// attach options
 	Gtk::AttachOptions xops=Gtk::FILL | Gtk::EXPAND;
@@ -416,22 +416,22 @@ void NewHotspotDialog::construct() {
 	vb->set_border_width(10);
 	
 	// allocate layout table
-	Gtk::Table *table=manage(new Gtk::Table);
+	Gtk::Table *table=Gtk::manage(new Gtk::Table);
 	table->set_spacings(5);
 	
 	// allocate labels
-	m_XLabel=manage(new Gtk::Label("X"));
-	m_YLabel=manage(new Gtk::Label("Y"));
-	m_WLabel=manage(new Gtk::Label("Width"));
-	m_HLabel=manage(new Gtk::Label("Height"));
-	m_BlockLabel=manage(new Gtk::Label("Target Block ID"));
+	m_XLabel=Gtk::manage(new Gtk::Label("X"));
+	m_YLabel=Gtk::manage(new Gtk::Label("Y"));
+	m_WLabel=Gtk::manage(new Gtk::Label("Width"));
+	m_HLabel=Gtk::manage(new Gtk::Label("Height"));
+	m_BlockLabel=Gtk::manage(new Gtk::Label("Target Block ID"));
 	
 	// allocate entries
-	m_XEntry=manage(new Gtk::Entry);
-	m_YEntry=manage(new Gtk::Entry);
-	m_WEntry=manage(new Gtk::Entry);
-	m_HEntry=manage(new Gtk::Entry);
-	m_BlockEntry=manage(new Gtk::Entry);
+	m_XEntry=Gtk::manage(new Gtk::Entry);
+	m_YEntry=Gtk::manage(new Gtk::Entry);
+	m_WEntry=Gtk::manage(new Gtk::Entry);
+	m_HEntry=Gtk::manage(new Gtk::Entry);
+	m_BlockEntry=Gtk::manage(new Gtk::Entry);
 	
 	// connect entry signals
 	m_XEntry->signal_changed().connect(sigc::mem_fun(*this, &NewHotspotDialog::on_coord_entry_changed));
@@ -440,7 +440,7 @@ void NewHotspotDialog::construct() {
 	m_HEntry->signal_changed().connect(sigc::mem_fun(*this, &NewHotspotDialog::on_dimension_entry_changed));
 	
 	// allocate hotspot widget
-	m_HSWidget=manage(new HotspotWidget);
+	m_HSWidget=Gtk::manage(new HotspotWidget);
 	
 	// connect signals
 	m_HSWidget->signal_point_changed().connect(sigc::mem_fun(*this, &NewHotspotDialog::on_point_changed));
@@ -544,29 +544,29 @@ void LocationsDialog::construct() {
 	vb->set_border_width(10);
 	
 	// allocate layout table
-	Gtk::Table *table=manage(new Gtk::Table);
+	Gtk::Table *table=Gtk::manage(new Gtk::Table);
 	table->set_spacings(5);
 	
 	// allocate labels
-	m_LocationsLabel=manage(new Gtk::Label("Locations"));
-	m_DetailsLabel=manage(new Gtk::Label("Details"));
-	m_IdLabel=manage(new Gtk::Label("Internal ID"));
-	m_NameLabel=manage(new Gtk::Label("Name"));
-	m_BGLabel=manage(new Gtk::Label("Background Id"));
-	m_HotspotsLabel=manage(new Gtk::Label("Hotspots"));
+	m_LocationsLabel=Gtk::manage(new Gtk::Label("Locations"));
+	m_DetailsLabel=Gtk::manage(new Gtk::Label("Details"));
+	m_IdLabel=Gtk::manage(new Gtk::Label("Internal ID"));
+	m_NameLabel=Gtk::manage(new Gtk::Label("Name"));
+	m_BGLabel=Gtk::manage(new Gtk::Label("Background Id"));
+	m_HotspotsLabel=Gtk::manage(new Gtk::Label("Hotspots"));
 	
 	// allocate entries
-	m_IdEntry=manage(new Gtk::Entry);
-	m_NameEntry=manage(new Gtk::Entry);
-	m_BGEntry=manage(new Gtk::Entry);
+	m_IdEntry=Gtk::manage(new Gtk::Entry);
+	m_NameEntry=Gtk::manage(new Gtk::Entry);
+	m_BGEntry=Gtk::manage(new Gtk::Entry);
 	m_IdEntry->set_sensitive(false);
 	
 	// allocate buttons
-	m_AddButton=manage(new Gtk::Button("Add"));
-	m_DeleteButton=manage(new Gtk::Button("Delete"));
-	m_AddHSButton=manage(new Gtk::Button("Add"));
-	m_DeleteHSButton=manage(new Gtk::Button("Delete"));
-	m_AmendButton=manage(new Gtk::Button("Amend"));
+	m_AddButton=Gtk::manage(new Gtk::Button("Add"));
+	m_DeleteButton=Gtk::manage(new Gtk::Button("Delete"));
+	m_AddHSButton=Gtk::manage(new Gtk::Button("Add"));
+	m_DeleteHSButton=Gtk::manage(new Gtk::Button("Delete"));
+	m_AmendButton=Gtk::manage(new Gtk::Button("Amend"));
 	
 	// connect signals
 	m_AddButton->signal_clicked().connect(sigc::mem_fun(*this, &LocationsDialog::on_add));
@@ -576,13 +576,13 @@ void LocationsDialog::construct() {
 	m_AmendButton->signal_clicked().connect(sigc::mem_fun(*this, &LocationsDialog::on_amend_button_clicked));
 	
 	// allocate list view
-	m_HotspotList=manage(new Gtk::ListViewText(2));
+	m_HotspotList=Gtk::manage(new Gtk::ListViewText(2));
 	m_HotspotList->set_column_title(0, "Area");
 	m_HotspotList->set_column_title(1, "Target Block");
 	
 	// allocate tree view for location ids
 	m_Model=Gtk::ListStore::create(m_ColumnRec);
-	m_TreeView=manage(new Gtk::TreeView(m_Model));
+	m_TreeView=Gtk::manage(new Gtk::TreeView(m_Model));
 	
 	// append a default column
 	m_TreeView->append_column("Location ID", m_ColumnRec.m_Column);
@@ -592,11 +592,11 @@ void LocationsDialog::construct() {
 	selection->signal_changed().connect(sigc::mem_fun(*this, &LocationsDialog::on_selection_changed));
 	
 	// allocate containing scrolled window
-	m_SWindow=manage(new Gtk::ScrolledWindow);
+	m_SWindow=Gtk::manage(new Gtk::ScrolledWindow);
 	m_SWindow->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
 	m_SWindow->set_size_request(50, 80);
 	
-	m_HotspotSWindow=manage(new Gtk::ScrolledWindow);
+	m_HotspotSWindow=Gtk::manage(new Gtk::ScrolledWindow);
 	m_HotspotSWindow->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
 	m_HotspotSWindow->set_size_request(50, 80);
 	
@@ -820,13 +820,13 @@ void SpriteChooserDialog::construct() {
 	vb->set_border_width(10);
 	
 	// allocate layout table
-	Gtk::Table *table=manage(new Gtk::Table);
+	Gtk::Table *table=Gtk::manage(new Gtk::Table);
 	table->set_spacings(5);
 	
 	// allocate radio buttons
-	m_NewSpriteRB=manage(new Gtk::RadioButton(m_Group, "Blank Sprite"));
-	m_OpenSpriteRB=manage(new Gtk::RadioButton(m_Group, "Open Existing"));
-	m_CreateFromGifsRB=manage(new Gtk::RadioButton(m_Group, "Create from GIFs"));
+	m_NewSpriteRB=Gtk::manage(new Gtk::RadioButton(m_Group, "Blank Sprite"));
+	m_OpenSpriteRB=Gtk::manage(new Gtk::RadioButton(m_Group, "Open Existing"));
+	m_CreateFromGifsRB=Gtk::manage(new Gtk::RadioButton(m_Group, "Create from GIFs"));
 	
 	// connect signals
 	m_NewSpriteRB->signal_toggled().connect(sigc::mem_fun(*this, &SpriteChooserDialog::on_new_sprite_toggled));
@@ -837,17 +837,17 @@ void SpriteChooserDialog::construct() {
 	m_NewSpriteRB->set_active(true);
 	
 	// allocate labels
-	m_SpriteLabel=manage(new Gtk::Label("Sprite"));
-	m_PathLabel=manage(new Gtk::Label("Path Entry"));
+	m_SpriteLabel=Gtk::manage(new Gtk::Label("Sprite"));
+	m_PathLabel=Gtk::manage(new Gtk::Label("Path Entry"));
 	
 	// allocate buttons
-	m_BrowseButton=manage(new Gtk::Button("..."));
+	m_BrowseButton=Gtk::manage(new Gtk::Button("..."));
 	
 	// connect signals
 	m_BrowseButton->signal_clicked().connect(sigc::mem_fun(*this, &SpriteChooserDialog::on_browse_button_clicked));
 	
 	// allocate entries
-	m_PathEntry=manage(new Gtk::Entry);
+	m_PathEntry=Gtk::manage(new Gtk::Entry);
 	
 	// attach options
 	Gtk::AttachOptions xops=Gtk::FILL | Gtk::EXPAND;
@@ -952,14 +952,14 @@ void TextInputDialog::construct(const Glib::ustring &label, const Glib::ustring 
 	vb->set_border_width(10);
 	
 	// allocate hbox
-	Gtk::HBox *hb=manage(new Gtk::HBox);
+	Gtk::HBox *hb=Gtk::manage(new Gtk::HBox);
 	hb->set_spacing(5);
 	
 	// allocate label
-	m_Label=manage(new Gtk::Label(label));
+	m_Label=Gtk::manage(new Gtk::Label(label));
 	
 	// allocate entry
-	m_Entry=manage(new Gtk::Entry);
+	m_Entry=Gtk::manage(new Gtk::Entry);
 	m_Entry->set_text(defaultValue);
 	
 	// pack widgets
@@ -1025,20 +1025,20 @@ void AudioDialog::construct() {
 	vb->set_border_width(10);
 	
 	// allocate layout table
-	Gtk::Table *table=manage(new Gtk::Table);
+	Gtk::Table *table=Gtk::manage(new Gtk::Table);
 	table->set_spacings(5);
 	
 	// allocate scrolled window
-	m_SWindow=manage(new Gtk::ScrolledWindow);
+	m_SWindow=Gtk::manage(new Gtk::ScrolledWindow);
 	m_SWindow->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
 	m_SWindow->set_size_request(80, 100);
 	
 	// allocate labels
-	m_AudioLabel=manage(new Gtk::Label("Audio Assets"));
+	m_AudioLabel=Gtk::manage(new Gtk::Label("Audio Assets"));
 	
 	// allocate buttons
-	m_AddButton=manage(new Gtk::Button("Add"));
-	m_DeleteButton=manage(new Gtk::Button("Remove"));
+	m_AddButton=Gtk::manage(new Gtk::Button("Add"));
+	m_DeleteButton=Gtk::manage(new Gtk::Button("Remove"));
 	
 	// connect signals
 	m_AddButton->signal_clicked().connect(sigc::mem_fun(*this, &AudioDialog::on_add_audio));
@@ -1046,7 +1046,7 @@ void AudioDialog::construct() {
 	
 	// allocate list view
 	m_Model=Gtk::ListStore::create(m_ColRec);
-	m_AudioList=manage(new Gtk::TreeView(m_Model));
+	m_AudioList=Gtk::manage(new Gtk::TreeView(m_Model));
 	m_SWindow->add(*m_AudioList);
 	
 	// append columns
@@ -1124,22 +1124,22 @@ void NewEvidenceDialog::construct() {
 	vb->set_border_width(10);
 	
 	// allocate layout table
-	Gtk::Table *table=manage(new Gtk::Table);
+	Gtk::Table *table=Gtk::manage(new Gtk::Table);
 	table->set_spacings(5);
 	
 	// allocate labels
-	m_PathLabel=manage(new Gtk::Label("Path to Image"));
-	m_IdLabel=manage(new Gtk::Label("Internal ID"));
+	m_PathLabel=Gtk::manage(new Gtk::Label("Path to Image"));
+	m_IdLabel=Gtk::manage(new Gtk::Label("Internal ID"));
 	
 	// allocate entries
-	m_PathEntry=manage(new Gtk::Entry);
-	m_IdEntry=manage(new Gtk::Entry);
+	m_PathEntry=Gtk::manage(new Gtk::Entry);
+	m_IdEntry=Gtk::manage(new Gtk::Entry);
 	
 	// connect signals
 	m_IdEntry->signal_changed().connect(sigc::mem_fun(*this, &NewEvidenceDialog::on_id_changed));
 	
 	// allocate buttons
-	m_BrowseButton=manage(new Gtk::Button("..."));
+	m_BrowseButton=Gtk::manage(new Gtk::Button("..."));
 	
 	// connect signals
 	m_BrowseButton->signal_clicked().connect(sigc::mem_fun(*this, &NewEvidenceDialog::on_browse_button_clicked));
@@ -1225,27 +1225,27 @@ void EvidenceDialog::construct(const ImageMap &images) {
 	vb->set_border_width(10);
 	
 	// allocate labels
-	m_EvidenceLabel=manage(new Gtk::Label("Evidence Assets"));
-	m_PreviewLabel=manage(new Gtk::Label("Preview"));
-	m_InternalLabel=manage(new Gtk::Label("Internal ID"));
-	m_NameLabel=manage(new Gtk::Label("Name"));
-	m_CaptionLabel=manage(new Gtk::Label("Caption"));
-	m_DescLabel=manage(new Gtk::Label("Description"));
+	m_EvidenceLabel=Gtk::manage(new Gtk::Label("Evidence Assets"));
+	m_PreviewLabel=Gtk::manage(new Gtk::Label("Preview"));
+	m_InternalLabel=Gtk::manage(new Gtk::Label("Internal ID"));
+	m_NameLabel=Gtk::manage(new Gtk::Label("Name"));
+	m_CaptionLabel=Gtk::manage(new Gtk::Label("Caption"));
+	m_DescLabel=Gtk::manage(new Gtk::Label("Description"));
 	
 	// allocate image
-	m_Image=manage(new Gtk::Image);
+	m_Image=Gtk::manage(new Gtk::Image);
 	m_Image->set_size_request(70, 70);
 	
 	// allocate check buttons
-	m_HasImgCB=manage(new Gtk::CheckButton("Check Image"));
+	m_HasImgCB=Gtk::manage(new Gtk::CheckButton("Check Image"));
 	m_HasImgCB->signal_toggled().connect(sigc::mem_fun(*this, &EvidenceDialog::on_check_img_toggled));
 	
 	// allocate combo boxes
-	m_ImgCB=manage(new ImgComboBox(images));
+	m_ImgCB=Gtk::manage(new ImgComboBox(images));
 	
 	// allocate tree view and its model
 	m_Model=Gtk::ListStore::create(m_ColumnRec);
-	m_TreeView=manage(new Gtk::TreeView(m_Model));
+	m_TreeView=Gtk::manage(new Gtk::TreeView(m_Model));
 	
 	// append column
 	m_TreeView->append_column("Evidence ID", m_ColumnRec.m_Column);
@@ -1255,22 +1255,22 @@ void EvidenceDialog::construct(const ImageMap &images) {
 	selection->signal_changed().connect(sigc::mem_fun(*this, &EvidenceDialog::on_selection_changed));
 	
 	// allocate containing scrolled window
-	m_SWindow=manage(new Gtk::ScrolledWindow);
+	m_SWindow=Gtk::manage(new Gtk::ScrolledWindow);
 	m_SWindow->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
 	m_SWindow->add(*m_TreeView);
 	m_SWindow->set_size_request(150, 200);
 	
 	// allocate entries
-	m_InternalEntry=manage(new Gtk::Entry);
+	m_InternalEntry=Gtk::manage(new Gtk::Entry);
 	m_InternalEntry->set_sensitive(false);
-	m_NameEntry=manage(new Gtk::Entry);
-	m_CaptionEntry=manage(new Gtk::Entry);
-	m_DescEntry=manage(new Gtk::Entry);
+	m_NameEntry=Gtk::manage(new Gtk::Entry);
+	m_CaptionEntry=Gtk::manage(new Gtk::Entry);
+	m_DescEntry=Gtk::manage(new Gtk::Entry);
 	
 	// allocate buttons
-	m_AddButton=manage(new Gtk::Button("Add"));
-	m_DeleteButton=manage(new Gtk::Button("Delete"));
-	m_AmendButton=manage(new Gtk::Button("Amend"));
+	m_AddButton=Gtk::manage(new Gtk::Button("Add"));
+	m_DeleteButton=Gtk::manage(new Gtk::Button("Delete"));
+	m_AmendButton=Gtk::manage(new Gtk::Button("Amend"));
 	
 	// connect signals
 	m_AddButton->signal_clicked().connect(sigc::mem_fun(*this, &EvidenceDialog::on_add));
@@ -1278,7 +1278,7 @@ void EvidenceDialog::construct(const ImageMap &images) {
 	m_AmendButton->signal_clicked().connect(sigc::mem_fun(*this, &EvidenceDialog::on_amend_button_clicked));
 	
 	// allocate layout table
-	Gtk::Table *table=manage(new Gtk::Table);
+	Gtk::Table *table=Gtk::manage(new Gtk::Table);
 	table->set_spacings(5);
 	
 	// attach options
@@ -1290,7 +1290,7 @@ void EvidenceDialog::construct(const ImageMap &images) {
 	table->attach(*m_AddButton, 0, 1, 1, 2, yops, yops);
 	table->attach(*m_DeleteButton, 1, 2, 1, 2, yops, yops);
 	table->attach(*m_SWindow, 0, 2, 2, 8);
-	table->attach(*manage(new Gtk::VSeparator), 2, 3, 0, 8);
+	table->attach(*Gtk::manage(new Gtk::VSeparator), 2, 3, 0, 8);
 	table->attach(*m_PreviewLabel, 3, 5, 0, 1, xops, yops);
 	table->attach(*m_Image, 3, 5, 1, 2);
 	table->attach(*m_InternalLabel, 3, 4, 2, 3, xops, yops);
@@ -1453,24 +1453,24 @@ void BackgroundsDialog::construct() {
 	vb->set_border_width(10);
 	
 	// allocate labels
-	m_BGLabel=manage(new Gtk::Label("Background Assets"));
-	m_PreviewLabel=manage(new Gtk::Label("Preview"));
+	m_BGLabel=Gtk::manage(new Gtk::Label("Background Assets"));
+	m_PreviewLabel=Gtk::manage(new Gtk::Label("Preview"));
 	
 	// allocate buttons
-	m_AddButton=manage(new Gtk::Button("Add"));
-	m_DeleteButton=manage(new Gtk::Button("Delete"));
+	m_AddButton=Gtk::manage(new Gtk::Button("Add"));
+	m_DeleteButton=Gtk::manage(new Gtk::Button("Delete"));
 	
 	// connect signals
 	m_AddButton->signal_clicked().connect(sigc::mem_fun(*this, &BackgroundsDialog::on_add));
 	m_DeleteButton->signal_clicked().connect(sigc::mem_fun(*this, &BackgroundsDialog::on_delete));
 	
 	// allocate scrolled window
-	m_SWindow=manage(new Gtk::ScrolledWindow);
+	m_SWindow=Gtk::manage(new Gtk::ScrolledWindow);
 	m_SWindow->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
 	
 	// allocate list view
 	m_ListModel=Gtk::ListStore::create(m_ColumnRec);
-	m_ListView=manage(new Gtk::TreeView(m_ListModel));
+	m_ListView=Gtk::manage(new Gtk::TreeView(m_ListModel));
 	
 	// configure list view
 	m_ListView->append_column("Background ID", m_ColumnRec.m_Column);
@@ -1483,11 +1483,11 @@ void BackgroundsDialog::construct() {
 	m_SWindow->add(*m_ListView);
 	
 	// allocate image
-	m_Image=manage(new Gtk::Image);
+	m_Image=Gtk::manage(new Gtk::Image);
 	m_Image->set_size_request(256, 192);
 	
 	// allocate layout table
-	Gtk::Table *table=manage(new Gtk::Table);
+	Gtk::Table *table=Gtk::manage(new Gtk::Table);
 	table->set_spacings(10);
 	
 	// attach options
@@ -1595,29 +1595,29 @@ void NewBackgroundDialog::construct() {
 	vb->set_border_width(10);
 	
 	// allocate labels
-	m_PathLabel=manage(new Gtk::Label("Path to Image"));
-	m_IdLabel=manage(new Gtk::Label("Internal ID"));
-	m_TypeLabel=manage(new Gtk::Label("Type"));
+	m_PathLabel=Gtk::manage(new Gtk::Label("Path to Image"));
+	m_IdLabel=Gtk::manage(new Gtk::Label("Internal ID"));
+	m_TypeLabel=Gtk::manage(new Gtk::Label("Type"));
 	
 	// allocate buttons
-	m_BrowseButton=manage(new Gtk::Button("..."));
+	m_BrowseButton=Gtk::manage(new Gtk::Button("..."));
 	
 	// connect button signals
 	m_BrowseButton->signal_clicked().connect(sigc::mem_fun(*this, &NewBackgroundDialog::on_browse_button_clicked));
 	
 	// allocate entries
-	m_PathEntry=manage(new Gtk::Entry);
-	m_IdEntry=manage(new Gtk::Entry);
+	m_PathEntry=Gtk::manage(new Gtk::Entry);
+	m_IdEntry=Gtk::manage(new Gtk::Entry);
 	
 	// connect entry signals
 	m_IdEntry->signal_changed().connect(sigc::mem_fun(*this, &NewBackgroundDialog::on_id_changed));
 	
 	// allocate radio buttons
-	m_SingleScreenRB=manage(new Gtk::RadioButton(m_RBGroup, "Single Screen"));
-	m_DoubleScreenRB=manage(new Gtk::RadioButton(m_RBGroup, "Double Screen"));
+	m_SingleScreenRB=Gtk::manage(new Gtk::RadioButton(m_RBGroup, "Single Screen"));
+	m_DoubleScreenRB=Gtk::manage(new Gtk::RadioButton(m_RBGroup, "Double Screen"));
 	
 	// allocate layout table
-	Gtk::Table *table=manage(new Gtk::Table);
+	Gtk::Table *table=Gtk::manage(new Gtk::Table);
 	table->set_spacings(5);
 	
 	// attach options
@@ -1717,22 +1717,22 @@ void NewDialog::construct() {
 	vb->set_border_width(10);
 	
 	// allocate labels
-	m_CaseNameLabel=manage(new Gtk::Label("Case Name"));
-	m_CaseAuthorLabel=manage(new Gtk::Label("Author"));
-	m_LawSysLabel=manage(new Gtk::Label("Law System"));
+	m_CaseNameLabel=Gtk::manage(new Gtk::Label("Case Name"));
+	m_CaseAuthorLabel=Gtk::manage(new Gtk::Label("Author"));
+	m_LawSysLabel=Gtk::manage(new Gtk::Label("Law System"));
 	
 	// allocate entries
-	m_CaseNameEntry=manage(new Gtk::Entry);
-	m_CaseAuthorEntry=manage(new Gtk::Entry);
+	m_CaseNameEntry=Gtk::manage(new Gtk::Entry);
+	m_CaseAuthorEntry=Gtk::manage(new Gtk::Entry);
 	
 	// allocate combo boxes
-	m_LawSysCB=manage(new Gtk::ComboBoxText);
+	m_LawSysCB=Gtk::manage(new Gtk::ComboBoxText);
 	m_LawSysCB->append_text("Two Day Trial (JFA)");
 	m_LawSysCB->append_text("Three Day Trial (AA)");
 	m_LawSysCB->set_active(0);
 	
 	// allocate container table
-	Gtk::Table *table=manage(new Gtk::Table);
+	Gtk::Table *table=Gtk::manage(new Gtk::Table);
 	table->set_spacings(5);
 	
 	// pack widgets
@@ -1776,28 +1776,28 @@ void CharBrowser::construct() {
 	vb->set_border_width(10);
 	
 	// allocate layout table
-	Gtk::Table *table=manage(new Gtk::Table);
+	Gtk::Table *table=Gtk::manage(new Gtk::Table);
 	table->set_spacings(5);
 	
 	// allocate labels
-	m_CharacterLabel=manage(new Gtk::Label("Character"));
-	m_InternalLabel=manage(new Gtk::Label("Internal ID"));
-	m_NameLabel=manage(new Gtk::Label("Name"));
-	m_DescLabel=manage(new Gtk::Label("Description"));
+	m_CharacterLabel=Gtk::manage(new Gtk::Label("Character"));
+	m_InternalLabel=Gtk::manage(new Gtk::Label("Internal ID"));
+	m_NameLabel=Gtk::manage(new Gtk::Label("Name"));
+	m_DescLabel=Gtk::manage(new Gtk::Label("Description"));
 	
 	// allocate entries
-	m_InternalEntry=manage(new Gtk::Entry); m_InternalEntry->set_sensitive(false);
-	m_NameEntry=manage(new Gtk::Entry); m_NameEntry->set_sensitive(false);
-	m_DescEntry=manage(new Gtk::Entry); m_DescEntry->set_sensitive(false);
+	m_InternalEntry=Gtk::manage(new Gtk::Entry); m_InternalEntry->set_sensitive(false);
+	m_NameEntry=Gtk::manage(new Gtk::Entry); m_NameEntry->set_sensitive(false);
+	m_DescEntry=Gtk::manage(new Gtk::Entry); m_DescEntry->set_sensitive(false);
 	
 	// allocate buttons
-	m_EditButton=manage(new Gtk::Button("Edit"));
+	m_EditButton=Gtk::manage(new Gtk::Button("Edit"));
 	
 	// connect signals
 	m_EditButton->signal_clicked().connect(sigc::mem_fun(*this, &CharBrowser::on_edit_button_clicked));
 	
 	// allocate combo box
-	m_CharCB=manage(new Gtk::ComboBoxText);
+	m_CharCB=Gtk::manage(new Gtk::ComboBoxText);
 	
 	// connect signals
 	m_CharCB->signal_changed().connect(sigc::mem_fun(*this, &CharBrowser::on_combo_box_changed));
@@ -1935,7 +1935,7 @@ void NewCharDialog::construct() {
 	vb->set_spacing(5);
 	
 	// allocate notebook
-	m_NB=manage(new Gtk::Notebook);
+	m_NB=Gtk::manage(new Gtk::Notebook);
 	
 	// attach pages
 	m_NB->append_page(*build_general_page(), "General");
@@ -2032,7 +2032,7 @@ void NewCharDialog::on_browse_button_clicked(const Glib::ustring &buttonId) {
 
 // build the general page
 Gtk::Container* NewCharDialog::build_general_page() {
-	Gtk::Table *table=manage(new Gtk::Table);
+	Gtk::Table *table=Gtk::manage(new Gtk::Table);
 	table->set_spacings(5);
 	table->set_border_width(10);
 	
@@ -2041,24 +2041,24 @@ Gtk::Container* NewCharDialog::build_general_page() {
 	Gtk::AttachOptions yops=Gtk::SHRINK | Gtk::SHRINK;
 	
 	// allocate labels
-	m_CodeNameLabel=manage(new Gtk::Label("Internal ID"));
-	m_NameLabel=manage(new Gtk::Label("Name"));
-	m_GenderLabel=manage(new Gtk::Label("Gender"));
-	m_CapLabel=manage(new Gtk::Label("Caption"));
-	m_DescLabel=manage(new Gtk::Label("Description"));
-	m_SpriteLabel=manage(new Gtk::Label("Sprite Name"));
+	m_CodeNameLabel=Gtk::manage(new Gtk::Label("Internal ID"));
+	m_NameLabel=Gtk::manage(new Gtk::Label("Name"));
+	m_GenderLabel=Gtk::manage(new Gtk::Label("Gender"));
+	m_CapLabel=Gtk::manage(new Gtk::Label("Caption"));
+	m_DescLabel=Gtk::manage(new Gtk::Label("Description"));
+	m_SpriteLabel=Gtk::manage(new Gtk::Label("Sprite Name"));
 	
 	// allocate radio buttons
-	m_MaleRB=manage(new Gtk::RadioButton(m_Group, "Male"));
-	m_FemaleRB=manage(new Gtk::RadioButton(m_Group, "Female"));
+	m_MaleRB=Gtk::manage(new Gtk::RadioButton(m_Group, "Male"));
+	m_FemaleRB=Gtk::manage(new Gtk::RadioButton(m_Group, "Female"));
 	m_MaleRB->set_active(true);
 	
 	// allocate entries
-	m_CodeNameEntry=manage(new Gtk::Entry);
-	m_NameEntry=manage(new Gtk::Entry);
-	m_CapEntry=manage(new Gtk::Entry);
-	m_DescEntry=manage(new Gtk::Entry);
-	m_SpriteEntry=manage(new Gtk::Entry);
+	m_CodeNameEntry=Gtk::manage(new Gtk::Entry);
+	m_NameEntry=Gtk::manage(new Gtk::Entry);
+	m_CapEntry=Gtk::manage(new Gtk::Entry);
+	m_DescEntry=Gtk::manage(new Gtk::Entry);
+	m_SpriteEntry=Gtk::manage(new Gtk::Entry);
 	
 	// attach widgets
 	table->attach(*m_CodeNameLabel, 0, 1, 0, 1, xops, yops);
@@ -2084,7 +2084,7 @@ Gtk::Container* NewCharDialog::build_general_page() {
 // build the graphics page
 Gtk::Container* NewCharDialog::build_graphics_page() {
 	// main vbox
-	Gtk::VBox *vb=manage(new Gtk::VBox);
+	Gtk::VBox *vb=Gtk::manage(new Gtk::VBox);
 	vb->set_spacing(5);
 	vb->set_border_width(10);
 	
@@ -2093,15 +2093,15 @@ Gtk::Container* NewCharDialog::build_graphics_page() {
 	Gtk::AttachOptions yops=Gtk::SHRINK | Gtk::SHRINK;
 	
 	// allocate tag frame layout table
-	Gtk::Table *tagTable=manage(new Gtk::Table);
+	Gtk::Table *tagTable=Gtk::manage(new Gtk::Table);
 	tagTable->set_spacings(5);
 	tagTable->set_border_width(5);
 	
 	// allocate frames
-	Gtk::Frame *tagFrame=manage(new Gtk::Frame("Text Box"));
+	Gtk::Frame *tagFrame=Gtk::manage(new Gtk::Frame("Text Box"));
 	
 	// allocate check buttons
-	m_HasTagCB=manage(new Gtk::CheckButton("Has Text Box Tag"));
+	m_HasTagCB=Gtk::manage(new Gtk::CheckButton("Has Text Box Tag"));
 	m_HasTagCB->set_active(false);
 	
 	// connect signals
@@ -2109,17 +2109,17 @@ Gtk::Container* NewCharDialog::build_graphics_page() {
 					     &NewCharDialog::on_check_button_clicked), "m_HasTagCB"));
 	
 	// allocate labels
-	m_TextBoxLabel=manage(new Gtk::Label("Text Box Tag"));
+	m_TextBoxLabel=Gtk::manage(new Gtk::Label("Text Box Tag"));
 	
 	// allocate buttons
-	m_TagBrowseButton=manage(new Gtk::Button("..."));
+	m_TagBrowseButton=Gtk::manage(new Gtk::Button("..."));
 	
 	// connect signals
 	m_TagBrowseButton->signal_clicked().connect(sigc::bind(sigc::mem_fun(*this,
 						    &NewCharDialog::on_browse_button_clicked), "m_TagBrowseButton"));
 	
 	// allocate images
-	m_TextBoxImage=manage(new Gtk::Image);
+	m_TextBoxImage=Gtk::manage(new Gtk::Image);
 	
 	// place widgets
 	tagTable->attach(*m_HasTagCB, 0, 2, 0, 1, xops, yops);
@@ -2130,15 +2130,15 @@ Gtk::Container* NewCharDialog::build_graphics_page() {
 	////////////////////////////////////////////////////////////////////////////
 	
 	// allocate headshot layout table
-	Gtk::Table *hshotTable=manage(new Gtk::Table);
+	Gtk::Table *hshotTable=Gtk::manage(new Gtk::Table);
 	hshotTable->set_spacings(5);
 	hshotTable->set_border_width(5);
 	
 	// allocate frames
-	Gtk::Frame *hshotFrame=manage(new Gtk::Frame("Headshot"));
+	Gtk::Frame *hshotFrame=Gtk::manage(new Gtk::Frame("Headshot"));
 	
 	// allocate check buttons
-	m_HasHeadshotCB=manage(new Gtk::CheckButton("Has Headshot"));
+	m_HasHeadshotCB=Gtk::manage(new Gtk::CheckButton("Has Headshot"));
 	m_HasHeadshotCB->set_active(false);
 	
 	// connect signals
@@ -2146,17 +2146,17 @@ Gtk::Container* NewCharDialog::build_graphics_page() {
 						  &NewCharDialog::on_check_button_clicked), "m_HasHeadshotCB"));
 	
 	// allocate labels
-	m_HeadshotLabel=manage(new Gtk::Label("Headshot (Profile) Image"));
+	m_HeadshotLabel=Gtk::manage(new Gtk::Label("Headshot (Profile) Image"));
 	
 	// allocate buttons
-	m_HeadshotBrowseButton=manage(new Gtk::Button("..."));
+	m_HeadshotBrowseButton=Gtk::manage(new Gtk::Button("..."));
 	
 	// connect signals
 	m_HeadshotBrowseButton->signal_clicked().connect(sigc::bind(sigc::mem_fun(*this,
 							 &NewCharDialog::on_browse_button_clicked), "m_HeadshotBrowseButton"));
 	
 	// allocate images
-	m_HeadshotImage=manage(new Gtk::Image);
+	m_HeadshotImage=Gtk::manage(new Gtk::Image);
 	m_HeadshotImage->set_size_request(70, 70);
 	
 	// place widgets
@@ -2208,15 +2208,15 @@ void InitialBlockDialog::construct() {
 	vb->set_border_width(10);
 	
 	// table for layout
-	Gtk::Table *table=manage(new Gtk::Table);
+	Gtk::Table *table=Gtk::manage(new Gtk::Table);
 	table->set_spacings(5);
 	
 	// allocate labels
-	m_BlockLabel=manage(new Gtk::Label("Initial block to execute:"));
-	m_PreviewLabel=manage(new Gtk::Label("Text Block Preview"));
+	m_BlockLabel=Gtk::manage(new Gtk::Label("Initial block to execute:"));
+	m_PreviewLabel=Gtk::manage(new Gtk::Label("Text Block Preview"));
 	
 	// allocate combo box
-	m_BlocksCB=manage(new Gtk::ComboBoxText);
+	m_BlocksCB=Gtk::manage(new Gtk::ComboBoxText);
 	
 	// connect signals
 	m_BlocksCB->signal_changed().connect(sigc::mem_fun(*this, &InitialBlockDialog::on_block_changed));
@@ -2230,11 +2230,11 @@ void InitialBlockDialog::construct() {
 	}
 	
 	// allocate text view
-	m_TextPreview=manage(new Gtk::TextView);
+	m_TextPreview=Gtk::manage(new Gtk::TextView);
 	m_TextPreview->set_editable(false);
 	
 	// allocate its containing window
-	m_SWindow=manage(new Gtk::ScrolledWindow);
+	m_SWindow=Gtk::manage(new Gtk::ScrolledWindow);
 	m_SWindow->add(*m_TextPreview);
 	
 	// attach options

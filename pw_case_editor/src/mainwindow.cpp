@@ -74,7 +74,7 @@ MainWindow::MainWindow() {
 // build the ui
 void MainWindow::construct() {
 	// allocate vbox
-	Gtk::VBox *vb=manage(new Gtk::VBox);
+	Gtk::VBox *vb=Gtk::manage(new Gtk::VBox);
 	
 	// create our application icons
 	m_IconMgr.create_from_file(Utils::FS::cwd()+"dat.dpkg");
@@ -203,7 +203,7 @@ void MainWindow::construct() {
 	// get the menu bar widget
 	Gtk::MenuBar *menuBar=dynamic_cast<Gtk::MenuBar*> (m_UIManager->get_widget("/MenuBar"));
 	if (menuBar) {
-		vb->pack_start(*manage(menuBar), Gtk::PACK_SHRINK);
+		vb->pack_start(*Gtk::manage(menuBar), Gtk::PACK_SHRINK);
 		
 		Gtk::Menu *tmenu=new Gtk::Menu;
 		
@@ -213,13 +213,13 @@ void MainWindow::construct() {
 		// grab the list of items and add a new submenu
 		Gtk::Menu_Helpers::MenuList &list=refMenu->items();
 		Gtk::Menu_Helpers::MenuList::iterator it=list.begin(); it++;
-		list.insert(it, Gtk::Menu_Helpers::MenuElem("Insert Trigger", *manage(tmenu)));
+		list.insert(it, Gtk::Menu_Helpers::MenuElem("Insert Trigger", *Gtk::manage(tmenu)));
 		list.insert(it, Gtk::Menu_Helpers::SeparatorElem());
 		
 		// finally, create the menu
 		create_trigger_submenu(tmenu);
 		
-		m_RecentMenu=manage(new Gtk::Menu);
+		m_RecentMenu=Gtk::manage(new Gtk::Menu);
 		
 		// get the file menu
 		refMenu=menuBar->items()[0].get_submenu();
@@ -241,7 +241,7 @@ void MainWindow::construct() {
 			// go over each file
 			for (int i=0; i<m_RecentFiles.size(); i++) {
 				// create an image for the menu from stock
-				Gtk::Image *image=manage(new Gtk::Image);
+				Gtk::Image *image=Gtk::manage(new Gtk::Image);
 				Gtk::Stock::lookup(Gtk::StockID(Gtk::Stock::FILE), Gtk::IconSize(Gtk::ICON_SIZE_MENU), *image);
 				
 				// and add it as a recent file with said image
@@ -258,23 +258,23 @@ void MainWindow::construct() {
 		standardTB->set_tooltips(true);
 		
 		// allocate separator between standard buttons and script buttons
-		Gtk::SeparatorToolItem *item=manage(new Gtk::SeparatorToolItem);
+		Gtk::SeparatorToolItem *item=Gtk::manage(new Gtk::SeparatorToolItem);
 		standardTB->append(*item);
 		
 		// allocate script buttons
-		Gtk::ToolButton *insertDiagButton=manage(new Gtk::ToolButton(*manage(new Gtk::Image(AppStock::INSERT_DIALOGUE, Gtk::ICON_SIZE_LARGE_TOOLBAR))));
+		Gtk::ToolButton *insertDiagButton=Gtk::manage(new Gtk::ToolButton(*Gtk::manage(new Gtk::Image(AppStock::INSERT_DIALOGUE, Gtk::ICON_SIZE_LARGE_TOOLBAR))));
 		
 		// append script buttons
 		standardTB->append(*insertDiagButton, sigc::mem_fun(*this, &MainWindow::on_script_insert_dialogue));
 		
-		vb->pack_start(*manage(standardTB), Gtk::PACK_SHRINK);
+		vb->pack_start(*Gtk::manage(standardTB), Gtk::PACK_SHRINK);
 	}
 	
 	// allocate script widget
-	m_ScriptWidget=manage(new ScriptWidget);
+	m_ScriptWidget=Gtk::manage(new ScriptWidget);
 	
 	// allocate status bar
-	m_Statusbar=manage(new Gtk::Statusbar);
+	m_Statusbar=Gtk::manage(new Gtk::Statusbar);
 	
 	// pack widgets
 	vb->pack_start(*m_ScriptWidget);
@@ -465,7 +465,7 @@ void MainWindow::set_menuitem_icon(const Glib::ustring &path, const Gtk::StockID
 	Gtk::ImageMenuItem *item=dynamic_cast<Gtk::ImageMenuItem*> (m_UIManager->get_widget(path));
 	if (item) {
 		// create the icon
-		Gtk::Image *img=manage(new Gtk::Image(id, Gtk::ICON_SIZE_MENU));
+		Gtk::Image *img=Gtk::manage(new Gtk::Image(id, Gtk::ICON_SIZE_MENU));
 		item->set_image(*img);
 	}
 }
