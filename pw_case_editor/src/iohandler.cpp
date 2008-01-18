@@ -1336,7 +1336,6 @@ IO::Code IO::unpack_resource_file(const Glib::ustring &file) {
 	
 	// we're done
 	archive_read_finish(ar);
-	fclose(f);
 	
 	return IO::CODE_OK;
 }
