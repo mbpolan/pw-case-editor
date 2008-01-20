@@ -292,8 +292,21 @@ void SpriteEditor::on_close() {
 
 // preview an animation
 void SpriteEditor::on_preview_animation() {
+	if (m_AnimCB->get_active_text().empty())
+		return;
+	
+	// get our animation
+	Animation anim=m_Sprite.get_animation(m_AnimCB->get_active_text());
+	
+	// we need at least 1 frame
+	if (anim.frames.empty()) {
+		Gtk::MessageDialog md(*this, "You cannot preview an empty animation.");
+		md.run();
+		return;
+	}
+	
 	// bring up the preview dialog
-	AnimPlayer player(m_Sprite.get_animation(m_AnimCB->get_active_text()));
+	AnimPlayer player(anim);
 	player.run();
 }
 

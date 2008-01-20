@@ -39,7 +39,11 @@ Glib::ustring Utils::FS::cwd() {
 void Utils::FS::move(const Glib::ustring &from, Glib::ustring &to) {
 	Glib::ustring cmd;
 
+#ifdef __WIN32__
+	cmd="move ";
+#else
 	cmd="mv ";
+#endif
 	cmd+=from+" "+to;
 	
 	system(cmd.c_str());

@@ -83,6 +83,9 @@ class MainWindow: public Gtk::Window {
 		// quit handler
 		void on_quit();
 		
+		// find text in blocks
+		void on_edit_find_in_blocks();
+		
 		// add a formatted dialogue to script
 		void on_script_insert_dialogue();
 		

@@ -34,6 +34,7 @@
 
 #include "customizedialog.h"
 #include "dialogs.h"
+#include "editdialogs.h"
 #include "exceptions.h"
 #include "iohandler.h"
 #include "mainwindow.h"
@@ -98,6 +99,9 @@ void MainWindow::construct() {
 	m_ActionGroup->add(Gtk::Action::create("FileQuit", Gtk::Stock::QUIT, "_Quit"),
 			   sigc::mem_fun(*this, &MainWindow::on_quit));
 	
+	m_ActionGroup->add(Gtk::Action::create("EditFindBlocks", Gtk::Stock::FIND, "_Find in Blocks"),
+			   sigc::mem_fun(*this, &MainWindow::on_edit_find_in_blocks));
+	
 	m_ActionGroup->add(Gtk::Action::create("ScriptInsertDialogue", AppStock::INSERT_DIALOGUE, "_Insert Dialogue"),
 			   sigc::mem_fun(*this, &MainWindow::on_script_insert_dialogue));
 	
@@ -132,6 +136,7 @@ void MainWindow::construct() {
 			   sigc::mem_fun(*this, &MainWindow::on_help_about));
 	
 	m_ActionGroup->add(Gtk::Action::create("FileMenu", "_File"));
+	m_ActionGroup->add(Gtk::Action::create("EditMenu", "_Edit"));
 	m_ActionGroup->add(Gtk::Action::create("ScriptMenu", "_Script"));
 	m_ActionGroup->add(Gtk::Action::create("CaseMenu", "_Case"));
 	m_ActionGroup->add(Gtk::Action::create("AssetsMenu", "_Assets"));
@@ -141,7 +146,11 @@ void MainWindow::construct() {
 	// allocate ui manager
 	m_UIManager=Gtk::UIManager::create();
 	m_UIManager->insert_action_group(m_ActionGroup);
+	
+	// windows doesn't have menus with tearoffs
+#ifndef __WIN32__
 	m_UIManager->set_add_tearoffs(true);
+#endif
 	
 	// accelerate the menus
 	add_accel_group(m_UIManager->get_accel_group());
@@ -159,6 +168,9 @@ void MainWindow::construct() {
 			"		<menuitem action='FileExport'/>"
 			"		<separator/>"
 			"		<menuitem action='FileQuit'/>"
+			"	</menu>"
+			"	<menu action='EditMenu'>"
+			"		<menuitem action='EditFindBlocks'/>"
 			"	</menu>"
 			"	<menu action='ScriptMenu'>"
 			"		<menuitem action='ScriptInsertDialogue'/>"
@@ -208,7 +220,7 @@ void MainWindow::construct() {
 		Gtk::Menu *tmenu=new Gtk::Menu;
 		
 		// we need to manually add a trigger submenu to the Script menu
-		Gtk::Menu *refMenu=menuBar->items()[1].get_submenu();
+		Gtk::Menu *refMenu=menuBar->items()[2].get_submenu();
 		
 		// grab the list of items and add a new submenu
 		Gtk::Menu_Helpers::MenuList &list=refMenu->items();
@@ -776,6 +788,31 @@ void MainWindow::on_quit() {
 		on_save();
 	
 	hide();
+}
+
+// find text in blocks
+void MainWindow::on_edit_find_in_blocks() {
+	// run the find dialog
+	FindDialog fd(m_ScriptWidget->get_buffers());
+	if (fd.run()==Gtk::RESPONSE_OK) {
+		// now get the block
+		Glib::ustring block=fd.get_selected();
+		
+		// and its associated tree view
+		int index;
+		CListView *list=m_ScriptWidget->find_block(block, index);
+		if (list) {
+			// see what tab of the notebook should be selected
+			m_ScriptWidget->activate_trial_notebook_tab((index+1)%2==0);
+			m_ScriptWidget->set_trial_notebook_list(index);
+			
+			// select this block
+			list->select_block(block, NULL);
+		}
+		
+		else
+			g_message("Error: list not found for block '%s' in file '%s', line '%d'.", block.c_str(), __FILE__, __LINE__);
+	}
 }
 
 // add a formatted dialogue to script

@@ -50,6 +50,9 @@ class CListView: public Gtk::TreeView {
 		// remove a toplevel text element
 		void delete_toplevel_text(const Glib::ustring &text);
 		
+		// activate a block
+		void select_block(const Glib::ustring &block, Gtk::TreeRow *row);
+		
 		// return the buffers present in the list
 		// template argument 1 is buffer id; argument 2 is the buffer
 		BufferMap get_buffers() const { return m_Buffers; }

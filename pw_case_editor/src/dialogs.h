@@ -766,6 +766,7 @@ class NewCharDialog: public Gtk::Dialog {
 		Gtk::RadioButtonGroup m_Group;
 		Gtk::RadioButton *m_MaleRB;
 		Gtk::RadioButton *m_FemaleRB;
+		Gtk::RadioButton *m_UnknownRB;
 		
 		// check buttons
 		Gtk::CheckButton *m_HasTagCB;

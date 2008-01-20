@@ -42,7 +42,7 @@ typedef struct _Rect Rect;
 namespace Case {
 
 // law system for cases to follow
-enum LawSystem { TWO_DAY=0, THREE_DAY };
+enum LawSystem { SINGLE_TRIAL=1, TWO_DAY, THREE_DAY };
 
 // background types
 enum BackgroundType { BG_SINGLE_SCREEN=0, BG_DOUBLE_SCREEN };

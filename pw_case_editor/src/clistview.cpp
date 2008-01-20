@@ -219,6 +219,37 @@ void CListView::delete_toplevel_text(const Glib::ustring &text) {
 	}
 }
 
+// activate a block
+void CListView::select_block(const Glib::ustring &block, Gtk::TreeRow *row) {
+	// iterate over the nodes
+	Gtk::TreeModel::Children children=get_model()->children();
+	if (row)
+		children=row->children();
+	
+	for (Gtk::TreeModel::Children::iterator it=children.begin(); it!=children.end(); ++it) {
+		Glib::ustring text=(*it)[m_ColumnRec.m_Column];
+		
+		// we found the node we were looking for
+		if (text.find(block)!=-1) {
+			// if this row has a parent, then expand this section of the tree
+			if ((*it).parent()) {
+				Gtk::TreePath path((*it).parent());
+				expand_row(path, false);
+			}
+			
+			// select this node
+			get_selection()->unselect_all();
+			get_selection()->select(it);
+		}
+		
+		// recurse child nodes
+		if (!(*it).children().empty()) {
+			Gtk::TreeRow nrow=(*it);
+			select_block(block, &nrow);
+		}
+	}
+}
+
 // return buffer descriptions
 std::map<Glib::ustring, Glib::ustring> CListView::get_buffer_descriptions() {
 	// get the rows in the model

@@ -44,6 +44,9 @@ class ScriptWidget: public Gtk::VBox {
 		// clear all data
 		void clear(Case::LawSystem system);
 		
+		// activate a page of the internal notebook for trial parts
+		void activate_trial_notebook_tab(bool trial);
+		
 		// add a character to the list
 		// passing -1 for both day and stage will add this character to all lists
 		void add_character(int day, int stage, const Glib::ustring &name, const Glib::ustring &internal);
@@ -55,6 +58,12 @@ class ScriptWidget: public Gtk::VBox {
 		void add_text_block(int day, int stage, const Glib::ustring &parent,
 				    const Glib::ustring &blockName, const Glib::ustring &desc,
 				    const Glib::RefPtr<Gtk::TextBuffer> &buffer);
+		
+		// locates a block within the tree views and returns the toplevel tree view
+		CListView* find_block(const Glib::ustring &id, int &index);
+		
+		// set a list in a notebook tab
+		void set_trial_notebook_list(int index);
 		
 		// insert a trigger at the cursor
 		void insert_trigger_at_cursor(const Glib::ustring &str);

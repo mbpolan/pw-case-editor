@@ -29,7 +29,7 @@
 class Character {
 	public:
 		// gender
-		enum Gender { GENDER_MALE=0, GENDER_FEMALE };
+		enum Gender { GENDER_MALE=0, GENDER_FEMALE, GENDER_UNKNOWN };
 		
 		// constructor
 		Character(const Glib::ustring &internal="", const Glib::ustring &name="", 

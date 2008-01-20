@@ -48,6 +48,11 @@ void ScriptWidget::clear(Case::LawSystem system) {
 	reset_combo_box();
 }
 
+// activate a page of the internal notebook for trial parts
+void ScriptWidget::activate_trial_notebook_tab(bool trial) {
+	m_StageNB->set_current_page((trial ? 1 : 0));
+}
+
 // add a character to the list
 void ScriptWidget::add_character(int day, int stage, const Glib::ustring &name, const Glib::ustring &internal) {
 	// form the string
@@ -89,6 +94,39 @@ void ScriptWidget::add_text_block(int day, int stage, const Glib::ustring &paren
 	list->append_child_text(parent, blockName, str, buffer);
 }
 
+// locates a block within the tree views and returns the toplevel tree view
+CListView* ScriptWidget::find_block(const Glib::ustring &id, int &index) {
+	int amount=m_LawSystem*2;
+	for (int i=0; i<amount; i++) {
+		BufferMap tmpMap=m_TreeViews[i]->get_buffers();
+		
+		// check to see if it's here
+		for (BufferMap::iterator it=tmpMap.begin(); it!=tmpMap.end(); ++it) {
+			if ((*it).first.find(id)!=-1) {
+				index=i;
+				return m_TreeViews[i];
+			}
+		}
+	}
+	
+	return NULL;
+}
+
+// set a list in a notebook tab
+void ScriptWidget::set_trial_notebook_list(int index) {
+	Glib::ustring str="Day ";
+	if (index>=2 && index<4)
+		str+="2";
+	else if (index>=4 && index<6)
+		str+="3";
+	else
+		str+="1";
+	
+	m_DayCB->set_active_text(str);
+	
+	on_combo_box_changed();
+}
+
 // insert a trigger at the cursor
 void ScriptWidget::insert_trigger_at_cursor(const Glib::ustring &str) {
 	if (m_TextView->get_buffer())
@@ -100,13 +138,7 @@ BufferMap ScriptWidget::get_buffers() const {
 	BufferMap bmap;
 	
 	// get amount of lists
-	int amount;
-	if (m_LawSystem==Case::TWO_DAY)
-		amount=4;
-	else if (m_LawSystem==Case::THREE_DAY)
-		amount=6;
-	else
-		amount=2;
+	int amount=m_LawSystem*2;
 	
 	// combine maps
 	for (int i=0; i<amount; i++) {
@@ -315,11 +347,7 @@ void ScriptWidget::reset_combo_box() {
 	m_DayCB->clear();
 	
 	// add text based on law system
-	int amount;
-	switch(m_LawSystem) {
-		case Case::TWO_DAY: amount=2; break;
-		case Case::THREE_DAY: amount=3; break;
-	}
+	int amount=m_LawSystem;
 	
 	for (int i=0; i<amount; i++) {
 		// format and append text

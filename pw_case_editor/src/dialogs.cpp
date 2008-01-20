@@ -1693,7 +1693,15 @@ NewDialog::NewDialog() {
 void NewDialog::set_overview(const Case::Overview &overview) {
 	m_CaseNameEntry->set_text(overview.name);
 	m_CaseAuthorEntry->set_text(overview.author);
-	m_LawSysCB->set_active_text((overview.lawSys==Case::TWO_DAY ? "Two Day Trial (JFA)" : "Three Day Trial (AA)"));
+	
+	Glib::ustring lawTxt;
+	switch(overview.lawSys) {
+		case Case::TWO_DAY: lawTxt="Two Day Trial (JFA/T&T)";
+		case Case::THREE_DAY: lawTxt="Three Day Trial (AA)";
+		case Case::SINGLE_TRIAL: lawTxt="Single Trial";
+	}
+	
+	m_LawSysCB->set_active_text(lawTxt);
 }
 
 // get case information
@@ -1704,7 +1712,15 @@ Case::Overview NewDialog::get_overview() {
 	// fill it in
 	overview.name=m_CaseNameEntry->get_text();
 	overview.author=m_CaseAuthorEntry->get_text();
-	overview.lawSys=(m_LawSysCB->get_active_text()=="Two Day Trial (JFA)" ? Case::TWO_DAY : Case::THREE_DAY);
+	
+	Case::LawSystem sys;
+	
+	if (m_LawSysCB->get_active_text()=="Two Day Trial (JFA/T&T)")
+		overview.lawSys=Case::TWO_DAY;
+	else if (m_LawSysCB->get_active_text()=="Three Day Trial (AA)")
+		overview.lawSys=Case::THREE_DAY;
+	else
+		overview.lawSys=Case::SINGLE_TRIAL;
 	
 	return overview;
 }
@@ -1727,7 +1743,8 @@ void NewDialog::construct() {
 	
 	// allocate combo boxes
 	m_LawSysCB=Gtk::manage(new Gtk::ComboBoxText);
-	m_LawSysCB->append_text("Two Day Trial (JFA)");
+	m_LawSysCB->append_text("Single Trial");
+	m_LawSysCB->append_text("Two Day Trial (JFA/T&T)");
 	m_LawSysCB->append_text("Three Day Trial (AA)");
 	m_LawSysCB->set_active(0);
 	
@@ -1888,8 +1905,10 @@ void NewCharDialog::set_character_data(const Character &ch) {
 	
 	if (ch.get_gender()==Character::GENDER_MALE)
 		m_MaleRB->set_active(true);
-	else
+	else if (ch.get_gender()==Character::GENDER_FEMALE)
 		m_FemaleRB->set_active(true);
+	else
+		m_UnknownRB->set_active(true);
 	
 	m_HasTagCB->set_active(ch.has_text_box_tag());
 	if (m_HasTagCB->get_active())
@@ -1912,10 +1931,16 @@ Character NewCharDialog::get_character_data() {
 	// fill in data
 	character.set_internal_name(m_CodeNameEntry->get_text());
 	character.set_name(m_NameEntry->get_text());
-	character.set_gender((m_MaleRB->get_active() ? Character::GENDER_MALE : Character::GENDER_FEMALE));
 	character.set_caption(m_CapEntry->get_text());
 	character.set_description(m_DescEntry->get_text());
 	character.set_sprite_name(m_SpriteEntry->get_text());
+	
+	if (m_MaleRB->get_active())
+		character.set_gender(Character::GENDER_MALE);
+	else if (m_FemaleRB->get_active())
+		character.set_gender(Character::GENDER_FEMALE);
+	else
+		character.set_gender(Character::GENDER_UNKNOWN);
 	
 	character.set_has_text_box_tag(m_HasTagCB->get_active());
 	if (m_HasTagCB->get_active())
@@ -2051,6 +2076,7 @@ Gtk::Container* NewCharDialog::build_general_page() {
 	// allocate radio buttons
 	m_MaleRB=Gtk::manage(new Gtk::RadioButton(m_Group, "Male"));
 	m_FemaleRB=Gtk::manage(new Gtk::RadioButton(m_Group, "Female"));
+	m_UnknownRB=Gtk::manage(new Gtk::RadioButton(m_Group, "Unknown"));
 	m_MaleRB->set_active(true);
 	
 	// allocate entries
@@ -2062,18 +2088,19 @@ Gtk::Container* NewCharDialog::build_general_page() {
 	
 	// attach widgets
 	table->attach(*m_CodeNameLabel, 0, 1, 0, 1, xops, yops);
-	table->attach(*m_CodeNameEntry, 1, 3, 0, 1, xops, yops);
+	table->attach(*m_CodeNameEntry, 1, 4, 0, 1, xops, yops);
 	table->attach(*m_NameLabel, 0, 1, 1, 2, xops, yops);
-	table->attach(*m_NameEntry, 1, 3, 1, 2, xops, yops);
+	table->attach(*m_NameEntry, 1, 4, 1, 2, xops, yops);
 	table->attach(*m_GenderLabel, 0, 1, 2, 3, xops, yops);
 	table->attach(*m_MaleRB, 1, 2, 2, 3, xops, yops);
 	table->attach(*m_FemaleRB, 2, 3, 2, 3, xops, yops);
+	table->attach(*m_UnknownRB, 3, 4, 2, 3, xops, yops);
 	table->attach(*m_CapLabel, 0, 1, 3, 4, xops, yops);
-	table->attach(*m_CapEntry, 1, 3, 3, 4, xops, yops);
+	table->attach(*m_CapEntry, 1, 4, 3, 4, xops, yops);
 	table->attach(*m_DescLabel, 0, 1, 4, 5, xops, yops);
-	table->attach(*m_DescEntry, 1, 3, 4, 5, xops, yops);
+	table->attach(*m_DescEntry, 1, 4, 4, 5, xops, yops);
 	table->attach(*m_SpriteLabel, 0, 1, 5, 6, xops, yops);
-	table->attach(*m_SpriteEntry, 1, 3, 5, 6, xops, yops);
+	table->attach(*m_SpriteEntry, 1, 4, 5, 6, xops, yops);
 	
 	// connect signals
 	m_CodeNameEntry->signal_changed().connect(sigc::mem_fun(*this, &NewCharDialog::on_internal_name_changed));
