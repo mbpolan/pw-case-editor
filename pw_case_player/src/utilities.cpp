@@ -30,12 +30,10 @@ namespace Utils {
 
 // get the current working directory
 std::string Utils::FS::cwd() {
-#ifndef __WIN32__
-	char path[255];
-	return std::string(getcwd(path, 255))+"/";
-#else
-	// TODO: Windows code for getting working directory
-#endif
+	// NOTE: this function is currently useless, but that may not
+	// be the case in the future. maybe deprecate it if there is
+	// no potential use for this
+	return "";
 }
 
 // move a file on the filesystem
@@ -84,7 +82,8 @@ void Utils::FS::removeDir(const std::string &path) {
 		cmd="rm -rf ";
 		cmd+=path;
 #else
-		// TODO: Windows code for removing directory
+		cmd="rmdir /S /Q ";
+		cmd+=path;
 #endif
 		
 		system(cmd.c_str());

@@ -71,7 +71,7 @@ void Sprite::setAnimation(const std::string &animation) {
 }
 
 // animate the sprite
-void Sprite::animate(int x, int y) {
+void Sprite::animate(int x, int y, SDL_Surface *dest) {
 	// get the animation
 	Animation *anim=getAnimation(m_CurAnim);
 	if (!anim) {
@@ -107,7 +107,7 @@ void Sprite::animate(int x, int y) {
 	}
 	
 	// draw the current frame
-	Renderer::drawImage(Point(x, y), frame->image);
+	Renderer::drawImage(Point(x, y), dest, frame->image);
 }
 
 // render a single frame of current animation

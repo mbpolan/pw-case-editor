@@ -215,6 +215,11 @@ std::string TextParser::parse(bool drawDialogue) {
 					case '=': {
 						m_Dialogue+=TEXT_SPEED_NORM_CHAR;
 					}; break;
+					
+					// shake the screen
+					case '*': {
+						m_Dialogue+=SHAKE_SCREEN_CHAR;
+					}; break;
 				}
 				
 				// erase this sequence of characters
@@ -312,16 +317,20 @@ std::string TextParser::parse(bool drawDialogue) {
 			else if (curChar==TEXT_SPEED_NORM_CHAR)
 				m_FontStyle.speed=NORMAL_FONT_SPEED;
 			
+			// shake the screen
+			else if (curChar==SHAKE_SCREEN_CHAR)
+				m_Game->m_State.shake=10;
+			
 			// date string
 			if (m_FontStyle.type=="date")
 				sfx="sfx_typewriter";
 				
 			// differentiate between male and female speakers
 			else if (m_FontStyle.type=="plain") {
-				if (m_SpeakerGender==Character::GENDER_MALE)
-					sfx="sfx_male_talk";
-				else
+				if (m_SpeakerGender==Character::GENDER_FEMALE)
 					sfx="sfx_female_talk";
+				else
+					sfx="sfx_male_talk";
 			}
 			
 			else if (m_FontStyle.type=="testimony-title")

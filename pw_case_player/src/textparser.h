@@ -48,6 +48,7 @@ class TextParser {
 		static const char TEXT_SPEED_INCR_CHAR='[';
 		static const char TEXT_SPEED_DECR_CHAR=']';
 		static const char TEXT_SPEED_NORM_CHAR='|';
+		static const char SHAKE_SCREEN_CHAR='#';
 		
 		// constructor
 		TextParser(Game *game);

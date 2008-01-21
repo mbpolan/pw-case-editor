@@ -65,7 +65,7 @@ class Sprite {
 		void setAnimation(const std::string &anim);
 		
 		// animate the sprite
-		void animate(int x, int y);
+		void animate(int x, int y, SDL_Surface *dest=SDL_GetVideoSurface());
 		
 		// render a single frame of current animation
 		void renderFrame(int x, int y, int frame=0);

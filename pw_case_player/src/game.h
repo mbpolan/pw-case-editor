@@ -138,6 +138,7 @@ struct _GameState {
 	bool curExaminationPaused; // for temporarily breaking away from cross examinations
 	
 	// special effects
+	int shake;
 	std::string fadeOut;
 	std::string fadeIn;
 	std::string flash;

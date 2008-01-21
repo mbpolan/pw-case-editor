@@ -54,6 +54,19 @@ void Renderer::drawImage(const Point &p, const std::string &texId) {
 }
 
 // draw a full image at a point
+void Renderer::drawImage(const Point &p, SDL_Surface *dest, const std::string &texId) {
+	// get the texture in question
+	SDL_Surface *tex=Textures::queryTexture(texId);
+	if (!tex) {
+		std::cout << "Renderer: texture '" << texId << "' not found in stack.\n";
+		return;
+	}
+	
+	// draw this image
+	drawImage(p, dest, tex);
+}
+
+// draw a full image at a point
 void Renderer::drawImage(const Point &p, SDL_Surface *texture) {
 	// get pointer to screen surface
 	SDL_Surface *screen=SDL_GetVideoSurface();
@@ -67,6 +80,12 @@ void Renderer::drawImage(const Point &p, SDL_Surface *texture) {
 	
 	// blit the surfaces
 	SDL_BlitSurface(texture, NULL, screen, &destRect);
+}
+
+// draw a full image at a point onto another surface
+void Renderer::drawImage(const Point &p, SDL_Surface *dest, SDL_Surface *texture) {
+	SDL_Rect destRect={ p.x(), p.y() };
+	SDL_BlitSurface(texture, NULL, dest, &destRect);
 }
 
 // draw a part of an image onto another

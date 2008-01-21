@@ -42,7 +42,13 @@ void drawRect(SDL_Surface *surface, const Point &p, int w, int h, const Color &c
 void drawImage(const Point &p, const std::string &texId);
 
 // draw a full image at a point
+void drawImage(const Point &p, SDL_Surface *dest, const std::string &texId);
+
+// draw a full image at a point
 void drawImage(const Point &p, SDL_Surface *texture);
+
+// draw a full image at a point onto another surface
+void drawImage(const Point &p, SDL_Surface *dest, SDL_Surface *texture);
 
 // draw a part of an image onto another
 void drawImage(const Point &p, int w, int h, SDL_Surface *src, SDL_Surface *dest);
