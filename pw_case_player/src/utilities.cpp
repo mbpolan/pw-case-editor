@@ -19,6 +19,7 @@
  ***************************************************************************/
 // utilities.cpp: implementation of Utils namespace
 
+#include <cmath>
 #include <dirent.h>
 
 #include "utilities.h"
@@ -143,6 +144,21 @@ bool Utils::pointInRect(const Point &p, const Rect &rect) {
 		return false;
 }
 
+// calculate a random offset point (used during shake animations)
+Point Utils::calculateShakePoint(int highestRadius) {
+	// get a random angle and radii for x and y
+	int alpha=Utils::randomRange(1, 360); // full circle shaking motion
+	int rX=Utils::randomRange(1, highestRadius);
+	int rY=Utils::randomRange(1, highestRadius);
+	
+	// and calculate x and y based on angle and provided radii
+	int sx=cos(alpha)*rX;
+	int sy=sin(alpha)*rY;
+	
+	// form a movement point
+	return Point(sx, sy);
+}
+
 // get a random number in the provided range
 int Utils::randomRange(int min, int max) {
 	// programmer stupidity check
@@ -157,7 +173,8 @@ int Utils::randomRange(int min, int max) {
 		return min;
 	
 	// return a randomized number
-	return (int) min+((max-min+1)*int(rand()/(RAND_MAX+1.0)));
+	int num=(rand()%(max-min+1))+min;
+	return num;
 }
 
 // get the location of the mouse pointer

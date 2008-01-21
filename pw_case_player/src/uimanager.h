@@ -60,7 +60,8 @@ enum AnimType { ANIM_SIDE_HBOUNCE=0,
 		ANIM_SYNC_BOUNCE,
 		ANIM_GREEN_BAR,
 		ANIM_EXCLAMATION,
-		ANIM_GUI_BUTTON };
+		ANIM_GUI_BUTTON,
+		ANIM_BG_SLIDE };
 
 // a struct containing animation data (not all variables pertinent)
 struct _Animation {

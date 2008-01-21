@@ -128,6 +128,7 @@ void UI::Manager::clickGUIButton(const std::string &id) {
 void UI::Manager::registerGUIButton(const std::string &id, int w, const std::string &text, const Point &p, UI::Callback slot) {
 	UI::Animation anim;
 	
+	anim.lastDraw=0;
 	anim.type=ANIM_GUI_BUTTON;
 	anim.current=p;
 	anim.callback=slot;
@@ -1035,8 +1036,14 @@ bool UI::Manager::exclamation(const std::string &id, const Character *source) {
 	
 	// see if we should keep drawing
 	if (anim.ticks<anim.speed) {
+		Point shake(0, 0);
+		
+		// shake only for the first two thirds of the animation
+		if (anim.speed-anim.ticks>=(anim.speed/3))
+			shake=Utils::calculateShakePoint(5);
+		
 		// draw the texture
-		Renderer::drawImage(anim.current, texture);
+		Renderer::drawImage(anim.current+shake, texture);
 		
 		// increment tick counter
 		anim.ticks++;

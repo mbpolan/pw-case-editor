@@ -60,6 +60,9 @@ void debugMessage(const std::string &object, const std::string &msg);
 // see if a point is in a rectangle
 bool pointInRect(const Point &p, const Rect &rect);
 
+// calculate a random offset point (used during shake animations)
+Point calculateShakePoint(int highestRadius);
+
 // get a random number in the provided range
 int randomRange(int min, int max);
 

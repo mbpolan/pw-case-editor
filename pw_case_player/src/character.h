@@ -32,7 +32,7 @@
 class Character {
 	public:
 		// character gender
-		enum Gender { GENDER_MALE=0, GENDER_FEMALE };
+		enum Gender { GENDER_MALE=0, GENDER_FEMALE, GENDER_UNKNOWN };
 		
 		// constructor
 		Character(const std::string &internal="", const std::string &name="", 

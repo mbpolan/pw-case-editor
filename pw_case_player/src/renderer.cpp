@@ -513,11 +513,28 @@ void Renderer::drawProfileInfoPage(UI::Manager *manager, const std::vector<Chara
 }
 
 // draw the examination scene
-void Renderer::drawExamineScene(const Point &cursor) {
+void Renderer::drawExamineScene(SDL_Surface *bg, const Point &cursor, bool slideBG) {
 	// get pointer to screen surface
 	SDL_Surface *screen=SDL_GetVideoSurface();
 	if (!screen)
 		return;
+	
+	if (bg) {
+		static int h=0;
+		if (h!=192) {
+			SDL_Rect srect= { 0, 192-h, 256, h };
+			SDL_Rect drect= { 0, 197 };
+			
+			SDL_BlitSurface(bg, &srect, screen, &drect);
+			
+			h+=5;
+			if (h>192)
+				h=192;
+		}
+		
+		else
+			Renderer::drawImage(Point(0, 197), bg);
+	}
 	
 	// get opaque screen and make it completely transparent
 	SDL_Surface *overlay=Textures::queryTexture("transparent");

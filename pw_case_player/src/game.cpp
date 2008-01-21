@@ -1171,21 +1171,8 @@ void Game::renderMenuView() {
 	if (flagged(STATE_EXAMINE) || flagged(STATE_CHECK_EVIDENCE_IMAGE))
 		append="_thin";
 	
-	// render the background texture (or location background if examining)
-	if (flagged(STATE_EXAMINE)) {
-		// get the current background
-		Case::Location *location=m_Case->getLocation(m_State.currentLocation);
-		if (!location)
-			return;
-		
-		// get the background
-		Case::Background *bg=m_Case->getBackground(location->bg);
-		
-		Renderer::drawImage(Point(0, 197), bg->texture);
-	}
-	
-	// render the requested image instead
-	else if (flagged(STATE_CHECK_EVIDENCE_IMAGE)) {
+	// if requesting an image contradiction, or checking evidence, handle that now
+	if (flagged(STATE_CHECK_EVIDENCE_IMAGE)) {
 		// we're not expecting the user to point out a contradiction
 		if (m_State.contradictionImg=="null") {
 			// get the image for the evidence
@@ -1197,11 +1184,9 @@ void Game::renderMenuView() {
 		else {
 			// get our image
 			Case::Image *img=m_Case->getImage(m_State.contradictionImg);
-			
 			if (img) {
 				// we can reuse the renderer for this purpose
-				Renderer::drawImage(Point(0, 197), img->texture);
-				Renderer::drawExamineScene(m_State.examinePt);
+				Renderer::drawExamineScene(img->texture, m_State.examinePt, false);
 			}
 		}
 	}
@@ -1232,7 +1217,7 @@ void Game::renderMenuView() {
 		Case::Location *location=m_Case->getLocation(m_State.currentLocation);
 		Case::Background *bg=m_Case->getBackground(location->bg);
 		
-		Renderer::drawExamineScene(m_State.examinePt);
+		Renderer::drawExamineScene(bg->texture, m_State.examinePt);
 	}
 	
 	// draw the move scene
@@ -1992,7 +1977,8 @@ void Game::onBottomLeftButtonClicked() {
 		else if (flagged(STATE_EXAMINE) || flagged(STATE_MOVE) || flagged(STATE_TALK)) {
 			m_State.prevScreen=SCREEN_MAIN;
 			
-			flags=STATE_COURT_REC_BTN | STATE_CONTROLS;
+			m_State.fadeOut="gui";
+			m_State.queuedFlags=STATE_COURT_REC_BTN | STATE_CONTROLS | STATE_QUEUED;
 			
 		}
 		
@@ -2004,6 +1990,10 @@ void Game::onBottomLeftButtonClicked() {
 			// if the text box is also present, draw it as well
 			if (flagged(STATE_TEXT_BOX))
 				flags |= STATE_TEXT_BOX;
+			
+			m_State.fadeOut="gui";
+			m_State.queuedFlags=0;
+			m_State.queuedFlags |= flags | STATE_QUEUED;
 		}
 		
 		// if evidence info page is shown, revert back to evidence page
@@ -2029,7 +2019,8 @@ void Game::onBottomLeftButtonClicked() {
 			flags |= STATE_COURT_GREEN_BAR;
 		
 		// toggle the set flags now
-		toggle(flags);
+		if (m_State.fadeOut=="none")
+			toggle(flags);
 		
 		// play a sound effect
 		Audio::playEffect("sfx_return", Audio::CHANNEL_GUI);
