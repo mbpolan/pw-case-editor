@@ -122,6 +122,24 @@ Case::Testimony* Case::Case::getTestimony(const std::string &id) {
 		return NULL;
 }
 
+// return a vector of evidence based on vector of string ids
+std::vector<Case::Evidence*> Case::Case::getEvidenceFromIds(const StringVector &vec) {
+	std::vector<Evidence*> ret;
+	for (int i=0; i<vec.size(); i++)
+		ret.push_back(getEvidence(vec[i]));
+	
+	return ret;
+}
+
+// return a vector of characters based on vector of string ids
+std::vector<Character*> Case::Case::getCharactersFromIds(const StringVector &vec) {
+	std::vector<Character*> ret;
+	for (int i=0; i<vec.size(); i++)
+		ret.push_back(getCharacter(vec[i]));
+	
+	return ret;
+}
+
 // clear the case information
 void Case::Case::clear() {
 	// clear out overrides

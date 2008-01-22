@@ -658,7 +658,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	else if (trigger=="add_evidence") {
 		// make sure this evidence exists at all
 		if (pcase->getEvidence(command))
-			m_Game->m_State.visibleEvidence.push_back(*pcase->getEvidence(command));
+			m_Game->m_State.visibleEvidence.push_back(command);
 		else
 			Utils::debugMessage("TextParser", "Unable to add unknown evidence: "+command);
 	}
@@ -667,7 +667,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	else if (trigger=="add_profile") {
 		// make sure this character exists
 		if (pcase->getCharacter(command))
-			m_Game->m_State.visibleProfiles.push_back(*pcase->getCharacter(command));
+			m_Game->m_State.visibleProfiles.push_back(command);
 		else
 			Utils::debugMessage("TextParser", "Unable to add profile for nonexistent character: "+command);
 	}
@@ -1012,6 +1012,90 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		
 		// go to a blank block to resume
 		doTrigger("goto", "INTERNAL_blank");
+	}
+	
+	// change the gender of a character
+	else if (trigger=="change_character_gender") {
+		StringVector params=Utils::explodeString(',', command);
+		
+		// first, validate the character
+		Character *c=pcase->getCharacter(params[0]);
+		if (c) {
+			// check gender string
+			if (params[1]=="male")
+				c->setGender(Character::GENDER_MALE);
+			else if (params[1]=="female")
+				c->setGender(Character::GENDER_FEMALE);
+			else if (params[1]=="unknown")
+				c->setGender(Character::GENDER_UNKNOWN);
+			else
+				Utils::debugMessage("TextParser", "Unrecognized character gender: "+params[1]);
+		}
+		
+		else
+			Utils::debugMessage("TextParser", "Unknown character: "+params[0]);
+	}
+	
+	// change the profile of a character
+	else if (trigger=="change_character_name" || trigger=="change_character_caption" || trigger=="change_character_desc") {
+		StringVector params=Utils::explodeString(',', command);
+		
+		// get the character
+		Character *c=pcase->getCharacter(params[0]);
+		if (c) {
+			// verify that the string is padded by quote marks
+			std::string str=params[1];
+			if (str[0]!='"' || str[str.size()-1]!='"') {
+				Utils::debugMessage("TextParser", "Character profile string needs to be in between quotation marks: "+str);
+				return "null";
+			}
+			
+			// remove padding quote marks
+			str.erase(0, 1);
+			str.erase(str.size()-1, 1);
+			
+			// and set the new string
+			if (trigger.rfind("_name")!=-1)
+				c->setName(str);
+			else if (trigger.rfind("_caption")!=-1)
+				c->setCaption(str);
+			else if (trigger.rfind("_desc")!=-1)
+				c->setDescription(str);
+		}
+		
+		else
+			Utils::debugMessage("TextParser", "Unknown character: "+params[0]);
+	}
+	
+	// change evidence data
+	else if (trigger=="change_evidence_name" || trigger=="change_evidence_caption" || trigger=="change_evidence_desc") {
+		StringVector params=Utils::explodeString(',', command);
+		
+		// get the evidence
+		Case::Evidence *e=pcase->getEvidence(params[0]);
+		if (e) {
+			// verify that the string is padded by quote marks
+			std::string str=params[1];
+			if (str[0]!='"' || str[str.size()-1]!='"') {
+				Utils::debugMessage("TextParser", "Evidence data string needs to be in between quotation marks: "+str);
+				return "null";
+			}
+			
+			// remove padding quote marks
+			str.erase(0, 1);
+			str.erase(str.size()-1, 1);
+			
+			// and set the new string
+			if (trigger.rfind("_name")!=-1)
+				e->name=str;
+			else if (trigger.rfind("_caption")!=-1)
+				e->caption=str;
+			else if (trigger.rfind("_desc")!=-1)
+				e->description=str;
+		}
+		
+		else
+			Utils::debugMessage("TextParser", "Unknown evidence: "+params[0]);
 	}
 	
 	return "null";

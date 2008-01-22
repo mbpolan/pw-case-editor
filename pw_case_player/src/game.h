@@ -175,10 +175,10 @@ struct _GameState {
 	std::vector<StringPair> talkOptions;
 	
 	// list of visible evidence (evidence that can be seen in court record)
-	std::vector<Case::Evidence> visibleEvidence;
+	std::vector<std::string> visibleEvidence;
 	
 	// list of visible profiles
-	std::vector<Character> visibleProfiles;
+	std::vector<std::string> visibleProfiles;
 };
 typedef struct _GameState GameState;
 

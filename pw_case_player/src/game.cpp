@@ -686,12 +686,16 @@ void Game::checkInputState() {
 
 // get the id of the selected court record evidence
 std::string Game::getSelectedEvidence() {
-	return m_State.visibleEvidence[m_State.evidencePage*8+m_State.selectedEvidence].id;
+	int index=m_State.evidencePage*8+m_State.selectedEvidence;
+	Case::Evidence *e=m_Case->getEvidence(m_State.visibleEvidence[index]);
+	return e->id;
 }
 
 // get the id of the selected court record profile
 std::string Game::getSelectedProfile() {
-	return m_State.visibleProfiles[m_State.profilesPage*8+m_State.selectedProfile].getInternalName();
+	int index=m_State.profilesPage*8+m_State.selectedProfile;
+	Character *c=m_Case->getCharacter(m_State.visibleProfiles[index]);
+	return c->getInternalName();
 }
 
 // toggle game state flags
@@ -1206,7 +1210,7 @@ void Game::renderMenuView() {
 		// we're not expecting the user to point out a contradiction
 		if (m_State.contradictionImg=="null") {
 			// get the image for the evidence
-			std::string checkID=m_State.visibleEvidence[m_State.selectedEvidence].checkID;
+			std::string checkID=m_Case->getEvidence(m_State.visibleEvidence[m_State.selectedEvidence])->checkID;
 			Renderer::drawImage(Point(0, 197), m_Case->getImage(checkID)->texture);
 		}
 		
@@ -1227,19 +1231,21 @@ void Game::renderMenuView() {
 	
 	// draw the evidence page
 	if (flagged(STATE_EVIDENCE_PAGE))
-		Renderer::drawEvidencePage(m_State.visibleEvidence, m_State.evidencePage, m_State.selectedEvidence);
+		Renderer::drawEvidencePage(m_Case->getEvidenceFromIds(m_State.visibleEvidence), 
+					   m_State.evidencePage, m_State.selectedEvidence);
 	
 	// draw the profiles page
 	else if (flagged(STATE_PROFILES_PAGE))
-		Renderer::drawProfilesPage(m_State.visibleProfiles, m_State.profilesPage, m_State.selectedProfile);
+		Renderer::drawProfilesPage(m_Case->getCharactersFromIds(m_State.visibleProfiles), 
+					   m_State.profilesPage, m_State.selectedProfile);
 	
 	// draw the evidence info page
 	else if (flagged(STATE_EVIDENCE_INFO_PAGE))
-		Renderer::drawEvidenceInfoPage(m_UI, m_State.visibleEvidence, m_State.evidencePage*8+m_State.selectedEvidence);
+		Renderer::drawEvidenceInfoPage(m_Case->getEvidence(m_State.visibleEvidence[m_State.selectedEvidence]));
 	
 	// draw the profile info page
 	else if (flagged(STATE_PROFILE_INFO_PAGE))
-		Renderer::drawProfileInfoPage(m_UI, m_State.visibleProfiles, m_State.profilesPage*8+m_State.selectedProfile);
+		Renderer::drawProfileInfoPage(m_Case->getCharacter(m_State.visibleProfiles[m_State.selectedProfile]));
 	
 	// draw the examination scene
 	else if (flagged(STATE_EXAMINE)) {
@@ -2097,10 +2103,10 @@ void Game::onPresentCenterClicked() {
 		// get the current evidence/profile
 		std::string id="null";
 		if (flagged(STATE_EVIDENCE_INFO_PAGE) && !m_State.visibleEvidence.empty())
-			id=m_State.visibleEvidence[m_State.evidencePage*8+m_State.selectedEvidence].id;
+			id=m_State.visibleEvidence[m_State.evidencePage*8+m_State.selectedEvidence];
 		
 		else if (!m_State.visibleProfiles.empty())
-			id=m_State.visibleProfiles[m_State.profilesPage*8+m_State.selectedProfile].getInternalName();
+			id=m_State.visibleProfiles[m_State.profilesPage*8+m_State.selectedProfile];
 		
 		// split the parameter string up
 		StringVector vec=Utils::explodeString(',', m_State.requestedEvidenceParams);

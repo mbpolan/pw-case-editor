@@ -213,6 +213,12 @@ class Case {
 		// get a testimony
 		Testimony* getTestimony(const std::string &id);
 		
+		// return a vector of evidence based on vector of string ids
+		std::vector<Evidence*> getEvidenceFromIds(const StringVector &vec);
+		
+		// return a vector of characters based on vector of string ids
+		std::vector<Character*> getCharactersFromIds(const StringVector &vec);
+		
 		// clear the entire case information
 		void clear();
 		

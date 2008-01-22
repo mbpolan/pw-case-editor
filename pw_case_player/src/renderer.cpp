@@ -232,7 +232,7 @@ void Renderer::drawInitialScreen(UI::Manager *ui) {
 }
 
 // draw the evidence page
-void Renderer::drawEvidencePage(const std::vector<Case::Evidence> &evidence, int page, int selected) {
+void Renderer::drawEvidencePage(const std::vector<Case::Evidence*> &evidence, int page, int selected) {
 	// get pointer to screen surface
 	SDL_Surface *screen=SDL_GetVideoSurface();
 	if (!screen)
@@ -273,13 +273,13 @@ void Renderer::drawEvidencePage(const std::vector<Case::Evidence> &evidence, int
 		
 		// see if there is a piece of evidence at this slot
 		if (index<=evidence.size()-1 && !evidence.empty()) {
-			Case::Evidence e=evidence[index];
+			Case::Evidence *e=evidence[index];
 			
 			// if this is the selected evidence, write it's name in the info
 			// bar, and draw selection box
 			if (i==selected) {
 				// get the name of this evidence
-				std::string name=e.name;
+				std::string name=e->name;
 				
 				// calculate string length for this string
 				int width=Fonts::getWidth("orange", name);
@@ -298,7 +298,7 @@ void Renderer::drawEvidencePage(const std::vector<Case::Evidence> &evidence, int
 			SDL_Rect drect;
 			drect.x=x;
 			drect.y=y;
-			SDL_BlitSurface(e.thumb, NULL, screen, &drect);
+			SDL_BlitSurface(e->thumb, NULL, screen, &drect);
 			
 			index++;
 		}
@@ -315,14 +315,11 @@ void Renderer::drawEvidencePage(const std::vector<Case::Evidence> &evidence, int
 }
 
 // draw evidence information page
-void Renderer::drawEvidenceInfoPage(UI::Manager *manager, const std::vector<Case::Evidence> &evidence, int index) {
+void Renderer::drawEvidenceInfoPage(Case::Evidence *e) {
 	// get pointer to screen surface
 	SDL_Surface *screen=SDL_GetVideoSurface();
 	if (!screen)
 		return;
-	
-	// get evidence to draw
-	Case::Evidence e=evidence[index];
 	
 	// keep track of y changes
 	int x=0;
@@ -343,10 +340,10 @@ void Renderer::drawEvidenceInfoPage(UI::Manager *manager, const std::vector<Case
 	
 	// draw button on left
 	drawImage(Point(0, y+4), "tc_small_btn_left");
-	manager->drawAnimation("an_info_page_button_left");
+	UI::Manager::instance()->drawAnimation("an_info_page_button_left");
 	
 	// draw the evidence
-	drawImage(Point(19, y), e.texture);
+	drawImage(Point(19, y), e->texture);
 	x+=92;
 	
 	// draw info box's border
@@ -356,33 +353,33 @@ void Renderer::drawEvidenceInfoPage(UI::Manager *manager, const std::vector<Case
 	drawRect(screen, Point(x+2, y+2), 144, 15, Theme::lookup("info_bar_bg"));
 	
 	// calculate center position for name
-	int centerx=(x+72)-(Fonts::getWidth("orange", e.name)/2);
+	int centerx=(x+72)-(Fonts::getWidth("orange", e->name)/2);
 	
 	// draw evidence name in title bar
-	Fonts::drawString(centerx, y+4, e.name, "orange");
+	Fonts::drawString(centerx, y+4, e->name, "orange");
 	
 	// draw info box body
 	drawRect(screen, Point(x+2, y+17), 144, 51, Theme::lookup("info_box_bg"));
 	
 	// draw evidence caption in this area
-	Fonts::drawTTF(Point(x+5, y+18), e.caption, Renderer::INFO_PAGE_FONT, Color(0, 0, 0));
+	Fonts::drawTTF(Point(x+5, y+18), e->caption, Renderer::INFO_PAGE_FONT, Color(0, 0, 0));
 	
 	// moving right along...
 	x+=148;
 	
 	// draw button with arrow on right
 	drawImage(Point(x+3, y+4), "tc_small_btn_right");
-	manager->drawAnimation("an_info_page_button_right");
+	UI::Manager::instance()->drawAnimation("an_info_page_button_right");
 	
 	// draw lower border
 	drawRect(screen, Point(0, 308), 256, 6, Theme::lookup("info_box_border"));
 	
 	// draw evidence description in bottom area
-	Fonts::drawString(16, y+81, e.description, "white");
+	Fonts::drawString(16, y+81, e->description, "white");
 }
 
 // draw the profiles page
-void Renderer::drawProfilesPage(const std::vector<Character> &uchars, int page, int selected) {
+void Renderer::drawProfilesPage(const std::vector<Character*> &uchars, int page, int selected) {
 	// get pointer to screen surface
 	SDL_Surface *screen=SDL_GetVideoSurface();
 	if (!screen)
@@ -423,13 +420,13 @@ void Renderer::drawProfilesPage(const std::vector<Character> &uchars, int page, 
 		
 		// see if there is a profile at this slot
 		if (index<=uchars.size()-1 && !uchars.empty()) {
-			Character c=uchars[index];
+			Character *c=uchars[index];
 			
 			// if this is the selected profile, write his name in the info
 			// bar, and draw selection box
 			if (i==selected) {
 				// get the name of this character
-				std::string name=c.getName();
+				std::string name=c->getName();
 				
 				// calculate string length for this string
 				int width=Fonts::getWidth("orange", name);
@@ -448,7 +445,7 @@ void Renderer::drawProfilesPage(const std::vector<Character> &uchars, int page, 
 			SDL_Rect drect;
 			drect.x=x;
 			drect.y=y;
-			SDL_BlitSurface(c.getHeadshotThumb(), NULL, screen, &drect);
+			SDL_BlitSurface(c->getHeadshotThumb(), NULL, screen, &drect);
 			
 			index++;
 		}
@@ -465,14 +462,11 @@ void Renderer::drawProfilesPage(const std::vector<Character> &uchars, int page, 
 }
 
 // draw the profile info page
-void Renderer::drawProfileInfoPage(UI::Manager *manager, const std::vector<Character> &uchars, int index) {
+void Renderer::drawProfileInfoPage(Character *c) {
 	// get pointer to screen surface
 	SDL_Surface *screen=SDL_GetVideoSurface();
 	if (!screen)
 		return;
-	
-	// get character to draw
-	Character c=uchars[index];
 	
 	// keep track of y changes
 	int x=0;
@@ -493,10 +487,10 @@ void Renderer::drawProfileInfoPage(UI::Manager *manager, const std::vector<Chara
 	
 	// draw button on left
 	drawImage(Point(0, y+4), "tc_small_btn_left");
-	manager->drawAnimation("an_info_page_button_left");
+	UI::Manager::instance()->drawAnimation("an_info_page_button_left");
 	
 	// draw the profile
-	drawImage(Point(19, y), c.getHeadshot());
+	drawImage(Point(19, y), c->getHeadshot());
 	x+=92;
 	
 	// draw info box's border
@@ -506,29 +500,29 @@ void Renderer::drawProfileInfoPage(UI::Manager *manager, const std::vector<Chara
 	drawRect(screen, Point(x+2, y+2), 144, 15, Theme::lookup("info_bar_bg"));
 	
 	// calculate center position for name
-	int centerx=(x+72)-(Fonts::getWidth("orange", c.getName())/2);
+	int centerx=(x+72)-(Fonts::getWidth("orange", c->getName())/2);
 	
 	// draw evidence name in title bar
-	Fonts::drawString(centerx, y+4, c.getName(), "orange");
+	Fonts::drawString(centerx, y+4, c->getName(), "orange");
 	
 	// draw info box body
 	drawRect(screen, Point(x+2, y+17), 144, 51, Theme::lookup("info_box_bg"));
 	
 	// draw character caption in this area
-	Fonts::drawTTF(Point(x+5, y+18), c.getCaption(), Renderer::INFO_PAGE_FONT, Color(0, 0, 0));
+	Fonts::drawTTF(Point(x+5, y+18), c->getCaption(), Renderer::INFO_PAGE_FONT, Color(0, 0, 0));
 	
 	// moving right along...
 	x+=148;
 	
 	// draw button with arrow on right
 	drawImage(Point(x+3, y+4), "tc_small_btn_right");
-	manager->drawAnimation("an_info_page_button_right");
+	UI::Manager::instance()->drawAnimation("an_info_page_button_right");
 	
 	// draw lower border
 	drawRect(screen, Point(0, 308), 256, 6, Theme::lookup("info_box_border"));
 	
 	// draw evidence description in bottom area
-	Fonts::drawString(16, y+81, c.getDescription(), "white");
+	Fonts::drawString(16, y+81, c->getDescription(), "white");
 }
 
 // draw the examination scene

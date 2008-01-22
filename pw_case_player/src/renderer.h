@@ -69,19 +69,17 @@ void drawInitialScreen(UI::Manager *ui);
 
 // draw the evidence page
 // page should be based on index 0, and selected should be an index between 0 and 7
-void drawEvidencePage(const std::vector<Case::Evidence> &evidence, int page, int selected);
+void drawEvidencePage(const std::vector<Case::Evidence*> &evidence, int page, int selected);
 
 // draw evidence information page
-// index is the current index into evidence vector for displayed evidence
-void drawEvidenceInfoPage(UI::Manager *ui, const std::vector<Case::Evidence> &evidence, int index);
+void drawEvidenceInfoPage(Case::Evidence *evidence);
 
 // draw the profiles page
 // page should be based on index 0, and selected should be an index between 0 and 7
-void drawProfilesPage(const std::vector<Character> &uchars, int page, int selected);
+void drawProfilesPage(const std::vector<Character*> &uchars, int page, int selected);
 
 // draw profile information page
-// index is the current index into profiles vector
-void drawProfileInfoPage(UI::Manager *ui, const std::vector<Character> &uchars, int index);
+void drawProfileInfoPage(Character *character);
 
 // draw the examination scene
 void drawExamineScene(SDL_Surface *bg, const Point &cursor, bool slideBG=true);
