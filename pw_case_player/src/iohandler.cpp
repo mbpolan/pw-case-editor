@@ -543,8 +543,10 @@ bool IO::loadSpriteFromFile(const std::string &path, Sprite &sprite) {
 bool IO::loadStockFile(const std::string &path, Case::Case *pcase) {
 	// open the path
 	FILE *f=fopen(path.c_str(), "rb");
-	if (!f)
+	if (!f) {
+		std::cout << "Unable to open stock file: " << path << std::endl;
 		return false;
+	}
 	
 	// read the lines in the file
 	char line[256];

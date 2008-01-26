@@ -153,7 +153,7 @@ bool SDLContext::initGame(const std::string &pathToCase) {
 	Fonts::g_Fonts[Fonts::FONT_BUTTON_TEXT]=TTF_OpenFont(".temp/data/fonts/arial.ttf", Fonts::FONT_BUTTON_TEXT);
 	
 	// load our theme
-	if (!IO::loadThemeXML("theme.xml", Theme::g_Theme))
+	if (!IO::loadThemeXML(".temp/data/theme.xml", Theme::g_Theme))
 		return false;
 	
 	return true;
