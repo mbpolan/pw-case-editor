@@ -57,7 +57,7 @@ bool IO::unpackResourceFile(const std::string &path) {
 	struct archive_entry *entry=archive_entry_new();
 	
 	// make our temporary directory
-	Utils::FS::mkdir(".temp");
+	Utils::FS::makeDir(".temp");
 	
 	// read each file, and extract it
 	while(archive_read_next_header(ar, &entry)==ARCHIVE_OK) {
@@ -83,7 +83,12 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 		return false;
 	
 	// get the root path
-	int npos=path.rfind('/');
+	int npos;
+#ifndef __WIN32__
+	npos=path.rfind('/');
+#else
+	npos=path.rfind('\\');
+#endif
 	std::string root=path.substr(0, npos+1);
 	
 	// read the header

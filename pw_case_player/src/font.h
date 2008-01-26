@@ -32,75 +32,68 @@
 namespace Fonts {
 
 // amount of pixels to skip following a line break, space, and in between characters
-const int g_LineBreakSize=17;
-const int g_SpaceSize=10;
-const int g_CharSpace=2;
+const int SIZE_LINE_BREAK=17;
+const int SIZE_WHITESPACE=10;
+const int SIZE_CHAR_SPACE=2;
+
+// default font sizes for elements
+static const int FONT_BUTTON_TEXT=16;
+static const int FONT_STANDARD=13;
+static const int FONT_INFO_PAGE=11;
+
+// predefined font colors
+extern const Color COLOR_BLACK;
+extern const Color COLOR_WHITE;
+extern const Color COLOR_BLUE;
+extern const Color COLOR_ORANGE;
+extern const Color COLOR_GREEN;
+extern const Color COLOR_YELLOW;
+
+// quality of rendering
+enum Quality { QUALITY_SOLID=0, QUALITY_BLEND };
 
 // ttf fonts
-extern std::map<int, TTF_Font*> g_FontsTTF;
+typedef TTF_Font Font;
+extern std::map<int, Font*> g_Fonts;
 
-// a single glyph
-struct _Glyph {
-	int w;
-	SDL_Surface *surface;
-};
-typedef struct _Glyph Glyph;
+// get a surface with a rendered glyph
+SDL_Surface* renderGlyph(char ch, int size, const Color &color, const Quality &quality);
 
-// font containing glyphs
-struct _Font {
-	std::string id;
-	std::map<char, Glyph> glyphs;
-};
-typedef struct _Font Font;
+// calculate the y coordinate for a glyph to render correctly on baseline
+int glyphBase(int y, char ch, int size);
 
-// global font map
-typedef std::map<std::string, Font> FontMap;
-static FontMap g_Fonts;
-
-// load a font from file
-bool loadFont(const std::string &path, Fonts::Font &font);
-
-// create a font glyph
-SDL_Surface* createSurface(char *buffer);
+// see if a character should not be drawn
+bool discardChar(char ch);
 
 // see if this string is too long and needs to be broken
-bool lineWillBreak(int x, int y, int rightClamp, const std::string &str, const std::string &fontId);
-
-// see if a word is too long to fit in this line
-bool wordWillBreak(int x, int rightClamp, const std::string &word, const std::string &fontId);
+bool lineWillBreak(const Point &p, int rightClamp, const std::string &str, int size);
 
 // draw a string on the screen
-int drawString(int x, int y, const std::string &str, const std::string &fontId);
+int drawString(const Point &p, const std::string &str, int size, const Color &color);
 
 // draw a string with clamped restrictions and delimiter
-int drawString(int x, int y, int delimiter, int rightClamp, const std::string &str, const std::string &fontId);
+int drawString(const Point &p, int delimiter, int rightClamp, const std::string &str, int size, const Color &color);
 
 // draw a string centered on the screen
-int drawStringCentered(int y, int delimiter, const std::string &str, const std::string &fontId);
+int drawStringCentered(int y, int delimiter, const std::string &str, int size, const Color &color);
 
 // draw a ttf font string
-void drawTTF(const Point &p, const std::string &str, int size, const Color &color);
-
-// get the width of a string
-int getWidth(const std::string &fontId, const std::string &str);
+void drawStringBlended(const Point &p, const std::string &str, int size, const Color &color);
 
 // get the width of a ttf string
-int getTTFWidth(const std::string &str, int size);
+int getWidth(const std::string &str, int size);
+
+// get the width of a glyph
+int getGlyphWidth(char ch, int size);
 
 // get the height of a ttf font
-int getTTFHeight(int size);
-
-// return a font from the map
-Font* queryFont(const std::string &id);
+int getHeight(int size);
 
 // return a ttf font from the map
-TTF_Font* queryTTF(int size);
+Font* queryFont(int size);
 
 // add a font to the map
-void pushFont(const std::string &id, const Font &font);
-
-// remove a font from the map
-void popFont(const std::string &id);
+void pushFont(int size, Font *font);
 
 // clear the font map
 void clearFontStack();

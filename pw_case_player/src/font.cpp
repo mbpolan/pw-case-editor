@@ -21,7 +21,8 @@
 
 #include <cstdio>
 #include <iostream>
-#include "SDL/SDL_rotozoom.h"
+#include "SDL_rotozoom.h"
+#include "SDL_ttf.h"
 
 #include "iohandler.h"
 #include "font.h"
@@ -29,132 +30,69 @@
 #include "utilities.h"
 
 namespace Fonts {
-	std::map<int, TTF_Font*> g_FontsTTF;
+
+std::map<int, Font*> g_Fonts;
+
+const Color COLOR_BLACK(0, 0, 0);
+const Color COLOR_WHITE(255, 255, 255);
+const Color COLOR_GREEN(0, 247, 0);
+const Color COLOR_ORANGE(247, 115, 57);
+const Color COLOR_BLUE(107, 198, 247);
+const Color COLOR_YELLOW(229, 204, 148);
+
 }
 
-// load a font from file
-bool Fonts::loadFont(const std::string &path, Fonts::Font &font) {
-	// open the file
-	FILE *f=fopen(path.c_str(), "rb");
+// get a surface with a rendered glyph
+SDL_Surface* Fonts::renderGlyph(char ch, int size, const Color &color, const Quality &quality) {
+	Font *f=queryFont(size);
 	if (!f)
-		return false;
+		return NULL;
 	
-	// read magic number
-	if (fgetc(f)!='P' || fgetc(f)!='W' || fgetc(f)!='F') {
-		std::cout << "This is not a font file\n";
-		return false;
+	switch(quality) {
+		case QUALITY_SOLID: return TTF_RenderGlyph_Solid(f, ch, color.toSDLColor());
+		case QUALITY_BLEND: return TTF_RenderGlyph_Blended(f, ch, color.toSDLColor());
 	}
-	
-	// read version
-	int version;
-	fread(&version, sizeof(int), 1, f);
-	if (version!=10) {
-		std::cout << "Wrong version\n";
-		return false;
-	}
-	
-	// read amount of characters
-	int amount;
-	fread(&amount, sizeof(int), 1, f);
-	
-	// iterate over glyphs
-	for (int i=0; i<amount; i++) {
-		// read character
-		char ch=fgetc(f);
-		
-		// read buffer size
-		int size;
-		fread(&size, sizeof(unsigned int), 1, f);
-		
-		// allocate space
-		char *buffer=new char[size];
-		
-		// read data
-		fread(buffer, sizeof(char), size, f);
-		
-		// create a surface
-		SDL_Surface *surface=createSurface(buffer);
-		if (surface) {
-			font.glyphs[ch].w=surface->w;
-			font.glyphs[ch].surface=surface;
-		}
-		
-		delete [] buffer;
-	}
-	
-	// wrap up
-	fclose(f);
-	return true;
 }
 
-// create a font glyph
-SDL_Surface* Fonts::createSurface(char *pbuf) {
-	// bmp data
-	int w, h;
-	short planes, bpp;
+// calculate the y coordinate for a glyph to render correctly on baseline
+int Fonts::glyphBase(int y, char ch, int size) {
+	Font *f=queryFont(size);
+	if (!f)
+		return 0;
 	
-	pbuf+=18;
+	int maxy;
+	TTF_GlyphMetrics(f, ch, NULL, NULL, NULL, &maxy, NULL);
+	
+	// calculate where to begin drawing this rectangle
+	return y+TTF_FontAscent(f)-maxy;
+}
 
-	// read width
-	w=*(int*) pbuf;
-	pbuf+=sizeof(int);
-	
-	// read height
-	h=*(int*) pbuf;
-	pbuf+=sizeof(int);
-	
-	// read planes
-	planes=*(short*) pbuf;
-	pbuf+=sizeof(short);
-	
-	// read bpp
-	bpp=*(short*) pbuf;
-	pbuf+=sizeof(short);
-	
-	// seek past the header
-	pbuf+=24;
-	
-	// calculate image size
-	int realSize=w*h*bpp;
-	
-	// allocate image buffer
-	char *pixels=(char*) malloc(realSize);
+// see if a character should not be drawn
+bool Fonts::discardChar(char ch) {
+	switch(ch) {
+		case '[':
+		case ']':
+		case '{':
+		case '}':
+		case '^':
+		case '#':
+		case '|': return true;
 		
-	// copy pixels from buffer
-	memcpy(pixels, pbuf, realSize);
-	
-	// create a surface for this glyph
-	SDL_Surface *surface=SDL_CreateRGBSurface(SDL_SWSURFACE, w, h, bpp, 255U << 16, 255 << 8, 255 << 0, 0);
-	
-	// now set the pixels
-	SDL_LockSurface(surface);
-	
-	// delete old pixels first
-	char *sPixels=(char*) surface->pixels;
-	delete [] sPixels;
-	
-	// set these pixels in the surface
-	surface->pixels=pixels;
-	
-	SDL_UnlockSurface(surface);
-	
-	// set transparent pixel
-	SDL_SetColorKey(surface, SDL_SRCCOLORKEY, SDL_MapRGB(surface->format, 0, 255, 0));
-	
-	return surface;	
+		default: return false;
+	}
 }
 
 // see if this string is too long and needs to be broken
-bool Fonts::lineWillBreak(int x, int y, int rightClamp, const std::string &str, const std::string &fontId) {
+bool Fonts::lineWillBreak(const Point &p, int rightClamp, const std::string &str, int size) {
 	int breakCount=0;
-	int ex=x;
+	int ex=p.x();
 	
 	// get the requested font
-	if (!queryFont(fontId)) {
-		std::cout << "Font: font '" << fontId << "' not found\n";
+	if (!queryFont(size)) {
+		std::cout << "Font: font '" << size << "' not found\n";
 		return -1;
 	}
-	Font font=*queryFont(fontId);
+	Font *font=queryFont(size);
 	
 	for (int i=0; i<str.size(); i++) {
 		char ch=(char) str[i];
@@ -165,7 +103,7 @@ bool Fonts::lineWillBreak(int x, int y, int rightClamp, const std::string &str, 
 			if (breakCount==2)
 				return true;
 			
-			ex=x;
+			ex=p.x();
 			
 			breakCount++;
 			continue;
@@ -177,7 +115,7 @@ bool Fonts::lineWillBreak(int x, int y, int rightClamp, const std::string &str, 
 			if (breakCount==3)
 				return true;
 			
-			ex=x;
+			ex=p.x();
 			
 			breakCount++;
 			
@@ -189,58 +127,46 @@ bool Fonts::lineWillBreak(int x, int y, int rightClamp, const std::string &str, 
 		
 		// if a space is needed, skip some pixels
 		else if (ch==' ') {
-			ex+=g_SpaceSize;
+			ex+=SIZE_WHITESPACE;
 			
 			continue;
 		}
 		
+		// ignore certain characters
+		else if (discardChar(ch))
+			continue;
+		
 		// force a new line if needed
-		int width=font.glyphs[ch].w+font.glyphs[str[i+1]].w+2;
+		int width=getGlyphWidth(ch, size)+getGlyphWidth(str[i+1], size)+2;
 		if ((ex+width)>=rightClamp) {
 			// check if we already have three lines
 			if (breakCount==2)
 				return true;
 			
 			// reset for next row
-			ex=x;
+			ex=p.x();
 			
 			// move to next one
-			ex+=font.glyphs[ch].w+g_CharSpace;
+			ex+=getGlyphWidth(ch, size);
 			
 			breakCount++;
 			continue;
 		}
 		
 		// move over to the next glyph
-		ex+=font.glyphs[ch].w+g_CharSpace;
+		ex+=getGlyphWidth(ch, size);
 	}
 	
 	return false;
 }
 
-// see if a word is too long to fit in this line
-bool Fonts::wordWillBreak(int x, int rightClamp, const std::string &word, const std::string &fontId) {
-	// get the requested font
-	if (!queryFont(fontId)) {
-		std::cout << "Font: font '" << fontId << "' not found\n";
-		return false;
-	}
-	Font font=*queryFont(fontId);
-	
-	// calculate the length of this word
-	int length=getWidth(fontId, word);
-	
-	// combine given x with length and see if we crossed the right most limit
-	return (x+length>rightClamp);
-}
-
 // draw a string on the screen
-int Fonts::drawString(int x, int y, const std::string &str, const std::string &fontId) {
-	drawString(x, y, str.size(), SDL_GetVideoSurface()->w, str, fontId);
+int Fonts::drawString(const Point &p, const std::string &str, int size, const Color &color) {
+	drawString(p, str.size(), SDL_GetVideoSurface()->w, str, size, color);
 }
 
 // draw a string with clamped restrictions
-int Fonts::drawString(int x, int y, int limit, int rightClamp, const std::string &str, const std::string &fontId) {
+int Fonts::drawString(const Point &p, int limit, int rightClamp, const std::string &str, int size, const Color &color) {
 	// also, make sure the default video surface exists
 	SDL_Surface *screen=SDL_GetVideoSurface();
 	if (!screen) {
@@ -249,16 +175,16 @@ int Fonts::drawString(int x, int y, int limit, int rightClamp, const std::string
 	}
 	
 	// get the requested font
-	if (!queryFont(fontId)) {
-		std::cout << "Font: font '" << fontId << "' not found\n";
+	if (!queryFont(size)) {
+		std::cout << "Font: font '" << size << "' not found\n";
 		return -1;
 	}
-	Font font=*queryFont(fontId);
+	Font *font=queryFont(size);
 	
 	// set initial position
 	SDL_Rect drect;
-	drect.x=x;
-	drect.y=y;
+	drect.x=p.x();
+	drect.y=p.y();
 	
 	// count the amount of times we started a new line
 	int breakCount=0;
@@ -272,7 +198,7 @@ int Fonts::drawString(int x, int y, int limit, int rightClamp, const std::string
 		char ch=(char) str[i];
 		
 		// don't bother drawing unknown characters
-		if (font.glyphs.find(ch)==font.glyphs.end())
+		if (getGlyphWidth(ch, size)==-1)
 			continue;
 		
 		// see if we should force a new line
@@ -281,8 +207,8 @@ int Fonts::drawString(int x, int y, int limit, int rightClamp, const std::string
 			if (breakCount==2)
 				return i;
 			
-			drect.x=x;
-			drect.y+=g_LineBreakSize;
+			drect.x=p.x();
+			drect.y+=SIZE_LINE_BREAK;
 			
 			breakCount++;
 			continue;
@@ -294,8 +220,8 @@ int Fonts::drawString(int x, int y, int limit, int rightClamp, const std::string
 			if (breakCount==2)
 				return i;
 			
-			drect.x=x;
-			drect.y+=g_LineBreakSize;
+			drect.x=p.x();
+			drect.y+=SIZE_LINE_BREAK;
 			
 			breakCount++;
 			
@@ -307,48 +233,60 @@ int Fonts::drawString(int x, int y, int limit, int rightClamp, const std::string
 		
 		// if a space is needed, skip some pixels
 		else if (ch==' ') {
-			drect.x+=g_SpaceSize;
+			drect.x+=SIZE_WHITESPACE;
 			
 			continue;
 		}
 		
+		// ignore certain characters
+		else if (discardChar(ch))
+			continue;
+		
 		// force a new line if needed
-		int width=font.glyphs[ch].w+font.glyphs[str[i+1]].w+g_CharSpace;
+		int width=getGlyphWidth(ch, size)+getGlyphWidth(str[i+1], size)+SIZE_CHAR_SPACE;
 		if ((drect.x+width)>=rightClamp) {
 			// check if we already have three lines
 			if (breakCount==2)
 				return i;
 			
-			// blit a hyphen, if needed
-			if (i>0 && str[i-1]!=' ')
-				SDL_BlitSurface(font.glyphs['-'].surface, NULL, screen, &drect);
-			
 			// reset for next row
-			drect.x=x;
-			drect.y+=g_LineBreakSize;
+			drect.x=p.x();
+			drect.y+=SIZE_LINE_BREAK;
+			
+			// modify the y coordinate
+			SDL_Rect r={ drect.x, drect.y };
+			r.y=glyphBase(drect.y, ch, size);
 			
 			// blit the character that was supposed to be here
-			SDL_BlitSurface(font.glyphs[ch].surface, NULL, screen, &drect);
+			SDL_Surface *glyph=renderGlyph(ch, size, color, QUALITY_SOLID);
+			SDL_BlitSurface(glyph, NULL, screen, &r);
+			SDL_FreeSurface(glyph);
 			
 			// move to next one
-			drect.x+=font.glyphs[ch].w+g_CharSpace;
+			drect.x+=getGlyphWidth(ch, size)+SIZE_CHAR_SPACE;
 			
 			breakCount++;
 			continue;
 		}
 		
 		// draw the glyph
-		SDL_BlitSurface(font.glyphs[ch].surface, NULL, screen, &drect);
+		// modify the y coordinate
+		SDL_Rect r={ drect.x, drect.y };
+		r.y=glyphBase(drect.y, ch, size);
+		
+		SDL_Surface *glyph=renderGlyph(ch, size, color, QUALITY_SOLID);
+		SDL_BlitSurface(glyph, NULL, screen, &r);
+		SDL_FreeSurface(glyph);
 		
 		// move over to the next glyph
-		drect.x+=font.glyphs[ch].w+g_CharSpace;
+		drect.x+=getGlyphWidth(ch, size)+SIZE_CHAR_SPACE;
 	}
 	
 	return -1;
 }
 
 // draw a string centered on the screen
-int Fonts::drawStringCentered(int y, int delimiter, const std::string &str, const std::string &fontId) {
+int Fonts::drawStringCentered(int y, int delimiter, const std::string &str, int size, const Color &color) {
 	std::string nstr=str;
 	
 	// cache the right clamp value
@@ -358,28 +296,28 @@ int Fonts::drawStringCentered(int y, int delimiter, const std::string &str, cons
 	StringVector vec=Utils::explodeString("\\n", str);
 	
 	// draw first string, since there's always at least one
-	int x=128-(Fonts::getWidth(fontId, vec[0])/2);
-	drawString(x, y, delimiter, clamp, vec[0], fontId);
+	int x=128-(Fonts::getWidth(vec[0], size)/2);
+	drawString(Point(x, y), delimiter, clamp, vec[0], size, color);
 	
 	// second line
 	if (vec.size()>1 && delimiter>=vec[0].size()) {
 		// calculate another new x and draw the string
-		x=128-(Fonts::getWidth(fontId, vec[1])/2);
-		drawString(x, y+Fonts::g_LineBreakSize, delimiter-vec[0].size(), clamp, vec[1], fontId);
+		x=128-(Fonts::getWidth(vec[1], size)/2);
+		drawString(Point(x, y+Fonts::SIZE_LINE_BREAK), delimiter-vec[0].size(), clamp, vec[1], size, color);
 		
 		// third line
 		if (vec.size()>2 && delimiter>=(vec[0].size()+vec[1].size())) {
 			// calculate last new x, and draw string
-			x=128-(Fonts::getWidth(fontId, vec[2])/2);
-			drawString(x, y+Fonts::g_LineBreakSize*2, delimiter-(vec[0].size()+vec[1].size()), clamp, vec[2], fontId);
+			x=128-(Fonts::getWidth(vec[2], size)/2);
+			drawString(Point(x, y+Fonts::SIZE_LINE_BREAK*2), delimiter-(vec[0].size()+vec[1].size()), clamp, vec[2], size, color);
 		}
 	}
 }
 
 // draw a ttf font string
-void Fonts::drawTTF(const Point &p, const std::string &str, int size, const Color &color) {
+void Fonts::drawStringBlended(const Point &p, const std::string &str, int size, const Color &color) {
 	// get the font
-	TTF_Font *font=queryTTF(size);
+	TTF_Font *font=queryFont(size);
 	if (!font) {
 		std::cout << "Fonts: requested TTF font size '" << size << "' doesn't exist.\n";
 		return;
@@ -400,13 +338,13 @@ void Fonts::drawTTF(const Point &p, const std::string &str, int size, const Colo
 }
 
 // get the width of a string
-int Fonts::getWidth(const std::string &id, const std::string &str) {
+int Fonts::getWidth(const std::string &str, int size) {
 	// get the requested font
-	if (!queryFont(id)) {
-		std::cout << "Font: font '" << id << "' not found\n";
+	if (!queryFont(size)) {
+		std::cout << "Font: font '" << size << "' not found\n";
 		return -1;
 	}
-	Font font=*queryFont(id);
+	Font *font=queryFont(size);
 	
 	// iterate over string
 	int width=0;
@@ -417,7 +355,7 @@ int Fonts::getWidth(const std::string &id, const std::string &str) {
 		
 		// spaces are 5 pixels wide
 		else if (str[i]==' ')
-			width+=g_SpaceSize;
+			width+=SIZE_WHITESPACE;
 		
 		else {
 			if (str[i]=='\\')
@@ -425,7 +363,7 @@ int Fonts::getWidth(const std::string &id, const std::string &str) {
 			
 			else {
 				// increment width
-				width+=font.glyphs[str[i]].w+g_CharSpace;
+				width+=getGlyphWidth(str[i], size)+SIZE_CHAR_SPACE;
 			}
 		}
 	}
@@ -433,33 +371,21 @@ int Fonts::getWidth(const std::string &id, const std::string &str) {
 	return width;
 }
 
-// get the width of a ttf string
-int Fonts::getTTFWidth(const std::string &str, int size) {
-	TTF_Font *font=queryTTF(size);
-	if (!font) {
-		std::cout << "Fonts:: requested TTF font size '" << size << "' doesn't exist.\n";
-		return 0;
-	}
-	int width=0;
-	
-	for (int i=0; i<str.size(); i++) {
-		if (i==' ')
-			width+=g_SpaceSize;
-		
-		else {
-			// get the amount of pixels this glyph needs, and add it
-			int advance=0;
-			if (TTF_GlyphMetrics(font, str[i], NULL, NULL, NULL, NULL, &advance)!=-1)
-				width+=advance;
-		}
+// get the width of a glyph
+int Fonts::getGlyphWidth(char ch, int size) {
+	Font *font=queryFont(size);
+	if (font) {
+		int min, max;
+		TTF_GlyphMetrics(font, ch, &min, &max, NULL, NULL, NULL);
+		return max-min;
 	}
 	
-	return width;
+	return -1;
 }
 
 // get the height of a ttf font
-int Fonts::getTTFHeight(int size) {
-	TTF_Font *font=queryTTF(size);
+int Fonts::getHeight(int size) {
+	Font *font=queryFont(size);
 	if (!font) {
 		std::cout << "Fonts: requested TTF font size '" << size << "' not found.\n";
 		return 0;
@@ -468,41 +394,20 @@ int Fonts::getTTFHeight(int size) {
 	return TTF_FontHeight(font);
 }
 
-// return a font from the map
-Fonts::Font* Fonts::queryFont(const std::string &id) {
-	return &g_Fonts[id];
-}
-
 // return a ttf font from the map
-TTF_Font* Fonts::queryTTF(int size) {
-	return g_FontsTTF[size];
+Fonts::Font* Fonts::queryFont(int size) {
+	return g_Fonts[size];
 }
 
 // add a font to the map
-void Fonts::pushFont(const std::string &id, const Font &font) {
-	g_Fonts[id]=font;
-}
-
-// remove a font from the map
-void Fonts::popFont(const std::string &id) {
-	Font &f=g_Fonts[id];
-	
-	// free normal size glyphs
-	for (std::map<char, Glyph>::iterator it=f.glyphs.begin(); it!=f.glyphs.end(); ++it)
-		SDL_FreeSurface((*it).second.surface);
-	
-	g_Fonts.erase(id);
+void Fonts::pushFont(int size,Font *font) {
+	g_Fonts[size]=font;
 }
 
 // clear the font map
 void Fonts::clearFontStack() {
-	for (std::map<int, TTF_Font*>::iterator it=g_FontsTTF.begin(); it!=g_FontsTTF.end(); ++it) {
+	for (std::map<int, Font*>::iterator it=g_Fonts.begin(); it!=g_Fonts.end(); ++it) {
 		if ((*it).second)
 			TTF_CloseFont((*it).second);
-	}
-	
-	for (FontMap::iterator it=g_Fonts.begin(); it!=g_Fonts.end(); ++it) {
-		for (std::map<char, Glyph>::iterator g=(*it).second.glyphs.begin(); g!=(*it).second.glyphs.end(); ++g)
-			SDL_FreeSurface((*g).second.surface);
 	}
 }

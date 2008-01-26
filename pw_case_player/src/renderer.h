@@ -31,10 +31,6 @@
 
 namespace Renderer {
 
-// default font sizes for elements
-static const int BUTTON_TEXT_FONT=16;
-static const int INFO_PAGE_FONT=11;
-
 // draw a colored rectangle
 void drawRect(SDL_Surface *surface, const Point &p, int w, int h, const Color &color);
 

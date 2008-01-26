@@ -132,7 +132,12 @@ bool SDLContext::initGame(const std::string &pathToCase) {
 	}
 	
 	// find the root path based on path to case
-	int npos=pathToCase.rfind("/");
+	int npos;
+#ifndef __WIN32__
+	npos=pathToCase.rfind('/');
+#else
+	npos=pathToCase.rfind('\\');
+#endif
 	std::string rootPath=pathToCase.substr(0, npos);
 	
 	// create game engine
@@ -143,8 +148,9 @@ bool SDLContext::initGame(const std::string &pathToCase) {
 		return false;
 	
 	// load ttf fonts
-	Fonts::g_FontsTTF[11]=TTF_OpenFont(".temp/data/fonts/arial.ttf", 11);
-	Fonts::g_FontsTTF[16]=TTF_OpenFont(".temp/data/fonts/arial.ttf", 16);
+	Fonts::g_Fonts[Fonts::FONT_INFO_PAGE]=TTF_OpenFont(".temp/data/fonts/arial.ttf", Fonts::FONT_INFO_PAGE);
+	Fonts::g_Fonts[Fonts::FONT_STANDARD]=TTF_OpenFont(".temp/data/fonts/arial.ttf", Fonts::FONT_STANDARD);
+	Fonts::g_Fonts[Fonts::FONT_BUTTON_TEXT]=TTF_OpenFont(".temp/data/fonts/arial.ttf", Fonts::FONT_BUTTON_TEXT);
 	
 	// load our theme
 	if (!IO::loadThemeXML("theme.xml", Theme::g_Theme))

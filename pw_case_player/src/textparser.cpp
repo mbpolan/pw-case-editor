@@ -235,7 +235,7 @@ std::string TextParser::parse(bool drawDialogue) {
 					m_Dialogue+=(char) ch;
 					
 					// see if we are over the text limit and need to break
-					if (Fonts::lineWillBreak(8, 134, SDL_GetVideoSurface()->w-8, m_Dialogue, m_FontStyle.color)) {
+					if (Fonts::lineWillBreak(Point(8, 134), SDL_GetVideoSurface()->w-8, m_Dialogue, Fonts::FONT_STANDARD)) {
 						m_Pause=true;
 						break;
 					}
@@ -345,17 +345,18 @@ std::string TextParser::parse(bool drawDialogue) {
 		
 		// if we are formatted to display a date or testimony title, center the string
 		if (m_FontStyle.type=="date" || m_FontStyle.type=="testimony-title")
-			Fonts::drawStringCentered(134+shift, m_StrPos, m_Dialogue, m_FontStyle.color);
+			Fonts::drawStringCentered(134+shift, m_StrPos, m_Dialogue, Fonts::FONT_STANDARD, m_FontStyle.color);
 		
 		// draw the string in plain formatting otherwise
 		else {
 			// make the color green for cross examinations
 			if (m_Game->m_State.curExamination && !m_Game->m_State.curExaminationPaused)
-				m_FontStyle.color="green";
+				m_FontStyle.color=Fonts::COLOR_GREEN;
 			
 			// draw the string
 			if (drawDialogue)
-				Fonts::drawString(8, 134+shift, m_StrPos, SDL_GetVideoSurface()->w-8, m_Dialogue, m_FontStyle.color);
+				Fonts::drawString(Point(8, 134+shift), m_StrPos, SDL_GetVideoSurface()->w-8, 
+						  m_Dialogue, Fonts::FONT_STANDARD, m_FontStyle.color);
 			
 			// since the dialog is done, execute queued events
 			if (m_QueuedEvent!="null" && dialogueDone()) {
@@ -571,17 +572,17 @@ bool TextParser::filterTrigger(const std::string &id, const Filter &filter) {
 void TextParser::parseTag(const std::string &tag) {
 	// blue color tag -- set blue font
 	if (tag=="blue")
-		m_FontStyle.color="blue";
+		m_FontStyle.color=Fonts::COLOR_BLUE;
 	
 	// green color tag -- set green font
 	else if (tag=="green")
-		m_FontStyle.color="green";
+		m_FontStyle.color=Fonts::COLOR_GREEN;
 	
 	// testimony title - orange font and centered
 	else if (tag=="testimony-title") {
 		m_FontStyle.type=tag;
 		
-		m_FontStyle.color="orange";
+		m_FontStyle.color=Fonts::COLOR_ORANGE;
 		
 		m_BlockDiag=true;
 	}
@@ -590,7 +591,7 @@ void TextParser::parseTag(const std::string &tag) {
 	else if (tag=="date") {
 		m_FontStyle.type=tag;
 		
-		m_FontStyle.color="green";
+		m_FontStyle.color=Fonts::COLOR_GREEN;
 		m_FontStyle.speed=150;
 		
 		m_BlockDiag=true;
@@ -600,7 +601,7 @@ void TextParser::parseTag(const std::string &tag) {
 // clear current font formatting
 void TextParser::clearFormatting() {
 	m_FontStyle.type="plain";
-	m_FontStyle.color="white";
+	m_FontStyle.color=Fonts::COLOR_WHITE;
 	m_FontStyle.speed=NORMAL_FONT_SPEED;
 }
 

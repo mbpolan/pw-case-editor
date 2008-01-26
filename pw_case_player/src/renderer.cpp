@@ -132,14 +132,14 @@ void Renderer::drawImage(const Point &p1, int w, int h, const Point &p2, const s
 
 // draw a button with text
 void Renderer::drawButton(const Point &p1, int w, const std::string &text) {
-	int fsize=Renderer::BUTTON_TEXT_FONT;
+	int fsize=Fonts::FONT_BUTTON_TEXT;
 	
 	// verify that we have enough room for the text
-	int fw=Fonts::getTTFWidth(text, fsize);
+	int fw=Fonts::getWidth(text, fsize);
 	if (fw>w-4) {
 		// step the font down a size
-		fsize=Renderer::INFO_PAGE_FONT;
-		fw=Fonts::getTTFWidth(text, fsize);
+		fsize=Fonts::FONT_INFO_PAGE;
+		fw=Fonts::getWidth(text, fsize);
 	}
 	
 	// first, draw the border at the left
@@ -153,8 +153,8 @@ void Renderer::drawButton(const Point &p1, int w, const std::string &text) {
 	
 	// now draw the text
 	int centerX=(p1.x()+(w/2)-(fw/2));
-	int centerY=p1.y()+((26-Fonts::getTTFHeight(fsize))/2)-2;
-	Fonts::drawTTF(Point(centerX, centerY), text, fsize, Theme::lookup("button_text"));
+	int centerY=p1.y()+((26-Fonts::getHeight(fsize))/2)-2;
+	Fonts::drawStringBlended(Point(centerX, centerY), text, fsize, Theme::lookup("button_text"));
 }
 
 // generate a correctly rendered court panorama based on shown sprites
@@ -282,13 +282,13 @@ void Renderer::drawEvidencePage(const std::vector<Case::Evidence*> &evidence, in
 				std::string name=e->name;
 				
 				// calculate string length for this string
-				int width=Fonts::getWidth("orange", name);
+				int width=Fonts::getWidth(name, Fonts::FONT_INFO_PAGE);
 				
 				// find the center x position for the string
 				int centerx=(int) floor((204-width)/2);
 				
 				// draw the string at this position
-				Fonts::drawString(24+centerx, 238, name, "orange");
+				Fonts::drawString(Point(24+centerx, 238), name, Fonts::FONT_INFO_PAGE, Fonts::COLOR_YELLOW);
 				
 				// draw selection box
 				drawRect(screen, Point(x-1, y-1), 42, 42, Theme::lookup("selection_box"));
@@ -353,16 +353,16 @@ void Renderer::drawEvidenceInfoPage(Case::Evidence *e) {
 	drawRect(screen, Point(x+2, y+2), 144, 15, Theme::lookup("info_bar_bg"));
 	
 	// calculate center position for name
-	int centerx=(x+72)-(Fonts::getWidth("orange", e->name)/2);
+	int centerx=(x+72)-(Fonts::getWidth(e->name, Fonts::FONT_INFO_PAGE)/2);
 	
 	// draw evidence name in title bar
-	Fonts::drawString(centerx, y+4, e->name, "orange");
+	Fonts::drawString(Point(centerx, y+4), e->name, Fonts::FONT_INFO_PAGE, Fonts::COLOR_YELLOW);
 	
 	// draw info box body
 	drawRect(screen, Point(x+2, y+17), 144, 51, Theme::lookup("info_box_bg"));
 	
 	// draw evidence caption in this area
-	Fonts::drawTTF(Point(x+5, y+18), e->caption, Renderer::INFO_PAGE_FONT, Color(0, 0, 0));
+	Fonts::drawStringBlended(Point(x+5, y+18), e->caption, Fonts::FONT_INFO_PAGE, Fonts::COLOR_BLACK);
 	
 	// moving right along...
 	x+=148;
@@ -375,7 +375,7 @@ void Renderer::drawEvidenceInfoPage(Case::Evidence *e) {
 	drawRect(screen, Point(0, 308), 256, 6, Theme::lookup("info_box_border"));
 	
 	// draw evidence description in bottom area
-	Fonts::drawString(16, y+81, e->description, "white");
+	Fonts::drawString(Point(16, y+81), e->description, Fonts::FONT_INFO_PAGE, Fonts::COLOR_WHITE);
 }
 
 // draw the profiles page
@@ -429,13 +429,13 @@ void Renderer::drawProfilesPage(const std::vector<Character*> &uchars, int page,
 				std::string name=c->getName();
 				
 				// calculate string length for this string
-				int width=Fonts::getWidth("orange", name);
+				int width=Fonts::getWidth(name, Fonts::FONT_INFO_PAGE);
 				
 				// find the center x position for the string
 				int centerx=(int) floor((204-width)/2);
 				
 				// draw the string at this position
-				Fonts::drawString(24+centerx, 238, name, "orange");
+				Fonts::drawString(Point(24+centerx, 238), name, Fonts::FONT_INFO_PAGE, Fonts::COLOR_YELLOW);
 				
 				// draw selection box
 				drawRect(screen, Point(x-1, y-1), 42, 42, Theme::lookup("selection_box"));
@@ -500,16 +500,16 @@ void Renderer::drawProfileInfoPage(Character *c) {
 	drawRect(screen, Point(x+2, y+2), 144, 15, Theme::lookup("info_bar_bg"));
 	
 	// calculate center position for name
-	int centerx=(x+72)-(Fonts::getWidth("orange", c->getName())/2);
+	int centerx=(x+72)-(Fonts::getWidth(c->getName(), Fonts::FONT_INFO_PAGE)/2);
 	
 	// draw evidence name in title bar
-	Fonts::drawString(centerx, y+4, c->getName(), "orange");
+	Fonts::drawString(Point(centerx, y+4), c->getName(), Fonts::FONT_INFO_PAGE, Fonts::COLOR_YELLOW);
 	
 	// draw info box body
 	drawRect(screen, Point(x+2, y+17), 144, 51, Theme::lookup("info_box_bg"));
 	
 	// draw character caption in this area
-	Fonts::drawTTF(Point(x+5, y+18), c->getCaption(), Renderer::INFO_PAGE_FONT, Color(0, 0, 0));
+	Fonts::drawStringBlended(Point(x+5, y+18), c->getCaption(), Fonts::FONT_INFO_PAGE, Fonts::COLOR_BLACK);
 	
 	// moving right along...
 	x+=148;
@@ -522,7 +522,7 @@ void Renderer::drawProfileInfoPage(Character *c) {
 	drawRect(screen, Point(0, 308), 256, 6, Theme::lookup("info_box_border"));
 	
 	// draw evidence description in bottom area
-	Fonts::drawString(16, y+81, c->getDescription(), "white");
+	Fonts::drawString(Point(16, y+81), c->getDescription(), Fonts::FONT_INFO_PAGE, Fonts::COLOR_WHITE);
 }
 
 // draw the examination scene

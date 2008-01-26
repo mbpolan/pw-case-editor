@@ -145,26 +145,6 @@ Game* Game::instance() {
 
 // load stock textures
 bool Game::loadStockTextures() {
-	// vector of fonts to load
-	std::vector<std::pair<std::string, std::string> > fonts;
-	fonts.push_back(std::make_pair<std::string, std::string>("white", ".temp/data/fonts/white.pwf"));
-	fonts.push_back(std::make_pair<std::string, std::string>("black", ".temp/data/fonts/black.pwf"));
-	fonts.push_back(std::make_pair<std::string, std::string>("blue", ".temp/data/fonts/blue.pwf"));
-	fonts.push_back(std::make_pair<std::string, std::string>("orange", ".temp/data/fonts/orange.pwf"));
-	fonts.push_back(std::make_pair<std::string, std::string>("green", ".temp/data/fonts/green.pwf"));
-	
-	// iterate over fonts and load them
-	for (int i=0; i<fonts.size(); i++) {
-		Fonts::Font font;
-		if (!Fonts::loadFont(fonts[i].second, font)) {
-			std::cout << "CRITICAL: Unable to load font '" << fonts[i].first << "': " << fonts[i].second << std::endl;
-			return false;
-		}
-		
-		// add this font
-		Fonts::pushFont(fonts[i].first, font);
-	}
-	
 	// load stock assets
 	if (!IO::loadStockFile("stock.cfg", m_Case)) {
 		std::cout << "CRITICAL: Unable to load stock assets from file\n";
@@ -1010,12 +990,12 @@ void Game::renderTopView() {
 			Case::Overview overview=m_Case->getOverview();
 			
 			// also draw case name, and author
-			Fonts::drawTTF(Point(128-(Fonts::getTTFWidth(overview.name, Renderer::BUTTON_TEXT_FONT)/2), 130), 
-					     overview.name, Renderer::BUTTON_TEXT_FONT, Color(255, 255, 255));
+			Fonts::drawStringBlended(Point(128-(Fonts::getWidth(overview.name, Fonts::FONT_BUTTON_TEXT)/2), 130), 
+					     overview.name, Fonts::FONT_BUTTON_TEXT, Color(255, 255, 255));
 			
-			Fonts::drawTTF(Point(128-(Fonts::getTTFWidth(overview.author, Renderer::BUTTON_TEXT_FONT)/2), 	
-				             135+Fonts::getTTFHeight(Renderer::BUTTON_TEXT_FONT)),
-				             overview.author, Renderer::BUTTON_TEXT_FONT, Color(255, 255, 255));
+			Fonts::drawStringBlended(Point(128-(Fonts::getWidth(overview.author, Fonts::FONT_BUTTON_TEXT)/2), 	
+				             135+Fonts::getHeight(Fonts::FONT_BUTTON_TEXT)),
+				             overview.author, Fonts::FONT_BUTTON_TEXT, Color(255, 255, 255));
 		}
 		
 		return;

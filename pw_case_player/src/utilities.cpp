@@ -63,7 +63,7 @@ bool Utils::FS::dirExists(const std::string &path) {
 }
 
 // create a directory
-void Utils::FS::mkdir(const std::string &path) {
+void Utils::FS::makeDir(const std::string &path) {
 	// no point in recreating an already existing directory
 	if (!dirExists(path)) {
 		std::string cmd="mkdir ";

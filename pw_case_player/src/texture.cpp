@@ -20,9 +20,15 @@
 // texture.cpp: implementation of Textures namespace
 
 #include <sstream>
-#include "SDL/SDL_image.h"
+#include "SDL_image.h"
 
 #include "texture.h"
+
+namespace Textures {
+
+std::map<std::string, SDL_Surface*> g_TextureMap;
+
+}
 
 // get a texture from the map
 SDL_Surface* Textures::queryTexture(const std::string &id) {
@@ -45,9 +51,11 @@ void Textures::popTexture(const std::string &id) {
 // clear the texture stack
 void Textures::clearStack() {
 	for (std::map<std::string, SDL_Surface*>::iterator it=g_TextureMap.begin(); it!=g_TextureMap.end(); ++it) {
-		SDL_FreeSurface((*it).second);
-		g_TextureMap.erase(it);
+		if ((*it).second)
+			SDL_FreeSurface((*it).second);
 	}
+	
+	g_TextureMap.clear();
 }
 
 // create a texture after loading an image from file

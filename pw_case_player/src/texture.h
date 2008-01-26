@@ -40,7 +40,7 @@ struct _Texture {
 typedef struct _Texture Texture;
 
 // map of all allocated textures
-static std::map<std::string, SDL_Surface*> g_TextureMap;
+extern std::map<std::string, SDL_Surface*> g_TextureMap;
 
 // get a texture from the map
 SDL_Surface* queryTexture(const std::string &id);

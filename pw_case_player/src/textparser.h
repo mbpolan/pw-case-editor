@@ -30,7 +30,7 @@ class Game;
 // struct that stores the current font style
 struct _FontStyle {
 	std::string type; // built-in types: date, etc
-	std::string color;
+	Color color;
 	int speed;
 };
 typedef struct _FontStyle FontStyle;

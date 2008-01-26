@@ -43,7 +43,7 @@ void move(const std::string &from, const std::string &to);
 bool dirExists(const std::string &path);
 
 // create a directory
-void mkdir(const std::string &path);
+void makeDir(const std::string &path);
 
 // remove a directory
 void removeDir(const std::string &path);
