@@ -22,6 +22,11 @@
 #include <cmath>
 #include <dirent.h>
 
+// include windows.h for directory/file management functions
+#ifdef __WIN32__
+#include <windows.h>
+#endif
+
 #include "utilities.h"
 
 namespace Utils {
@@ -41,12 +46,11 @@ void Utils::FS::move(const std::string &from, const std::string &to) {
 	std::string cmd;
 #ifndef __WIN32__
 	cmd="mv ";
-#else
-	cmd="move ";
-#endif
 	cmd+=from+" "+to;
-	
 	system(cmd.c_str());
+#else
+	MoveFile(from.c_str(), to.c_str());
+#endif
 }
 
 // check if a directory exists
@@ -66,9 +70,14 @@ bool Utils::FS::dirExists(const std::string &path) {
 void Utils::FS::makeDir(const std::string &path) {
 	// no point in recreating an already existing directory
 	if (!dirExists(path)) {
+		
+#ifndef __WIN32__
 		std::string cmd="mkdir ";
 		cmd+=path;
 		system(cmd.c_str());
+#else
+		CreateDirectory(path.c_str(), NULL);
+#endif
 	}
 }
 
@@ -82,6 +91,7 @@ void Utils::FS::removeDir(const std::string &path) {
 		cmd="rm -rf ";
 		cmd+=path;
 #else
+		// FIXME: use the Win32 api functions here instead of system()
 		cmd="rmdir /S /Q ";
 		cmd+=path;
 #endif

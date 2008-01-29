@@ -21,6 +21,11 @@
 
 #include <gtkmm/main.h>
 
+// for windows, we need the WinExec function
+#ifdef __WIN32__
+#include <windows.h>
+#endif
+
 #include "mainwindow.h"
 
 int main(int argc, char *argv[]) {
@@ -38,13 +43,16 @@ int main(int argc, char *argv[]) {
 		// first, we form the command string, depending on operating system
 		Glib::ustring command;
 #ifdef __WIN32__
-		command="pw_case_player.exe ";
-#else
-		command="./pw_case_player ";
-#endif
+		command="pw_case_player.exe "+p->params+"\""+p->path+"\"";
 		
-		// now run the command
-		system(Glib::ustring(command+p->params+p->path).c_str());
+		// launch the player, making sure not to open a command prompt window
+		WinExec(command.c_str(), SW_SHOW);
+#else
+		command="./pw_case_player "+p->params+"\""+p->path+"\"";
+		
+		// launch the player via system()
+		system(command.c_str());
+#endif
 	}
 	
 	return 0;

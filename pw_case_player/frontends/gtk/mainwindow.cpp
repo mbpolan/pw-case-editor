@@ -193,7 +193,7 @@ void MainWindow::on_quit() {
 // about handler
 void MainWindow::on_about() {
 	Gtk::AboutDialog ad;
-	ad.set_program_name("Phoenix Wright Case Player");
+	ad.set_name("Phoenix Wright Case Player");
 	ad.set_version("1.0");
 	ad.set_comments("The player program to run fan-made cases, which were exported from the editor.");
 	ad.set_website("http://pw-case-player.sf.net");

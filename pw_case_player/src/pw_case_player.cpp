@@ -23,8 +23,15 @@
 #include "SDL.h"
 
 #include "application.h"
+#include "common.h"
 
 int main(int argc, char *argv[]) {
+	// we need to enable some sort of error reporting mechanism in case of
+	// a crash on Windows
+#ifdef __WIN32__
+	signal(SIGSEGV, onSigSegv);
+#endif
+	
 	// check arguments or display help message
 	if (argc<2) {
 		std::cout << "Phoenix Wright Case Player " << Application::VERSION << "\n\n";

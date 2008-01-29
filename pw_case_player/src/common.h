@@ -23,10 +23,14 @@
 #define COMMON_H
 
 #include <iostream>
+#include <signal.h>
 #include "SDL.h"
 
 // a value,key string pair
 typedef std::pair<std::string, std::string> StringPair;
+
+// function prototypes
+static void onSigSegv(int sig) { };
 
 // an rgba color
 class Color {

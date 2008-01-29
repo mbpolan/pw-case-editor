@@ -65,8 +65,14 @@ bool IO::unpackResourceFile(const std::string &path) {
 		archive_read_data_skip(ar);
 	}
 	
+	// windows needs to have an absolute path
+	std::string to=".temp";
+#ifdef __WIN32__
+	to+="\\data";
+#endif
+	
 	// move our data directory, to the hidden temporary directory
-	Utils::FS::move("data", ".temp");
+	Utils::FS::move("data", to);
 	
 	// wrap up
 	archive_read_finish(ar);
