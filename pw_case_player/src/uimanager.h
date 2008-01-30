@@ -79,6 +79,9 @@ struct _Animation {
 	// text for gui
 	std::string txt;
 	
+	// sound effect
+	std::string sfx;
+	
 	// callback for gui clicks
 	Callback callback;
 	
@@ -121,6 +124,30 @@ struct _Animation {
 };
 typedef struct _Animation Animation;
 
+// a gui button
+class Button {
+	public:
+		// constructor
+		Button(const std::string &text, const Point &p, Callback slot, const std::string &sfx="null") {
+			m_Text=text;
+			m_Point=p;
+			m_Slot=slot;
+			m_SFX=sfx;
+		}
+		
+		// get attributes of button
+		std::string getText() const { return m_Text; }
+		std::string getSFX() const { return m_SFX; }
+		Point getPoint() const { return m_Point; }
+		Callback getSlot() const { return m_Slot; }
+		
+	private:
+		std::string m_Text;
+		std::string m_SFX;
+		Point m_Point;
+		Callback m_Slot;
+};
+
 // class that manages ui state
 class Manager {
 	public:
@@ -158,7 +185,7 @@ class Manager {
 		void clickGUIButton(const std::string &id);
 		
 		// register a gui button
-		void registerGUIButton(const std::string &id, int w, const std::string &text, const Point &p, Callback slot);
+		void registerGUIButton(const std::string &id, int w, const Button &button);
 		
 		// register a ui animation that bounces the image from side to side
 		// limits are relative to origin; that is, if origin is (100, 100), and if the animation

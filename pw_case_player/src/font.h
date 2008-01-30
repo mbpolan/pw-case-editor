@@ -33,8 +33,8 @@ namespace Fonts {
 
 // amount of pixels to skip following a line break, space, and in between characters
 const int SIZE_LINE_BREAK=17;
-const int SIZE_WHITESPACE=10;
 const int SIZE_CHAR_SPACE=2;
+const int SIZE_WHITESPACE=10-SIZE_CHAR_SPACE;
 
 // default font sizes for elements
 static const int FONT_BUTTON_TEXT=16;

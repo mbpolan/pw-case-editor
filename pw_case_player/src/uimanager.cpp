@@ -122,21 +122,26 @@ bool UI::Manager::mouseOverButton(const std::string &id, const Point &p) {
 void UI::Manager::clickGUIButton(const std::string &id) {
 	UI::Animation &anim=m_Animations[id];
 	anim.velocity=1;
+	
+	// play the sound effect
+	if (anim.sfx!="null")
+		Audio::playEffect(anim.sfx, Audio::CHANNEL_GUI);
 }
 
 // register a gui button
-void UI::Manager::registerGUIButton(const std::string &id, int w, const std::string &text, const Point &p, UI::Callback slot) {
+void UI::Manager::registerGUIButton(const std::string &id, int w, const Button &b) {
 	UI::Animation anim;
 	
 	anim.lastDraw=0;
 	anim.type=ANIM_GUI_BUTTON;
-	anim.current=p;
-	anim.callback=slot;
+	anim.current=b.getPoint();
+	anim.callback=b.getSlot();
 	anim.w=w;
 	anim.texture1Active=true;
 	anim.speed=100;
-	anim.txt=text;
+	anim.txt=b.getText();
 	anim.ticks=50;
+	anim.sfx=b.getSFX();
 	anim.velocity=0; // 0 for idle, 1 for clicked
 	
 	m_Animations[id]=anim;
@@ -1078,7 +1083,7 @@ bool UI::Manager::animateGUIButton(const std::string &id) {
 		
 		anim.ticks-=1;
 		if (anim.ticks<=0) {
-			registerGUIButton(id, anim.w, anim.txt, anim.current, anim.callback);
+			registerGUIButton(id, anim.w, Button(anim.txt, anim.current, anim.callback, anim.sfx));
 			
 			// if a callback is registered, call it now
 			if (anim.callback!=NULL)

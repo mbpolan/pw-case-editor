@@ -20,7 +20,7 @@
   </general>
   <kdevautoproject>
     <general>
-      <activetarget>frontend_gtk/frontend</activetarget>
+      <activetarget>src/pw_case_player</activetarget>
       <useconfiguration>default</useconfiguration>
       <useactivetarget>true</useactivetarget>
     </general>
@@ -29,15 +29,18 @@
       <terminal>true</terminal>
       <runarguments>
         <pw_case_player/>
-        <frontend></frontend>
+        <frontend/>
+        <frontend_gtk/>
       </runarguments>
       <debugarguments>
         <pw_case_player/>
-        <frontend></frontend>
+        <frontend/>
+        <frontend_gtk/>
       </debugarguments>
       <cwd>
         <pw_case_player>/home/mike/Documents/programming/pw_case_player/debug/./src</pw_case_player>
         <frontend>/home/mike/Documents/programming/pw_case_player/./src</frontend>
+        <frontend_gtk>/home/mike/Documents/programming/pw_case_player/./</frontend_gtk>
       </cwd>
       <programargs>/home/mike/pw/case.pwt</programargs>
       <globaldebugarguments/>

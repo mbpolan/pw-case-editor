@@ -605,16 +605,16 @@ void Game::registerAnimations() {
 	m_UI->registerFlash("an_flash", 5);
 	
 	// register gui animations
-	m_UI->registerGUIButton("an_new_game_btn", 150, "New Game", Point(53, 240), &Game::onInitialScreenClicked);
-	m_UI->registerGUIButton("an_talk_op1_btn", 200, "", Point(28, 236), &Game::onTalkSceneClicked);
-	m_UI->registerGUIButton("an_talk_op2_btn", 200, "", Point(28, 267), &Game::onTalkSceneClicked);
-	m_UI->registerGUIButton("an_talk_op3_btn", 200, "", Point(28, 298), &Game::onTalkSceneClicked);
-	m_UI->registerGUIButton("an_talk_op4_btn", 200, "", Point(28, 329), &Game::onTalkSceneClicked);
+	m_UI->registerGUIButton("an_new_game_btn", 150, UI::Button("New Game", Point(53, 240), &Game::onInitialScreenClicked, "sfx_gavel"));
+	m_UI->registerGUIButton("an_talk_op1_btn", 200, UI::Button("", Point(28, 236), &Game::onTalkSceneClicked));
+	m_UI->registerGUIButton("an_talk_op2_btn", 200, UI::Button("", Point(28, 267), &Game::onTalkSceneClicked));
+	m_UI->registerGUIButton("an_talk_op3_btn", 200, UI::Button("", Point(28, 298), &Game::onTalkSceneClicked));
+	m_UI->registerGUIButton("an_talk_op4_btn", 200, UI::Button("", Point(28, 329), &Game::onTalkSceneClicked));
 	
-	m_UI->registerGUIButton("an_move_loc1_btn", 150, "", Point(85, 236), &Game::onMoveSceneClicked);
-	m_UI->registerGUIButton("an_move_loc2_btn", 150, "", Point(85, 267), &Game::onMoveSceneClicked);
-	m_UI->registerGUIButton("an_move_loc3_btn", 150, "", Point(85, 298), &Game::onMoveSceneClicked);
-	m_UI->registerGUIButton("an_move_loc4_btn", 150, "", Point(85, 329), &Game::onMoveSceneClicked);
+	m_UI->registerGUIButton("an_move_loc1_btn", 150, UI::Button("", Point(85, 236), &Game::onMoveSceneClicked));
+	m_UI->registerGUIButton("an_move_loc2_btn", 150, UI::Button("", Point(85, 267), &Game::onMoveSceneClicked));
+	m_UI->registerGUIButton("an_move_loc3_btn", 150, UI::Button("", Point(85, 298), &Game::onMoveSceneClicked));
+	m_UI->registerGUIButton("an_move_loc4_btn", 150, UI::Button("", Point(85, 329), &Game::onMoveSceneClicked));
 	
 	// register sprite sequences
 	m_UI->registerTestimonySequence("an_testimony_sequence");
