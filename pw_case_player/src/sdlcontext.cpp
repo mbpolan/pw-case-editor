@@ -69,9 +69,12 @@ bool SDLContext::init() {
 }
 
 // initialize video output
-bool SDLContext::initVideo(int width, int height) {
+bool SDLContext::initVideo(int width, int height, bool fullscreen) {
 	m_VFlags=SDL_HWPALETTE;
 	m_VFlags |= SDL_DOUBLEBUF;
+	
+	if (fullscreen)
+		m_VFlags |= SDL_FULLSCREEN;
 	
 	// get video hardware information
 	const SDL_VideoInfo *vInfo=SDL_GetVideoInfo();
@@ -155,7 +158,7 @@ bool SDLContext::initGame(const std::string &pathToCase) {
 	
 	// load default ttf fonts
 	for (int i=0; i<sizes.size(); i++) {
-		if (!Fonts::loadFont(".temp/data/fonts/arial.ttf", sizes[i]))
+		if (!Fonts::loadFont("arial.ttf", sizes[i]))
 			Utils::alert("Unable to load font size '"+Utils::itoa(sizes[i])+"'!");
 	}
 	

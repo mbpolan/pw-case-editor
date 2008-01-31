@@ -34,7 +34,7 @@ class Application {
 		static std::string VERSION;
 		
 		// possible command line arguments
-		enum ArgFlags { ARG_NONE=0x00, ARG_NO_SOUND=0x01 };
+		enum ArgFlags { ARG_NONE=0x00, ARG_NO_SOUND=0x01, ARG_FULLSCREEN=0x02 };
 		
 		// constructor
 		Application(int argc, char *argv[]);

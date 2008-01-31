@@ -52,6 +52,10 @@ Application::Application(int argc, char *argv[]) {
 			else if (longArg=="debug" || shortArg=="d")
 				Utils::g_DebugOn=true;
 			
+			// start fullscreen
+			else if (longArg=="fullscreen" || shortArg=="fs")
+				m_ArgFlags |= ARG_FULLSCREEN;
+			
 			else
 				Utils::alert("Unrecognized argument passed to player: '"+(arg)+"'.");
 		}
@@ -80,11 +84,11 @@ void Application::run() {
 		return;
 	
 	// initialize audio, unless NO_SOUND was passed
-	if (!m_ArgFlags & ARG_NO_SOUND)
+	if (!(m_ArgFlags & ARG_NO_SOUND))
 		Audio::g_Output=m_SDLContext->initAudio();
 	
 	// initialize video
-	if (!m_SDLContext->initVideo(256, 389))
+	if (!m_SDLContext->initVideo(256, 389, (m_ArgFlags & ARG_FULLSCREEN)))
 		return;
 	
 	// initialize ttf font library

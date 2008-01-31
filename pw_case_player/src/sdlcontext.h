@@ -47,7 +47,7 @@ class SDLContext {
 		bool init();
 		
 		// initialize video output
-		bool initVideo(int width, int height);
+		bool initVideo(int width, int height, bool fullscreen);
 		
 		// initialize audio output
 		bool initAudio();

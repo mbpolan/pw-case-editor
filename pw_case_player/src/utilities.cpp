@@ -26,6 +26,8 @@
 // include windows.h for directory/file management functions
 #ifdef __WIN32__
 #include <windows.h>
+#include <tchar.h>
+#include <shellapi.h>
 #endif
 
 #include "utilities.h"
@@ -91,13 +93,36 @@ void Utils::FS::removeDir(const std::string &path) {
 #ifndef __WIN32__
 		cmd="rm -rf ";
 		cmd+=path;
-#else
-		// FIXME: use the Win32 api functions here instead of system()
-		cmd="rmdir /S /Q ";
-		cmd+=path;
-#endif
-		
 		system(cmd.c_str());
+#else
+		// for consistency and compatability...
+		LPCTSTR lpszPath=path.c_str();
+		int length=_tcslen(lpszPath);
+		
+		// this is our source field
+		TCHAR *from=new TCHAR[length+2];
+		_tcscpy(from, lpszPath);
+		
+		// SHFileOperation expects this to be double 0 terminated
+		from[length]=0;
+		from[length+1]=0;
+		
+		// fill in our file operations struct
+		SHFILEOPSTRUCT op;
+		op.hwnd=NULL;
+		op.wFunc=FO_DELETE;
+		op.pFrom=from;
+		op.pTo=NULL; // we're deleting; no target needed
+		op.fFlags = FOF_NOCONFIRMATION | FOF_SILENT;
+		op.fAnyOperationsAborted=false;
+		op.lpszProgressTitle=NULL;
+		op.hNameMappings=NULL;
+		
+		// perform this file operation
+		SHFileOperation(&op);
+		delete [] from;
+				
+#endif
 	}
 }
 
@@ -119,14 +144,15 @@ void Utils::alert(const std::string &text, const MessageType &type) {
 	std::cout << prefix << std::endl;
 #else
 	// figure out what type of message this is
-	UINT type=MB_OK;
+	UINT mtype=MB_OK;
 	switch(type) {
 		default:
-		case MESSAGE_CRITICAL: type |= MB_ICONERROR; break;
+		case MESSAGE_CRITICAL: mtype |= MB_ICONERROR; break;
+		case MESSAGE_WARNING: mtype |= MB_ICONWARNING; break;
 	}
 	
 	// display the message box
-	MessageBox(NULL, text.c_str(), "PW Case Player", type);
+	MessageBox(NULL, text.c_str(), "PW Case Player", mtype);
 #endif
 }
 
