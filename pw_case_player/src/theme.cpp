@@ -20,6 +20,7 @@
 // theme.cpp: theme function implementations
 
 #include "theme.h"
+#include "utilities.h"
 
 namespace Theme {
 
@@ -31,6 +32,6 @@ ColorMap g_Theme;
 // get a color based on theme key
 Color Theme::lookup(const std::string &key) {
 	if (g_Theme.find(key)==g_Theme.end())
-		std::cout << "CRITICAL: Theme: element not found:" << key << std::endl;
+		Utils::debugMessage("Theme element '"+key+"' was not.");
 	return g_Theme[key];
 }

@@ -36,7 +36,7 @@
 bool IO::unpackResourceFile(const std::string &path) {
 	FILE *f=fopen(path.c_str(), "rb");
 	if (!f) {
-		std::cout << "CRITICAL: unable to open resource file: " << path << std::endl;
+		Utils::alert("Unable to open resource file: "+path);
 		return false;
 	}
 	
@@ -189,7 +189,7 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 			// try to load it
 			Sprite sprite;
 			if (!IO::loadSpriteFromFile(sprPath, sprite))
-				std::cout << "Unable to load sprite for " << character.getInternalName() << ": " << sprPath << std::endl;
+				Utils::alert("Unable to load sprite for '"+character.getInternalName()+"': '"+sprPath+"'", Utils::MESSAGE_WARNING);
 			
 			else
 				character.setSprite(sprite);
@@ -489,7 +489,7 @@ bool IO::loadSpriteFromFile(const std::string &path, Sprite &sprite) {
 	// read file header 
 	if (fgetc(f)!=(char) 'P' || fgetc(f)!=(char) 'W' || fgetc(f)!=(char) 'S') {
 		fclose(f);
-		std::cout << "Incorrect magic number\n";
+		Utils::alert("Error loading sprite file: '"+path+"'\nReason: Unrecognized file format.");
 		return false;
 	}
 	
@@ -497,7 +497,7 @@ bool IO::loadSpriteFromFile(const std::string &path, Sprite &sprite) {
 	fread(&version, sizeof(int), 1, f);
 	if (version!=10) {
 		fclose(f);
-		std::cout << "Incorrect version: " << version << std::endl;
+		Utils::alert("Error loading sprite file: '"+path+"'\nReason: Unsupported file version: "+Utils::itoa(version)+".");
 		return false;
 	}
 	
@@ -550,7 +550,7 @@ bool IO::loadStockFile(const std::string &path, Case::Case *pcase) {
 	// open the path
 	FILE *f=fopen(path.c_str(), "rb");
 	if (!f) {
-		std::cout << "Unable to open stock file: " << path << std::endl;
+		Utils::alert("Unable to open stock assets file: '"+path+"'.");
 		return false;
 	}
 	
@@ -594,7 +594,7 @@ bool IO::loadStockFile(const std::string &path, Case::Case *pcase) {
 			// try to load the sprite
 			Sprite sprite;
 			if (!IO::loadSpriteFromFile(std::string(".temp/")+sFile, sprite)) {
-				std::cout << "Unable to load sprite: " << sFile << std::endl;
+				Utils::alert("Unable to load stock sprite: '.temp/"+sFile+"'");
 				return false;
 			}
 			
@@ -621,7 +621,7 @@ bool IO::loadStockFile(const std::string &path, Case::Case *pcase) {
 				}
 				
 				else
-					std::cout << "Unable to load text box tag for character '" << vec[0] << "': " << vec[4] << std::endl;
+					Utils::alert("Unable to load textbox tag for character '"+vec[0]+"': '"+vec[4]+"'");
 			}
 			
 			// add this sprite
@@ -685,7 +685,7 @@ bool IO::loadStockFile(const std::string &path, Case::Case *pcase) {
 bool IO::loadThemeXML(const std::string &path, Theme::ColorMap &map) {
 	xmlDocPtr doc=xmlParseFile(path.c_str());
 	if (!doc) {
-		std::cout << "CRITICAL: unable to load theme XML file: " << path << std::endl;
+		Utils::alert("Unable to load theme XML file: '"+path+"'");
 		return false;
 	}
 	
@@ -744,12 +744,12 @@ Textures::Texture IO::readImage(FILE *f) {
 	// read in the jpeg from memory
 	SDL_RWops *rw=SDL_RWFromMem(buffer, size);
 	if (!rw)
-		std::cout << "RWops: " << SDL_GetError() << std::endl;
+		Utils::alert("Error reading internal image: '"+std::string(SDL_GetError())+"'");
 	
 	// load our image from raw data (no need to free RWops structure)
 	SDL_Surface *srf=IMG_Load_RW(rw, 1);
 	if (!srf) {
-		std::cout << "IMG_Load: " << IMG_GetError() << std::endl;
+		Utils::alert("Error loading internal image: '"+std::string(SDL_GetError())+"'");
 		return tex;
 	}
 	

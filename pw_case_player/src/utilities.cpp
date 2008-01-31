@@ -21,6 +21,7 @@
 
 #include <cmath>
 #include <dirent.h>
+#include <sstream>
 
 // include windows.h for directory/file management functions
 #ifdef __WIN32__
@@ -100,6 +101,35 @@ void Utils::FS::removeDir(const std::string &path) {
 	}
 }
 
+// display an alert message to the user
+void Utils::alert(const std::string &text, const MessageType &type) {
+#ifndef __WIN32__
+	// first, format the prefix
+	std::string prefix="** ";
+	switch(type) {
+		default:
+		case MESSAGE_CRITICAL: prefix+="CRITICAL"; break;
+		case MESSAGE_WARNING: prefix+="WARNING"; break;
+	}
+	prefix+=" ** ";
+	
+	// now include the message
+	prefix+=text;
+	
+	std::cout << prefix << std::endl;
+#else
+	// figure out what type of message this is
+	UINT type=MB_OK;
+	switch(type) {
+		default:
+		case MESSAGE_CRITICAL: type |= MB_ICONERROR; break;
+	}
+	
+	// display the message box
+	MessageBox(NULL, text.c_str(), "PW Case Player", type);
+#endif
+}
+
 // convert a court camera script string to animation limits
 void Utils::scriptToLimits(const std::string &str, UI::Limit &start, UI::Limit &end) {
 	// first split the string
@@ -134,9 +164,17 @@ void Utils::scriptToLimits(const std::string &str, UI::Limit &start, UI::Limit &
 }
 
 // print a debug message
-void Utils::debugMessage(const std::string &object, const std::string &msg) {
-	if (Utils::g_DebugOn)
-		std::cout << object << ": " << msg << std::endl;
+void Utils::debugMessage(const std::string &msg) {
+	// the last message displayed
+	static std::string last="";
+	
+	if (Utils::g_DebugOn) {
+		// prevent the same message from coming up repeatedly
+		if (last!=msg) {
+			alert(msg, MESSAGE_WARNING);
+			last=msg;
+		}
+	}
 }
 
 // see if a point is in a rectangle
@@ -205,6 +243,13 @@ std::string Utils::ucharToStr(char ch) {
 	std::string str="";
 	str+=ch;
 	return str;
+}
+
+// convert an integer to string
+std::string Utils::itoa(int num) {
+	std::stringstream ss;
+	ss << num;
+	return ss.str();
 }
 
 // break a string apart based on a delimiting string

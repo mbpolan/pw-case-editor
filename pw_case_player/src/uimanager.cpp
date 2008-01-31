@@ -344,7 +344,7 @@ void UI::Manager::registerExclamation(const std::string &id, const std::string &
 void UI::Manager::drawAnimation(const std::string &id) {
 	// get the requested animation
 	if (m_Animations.find(id)==m_Animations.end()) {
-		std::cout << "UIManager: animation '" << id << "' not registered\n";
+		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");
 		return;
 	}
 	
@@ -378,7 +378,7 @@ void UI::Manager::drawAnimation(const std::string &id) {
 // fade out the current scene to black
 int UI::Manager::fadeOut(const std::string &id) {
 	if (m_Animations.find(id)==m_Animations.end()) {
-		std::cout << "UIManager: animation '" << id << "' not registered\n";
+		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");
 		return 1;
 	}
 	
@@ -455,7 +455,7 @@ int UI::Manager::fadeOut(const std::string &id) {
 bool UI::Manager::flash(const std::string &id) {
 	// get the animation
 	if (m_Animations.find(id)==m_Animations.end()) {
-		std::cout << "UIManager: animation '" << id << "' not registered\n";
+		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");
 		return false;
 	}
 	Animation &anim=m_Animations[id];
@@ -486,7 +486,7 @@ bool UI::Manager::flash(const std::string &id) {
 bool UI::Manager::blink(const std::string &id) {
 	// make sure the animation is valid
 	if (m_Animations.find(id)==m_Animations.end()) {
-		std::cout << "UIManager: animation '" << id << "' not registered\n";
+		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");
 		return true;
 	}
 	
@@ -516,13 +516,13 @@ bool UI::Manager::blink(const std::string &id) {
 bool UI::Manager::moveCourtCamera(const std::string &id, SDL_Surface *panorama, UI::Limit start, UI::Limit end) {
 	// make sure the animation is valid
 	if (m_Animations.find(id)==m_Animations.end()) {
-		std::cout << "UIManager: animation '" << id << "' not registered\n";
+		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");
 		return true;
 	}
 	
 	// make sure the panorama is valid
 	if (!panorama) {
-		std::cout << "UIMananger: supplied panorama is invalid!\n";
+		Utils::debugMessage("UIMananger: supplied court overview panorama is invalid!");
 		return true;
 	}
 	
@@ -619,7 +619,7 @@ bool UI::Manager::moveCourtCamera(const std::string &id, SDL_Surface *panorama, 
 bool UI::Manager::animateTestimonySequence(const std::string &id) {
 	// make sure the animation is valid
 	if (m_Animations.find(id)==m_Animations.end()) {
-		std::cout << "UIManager: animation '" << id << "' not registered\n";
+		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");
 		return true;
 	}
 	
@@ -629,7 +629,7 @@ bool UI::Manager::animateTestimonySequence(const std::string &id) {
 	Character *tt=m_Case->getCharacter("testimony_top");
 	Character *tb=m_Case->getCharacter("testimony_bottom");
 	if (!tt || !tb) {
-		std::cout << "UIManager: needed sprites 'testimony_top' and 'testimony_bottom' not found\n";
+		Utils::debugMessage("UIManager: needed sprites 'testimony_top' and 'testimony_bottom' not found for testimony sequence.");
 		return true;
 	}
 	
@@ -747,7 +747,7 @@ bool UI::Manager::animateCrossExamineSequence(const std::string &id,
 					      SDL_Surface *leftImg, SDL_Surface *rightImg) {
 	// make sure the animation is valid
 	if (m_Animations.find(id)==m_Animations.end()) {
-		std::cout << "UIManager: animation '" << id << "' not registered\n";
+		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");
 		return true;
 	}
 	
@@ -757,7 +757,7 @@ bool UI::Manager::animateCrossExamineSequence(const std::string &id,
 	Character *xt=m_Case->getCharacter("cross_examine_top");
 	Character *xb=m_Case->getCharacter("cross_examine_bottom");
 	if (!xt || !xb) {
-		std::cout << "UIManager: needed sprites 'cross_examine_top' and 'cross_examine_bottom' not found\n";
+		Utils::debugMessage("UIManager: needed sprites 'cross_examine_top' and 'cross_examine_bottom' not found.");
 		return true;
 	}
 	
@@ -924,7 +924,7 @@ bool UI::Manager::animateCrossExamineSequence(const std::string &id,
 bool UI::Manager::animateSyncBounce(const std::string &id) {
 	// get the animation
 	if (m_Animations.find(id)==m_Animations.end()) {
-		std::cout << "UIManager: animation '" << id << "' not registered\n";
+		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");
 		return true;
 	}
 	
@@ -966,7 +966,7 @@ bool UI::Manager::animateSyncBounce(const std::string &id) {
 bool UI::Manager::animateGreenBar(const std::string &id) {
 	// get the animation
 	if (m_Animations.find(id)==m_Animations.end()) {
-		std::cout << "UIManager: animation '" << id << "' not registered\n";
+		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");
 		return true;
 	}
 	
@@ -974,10 +974,8 @@ bool UI::Manager::animateGreenBar(const std::string &id) {
 	
 	// get the texture
 	SDL_Surface *texture=Textures::queryTexture(anim.texture);
-	if (!texture) {
-		std::cout << "UIManager: needed texture for green bar '" << anim.texture << "' not found\n";
+	if (!texture)
 		return true;
-	}
 	
 	// see if we need to progress the animation
 	int now=SDL_GetTicks();
@@ -1020,7 +1018,7 @@ bool UI::Manager::animateGreenBar(const std::string &id) {
 bool UI::Manager::exclamation(const std::string &id, const Character *source) {
 	// get the animation
 	if (m_Animations.find(id)==m_Animations.end()) {
-		std::cout << "UIManager: animation '" << id << "' not registered\n";
+		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");
 		return true;
 	}
 	
@@ -1028,10 +1026,8 @@ bool UI::Manager::exclamation(const std::string &id, const Character *source) {
 	
 	// get the texture
 	SDL_Surface *texture=Textures::queryTexture(anim.texture);
-	if (!texture) {
-		std::cout << "UIManager: needed texture '" << anim.texture << "' for animation '" << id << "' not found\n";
+	if (!texture)
 		return true;
-	}
 	
 	// play the sound effect, once only
 	if (anim.ticks==0) {
@@ -1067,7 +1063,7 @@ bool UI::Manager::exclamation(const std::string &id, const Character *source) {
 bool UI::Manager::animateGUIButton(const std::string &id) {
 	// get the animation
 	if (m_Animations.find(id)==m_Animations.end()) {
-		std::cout << "UIManager: animation '" << id << "' not registered\n";
+		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");
 		return true;
 	}
 	

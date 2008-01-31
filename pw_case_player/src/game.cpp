@@ -147,7 +147,7 @@ Game* Game::instance() {
 bool Game::loadStockTextures() {
 	// load stock assets
 	if (!IO::loadStockFile(".temp/data/stock.cfg", m_Case)) {
-		std::cout << "CRITICAL: Unable to load stock assets from file\n";
+		Utils::alert("Unable to load stock assets from file.");
 		return false;
 	}
 	
@@ -730,7 +730,7 @@ bool Game::canExamineRegion() {
 // set the current backdrop location
 void Game::setLocation(const std::string &locationId) {
 	if (!m_Case->getLocation(locationId)) {
-		Utils::debugMessage("Game", "Unable to set nonexistent location: "+locationId);
+		Utils::debugMessage("Unable to set nonexistent location: "+locationId);
 		return;
 	}
 	
@@ -783,13 +783,13 @@ void Game::displayTestimony(const std::string &id, bool crossExamine) {
 	// get the testimony, if it exists
 	Case::Testimony *testimony=m_Case->getTestimony(id);
 	if (!testimony) {
-		Utils::debugMessage("Game", "Requested testimony '"+id+"' doesn't exist and can't be displayed.");
+		Utils::debugMessage("Requested testimony '"+id+"' doesn't exist and can't be displayed.");
 		return;
 	}
 	
 	// now, check the speaker's character
 	if (!m_Case->getCharacter(testimony->speaker)) {
-		Utils::debugMessage("Game", "Speaker '"+testimony->speaker+"' for testimony '"+id+"' doesn't exist");
+		Utils::debugMessage("Speaker '"+testimony->speaker+"' for testimony '"+id+"' doesn't exist");
 		return;
 	}
 	
@@ -1006,7 +1006,7 @@ void Game::renderTopView() {
 		// see if this image exists
 		Case::Image *temp=m_Case->getImage(m_State.tempImage);
 		if (!temp)
-			Utils::debugMessage("Game", "Unknown temporary image requested: "+m_State.tempImage);
+			Utils::debugMessage("Unknown temporary image requested: "+m_State.tempImage);
 		
 		else
 			Renderer::drawImage(Point(0, 0), temp->texture);
@@ -1025,7 +1025,7 @@ void Game::renderTopView() {
 			if (bg)
 				Renderer::drawImage(Point(0, 0), bg->texture);
 			else
-				Utils::debugMessage("Game", "Background for location '"+m_State.currentLocation+"' not found");
+				Utils::debugMessage("Background for location '"+m_State.currentLocation+"' not found");
 		}
 		
 		// sprite background otherwise
@@ -1460,7 +1460,7 @@ bool Game::renderSpecialEffects() {
 		
 		// verify locations
 		if (!pStand || !dStand || !wStand) {
-			Utils::debugMessage("Game", "Unable to get needed locations for court camera movement");
+			Utils::debugMessage("Unable to get needed locations for court camera movement");
 			return true;
 		}
 		
@@ -1543,7 +1543,7 @@ bool Game::renderSpecialEffects() {
 		Case::Image *leftImg=m_Case->getImage(m_State.crossExamineLawyers.first);
 		Case::Image *rightImg=m_Case->getImage(m_State.crossExamineLawyers.second);
 		if (!leftImg || !rightImg) {
-			Utils::debugMessage("Game", "Needed sprites 'cross_examine_top' and 'cross_examine_bottom' not found");
+			Utils::debugMessage("Needed sprites 'cross_examine_top' and 'cross_examine_bottom' not found");
 			m_State.crossExamineSequence="none";
 			return true;
 		}
@@ -1709,7 +1709,7 @@ void Game::renderCourtroomOverview() {
 		if (image)
 			Renderer::drawImage(Point(179, 90), image->texture);
 		else
-			Utils::debugMessage("Game", "Courtroom overview image '"+m_State.crOverviewDefense+"' not found");
+			Utils::debugMessage("Courtroom overview image '"+m_State.crOverviewDefense+"' not found");
 	}
 	
 	// draw prosecutor image
@@ -1719,7 +1719,7 @@ void Game::renderCourtroomOverview() {
 		if (image)
 			Renderer::drawImage(Point(48, 91), image->texture);
 		else
-			Utils::debugMessage("Game", "Courtroom overview image '"+m_State.crOverviewDefense+"' not found");
+			Utils::debugMessage("Courtroom overview image '"+m_State.crOverviewDefense+"' not found");
 	}
 	
 	// draw the judge

@@ -27,6 +27,9 @@
 // utilities namespace
 namespace Utils {
 
+// message types
+enum MessageType { MESSAGE_CRITICAL=0, MESSAGE_WARNING };
+
 // whether or not debugging is on
 extern bool g_DebugOn;
 
@@ -50,12 +53,16 @@ void removeDir(const std::string &path);
 
 } // namespace FS
 
+// display an alert message to the user
+// this will show a message box on Windows
+void alert(const std::string &text, const MessageType &type=MESSAGE_CRITICAL);
+
 // convert a court camera script string to animation limits
 // string should be in the form of: "location1,location2"
 void scriptToLimits(const std::string &str, UI::Limit &start, UI::Limit &end);
 
 // print a debug message
-void debugMessage(const std::string &object, const std::string &msg);
+void debugMessage(const std::string &msg);
 
 // see if a point is in a rectangle
 bool pointInRect(const Point &p, const Rect &rect);
@@ -74,6 +81,9 @@ SDL_Surface* createSurface(int width, int height);
 
 // convert a char to a string
 std::string ucharToStr(char ch);
+
+// convert an integer to string
+std::string itoa(int num);
 
 // break a string apart based on a delimiting string
 StringVector explodeString(const std::string &delimiter, const std::string &str);

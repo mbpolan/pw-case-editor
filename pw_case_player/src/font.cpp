@@ -42,6 +42,17 @@ const Color COLOR_YELLOW(229, 204, 148);
 
 }
 
+// load a font
+bool Fonts::loadFont(const std::string &str, int size) {
+	Font *font=TTF_OpenFontRW(SDL_RWFromFile(str.c_str(), "rb"), 1, size);
+	if (font) {
+		g_Fonts[size]=font;
+		return true;
+	}
+	
+	return false;
+}
+
 // get a surface with a rendered glyph
 SDL_Surface* Fonts::renderGlyph(char ch, int size, const Color &color, const Quality &quality) {
 	Font *f=queryFont(size);
@@ -89,7 +100,7 @@ bool Fonts::lineWillBreak(const Point &p, int rightClamp, const std::string &str
 	
 	// get the requested font
 	if (!queryFont(size)) {
-		std::cout << "Font: font '" << size << "' not found\n";
+		Utils::debugMessage("Font: font size '"+Utils::itoa(size)+"' not found");
 		return -1;
 	}
 	Font *font=queryFont(size);
@@ -169,14 +180,10 @@ int Fonts::drawString(const Point &p, const std::string &str, int size, const Co
 int Fonts::drawString(const Point &p, int limit, int rightClamp, const std::string &str, int size, const Color &color) {
 	// also, make sure the default video surface exists
 	SDL_Surface *screen=SDL_GetVideoSurface();
-	if (!screen) {
-		std::cout << "Fonts: unable to get pointer to video surface.\n";
-		return -1;
-	}
 	
 	// get the requested font
 	if (!queryFont(size)) {
-		std::cout << "Font: font '" << size << "' not found\n";
+		Utils::debugMessage("Font: font size '"+Utils::itoa(size)+"' not found");
 		return -1;
 	}
 	Font *font=queryFont(size);
@@ -319,7 +326,7 @@ void Fonts::drawStringBlended(const Point &p, const std::string &str, int size, 
 	// get the font
 	TTF_Font *font=queryFont(size);
 	if (!font) {
-		std::cout << "Fonts: requested TTF font size '" << size << "' doesn't exist.\n";
+		Utils::debugMessage("Fonts: font size '"+Utils::itoa(size)+"' not found.");
 		return;
 	}
 	
@@ -341,7 +348,7 @@ void Fonts::drawStringBlended(const Point &p, const std::string &str, int size, 
 int Fonts::getWidth(const std::string &str, int size) {
 	// get the requested font
 	if (!queryFont(size)) {
-		std::cout << "Font: font '" << size << "' not found\n";
+		Utils::debugMessage("Font: font size '"+Utils::itoa(size)+"' not found");
 		return -1;
 	}
 	Font *font=queryFont(size);
@@ -387,7 +394,7 @@ int Fonts::getGlyphWidth(char ch, int size) {
 int Fonts::getHeight(int size) {
 	Font *font=queryFont(size);
 	if (!font) {
-		std::cout << "Fonts: requested TTF font size '" << size << "' not found.\n";
+		Utils::debugMessage("Fonts: font size '"+Utils::itoa(size)+"' not found.");
 		return 0;
 	}
 	

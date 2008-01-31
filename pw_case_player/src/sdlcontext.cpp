@@ -57,7 +57,7 @@ SDLContext::~SDLContext() {
 bool SDLContext::init() {
 	// initialize SDL
 	if (SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_TIMER)<0) {
-		std::cout << "SDLContext: unable to intialize video: " << SDL_GetError() << std::endl;
+		Utils::alert("Unable to intialize video: '"+std::string(SDL_GetError())+"'");
 		return false;
 	}
 	atexit(SDL_Quit);
@@ -76,7 +76,7 @@ bool SDLContext::initVideo(int width, int height) {
 	// get video hardware information
 	const SDL_VideoInfo *vInfo=SDL_GetVideoInfo();
 	if (!vInfo)
-		std::cout << "SDLContext: unable to get video card information: " << SDL_GetError() << std::endl;
+		Utils::alert("Unable to get video card information: '"+std::string(SDL_GetError())+"'", Utils::MESSAGE_WARNING);
 	else {
 		// hardware acceleration
 		if (vInfo->blit_hw)
@@ -92,7 +92,7 @@ bool SDLContext::initVideo(int width, int height) {
 	// try to initialize video
 	m_Screen=SDL_SetVideoMode(width, height, 32, m_VFlags);
 	if (!m_Screen) {
-		std::cout << "SDLContext: unable to set " << width << "x" << height << " video mode: " << SDL_GetError() << std::endl;
+		Utils::alert("Unable to set "+Utils::itoa(width)+"x"+Utils::itoa(height)+" video mode: '"+SDL_GetError()+"'");
 		return false;
 	}
 	
@@ -110,7 +110,7 @@ bool SDLContext::initVideo(int width, int height) {
 bool SDLContext::initAudio() {
 	// open an audio channel
 	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024)==-1) {
-		std::cout << "Unable to open audio! Reason: " << Mix_GetError() << std::endl;
+		Utils::alert("Unable to open audio: '"+std::string(Mix_GetError())+"'", Utils::MESSAGE_WARNING);
 		
 		// normally, we should quit if audio wasn't opened, but the game is 
 		// still playable without sound
@@ -127,7 +127,7 @@ bool SDLContext::initGame(const std::string &pathToCase) {
 	
 	// load the case
 	if (!IO::loadCaseFromFile(pathToCase, *pcase)) {
-		std::cout << "SDLContext: unable to load case\n";
+		Utils::alert("An unrecoverable error has occurred while loading your case file.");
 		return false;
 	}
 	
@@ -147,10 +147,17 @@ bool SDLContext::initGame(const std::string &pathToCase) {
 	if (!m_Game->loadStockTextures())
 		return false;
 	
-	// load ttf fonts
-	Fonts::g_Fonts[Fonts::FONT_INFO_PAGE]=TTF_OpenFont(".temp/data/fonts/arial.ttf", Fonts::FONT_INFO_PAGE);
-	Fonts::g_Fonts[Fonts::FONT_STANDARD]=TTF_OpenFont(".temp/data/fonts/arial.ttf", Fonts::FONT_STANDARD);
-	Fonts::g_Fonts[Fonts::FONT_BUTTON_TEXT]=TTF_OpenFont(".temp/data/fonts/arial.ttf", Fonts::FONT_BUTTON_TEXT);
+	// add sizes to use
+	std::vector<int> sizes;
+	sizes.push_back(Fonts::FONT_INFO_PAGE);
+	sizes.push_back(Fonts::FONT_STANDARD);
+	sizes.push_back(Fonts::FONT_BUTTON_TEXT);
+	
+	// load default ttf fonts
+	for (int i=0; i<sizes.size(); i++) {
+		if (!Fonts::loadFont(".temp/data/fonts/arial.ttf", sizes[i]))
+			Utils::alert("Unable to load font size '"+Utils::itoa(sizes[i])+"'!");
+	}
 	
 	// load our theme
 	if (!IO::loadThemeXML(".temp/data/theme.xml", Theme::g_Theme))

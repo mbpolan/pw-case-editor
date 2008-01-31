@@ -45,7 +45,7 @@ void Renderer::drawImage(const Point &p, const std::string &texId) {
 	// get the texture in question
 	SDL_Surface *tex=Textures::queryTexture(texId);
 	if (!tex) {
-		std::cout << "Renderer: texture '" << texId << "' not found in stack.\n";
+		Utils::debugMessage("Renderer: texture '"+texId+"' not found in stack.");
 		return;
 	}
 	
@@ -58,7 +58,7 @@ void Renderer::drawImage(const Point &p, SDL_Surface *dest, const std::string &t
 	// get the texture in question
 	SDL_Surface *tex=Textures::queryTexture(texId);
 	if (!tex) {
-		std::cout << "Renderer: texture '" << texId << "' not found in stack.\n";
+		Utils::debugMessage("Renderer: texture '"+texId+"' not found in stack.");
 		return;
 	}
 	
@@ -110,7 +110,7 @@ void Renderer::drawImage(const Point &p1, int w, int h, const Point &p2, const s
 	// get the texture in question
 	SDL_Surface *tex=Textures::queryTexture(texId);
 	if (!tex) {
-		std::cout << "Renderer: texture '" << texId << "' not found in stack.\n";
+		Utils::debugMessage("Renderer: texture '"+texId+"' not found in stack.");
 		return;
 	}
 	

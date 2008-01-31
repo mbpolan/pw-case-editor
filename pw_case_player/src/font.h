@@ -56,6 +56,9 @@ enum Quality { QUALITY_SOLID=0, QUALITY_BLEND };
 typedef TTF_Font Font;
 extern std::map<int, Font*> g_Fonts;
 
+// load a font
+bool loadFont(const std::string &path, int size);
+
 // get a surface with a rendered glyph
 SDL_Surface* renderGlyph(char ch, int size, const Color &color, const Quality &quality);
 

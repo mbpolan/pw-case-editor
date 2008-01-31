@@ -53,7 +53,7 @@ Application::Application(int argc, char *argv[]) {
 				Utils::g_DebugOn=true;
 			
 			else
-				std::cout << "Unrecognized argument: " << arg << std::endl;
+				Utils::alert("Unrecognized argument passed to player: '"+(arg)+"'.");
 		}
 		
 		// the only other argument that doesn't use a - or -- is

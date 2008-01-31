@@ -22,6 +22,7 @@
 #include "SDL_mixer.h"
 
 #include "audio.h"
+#include "utilities.h"
 
 namespace Audio {
 	// global variable the stores whether or not sound is to be outputted
@@ -56,7 +57,7 @@ bool Audio::loadSample(const std::string &path, Audio::Sample &sample) {
 	
 	// check to see if we loaded it
 	if (!success) {
-		std::cout << "Audio: Unable to load sample: " << path << "\nReason: " << Mix_GetError() << std::endl;
+		Utils::alert("Audio: Unable to load sample: '"+path+"'!\nReason: "+Mix_GetError());
 		return false;
 	}
 	
@@ -72,7 +73,7 @@ void Audio::playEffect(const std::string &id, EffectChannel channel) {
 	// get the sample
 	Audio::Sample *audio=queryAudio(id);
 	if (!audio) {
-		std::cout << "Audio: sample " << id << " not found in stack\n";
+		Utils::debugMessage("Audio: sample '"+id+"' not found in stack");
 		return;
 	}
 	
@@ -91,7 +92,7 @@ void Audio::playMusic(const std::string &id) {
 	// get the sample
 	Audio::Sample *audio=queryAudio(id);
 	if (!audio) {
-		std::cout << "Audio: sample " << id << " not found in stack\n";
+		Utils::debugMessage("Audio: sample '"+id+"' not found in stack");
 		return;
 	}
 	
@@ -108,7 +109,7 @@ void Audio::playMusic(const std::string &id) {
 		// load our new music sample
 		Audio::g_Music=Mix_LoadMUS(audio->music.c_str());
 		if (!Audio::g_Music) {
-			std::cout << "Audio: unable to load music: " << audio->music << std::endl;
+			Utils::debugMessage("Audio: unable to load music: '"+audio->music+"'");
 			return;
 		}
 		

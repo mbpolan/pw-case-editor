@@ -410,7 +410,7 @@ std::string TextParser::parse(bool drawDialogue) {
 					
 					// error check
 					if (params.size()!=7)
-						Utils::debugMessage("TextParser", "Parameters for request_image_contradiction aren't correct");
+						Utils::debugMessage("Parameters for request_image_contradiction aren't correct");
 					
 					else {
 						// define our contradiction region
@@ -661,7 +661,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		if (pcase->getEvidence(command))
 			m_Game->m_State.visibleEvidence.push_back(command);
 		else
-			Utils::debugMessage("TextParser", "Unable to add unknown evidence: "+command);
+			Utils::debugMessage("Unable to add unknown evidence: "+command);
 	}
 	
 	// add a profile to court record
@@ -670,7 +670,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		if (pcase->getCharacter(command))
 			m_Game->m_State.visibleProfiles.push_back(command);
 		else
-			Utils::debugMessage("TextParser", "Unable to add profile for nonexistent character: "+command);
+			Utils::debugMessage("Unable to add profile for nonexistent character: "+command);
 	}
 	
 	// show evidence on screen
@@ -688,7 +688,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		}
 		
 		else
-			Utils::debugMessage("TextParser", "Unable to show nonexistent evidence: "+item);
+			Utils::debugMessage("Unable to show nonexistent evidence: "+item);
 	}
 	
 	// hide shown evidence
@@ -715,7 +715,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		}
 		
 		else
-			Utils::debugMessage("TextParser", "Unable to add location '"+target+"' to non existant '"+location+"' target");
+			Utils::debugMessage("Unable to add location '"+target+"' to non existant '"+location+"' target");
 	}
 	
 	// set a trigger block at a location
@@ -734,7 +734,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		}
 		
 		else
-			Utils::debugMessage("TextParser", "Unable to set trigger in nonexistent location: "+target);
+			Utils::debugMessage("Unable to set trigger in nonexistent location: "+target);
 	}
 	
 	// set a character's animation
@@ -749,7 +749,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		if (character)
 			character->setRootAnimation(anim);
 		else
-			Utils::debugMessage("TextParser", "Trying to clear presentables for nonexistent character: "+command);
+			Utils::debugMessage("Trying to clear presentables for nonexistent character: "+command);
 	}
 	
 	// put a character at a location
@@ -763,7 +763,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		if (pcase->getLocation(target))
 			pcase->getLocation(target)->character=character;
 		else
-			Utils::debugMessage("TextParser", "Unable to put character '"+character+"' at nonexistant location: "+target);
+			Utils::debugMessage("Unable to put character '"+character+"' at nonexistant location: "+target);
 	}
 	
 	// add a talk option to a character
@@ -779,7 +779,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		if (character)
 			character->addTalkOption(viewString, blockId);
 		else
-			Utils::debugMessage("TextParser", "Unable to add talk option '"+viewString+"' for nonexistent character: "+ucharName);
+			Utils::debugMessage("Unable to add talk option '"+viewString+"' for nonexistent character: "+ucharName);
 	}
 	
 	// remove a talk option
@@ -794,7 +794,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		if (character)
 			character->removeTalkOption(viewString);
 		else
-			Utils::debugMessage("TextParser", "Unable to remove talk option '"+viewString+"' for nonexistent character: "+ucharName);
+			Utils::debugMessage("Unable to remove talk option '"+viewString+"' for nonexistent character: "+ucharName);
 	}
 	
 	// clear talk options
@@ -804,7 +804,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		if (character)
 			character->clearTalkOptions();
 		else
-			Utils::debugMessage("TextParser", "Unable to clear talk options for nonexistent character: "+command);
+			Utils::debugMessage("Unable to clear talk options for nonexistent character: "+command);
 	}
 	
 	// add a presentable piece of evidence/profile to a character
@@ -820,7 +820,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		if (character)
 			character->addPresentable(itemId, targetBlock);
 		else
-			Utils::debugMessage("TextParser", "Unable to add presentable '"+itemId+"' for nonexistent character: "+ucharName);
+			Utils::debugMessage("Unable to add presentable '"+itemId+"' for nonexistent character: "+ucharName);
 	}
 	
 	// remove a piece of presentable evidence/profile
@@ -835,7 +835,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		if (character)
 			character->removePresentable(itemId);
 		else
-			Utils::debugMessage("TextParser", "Unable to remove presentables for nonexistent character: "+ucharName);
+			Utils::debugMessage("Unable to remove presentables for nonexistent character: "+ucharName);
 	}
 	
 	// clear character's presentable items
@@ -845,7 +845,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		if (character)
 			character->clearPresentableItems();
 		else
-			Utils::debugMessage("TextParser", "Unable to clear presentables for nonexistent character: "+command);
+			Utils::debugMessage("Unable to clear presentables for nonexistent character: "+command);
 	}
 	
 	// set the block to use when a useless item was presented
@@ -860,7 +860,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		if (character)
 			character->setBadPresentableBlock(target);
 		else
-			Utils::debugMessage("TextParser", "Unable to set bad presentable block for nonexistent character: "+ucharName);
+			Utils::debugMessage("Unable to set bad presentable block for nonexistent character: "+ucharName);
 	}
 	
 	// set music to be played a location
@@ -888,7 +888,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 			pcase->getLocation(target)->music=musicId;
 		
 		else
-			Utils::debugMessage("TextParser", "Unable to set music "+musicId+" at unknown location: "+target);
+			Utils::debugMessage("Unable to set music "+musicId+" at unknown location: "+target);
 	}
 	
 	// clear any music set at a location
@@ -978,7 +978,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		else if (area=="witness")
 			m_Game->m_State.crOverviewWitness=image;
 		else
-			Utils::debugMessage("TextParser", "No such area in courtroom overview: '"+area);
+			Utils::debugMessage("No such area in courtroom overview: '"+area);
 	}
 	
 	// set an image to be displayed over location background
@@ -1030,11 +1030,11 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 			else if (params[1]=="unknown")
 				c->setGender(Character::GENDER_UNKNOWN);
 			else
-				Utils::debugMessage("TextParser", "Unrecognized character gender: "+params[1]);
+				Utils::debugMessage("Unrecognized character gender: "+params[1]);
 		}
 		
 		else
-			Utils::debugMessage("TextParser", "Unknown character: "+params[0]);
+			Utils::debugMessage("Unknown character: "+params[0]);
 	}
 	
 	// change the profile of a character
@@ -1047,7 +1047,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 			// verify that the string is padded by quote marks
 			std::string str=params[1];
 			if (str[0]!='"' || str[str.size()-1]!='"') {
-				Utils::debugMessage("TextParser", "Character profile string needs to be in between quotation marks: "+str);
+				Utils::debugMessage("Character profile string needs to be in between quotation marks: "+str);
 				return "null";
 			}
 			
@@ -1065,7 +1065,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		}
 		
 		else
-			Utils::debugMessage("TextParser", "Unknown character: "+params[0]);
+			Utils::debugMessage("Unknown character: "+params[0]);
 	}
 	
 	// change evidence data
@@ -1078,7 +1078,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 			// verify that the string is padded by quote marks
 			std::string str=params[1];
 			if (str[0]!='"' || str[str.size()-1]!='"') {
-				Utils::debugMessage("TextParser", "Evidence data string needs to be in between quotation marks: "+str);
+				Utils::debugMessage("Evidence data string needs to be in between quotation marks: "+str);
 				return "null";
 			}
 			
@@ -1096,7 +1096,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		}
 		
 		else
-			Utils::debugMessage("TextParser", "Unknown evidence: "+params[0]);
+			Utils::debugMessage("Unknown evidence: "+params[0]);
 	}
 	
 	return "null";

@@ -24,6 +24,7 @@
 #include "renderer.h"
 #include "sprite.h"
 #include "textparser.h"
+#include "utilities.h"
 
 // constructor
 Sprite::Sprite() {
@@ -75,7 +76,7 @@ void Sprite::animate(int x, int y, SDL_Surface *dest) {
 	// get the animation
 	Animation *anim=getAnimation(m_CurAnim);
 	if (!anim) {
-		std::cout << "Sprite: current animation is nonexistant: " << m_CurAnim << std::endl;
+		Utils::debugMessage("Sprite: current animation is nonexistant: '"+m_CurAnim+"'");
 		return;
 	}
 	
