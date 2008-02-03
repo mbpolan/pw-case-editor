@@ -54,7 +54,7 @@ void UI::Manager::handleGUIClick(const Point &p, int num, ...) {
 	
 	// iterate over provided buttons
 	for (int i=0; i<num; i++) {
-		std::string button=std::string(va_arg(a, const char*));
+		ustring button=ustring(va_arg(a, const char*));
 		
 		// see if this button was clicked, and if it was, flag it
 		if (mouseOverButton(button, p)) {
@@ -69,7 +69,7 @@ void UI::Manager::handleGUIClick(const Point &p, int num, ...) {
 }
 
 // reverse the velocity of a registered animation
-void UI::Manager::reverseVelocity(const std::string &id) {
+void UI::Manager::reverseVelocity(const ustring &id) {
 	// if this animation exists, multiply its velocity by -1
 	if (m_Animations.find(id)!=m_Animations.end()) {
 		UI::Animation &anim=m_Animations[id];
@@ -78,7 +78,7 @@ void UI::Manager::reverseVelocity(const std::string &id) {
 }
 
 // disable one texture of a synchronized bounce animation
-void UI::Manager::unsyncBounceTexture(const std::string &id, bool left) {
+void UI::Manager::unsyncBounceTexture(const ustring &id, bool left) {
 	Animation &anim=m_Animations[id];
 	if (left)
 		anim.texture1Active=false;
@@ -87,7 +87,7 @@ void UI::Manager::unsyncBounceTexture(const std::string &id, bool left) {
 }
 
 // enable one texture of a synchronized bounce animation
-void UI::Manager::resyncBounceTexture(const std::string &id, bool left) {
+void UI::Manager::resyncBounceTexture(const ustring &id, bool left) {
 	Animation &anim=m_Animations[id];
 	if (left)
 		anim.texture1Active=true;
@@ -97,7 +97,7 @@ void UI::Manager::resyncBounceTexture(const std::string &id, bool left) {
 
 // see if any gui animations are still occurring
 bool UI::Manager::isGUIBusy() {
-	for (std::map<std::string, Animation>::iterator it=m_Animations.begin(); it!=m_Animations.end(); ++it) {
+	for (std::map<ustring, Animation>::iterator it=m_Animations.begin(); it!=m_Animations.end(); ++it) {
 		if ((*it).second.type==ANIM_GUI_BUTTON && (*it).second.velocity==1)
 			return true;
 	}
@@ -106,12 +106,12 @@ bool UI::Manager::isGUIBusy() {
 }
 
 // set button text for a gui button
-void UI::Manager::setGUIButtonText(const std::string &id, const std::string &text) {
+void UI::Manager::setGUIButtonText(const ustring &id, const ustring &text) {
 	m_Animations[id].txt=text;
 }
 
 // check to see if the mouse is over a button
-bool UI::Manager::mouseOverButton(const std::string &id, const Point &p) {
+bool UI::Manager::mouseOverButton(const ustring &id, const Point &p) {
 	UI::Animation &anim=m_Animations[id];
 	
 	Rect rect(anim.current, anim.w, 26);
@@ -119,7 +119,7 @@ bool UI::Manager::mouseOverButton(const std::string &id, const Point &p) {
 }
 
 // set a gui button's state to clicked
-void UI::Manager::clickGUIButton(const std::string &id) {
+void UI::Manager::clickGUIButton(const ustring &id) {
 	UI::Animation &anim=m_Animations[id];
 	anim.velocity=1;
 	
@@ -129,7 +129,7 @@ void UI::Manager::clickGUIButton(const std::string &id) {
 }
 
 // register a gui button
-void UI::Manager::registerGUIButton(const std::string &id, int w, const Button &b) {
+void UI::Manager::registerGUIButton(const ustring &id, int w, const Button &b) {
 	UI::Animation anim;
 	
 	anim.lastDraw=0;
@@ -148,7 +148,7 @@ void UI::Manager::registerGUIButton(const std::string &id, int w, const Button &
 }
 
 // register a ui animation that bounces the image from side to side
-void UI::Manager::registerSideBounceAnimation(const std::string &id, const std::string &texture, bool horizontal, 
+void UI::Manager::registerSideBounceAnimation(const ustring &id, const ustring &texture, bool horizontal, 
 					      const Point &origin, int limitA, int limitB, int speed) {
 	// create an animation struct
 	UI::Animation anim;
@@ -185,7 +185,7 @@ void UI::Manager::registerSideBounceAnimation(const std::string &id, const std::
 }
 
 // register a fade out effect
-void UI::Manager::registerFadeOut(const std::string &id, int speed, const AnimType &type) {
+void UI::Manager::registerFadeOut(const ustring &id, int speed, const AnimType &type) {
 	Animation anim;
 	
 	// fill in values
@@ -201,7 +201,7 @@ void UI::Manager::registerFadeOut(const std::string &id, int speed, const AnimTy
 }
 
 // register a flash effect
-void UI::Manager::registerFlash(const std::string &id, int speed) {
+void UI::Manager::registerFlash(const ustring &id, int speed) {
 	Animation anim;
 	
 	// fill in values
@@ -215,7 +215,7 @@ void UI::Manager::registerFlash(const std::string &id, int speed) {
 }
 
 // register a court camera effect
-void UI::Manager::registerCourtCameraMovement(const std::string &id) {
+void UI::Manager::registerCourtCameraMovement(const ustring &id) {
 	Animation anim;
 	
 	// fill in values
@@ -231,7 +231,7 @@ void UI::Manager::registerCourtCameraMovement(const std::string &id) {
 }
 
 // register a testimony sprite sequence animation
-void UI::Manager::registerTestimonySequence(const std::string &id) {
+void UI::Manager::registerTestimonySequence(const ustring &id) {
 	Animation anim;
 	
 	// fill in values
@@ -248,7 +248,7 @@ void UI::Manager::registerTestimonySequence(const std::string &id) {
 }
 
 // register a cross examination sprite sequence animation
-void UI::Manager::registerCrossExamineSequence(const std::string &id) {
+void UI::Manager::registerCrossExamineSequence(const ustring &id) {
 	Animation anim;
 	
 	// fill in values
@@ -267,7 +267,7 @@ void UI::Manager::registerCrossExamineSequence(const std::string &id) {
 }
 
 // register a blinking animation
-void UI::Manager::registerBlink(const std::string &id, const std::string &texture, const Point &p, int speed) {
+void UI::Manager::registerBlink(const ustring &id, const ustring &texture, const Point &p, int speed) {
 	Animation anim;
 	
 	// fill in values
@@ -284,7 +284,7 @@ void UI::Manager::registerBlink(const std::string &id, const std::string &textur
 }
 
 // register a synchronized bounce animation
-void UI::Manager::registerSyncBounce(const std::string &id, const std::string &tex1, const std::string &tex2,
+void UI::Manager::registerSyncBounce(const ustring &id, const ustring &tex1, const ustring &tex2,
 				     const Point &p1, const Point &p2, int limA, int limB, int speed) {
 	Animation anim;
 	
@@ -308,7 +308,7 @@ void UI::Manager::registerSyncBounce(const std::string &id, const std::string &t
 }
 
 // register a green bar control animation
-void UI::Manager::registerGreenBarControl(const std::string &id, const std::string &texture, const Point &p) {
+void UI::Manager::registerGreenBarControl(const ustring &id, const ustring &texture, const Point &p) {
 	Animation anim;
 	
 	// fill values
@@ -326,7 +326,7 @@ void UI::Manager::registerGreenBarControl(const std::string &id, const std::stri
 }
 
 // register an exclamation animation ("Objection!", "Hold It!", and "Take That!")
-void UI::Manager::registerExclamation(const std::string &id, const std::string &texture, const Point &p) {
+void UI::Manager::registerExclamation(const ustring &id, const ustring &texture, const Point &p) {
 	Animation anim;
 	
 	// fill in value
@@ -341,7 +341,7 @@ void UI::Manager::registerExclamation(const std::string &id, const std::string &
 }
 
 // draw an animation
-void UI::Manager::drawAnimation(const std::string &id) {
+void UI::Manager::drawAnimation(const ustring &id) {
 	// get the requested animation
 	if (m_Animations.find(id)==m_Animations.end()) {
 		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");
@@ -376,7 +376,7 @@ void UI::Manager::drawAnimation(const std::string &id) {
 }
 
 // fade out the current scene to black
-int UI::Manager::fadeOut(const std::string &id) {
+int UI::Manager::fadeOut(const ustring &id) {
 	if (m_Animations.find(id)==m_Animations.end()) {
 		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");
 		return 1;
@@ -452,7 +452,7 @@ int UI::Manager::fadeOut(const std::string &id) {
 }
 
 // perform a flash effect
-bool UI::Manager::flash(const std::string &id) {
+bool UI::Manager::flash(const ustring &id) {
 	// get the animation
 	if (m_Animations.find(id)==m_Animations.end()) {
 		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");
@@ -483,7 +483,7 @@ bool UI::Manager::flash(const std::string &id) {
 }
 
 // perform a blinking animation
-bool UI::Manager::blink(const std::string &id) {
+bool UI::Manager::blink(const ustring &id) {
 	// make sure the animation is valid
 	if (m_Animations.find(id)==m_Animations.end()) {
 		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");
@@ -513,7 +513,7 @@ bool UI::Manager::blink(const std::string &id) {
 }
 
 // perform a court camera movement
-bool UI::Manager::moveCourtCamera(const std::string &id, SDL_Surface *panorama, UI::Limit start, UI::Limit end) {
+bool UI::Manager::moveCourtCamera(const ustring &id, SDL_Surface *panorama, UI::Limit start, UI::Limit end) {
 	// make sure the animation is valid
 	if (m_Animations.find(id)==m_Animations.end()) {
 		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");
@@ -616,7 +616,7 @@ bool UI::Manager::moveCourtCamera(const std::string &id, SDL_Surface *panorama, 
 }
 
 // animate the testimony sprite sequence
-bool UI::Manager::animateTestimonySequence(const std::string &id) {
+bool UI::Manager::animateTestimonySequence(const ustring &id) {
 	// make sure the animation is valid
 	if (m_Animations.find(id)==m_Animations.end()) {
 		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");
@@ -743,7 +743,7 @@ bool UI::Manager::animateTestimonySequence(const std::string &id) {
 // FIXME: the following function is annoyingly similar to the above testimony one
 //        maybe find a way to merge them together in the future
 // animate the cross examination sprite sequence
-bool UI::Manager::animateCrossExamineSequence(const std::string &id, 
+bool UI::Manager::animateCrossExamineSequence(const ustring &id, 
 					      SDL_Surface *leftImg, SDL_Surface *rightImg) {
 	// make sure the animation is valid
 	if (m_Animations.find(id)==m_Animations.end()) {
@@ -921,7 +921,7 @@ bool UI::Manager::animateCrossExamineSequence(const std::string &id,
 }
 
 // animate a synchronized bounce animation
-bool UI::Manager::animateSyncBounce(const std::string &id) {
+bool UI::Manager::animateSyncBounce(const ustring &id) {
 	// get the animation
 	if (m_Animations.find(id)==m_Animations.end()) {
 		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");
@@ -963,7 +963,7 @@ bool UI::Manager::animateSyncBounce(const std::string &id) {
 }
 
 // animate the green bar for cross examination attempts and other misc things
-bool UI::Manager::animateGreenBar(const std::string &id) {
+bool UI::Manager::animateGreenBar(const ustring &id) {
 	// get the animation
 	if (m_Animations.find(id)==m_Animations.end()) {
 		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");
@@ -1015,7 +1015,7 @@ bool UI::Manager::animateGreenBar(const std::string &id) {
 }
 
 // perform an exclamation animation
-bool UI::Manager::exclamation(const std::string &id, const Character *source) {
+bool UI::Manager::exclamation(const ustring &id, const Character *source) {
 	// get the animation
 	if (m_Animations.find(id)==m_Animations.end()) {
 		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");
@@ -1060,7 +1060,7 @@ bool UI::Manager::exclamation(const std::string &id, const Character *source) {
 }
 
 // animate a gui button
-bool UI::Manager::animateGUIButton(const std::string &id) {
+bool UI::Manager::animateGUIButton(const ustring &id) {
 	// get the animation
 	if (m_Animations.find(id)==m_Animations.end()) {
 		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");

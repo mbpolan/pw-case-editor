@@ -33,12 +33,12 @@ namespace Audio {
 }
 
 // load an audio sample from file
-bool Audio::loadSample(const std::string &path, Audio::Sample &sample) {
+bool Audio::loadSample(const ustring &path, Audio::Sample &sample) {
 	if (!Audio::g_Output)
 		return true;
 	
 	// see if this is an effect or music
-	std::string ext=path.substr(path.size()-3, path.size()-1);
+	ustring ext=path.substr(path.size()-3, path.size()-1);
 	bool success=true;
 	
 	// music is considered when mp3 or ogg is loaded
@@ -66,7 +66,7 @@ bool Audio::loadSample(const std::string &path, Audio::Sample &sample) {
 }
 
 // play an effect sample
-void Audio::playEffect(const std::string &id, EffectChannel channel) {
+void Audio::playEffect(const ustring &id, EffectChannel channel) {
 	if (!Audio::g_Output)
 		return;
 	
@@ -85,7 +85,7 @@ void Audio::playEffect(const std::string &id, EffectChannel channel) {
 }
 
 // play a music sample
-void Audio::playMusic(const std::string &id) {
+void Audio::playMusic(const ustring &id) {
 	if (!Audio::g_Output)
 		return;
 	
@@ -141,7 +141,7 @@ void Audio::haltMusic() {
 }
 
 // add an audio sample
-void Audio::pushAudio(const std::string &id, const Audio::Sample &audio) {
+void Audio::pushAudio(const ustring &id, const Audio::Sample &audio) {
 	if (!Audio::g_Output)
 		return;
 	
@@ -149,7 +149,7 @@ void Audio::pushAudio(const std::string &id, const Audio::Sample &audio) {
 }
 
 // remove an audio sample
-void Audio::popAudio(const std::string &id) {
+void Audio::popAudio(const ustring &id) {
 	if (!Audio::g_Output)
 		return;
 	
@@ -166,7 +166,7 @@ void Audio::popAudio(const std::string &id) {
 }
 
 // query an audio sample
-Audio::Sample* Audio::queryAudio(const std::string &id) {
+Audio::Sample* Audio::queryAudio(const ustring &id) {
 	if (!Audio::g_Output)
 		return NULL;
 	

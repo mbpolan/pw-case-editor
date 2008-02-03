@@ -31,7 +31,7 @@
 class Application {
 	public:
 		// the version of this program
-		static std::string VERSION;
+		static ustring VERSION;
 		
 		// possible command line arguments
 		enum ArgFlags { ARG_NONE=0x00, ARG_NO_SOUND=0x01, ARG_FULLSCREEN=0x02 };
@@ -56,7 +56,7 @@ class Application {
 		std::auto_ptr<SDLContext> m_SDLContext;
 		
 		// path to case file
-		std::string m_CasePath;
+		ustring m_CasePath;
 		
 		// game timer
 		FPSTimer m_Timer;

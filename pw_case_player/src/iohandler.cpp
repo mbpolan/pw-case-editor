@@ -33,7 +33,7 @@
 #include "utilities.h"
 
 // unpack the resource file
-bool IO::unpackResourceFile(const std::string &path) {
+bool IO::unpackResourceFile(const ustring &path) {
 	FILE *f=fopen(path.c_str(), "rb");
 	if (!f) {
 		Utils::alert("Unable to open resource file: "+path);
@@ -66,7 +66,7 @@ bool IO::unpackResourceFile(const std::string &path) {
 	}
 	
 	// windows needs to have an absolute path
-	std::string to=".temp";
+	ustring to=".temp";
 #ifdef __WIN32__
 	to+="\\data";
 #endif
@@ -82,7 +82,7 @@ bool IO::unpackResourceFile(const std::string &path) {
 }
 
 // load a case from file
-bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
+bool IO::loadCaseFromFile(const ustring &path, Case::Case &pcase) {
 	// open requested file
 	FILE *f=fopen(path.c_str(), "rb");
 	if (!f)
@@ -95,7 +95,7 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 #else
 	npos=path.rfind('\\');
 #endif
-	std::string root=path.substr(0, npos+1);
+	ustring root=path.substr(0, npos+1);
 	
 	// read the header
 	PWTHeader header;
@@ -141,7 +141,7 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 	pcase.setOverview(overview);
 	
 	// read initial block id
-	std::string initialBlock=readString(f);
+	ustring initialBlock=readString(f);
 	pcase.setInitialBlockId(initialBlock);
 	
 	// skip to characters
@@ -154,7 +154,7 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 	// read each character
 	for (int i=0; i<ucharCount; i++) {
 		Character character;
-		std::string str;
+		ustring str;
 		
 		// read internal name
 		str=readString(f);
@@ -184,7 +184,7 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 		// if the sprite name is not invalid, try loading said sprite
 		if (str!="null" && str!="") {
 			// the sprite should be in the /spr directory, extension .pws
-			std::string sprPath=root+"spr/"+str+".pws";
+			ustring sprPath=root+"spr/"+str+".pws";
 			
 			// try to load it
 			Sprite sprite;
@@ -387,7 +387,7 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 		audio.id=readString(f);
 		
 		// read filename
-		std::string afile=readString(f);
+		ustring afile=readString(f);
 		
 		// form full string and load the audio sample
 		if (Audio::loadSample(root+"audio/"+afile, audio))
@@ -464,10 +464,10 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 	// iterate over text blocks
 	for (int i=0; i<bufferCount; i++) {
 		// read id
-		std::string bufferId=readString(f);
+		ustring bufferId=readString(f);
 		
 		// read text contents
-		std::string contents=readString(f);
+		ustring contents=readString(f);
 		
 		// append this text buffer to the map
 		pcase.addBuffer(bufferId, contents);
@@ -480,7 +480,7 @@ bool IO::loadCaseFromFile(const std::string &path, Case::Case &pcase) {
 }
 
 // load a sprite from file
-bool IO::loadSpriteFromFile(const std::string &path, Sprite &sprite) {
+bool IO::loadSpriteFromFile(const ustring &path, Sprite &sprite) {
 	// open the requested file
 	FILE *f=fopen(path.c_str(), "rb");
 	if (!f)
@@ -546,7 +546,7 @@ bool IO::loadSpriteFromFile(const std::string &path, Sprite &sprite) {
 }
 
 // load stock assets config file
-bool IO::loadStockFile(const std::string &path, Case::Case *pcase) {
+bool IO::loadStockFile(const ustring &path, Case::Case *pcase) {
 	// open the path
 	FILE *f=fopen(path.c_str(), "rb");
 	if (!f) {
@@ -569,8 +569,8 @@ bool IO::loadStockFile(const std::string &path, Case::Case *pcase) {
 		sscanf(line, "%s %s", id, file);
 		
 		// form a string objects
-		std::string sId(id);
-		std::string sFile(file);
+		ustring sId(id);
+		ustring sFile(file);
 		
 		// see if this is a sound effect
 		if (sId.substr(0, 4)=="sfx:") {
@@ -579,7 +579,7 @@ bool IO::loadStockFile(const std::string &path, Case::Case *pcase) {
 			
 			// try to load this sample
 			Audio::Sample sample;
-			if (!Audio::loadSample(std::string(".temp/")+sFile, sample))
+			if (!Audio::loadSample(ustring(".temp/")+sFile, sample))
 				return false;
 			
 			// add this sample
@@ -593,7 +593,7 @@ bool IO::loadStockFile(const std::string &path, Case::Case *pcase) {
 			
 			// try to load the sprite
 			Sprite sprite;
-			if (!IO::loadSpriteFromFile(std::string(".temp/")+sFile, sprite)) {
+			if (!IO::loadSpriteFromFile(ustring(".temp/")+sFile, sprite)) {
 				Utils::alert("Unable to load stock sprite: '.temp/"+sFile+"'");
 				return false;
 			}
@@ -657,7 +657,7 @@ bool IO::loadStockFile(const std::string &path, Case::Case *pcase) {
 			}
 			
 			// create a surface
-			SDL_Surface *surface=Textures::createTexture(sId, std::string(".temp/")+file);
+			SDL_Surface *surface=Textures::createTexture(sId, ustring(".temp/")+file);
 			if (!surface)
 				return false;
 			
@@ -682,7 +682,7 @@ bool IO::loadStockFile(const std::string &path, Case::Case *pcase) {
 }
 
 // load theme from xml
-bool IO::loadThemeXML(const std::string &path, Theme::ColorMap &map) {
+bool IO::loadThemeXML(const ustring &path, Theme::ColorMap &map) {
 	xmlDocPtr doc=xmlParseFile(path.c_str());
 	if (!doc) {
 		Utils::alert("Unable to load theme XML file: '"+path+"'");
@@ -701,7 +701,7 @@ bool IO::loadThemeXML(const std::string &path, Theme::ColorMap &map) {
 		// element node
 		if (xmlStrcmp(child->name, (const xmlChar*) "element")==0) {
 			// get the id of the item
-			std::string id=(const char*) xmlGetProp(child, (const xmlChar*) "id");
+			ustring id=(const char*) xmlGetProp(child, (const xmlChar*) "id");
 			
 			// get our rgba color
 			int r=atoi((const char*) xmlGetProp(child, (const xmlChar*) "r"));
@@ -744,12 +744,12 @@ Textures::Texture IO::readImage(FILE *f) {
 	// read in the jpeg from memory
 	SDL_RWops *rw=SDL_RWFromMem(buffer, size);
 	if (!rw)
-		Utils::alert("Error reading internal image: '"+std::string(SDL_GetError())+"'");
+		Utils::alert("Error reading internal image: '"+ustring(SDL_GetError())+"'");
 	
 	// load our image from raw data (no need to free RWops structure)
 	SDL_Surface *srf=IMG_Load_RW(rw, 1);
 	if (!srf) {
-		Utils::alert("Error loading internal image: '"+std::string(SDL_GetError())+"'");
+		Utils::alert("Error loading internal image: '"+ustring(SDL_GetError())+"'");
 		return tex;
 	}
 	
@@ -767,15 +767,20 @@ Textures::Texture IO::readImage(FILE *f) {
 }
 
 // read a string from file
-std::string IO::readString(FILE *f) {
+ustring IO::readString(FILE *f) {
 	// read string length
 	int len;
 	fread(&len, sizeof(int), 1, f);
 	
 	// read the string
-	std::string str="";
-	for (int i=0; i<len; i++)
-		str+=(char) fgetc(f);
+	ustring str="";
+	for (int i=0; i<len; i++) {
+		// character is stored as 2 bytes, but then needs to be
+		// expanded to 4 bytes to work with ustring
+		gunichar ch;
+		fread(&ch, sizeof(gunichar), 1, f);
+		str+=ch;
+	}
 	
 	return str;
 }

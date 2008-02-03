@@ -70,12 +70,12 @@ void Case::Case::addTestimony(const Testimony &testimony) {
 }
 
 // add a text buffer
-void Case::Case::addBuffer(const std::string &id, const std::string &contents) {
+void Case::Case::addBuffer(const ustring &id, const ustring &contents) {
 	m_Buffers[id]=contents;
 }
 
 // get a character
-Character* Case::Case::getCharacter(const std::string &id) {
+Character* Case::Case::getCharacter(const ustring &id) {
 	if (m_Characters.find(id)!=m_Characters.end())
 		return &m_Characters[id];
 	else
@@ -83,7 +83,7 @@ Character* Case::Case::getCharacter(const std::string &id) {
 }
 
 // get a background
-Case::Background* Case::Case::getBackground(const std::string &id) {
+Case::Background* Case::Case::getBackground(const ustring &id) {
 	if (m_Backgrounds.find(id)!=m_Backgrounds.end())
 		return &m_Backgrounds[id];
 	else
@@ -91,7 +91,7 @@ Case::Background* Case::Case::getBackground(const std::string &id) {
 }
 
 // get a piece of evidence
-Case::Evidence* Case::Case::getEvidence(const std::string &id) {
+Case::Evidence* Case::Case::getEvidence(const ustring &id) {
 	if (m_Evidence.find(id)!=m_Evidence.end())
 		return &m_Evidence[id];
 	else
@@ -99,7 +99,7 @@ Case::Evidence* Case::Case::getEvidence(const std::string &id) {
 }
 
 // get an image
-Case::Image* Case::Case::getImage(const std::string &id) {
+Case::Image* Case::Case::getImage(const ustring &id) {
 	if (m_Images.find(id)!=m_Images.end())
 		return &m_Images[id];
 	else
@@ -107,7 +107,7 @@ Case::Image* Case::Case::getImage(const std::string &id) {
 }
 
 // get a location
-Case::Location* Case::Case::getLocation(const std::string &id) {
+Case::Location* Case::Case::getLocation(const ustring &id) {
 	if (m_Locations.find(id)!=m_Locations.end())
 		return &m_Locations[id];
 	else
@@ -115,7 +115,7 @@ Case::Location* Case::Case::getLocation(const std::string &id) {
 }
 
 // get a testimony
-Case::Testimony* Case::Case::getTestimony(const std::string &id) {
+Case::Testimony* Case::Case::getTestimony(const ustring &id) {
 	if (m_Testimonies.find(id)!=m_Testimonies.end())
 		return &m_Testimonies[id];
 	else

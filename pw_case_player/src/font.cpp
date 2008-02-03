@@ -43,7 +43,7 @@ const Color COLOR_YELLOW(229, 204, 148);
 }
 
 // load a font
-bool Fonts::loadFont(const std::string &str, int size) {
+bool Fonts::loadFont(const ustring &str, int size) {
 	Font *font=TTF_OpenFontRW(SDL_RWFromFile(str.c_str(), "rb"), 1, size);
 	if (font) {
 		g_Fonts[size]=font;
@@ -54,7 +54,7 @@ bool Fonts::loadFont(const std::string &str, int size) {
 }
 
 // get a surface with a rendered glyph
-SDL_Surface* Fonts::renderGlyph(char ch, int size, const Color &color, const Quality &quality) {
+SDL_Surface* Fonts::renderGlyph(Uint16 ch, int size, const Color &color, const Quality &quality) {
 	Font *f=queryFont(size);
 	if (!f)
 		return NULL;
@@ -66,7 +66,7 @@ SDL_Surface* Fonts::renderGlyph(char ch, int size, const Color &color, const Qua
 }
 
 // calculate the y coordinate for a glyph to render correctly on baseline
-int Fonts::glyphBase(int y, char ch, int size) {
+int Fonts::glyphBase(int y, Uint16 ch, int size) {
 	Font *f=queryFont(size);
 	if (!f)
 		return 0;
@@ -79,7 +79,7 @@ int Fonts::glyphBase(int y, char ch, int size) {
 }
 
 // see if a character should not be drawn
-bool Fonts::discardChar(char ch) {
+bool Fonts::discardChar(Uint16 ch) {
 	switch(ch) {
 		case '[':
 		case ']':
@@ -94,7 +94,7 @@ bool Fonts::discardChar(char ch) {
 }
 
 // see if this string is too long and needs to be broken
-bool Fonts::lineWillBreak(const Point &p, int rightClamp, const std::string &str, int size) {
+bool Fonts::lineWillBreak(const Point &p, int rightClamp, const ustring &str, int size) {
 	int breakCount=0;
 	int ex=p.x();
 	
@@ -106,7 +106,7 @@ bool Fonts::lineWillBreak(const Point &p, int rightClamp, const std::string &str
 	Font *font=queryFont(size);
 	
 	for (int i=0; i<str.size(); i++) {
-		char ch=(char) str[i];
+		Uint16 ch=(Uint16) str[i];
 		
 		// see if we should force a new line
 		if (ch=='\n') {
@@ -172,12 +172,12 @@ bool Fonts::lineWillBreak(const Point &p, int rightClamp, const std::string &str
 }
 
 // draw a string on the screen
-int Fonts::drawString(const Point &p, const std::string &str, int size, const Color &color) {
+int Fonts::drawString(const Point &p, const ustring &str, int size, const Color &color) {
 	drawString(p, str.size(), SDL_GetVideoSurface()->w, str, size, color);
 }
 
 // draw a string with clamped restrictions
-int Fonts::drawString(const Point &p, int limit, int rightClamp, const std::string &str, int size, const Color &color) {
+int Fonts::drawString(const Point &p, int limit, int rightClamp, const ustring &str, int size, const Color &color) {
 	// also, make sure the default video surface exists
 	SDL_Surface *screen=SDL_GetVideoSurface();
 	
@@ -202,7 +202,7 @@ int Fonts::drawString(const Point &p, int limit, int rightClamp, const std::stri
 	
 	// iterate over string and draw each character
 	for (int i=0; i<limit; i++) {
-		char ch=(char) str[i];
+		Uint16 ch=(Uint16) str[i];
 		
 		// don't bother drawing unknown characters
 		if (getGlyphWidth(ch, size)==-1)
@@ -293,8 +293,8 @@ int Fonts::drawString(const Point &p, int limit, int rightClamp, const std::stri
 }
 
 // draw a string centered on the screen
-int Fonts::drawStringCentered(int y, int delimiter, const std::string &str, int size, const Color &color) {
-	std::string nstr=str;
+int Fonts::drawStringCentered(int y, int delimiter, const ustring &str, int size, const Color &color) {
+	ustring nstr=str;
 	
 	// cache the right clamp value
 	int clamp=SDL_GetVideoSurface()->w;
@@ -322,7 +322,7 @@ int Fonts::drawStringCentered(int y, int delimiter, const std::string &str, int 
 }
 
 // draw a ttf font string
-void Fonts::drawStringBlended(const Point &p, const std::string &str, int size, const Color &color) {
+void Fonts::drawStringBlended(const Point &p, const ustring &str, int size, const Color &color) {
 	// get the font
 	TTF_Font *font=queryFont(size);
 	if (!font) {
@@ -345,7 +345,7 @@ void Fonts::drawStringBlended(const Point &p, const std::string &str, int size, 
 }
 
 // get the width of a string
-int Fonts::getWidth(const std::string &str, int size) {
+int Fonts::getWidth(const ustring &str, int size) {
 	// get the requested font
 	if (!queryFont(size)) {
 		Utils::debugMessage("Font: font size '"+Utils::itoa(size)+"' not found");
@@ -379,7 +379,7 @@ int Fonts::getWidth(const std::string &str, int size) {
 }
 
 // get the width of a glyph
-int Fonts::getGlyphWidth(char ch, int size) {
+int Fonts::getGlyphWidth(Uint16 ch, int size) {
 	Font *font=queryFont(size);
 	if (font) {
 		int min, max;

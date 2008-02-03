@@ -26,31 +26,31 @@
 
 namespace Textures {
 
-std::map<std::string, SDL_Surface*> g_TextureMap;
+std::map<ustring, SDL_Surface*> g_TextureMap;
 
 }
 
 // get a texture from the map
-SDL_Surface* Textures::queryTexture(const std::string &id) {
+SDL_Surface* Textures::queryTexture(const ustring &id) {
 	return g_TextureMap[id];
 }
 
 // add a new texture
-void Textures::pushTexture(const std::string &id, SDL_Surface *texture) {
+void Textures::pushTexture(const ustring &id, SDL_Surface *texture) {
 	if (queryTexture(id))
 		popTexture(id);
 	g_TextureMap[id]=texture;
 }
 
 // remove a texture from the stack
-void Textures::popTexture(const std::string &id) {
+void Textures::popTexture(const ustring &id) {
 	SDL_FreeSurface(g_TextureMap[id]);
 	g_TextureMap.erase(id);
 }
 
 // clear the texture stack
 void Textures::clearStack() {
-	for (std::map<std::string, SDL_Surface*>::iterator it=g_TextureMap.begin(); it!=g_TextureMap.end(); ++it) {
+	for (std::map<ustring, SDL_Surface*>::iterator it=g_TextureMap.begin(); it!=g_TextureMap.end(); ++it) {
 		if ((*it).second)
 			SDL_FreeSurface((*it).second);
 	}
@@ -59,11 +59,11 @@ void Textures::clearStack() {
 }
 
 // create a texture after loading an image from file
-SDL_Surface* Textures::createTexture(const std::string &id, const std::string &str) {
-	std::string file=str;
+SDL_Surface* Textures::createTexture(const ustring &id, const ustring &str) {
+	ustring file=str;
 	
 	// get the file extension
-	std::string ext=file.substr(file.size()-3, file.size()-1);
+	ustring ext=file.substr(file.size()-3, file.size()-1);
 	
 	// see if this image needs to have its red/blue values flipped
 	bool rgbFix=false;
@@ -98,7 +98,7 @@ SDL_Surface* Textures::createTexture(const std::string &id, const std::string &s
 }
 
 // create a texture from data
-SDL_Surface* Textures::createTexture(const std::string &id, const Textures::Texture &tex) {
+SDL_Surface* Textures::createTexture(const ustring &id, const Textures::Texture &tex) {
 	SDL_Surface *surface;
 	
 	if (!tex.surface) {

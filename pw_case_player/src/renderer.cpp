@@ -41,7 +41,7 @@ void Renderer::drawRect(SDL_Surface *surface, const Point &p, int w, int h, cons
 }
 
 // draw a full image at a point
-void Renderer::drawImage(const Point &p, const std::string &texId) {
+void Renderer::drawImage(const Point &p, const ustring &texId) {
 	// get the texture in question
 	SDL_Surface *tex=Textures::queryTexture(texId);
 	if (!tex) {
@@ -54,7 +54,7 @@ void Renderer::drawImage(const Point &p, const std::string &texId) {
 }
 
 // draw a full image at a point
-void Renderer::drawImage(const Point &p, SDL_Surface *dest, const std::string &texId) {
+void Renderer::drawImage(const Point &p, SDL_Surface *dest, const ustring &texId) {
 	// get the texture in question
 	SDL_Surface *tex=Textures::queryTexture(texId);
 	if (!tex) {
@@ -101,7 +101,7 @@ void Renderer::drawImage(const Point &p, int w, int h, SDL_Surface *src, SDL_Sur
 }
 
 // draw a textured quad
-void Renderer::drawImage(const Point &p1, int w, int h, const Point &p2, const std::string &texId) {
+void Renderer::drawImage(const Point &p1, int w, int h, const Point &p2, const ustring &texId) {
 	// get pointer to screen surface
 	SDL_Surface *screen=SDL_GetVideoSurface();
 	if (!screen)
@@ -131,7 +131,7 @@ void Renderer::drawImage(const Point &p1, int w, int h, const Point &p2, const s
 }
 
 // draw a button with text
-void Renderer::drawButton(const Point &p1, int w, const std::string &text) {
+void Renderer::drawButton(const Point &p1, int w, const ustring &text) {
 	int fsize=Fonts::FONT_BUTTON_TEXT;
 	
 	// verify that we have enough room for the text
@@ -158,8 +158,8 @@ void Renderer::drawButton(const Point &p1, int w, const std::string &text) {
 }
 
 // generate a correctly rendered court panorama based on shown sprites
-SDL_Surface* Renderer::generateCourtPanorama(Case::Case *pcase, const std::string &prosecutor, 
-					     const std::string &defense, const std::string &witness) {
+SDL_Surface* Renderer::generateCourtPanorama(Case::Case *pcase, const ustring &prosecutor, 
+					     const ustring &defense, const ustring &witness) {
 	// get the base panorama
 	SDL_Surface *bg=Textures::queryTexture("court_panorama");
 	if (!bg)
@@ -279,7 +279,7 @@ void Renderer::drawEvidencePage(const std::vector<Case::Evidence*> &evidence, in
 			// bar, and draw selection box
 			if (i==selected) {
 				// get the name of this evidence
-				std::string name=e->name;
+				ustring name=e->name;
 				
 				// calculate string length for this string
 				int width=Fonts::getWidth(name, Fonts::FONT_INFO_PAGE);
@@ -426,7 +426,7 @@ void Renderer::drawProfilesPage(const std::vector<Character*> &uchars, int page,
 			// bar, and draw selection box
 			if (i==selected) {
 				// get the name of this character
-				std::string name=c->getName();
+				ustring name=c->getName();
 				
 				// calculate string length for this string
 				int width=Fonts::getWidth(name, Fonts::FONT_INFO_PAGE);
@@ -565,7 +565,7 @@ void Renderer::drawExamineScene(SDL_Surface *bg, const Point &cursor, bool slide
 }
 
 // draw the movement scene
-void Renderer::drawMoveScene(const std::vector<std::string> &locations, LocationMap lmap, int selected) {
+void Renderer::drawMoveScene(const std::vector<ustring> &locations, LocationMap lmap, int selected) {
 	// get pointer to screen surface
 	SDL_Surface *screen=SDL_GetVideoSurface();
 	

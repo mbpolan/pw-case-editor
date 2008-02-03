@@ -32,7 +32,7 @@
 static Game *g_Game=NULL;
 
 // constructor
-Game::Game(const std::string &rootPath, Case::Case *pcase): m_RootPath(rootPath), m_Case(pcase) {
+Game::Game(const ustring &rootPath, Case::Case *pcase): m_RootPath(rootPath), m_Case(pcase) {
 	// reset draw flags
 	m_State.drawFlags=0;
 	
@@ -167,12 +167,12 @@ bool Game::loadStockTextures() {
 	SDL_SetAlpha(Textures::queryTexture("tc_select_bl"), SDL_SRCALPHA, 225);
 	
 	// map of opaque surfaces
-	std::map<std::string, std::pair<int, int> > surfaces;
+	std::map<ustring, std::pair<int, int> > surfaces;
 	surfaces["opaque_black"]=std::make_pair<int, int>(256, 192);
 	surfaces["transparent"]=std::make_pair<int, int>(256, 192);
 	
 	// create these surfaces and add them as textures
-	for (std::map<std::string, std::pair<int, int> >::iterator it=surfaces.begin(); it!=surfaces.end(); ++it) {
+	for (std::map<ustring, std::pair<int, int> >::iterator it=surfaces.begin(); it!=surfaces.end(); ++it) {
 		SDL_Surface *opaque=SDL_CreateRGBSurface(SDL_SWSURFACE, (*it).second.first, (*it).second.second, 32, 0, 0, 0, 0);
 		SDL_LockSurface(opaque);
 		
@@ -221,7 +221,7 @@ void Game::render() {
 	Renderer::drawRect(SDL_GetVideoSurface(), Point(0, 192), 256, 5, Color(0, 0, 0));
 	
 	// once everything static is drawn, parse the block
-	std::string status=m_Parser->parse(shouldDrawTextBox());
+	ustring status=m_Parser->parse(shouldDrawTextBox());
 	
 	// new block ready for parsing
 	if (status!="null") {
@@ -380,7 +380,7 @@ void Game::onKeyboardEvent(SDL_KeyboardEvent *e) {
 		
 		// select option
 		else if (e->keysym.sym==SDLK_RETURN) {// get the target block id
-			std::string target=character->getTalkOptions()[m_State.selectedTalkOption].second;
+			ustring target=character->getTalkOptions()[m_State.selectedTalkOption].second;
 			
 			// set this block
 			m_Parser->setBlock(m_Case->getBuffers()[target]);
@@ -665,14 +665,14 @@ void Game::checkInputState() {
 }
 
 // get the id of the selected court record evidence
-std::string Game::getSelectedEvidence() {
+ustring Game::getSelectedEvidence() {
 	int index=m_State.evidencePage*8+m_State.selectedEvidence;
 	Case::Evidence *e=m_Case->getEvidence(m_State.visibleEvidence[index]);
 	return e->id;
 }
 
 // get the id of the selected court record profile
-std::string Game::getSelectedProfile() {
+ustring Game::getSelectedProfile() {
 	int index=m_State.profilesPage*8+m_State.selectedProfile;
 	Character *c=m_Case->getCharacter(m_State.visibleProfiles[index]);
 	return c->getInternalName();
@@ -728,7 +728,7 @@ bool Game::canExamineRegion() {
 }
 
 // set the current backdrop location
-void Game::setLocation(const std::string &locationId) {
+void Game::setLocation(const ustring &locationId) {
 	if (!m_Case->getLocation(locationId)) {
 		Utils::debugMessage("Unable to set nonexistent location: "+locationId);
 		return;
@@ -761,7 +761,7 @@ void Game::setLocation(const std::string &locationId) {
 }
 
 // set the evidence to draw on top screen
-void Game::setShownEvidence(const std::string &id, const Position &pos) {
+void Game::setShownEvidence(const ustring &id, const Position &pos) {
 	if (id=="null") {
 		// play hide effect
 		Audio::playEffect("sfx_hide_item", Audio::CHANNEL_GUI);
@@ -779,7 +779,7 @@ void Game::setShownEvidence(const std::string &id, const Position &pos) {
 }
 
 // display a testimony
-void Game::displayTestimony(const std::string &id, bool crossExamine) {
+void Game::displayTestimony(const ustring &id, bool crossExamine) {
 	// get the testimony, if it exists
 	Case::Testimony *testimony=m_Case->getTestimony(id);
 	if (!testimony) {
@@ -861,7 +861,7 @@ void Game::selectEvidence(bool evidence, bool increment) {
 }
 
 // see if a location is a court location
-bool Game::isCourtLocation(const std::string &id) {
+bool Game::isCourtLocation(const ustring &id) {
 	// test the string
 	if (id=="prosecutor_stand" || id=="defense_stand" || 
 	    id=="defense_helper_stand" || id=="witness_stand" ||
@@ -1040,11 +1040,11 @@ void Game::renderTopView() {
 			Sprite *sprite=character->getSprite();
 			
 			// get character's current animation
-			std::string root=character->getRootAnimation();
+			ustring root=character->getRootAnimation();
 			
 			// if we are at either the defense stand, co-counsel stand, or prosecutor stand, automatically
 			// use the trial_* animations for characters
-			std::string prepend="";
+			ustring prepend="";
 			if (m_State.currentLocation=="defense_stand" || m_State.currentLocation=="defense_helper_stand" ||
 			    m_State.currentLocation=="prosecutor_stand")
 				prepend="trial_";
@@ -1181,7 +1181,7 @@ void Game::renderMenuView() {
 	
 	// when dealing with drawing elements, some need to be drawn "thin"
 	// this is only true when the examine scene is being drawn
-	std::string append="";
+	ustring append="";
 	if (flagged(STATE_EXAMINE) || flagged(STATE_CHECK_EVIDENCE_IMAGE))
 		append="_thin";
 	
@@ -1190,7 +1190,7 @@ void Game::renderMenuView() {
 		// we're not expecting the user to point out a contradiction
 		if (m_State.contradictionImg=="null") {
 			// get the image for the evidence
-			std::string checkID=m_Case->getEvidence(m_State.visibleEvidence[m_State.selectedEvidence])->checkID;
+			ustring checkID=m_Case->getEvidence(m_State.visibleEvidence[m_State.selectedEvidence])->checkID;
 			Renderer::drawImage(Point(0, 197), m_Case->getImage(checkID)->texture);
 		}
 		
@@ -1583,7 +1583,7 @@ bool Game::renderSpecialEffects() {
 // render the text box
 void Game::renderTextBox() {
 	static bool speakerChecked=false;
-	static std::string speaker="";
+	static ustring speaker="";
 	
 	// if there is evidence to present, shift the text box up
 	int shift=0;
@@ -1613,7 +1613,7 @@ void Game::renderTextBox() {
 	// find our current speaker
 	if (!speakerChecked) {
 		// get the speaker of the current block
-		std::string cspeaker=m_Parser->getSpeaker();
+		ustring cspeaker=m_Parser->getSpeaker();
 		
 		// see if this character exists
 		if (m_Case->getCharacter(cspeaker)) {
@@ -1734,7 +1734,7 @@ void Game::renderCourtroomOverview() {
 void Game::renderStand(const Stand stand) {
 	// the background and sprite should be drawn by this point
 	// we just need to superimpose the bench seen ingame over the sprite
-	std::string sId="null";
+	ustring sId="null";
 	switch(stand) {
 		case COURT_PROSECUTOR_STAND: sId="prosecutor_bench"; break;
 		case COURT_DEFENSE_STAND: sId="defense_bench"; break;
@@ -1748,7 +1748,7 @@ void Game::renderStand(const Stand stand) {
 }
 
 // initial screen button activated handler
-void Game::onInitialScreenClicked(const std::string &id) {
+void Game::onInitialScreenClicked(const ustring &id) {
 	if (!flagged(STATE_INITIAL_SCREEN))
 		return;
 	
@@ -1793,7 +1793,7 @@ void Game::onTopRightButtonClicked() {
 				return;
 			
 			// get the current evidence/profile
-			std::string id;
+			ustring id;
 			if (flagged(STATE_EVIDENCE_INFO_PAGE) && !m_State.visibleEvidence.empty())
 				id=getSelectedEvidence();
 			
@@ -1944,7 +1944,7 @@ void Game::onTopLeftButtonClicked() {
 		// make sure we are in active cross examination
 		if (testimony && m_State.curExamination && !m_State.curExaminationPaused) {
 			// get the press block for this piece of the testimony
-			std::string pBlock=testimony->pieces[m_State.curTestimonyPiece].pressBlock;
+			ustring pBlock=testimony->pieces[m_State.curTestimonyPiece].pressBlock;
 			
 			// set that block to use after the "hold it!" animation
 			m_State.queuedBlock=pBlock;
@@ -2081,7 +2081,7 @@ void Game::onPresentCenterClicked() {
 		m_State.requestingEvidence=false;
 		
 		// get the current evidence/profile
-		std::string id="null";
+		ustring id="null";
 		if (flagged(STATE_EVIDENCE_INFO_PAGE) && !m_State.visibleEvidence.empty())
 			id=m_State.visibleEvidence[m_State.evidencePage*8+m_State.selectedEvidence];
 		
@@ -2180,7 +2180,7 @@ void Game::onControlsClicked(int x, int y) {
 }
 
 // click handler for move scene
-void Game::onMoveSceneClicked(const std::string &button) {
+void Game::onMoveSceneClicked(const ustring &button) {
 	if (!m_Case->getLocation(m_State.currentLocation))
 		return;
 	
@@ -2188,7 +2188,7 @@ void Game::onMoveSceneClicked(const std::string &button) {
 	Case::Location *location=m_Case->getLocation(m_State.currentLocation);
 	
 	// calculate the index (an_move_locX_btn)
-	std::string tmp=button;
+	ustring tmp=button;
 	tmp.erase(0, 11);
 	tmp.erase(1, 4);
 	int index=atoi(tmp.c_str());
@@ -2212,7 +2212,7 @@ void Game::onMoveSceneClicked(const std::string &button) {
 }
 
 // click handler for talk scene
-void Game::onTalkSceneClicked(const std::string &button) {
+void Game::onTalkSceneClicked(const ustring &button) {
 	if (!flagged(STATE_TALK) || (flagged(STATE_TALK) && m_State.fadeOut!="none"))
 		return;
 	
@@ -2227,12 +2227,12 @@ void Game::onTalkSceneClicked(const std::string &button) {
 		return;
 	
 	// calculate the index (an_talk_opX_btn)
-	std::string tmp=button;
+	ustring tmp=button;
 	tmp.erase(0, 10);
 	tmp.erase(1, 4);
 	int index=atoi(tmp.c_str());
 	
-	std::string target;
+	ustring target;
 	
 	// if we are requesting an answer, select the appropriate option
 	if (m_State.requestingAnswer) {

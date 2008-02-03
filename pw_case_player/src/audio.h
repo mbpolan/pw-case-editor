@@ -38,11 +38,11 @@ enum SampleType { SAMPLE_EFFECT, SAMPLE_MUSIC };
 
 // audio struct representing music or effect
 struct _Sample {
-	std::string id; // id referenced from within the script
+	ustring id; // id referenced from within the script
 	SampleType type; // the type of sample
 	
 	Mix_Chunk *effect; // the effect to play
-	std::string music; // the music sample to play
+	ustring music; // the music sample to play
 };
 typedef struct _Sample Sample;
 
@@ -50,7 +50,7 @@ typedef struct _Sample Sample;
 extern bool g_Output;
 
 // map of audio
-typedef std::map<std::string, Sample> AudioMap;
+typedef std::map<ustring, Sample> AudioMap;
 static AudioMap g_Audio;
 
 // map of channels
@@ -61,13 +61,13 @@ static ChannelMap Channels;
 extern Mix_Music *g_Music;
 
 // load an audio sample from file
-bool loadSample(const std::string &path, Sample &sample);
+bool loadSample(const ustring &path, Sample &sample);
 
 // play an effect sample
-void playEffect(const std::string &id, EffectChannel channel);
+void playEffect(const ustring &id, EffectChannel channel);
 
 // play a music sample
-void playMusic(const std::string &id);
+void playMusic(const ustring &id);
 
 // see if music is playing
 bool isMusicPlaying();
@@ -76,13 +76,13 @@ bool isMusicPlaying();
 void haltMusic();
 
 // add an audio sample
-void pushAudio(const std::string &id, const Sample &sample);
+void pushAudio(const ustring &id, const Sample &sample);
 
 // remove an audio sample
-void popAudio(const std::string &id);
+void popAudio(const ustring &id);
 
 // query an audio sample
-Sample* queryAudio(const std::string &id);
+Sample* queryAudio(const ustring &id);
 
 // clear the audio stack
 void clearAudioStack();

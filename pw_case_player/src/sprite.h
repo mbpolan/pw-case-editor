@@ -30,21 +30,21 @@
 // struct representing data about a frame
 struct _Frame {
 	int time;
-	std::string sfx;
+	ustring sfx;
 	SDL_Surface *image;
 };
 typedef struct _Frame Frame;
 
 // struct representing a single animation
 struct _Animation {
-	std::string id;
+	ustring id;
 	bool loop;
 	std::vector<Frame> frames;
 };
 typedef struct _Animation Animation;
 
-typedef std::map<std::string, Animation> AnimationMap;
-typedef std::map<std::string, Animation>::iterator AnimationMapIter;
+typedef std::map<ustring, Animation> AnimationMap;
+typedef std::map<ustring, Animation>::iterator AnimationMapIter;
 
 // clss representing a sprite
 class Sprite {
@@ -62,7 +62,7 @@ class Sprite {
 		bool done();
 		
 		// set animation to play
-		void setAnimation(const std::string &anim);
+		void setAnimation(const ustring &anim);
 		
 		// animate the sprite
 		void animate(int x, int y, SDL_Surface *dest=SDL_GetVideoSurface());
@@ -74,10 +74,10 @@ class Sprite {
 		void addAnimation(const Animation &anim) { m_Animations[anim.id]=anim; }
 		
 		// return the string of the current animation
-		std::string getCurrentAnimationId() const { return m_CurAnim; }
+		ustring getCurrentAnimationId() const { return m_CurAnim; }
 		
 		// get an animation sequence
-		Animation* getAnimation(const std::string &id);
+		Animation* getAnimation(const ustring &id);
 		
 		// get full map of animations
 		AnimationMap getAnimations() const { return m_Animations; }
@@ -89,14 +89,14 @@ class Sprite {
 		int numAnimations() const { return m_Animations.size(); }
 		
 		// add a frame to an animation sequence
-		void addFrame(const std::string &id, int time, SDL_Surface *frame);
+		void addFrame(const ustring &id, int time, SDL_Surface *frame);
 		
 		// reset the sprite
 		void reset();
 		
 	private:
 		// the current frame and animation
-		std::string m_CurAnim;
+		ustring m_CurAnim;
 		int m_CurFrame;
 		int m_LastFrame;
 		

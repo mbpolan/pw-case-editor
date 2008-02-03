@@ -22,12 +22,17 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#include <glibmm/ustring.h>
 #include <iostream>
 #include <signal.h>
 #include "SDL.h"
 
+// ustring for internationalization
+typedef Glib::ustring ustring;
+typedef gunichar uchar;
+
 // a value,key string pair
-typedef std::pair<std::string, std::string> StringPair;
+typedef std::pair<ustring, ustring> StringPair;
 
 // function prototypes
 static void onSigSegv(int sig) { };
@@ -36,7 +41,7 @@ static void onSigSegv(int sig) { };
 class Color {
 	public:
 		// constructor
-		Color(char r=255, char g=255, char b=255, char a=255) {
+		Color(uchar r=255, uchar g=255, uchar b=255, uchar a=255) {
 			m_R=r;
 			m_G=g;
 			m_B=b;
@@ -47,13 +52,13 @@ class Color {
 		SDL_Color toSDLColor() const {SDL_Color color={ m_R, m_G, m_B }; return color; }
 		
 		// accessors
-		char r() const { return m_R; }
-		char g() const { return m_G; }
-		char b() const { return m_B; }
-		char a() const { return m_A; }
+		uchar r() const { return m_R; }
+		uchar g() const { return m_G; }
+		uchar b() const { return m_B; }
+		uchar a() const { return m_A; }
 		
 	private:
-		char m_R, m_G, m_B, m_A;
+		uchar m_R, m_G, m_B, m_A;
 };
 
 // a point

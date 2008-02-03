@@ -57,7 +57,7 @@ SDLContext::~SDLContext() {
 bool SDLContext::init() {
 	// initialize SDL
 	if (SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_TIMER)<0) {
-		Utils::alert("Unable to intialize video: '"+std::string(SDL_GetError())+"'");
+		Utils::alert("Unable to intialize video: '"+ustring(SDL_GetError())+"'");
 		return false;
 	}
 	atexit(SDL_Quit);
@@ -79,7 +79,7 @@ bool SDLContext::initVideo(int width, int height, bool fullscreen) {
 	// get video hardware information
 	const SDL_VideoInfo *vInfo=SDL_GetVideoInfo();
 	if (!vInfo)
-		Utils::alert("Unable to get video card information: '"+std::string(SDL_GetError())+"'", Utils::MESSAGE_WARNING);
+		Utils::alert("Unable to get video card information: '"+ustring(SDL_GetError())+"'", Utils::MESSAGE_WARNING);
 	else {
 		// hardware acceleration
 		if (vInfo->blit_hw)
@@ -113,7 +113,7 @@ bool SDLContext::initVideo(int width, int height, bool fullscreen) {
 bool SDLContext::initAudio() {
 	// open an audio channel
 	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024)==-1) {
-		Utils::alert("Unable to open audio: '"+std::string(Mix_GetError())+"'", Utils::MESSAGE_WARNING);
+		Utils::alert("Unable to open audio: '"+ustring(Mix_GetError())+"'", Utils::MESSAGE_WARNING);
 		
 		// normally, we should quit if audio wasn't opened, but the game is 
 		// still playable without sound
@@ -124,7 +124,7 @@ bool SDLContext::initAudio() {
 }
 
 // initialize the game
-bool SDLContext::initGame(const std::string &pathToCase) {
+bool SDLContext::initGame(const ustring &pathToCase) {
 	// allocate new case
 	Case::Case *pcase=new Case::Case;
 	
@@ -141,7 +141,7 @@ bool SDLContext::initGame(const std::string &pathToCase) {
 #else
 	npos=pathToCase.rfind('\\');
 #endif
-	std::string rootPath=pathToCase.substr(0, npos);
+	ustring rootPath=pathToCase.substr(0, npos);
 	
 	// create game engine
 	m_Game=new Game(rootPath, pcase);

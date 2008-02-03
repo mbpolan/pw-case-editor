@@ -29,7 +29,7 @@ class Game;
 
 // struct that stores the current font style
 struct _FontStyle {
-	std::string type; // built-in types: date, etc
+	ustring type; // built-in types: date, etc
 	Color color;
 	int speed;
 };
@@ -45,16 +45,16 @@ class TextParser {
 		
 		// constants
 		static const int NORMAL_FONT_SPEED=50;
-		static const char TEXT_SPEED_INCR_CHAR='[';
-		static const char TEXT_SPEED_DECR_CHAR=']';
-		static const char TEXT_SPEED_NORM_CHAR='|';
-		static const char SHAKE_SCREEN_CHAR='#';
+		static const uchar TEXT_SPEED_INCR_CHAR='[';
+		static const uchar TEXT_SPEED_DECR_CHAR=']';
+		static const uchar TEXT_SPEED_NORM_CHAR='|';
+		static const uchar SHAKE_SCREEN_CHAR='#';
 		
 		// constructor
 		TextParser(Game *game);
 		
 		// set a text block to focus on
-		void setBlock(const std::string &block);
+		void setBlock(const ustring &block);
 		
 		// reset the parser
 		void reset();
@@ -78,31 +78,31 @@ class TextParser {
 		bool talkLocked() const { return m_TalkLocked; }
 		
 		// manually set the speaker
-		void setSpeaker(const std::string &speaker) { m_Speaker=speaker; }
+		void setSpeaker(const ustring &speaker) { m_Speaker=speaker; }
 		
 		// return the currently speaking character, if any
-		std::string getSpeaker() const { return m_Speaker; }
+		ustring getSpeaker() const { return m_Speaker; }
 		
 		// parse the given control block
-		// returns: next text block to go to, std::string::null if this one is not done
+		// returns: next text block to go to, ustring::null if this one is not done
 		// being parsed
-		std::string parse(bool drawDialogue);
+		ustring parse(bool drawDialogue);
 		
 		// move on to the next break point
 		void nextStep();
 		
 	private:
 		// see if a dialogue sound effect should be played for a given character
-		bool shouldPlayDialogueEffect(char prev, char ch, char next);
+		bool shouldPlayDialogueEffect(uchar prev, uchar ch, uchar next);
 		
 		// see if a trigger should be executed right away
-		bool preparseTrigger(const std::string &trigger);
+		bool preparseTrigger(const ustring &trigger);
 		
 		// see if a trigger matches a filter
-		bool filterTrigger(const std::string &trigger, const Filter &filter);
+		bool filterTrigger(const ustring &trigger, const Filter &filter);
 		
 		// parse a tag and apply styling
-		void parseTag(const std::string &tag);
+		void parseTag(const ustring &tag);
 		
 		// clear current font formatting
 		void clearFormatting();
@@ -111,14 +111,14 @@ class TextParser {
 		void executeNextTrigger();
 		
 		// execute a trigger
-		std::string doTrigger(const std::string &trigger, const std::string &command);
+		ustring doTrigger(const ustring &trigger, const ustring &command);
 		
 		// current block
-		std::string m_Block;
-		std::string m_NextBlock;
+		ustring m_Block;
+		ustring m_NextBlock;
 		
 		// current speaking character (internal name)
-		std::string m_Speaker;
+		ustring m_Speaker;
 		Character::Gender m_SpeakerGender;
 		
 		// position in block where execution stopped
@@ -130,14 +130,14 @@ class TextParser {
 		bool m_TalkLocked;
 		
 		// current dialog string data
-		std::string m_Dialogue;
+		ustring m_Dialogue;
 		int m_StrPos; // position in current dialogue
 		int m_LastChar; // last time the character was drawn
 		int m_Speed; // speed of font drawing
 		
 		// is a styling tag open?
 		bool m_TagOpen;
-		std::string m_CurTag;
+		ustring m_CurTag;
 		
 		// font formatting
 		FontStyle m_FontStyle;
@@ -146,14 +146,14 @@ class TextParser {
 		std::queue<StringPair> m_QueuedTriggers;
 		
 		// queued special effects or specific end of text events
-		std::string m_QueuedFade;
-		std::string m_QueuedTestimony;
-		std::string m_QueuedExamination;
-		std::string m_QueuedResume;
+		ustring m_QueuedFade;
+		ustring m_QueuedTestimony;
+		ustring m_QueuedExamination;
+		ustring m_QueuedResume;
 		
 		// generic events to perform
-		std::string m_QueuedEvent;
-		std::string m_QueuedEventArgs;
+		ustring m_QueuedEvent;
+		ustring m_QueuedEventArgs;
 		
 		// wait times before parsing block
 		int m_TimedGoto;

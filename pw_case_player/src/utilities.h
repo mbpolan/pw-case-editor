@@ -37,32 +37,32 @@ extern bool g_DebugOn;
 namespace FS {
 
 // get the current working directory
-std::string cwd();
+ustring cwd();
 
 // move a file on the filesystem
-void move(const std::string &from, const std::string &to);
+void move(const ustring &from, const ustring &to);
 
 // check if a directory exists
-bool dirExists(const std::string &path);
+bool dirExists(const ustring &path);
 
 // create a directory
-void makeDir(const std::string &path);
+void makeDir(const ustring &path);
 
 // remove a directory
-void removeDir(const std::string &path);
+void removeDir(const ustring &path);
 
 } // namespace FS
 
 // display an alert message to the user
 // this will show a message box on Windows
-void alert(const std::string &text, const MessageType &type=MESSAGE_CRITICAL);
+void alert(const ustring &text, const MessageType &type=MESSAGE_CRITICAL);
 
 // convert a court camera script string to animation limits
 // string should be in the form of: "location1,location2"
-void scriptToLimits(const std::string &str, UI::Limit &start, UI::Limit &end);
+void scriptToLimits(const ustring &str, UI::Limit &start, UI::Limit &end);
 
 // print a debug message
-void debugMessage(const std::string &msg);
+void debugMessage(const ustring &msg);
 
 // see if a point is in a rectangle
 bool pointInRect(const Point &p, const Rect &rect);
@@ -79,19 +79,19 @@ Point getMouseLocation(Uint8 *modState=NULL);
 // create a blank surface
 SDL_Surface* createSurface(int width, int height);
 
-// convert a char to a string
-std::string ucharToStr(char ch);
+// convert a uchar to a string
+ustring ucharToStr(uchar ch);
 
 // convert an integer to string
-std::string itoa(int num);
+ustring itoa(int num);
 
 // break a string apart based on a delimiting string
-StringVector explodeString(const std::string &delimiter, const std::string &str);
+StringVector explodeString(const ustring &delimiter, const ustring &str);
 
 // break a string apart based on a delimiting character
-StringVector explodeString(char delimiter, const std::string &str);
+StringVector explodeString(uchar delimiter, const ustring &str);
 
 // count occurrences of a substring in a string
-int amountInString(const std::string &sub, const std::string &str);
+int amountInString(const ustring &sub, const ustring &str);
 
 }; // namespace UI

@@ -34,7 +34,7 @@ class Game;
 // the UI namespace
 namespace UI {
 
-typedef void (Game::*Callback) (const std::string &);
+typedef void (Game::*Callback) (const ustring &);
 
 // define limits for special animations
 enum Limit { LIMIT_NONE=0,
@@ -66,8 +66,8 @@ enum AnimType { ANIM_SIDE_HBOUNCE=0,
 // a struct containing animation data (not all variables pertinent)
 struct _Animation {
 	// texture images associated with this animation
-	std::string texture;
-	std::string texture2;
+	ustring texture;
+	ustring texture2;
 	
 	// enabled textures
 	bool texture1Active;
@@ -77,10 +77,10 @@ struct _Animation {
 	SDL_Surface *surface;
 	
 	// text for gui
-	std::string txt;
+	ustring txt;
 	
 	// sound effect
-	std::string sfx;
+	ustring sfx;
 	
 	// callback for gui clicks
 	Callback callback;
@@ -128,7 +128,7 @@ typedef struct _Animation Animation;
 class Button {
 	public:
 		// constructor
-		Button(const std::string &text, const Point &p, Callback slot, const std::string &sfx="null") {
+		Button(const ustring &text, const Point &p, Callback slot, const ustring &sfx="null") {
 			m_Text=text;
 			m_Point=p;
 			m_Slot=slot;
@@ -136,14 +136,14 @@ class Button {
 		}
 		
 		// get attributes of button
-		std::string getText() const { return m_Text; }
-		std::string getSFX() const { return m_SFX; }
+		ustring getText() const { return m_Text; }
+		ustring getSFX() const { return m_SFX; }
 		Point getPoint() const { return m_Point; }
 		Callback getSlot() const { return m_Slot; }
 		
 	private:
-		std::string m_Text;
-		std::string m_SFX;
+		ustring m_Text;
+		ustring m_SFX;
 		Point m_Point;
 		Callback m_Slot;
 };
@@ -162,68 +162,68 @@ class Manager {
 		void handleGUIClick(const Point &mouse, int num, ...);
 		
 		// reverse the velocity of a registered animation
-		void reverseVelocity(const std::string &id);
+		void reverseVelocity(const ustring &id);
 		
 		// disable one texture of a synchronized bounce animation
 		// passing true disables left texture, false disables right
-		void unsyncBounceTexture(const std::string &id, bool left);
+		void unsyncBounceTexture(const ustring &id, bool left);
 		
 		// enable one texture of a synchronized bounce animation
 		// passing true enables left texture, false enables right
-		void resyncBounceTexture(const std::string &id, bool left);
+		void resyncBounceTexture(const ustring &id, bool left);
 		
 		// see if any gui animations are still occurring
 		bool isGUIBusy();
 		
 		// set button text for a gui button
-		void setGUIButtonText(const std::string &id, const std::string &text);
+		void setGUIButtonText(const ustring &id, const ustring &text);
 		
 		// check to see if the mouse is over a button
-		bool mouseOverButton(const std::string &id, const Point &p);
+		bool mouseOverButton(const ustring &id, const Point &p);
 		
 		// set a gui button's state to clicked
-		void clickGUIButton(const std::string &id);
+		void clickGUIButton(const ustring &id);
 		
 		// register a gui button
-		void registerGUIButton(const std::string &id, int w, const Button &button);
+		void registerGUIButton(const ustring &id, int w, const Button &button);
 		
 		// register a ui animation that bounces the image from side to side
 		// limits are relative to origin; that is, if origin is (100, 100), and if the animation
 		// should bounce sideways 10 pixels in each direction, limits should be -10 and 10, respectively
-		void registerSideBounceAnimation(const std::string &id, const std::string &texture, bool horizontal, 
+		void registerSideBounceAnimation(const ustring &id, const ustring &texture, bool horizontal, 
 						 const Point &origin, int limitA, int limitB, int speed);
 		
 		// register a fade out effect
-		void registerFadeOut(const std::string &id, int speed, const AnimType &type);
+		void registerFadeOut(const ustring &id, int speed, const AnimType &type);
 		
 		// register a flash effect
-		void registerFlash(const std::string &id, int speed);
+		void registerFlash(const ustring &id, int speed);
 		
 		// register a court camera effect
-		void registerCourtCameraMovement(const std::string &id);
+		void registerCourtCameraMovement(const ustring &id);
 		
 		// register a testimony sprite sequence animation
-		void registerTestimonySequence(const std::string &id);
+		void registerTestimonySequence(const ustring &id);
 		
 		// register a cross examination sprite sequence animation
-		void registerCrossExamineSequence(const std::string &id);
+		void registerCrossExamineSequence(const ustring &id);
 		
 		// register a blinking animation
-		void registerBlink(const std::string &id, const std::string &texture, const Point &p, int speed);
+		void registerBlink(const ustring &id, const ustring &texture, const Point &p, int speed);
 		
 		// register a synchronized bounce animation
 		// offset: see registerSideBounceAnimation
-		void registerSyncBounce(const std::string &id, const std::string &tex1, const std::string &tex2,
+		void registerSyncBounce(const ustring &id, const ustring &tex1, const ustring &tex2,
 					const Point &p1, const Point &p2, int limA, int limB, int speed);
 		
 		// register a green bar control animation
-		void registerGreenBarControl(const std::string &id, const std::string &texture, const Point &p);
+		void registerGreenBarControl(const ustring &id, const ustring &texture, const Point &p);
 		
 		// register an exclamation animation ("Objection!", "Hold It!", and "Take That!")
-		void registerExclamation(const std::string &id, const std::string &texture, const Point &p);
+		void registerExclamation(const ustring &id, const ustring &texture, const Point &p);
 		
 		// draw an animation
-		void drawAnimation(const std::string &id);
+		void drawAnimation(const ustring &id);
 		
 		/* 
 		   Note: most of the following functions return a bool, which signifies whether
@@ -232,41 +232,41 @@ class Manager {
 		
 		// fade out the current scene to black
 		// returns -1 for beginning, 0 for midpoint, 1 when done
-		int fadeOut(const std::string &id);
+		int fadeOut(const ustring &id);
 		
 		// perform a flash effect
-		bool flash(const std::string &id);
+		bool flash(const ustring &id);
 		
 		// perform a blinking animation
-		bool blink(const std::string &id);
+		bool blink(const ustring &id);
 		
 		// perform an exclamation animation
-		bool exclamation(const std::string &id, const Character *source);
+		bool exclamation(const ustring &id, const Character *source);
 		
 		// perform a court camera movement
-		bool moveCourtCamera(const std::string &id, SDL_Surface *panorama, Limit start, Limit end);
+		bool moveCourtCamera(const ustring &id, SDL_Surface *panorama, Limit start, Limit end);
 		
 		// animate the testimony sprite sequence
-		bool animateTestimonySequence(const std::string &id);
+		bool animateTestimonySequence(const ustring &id);
 		
 		// animate the cross examination sprite sequence
-		bool animateCrossExamineSequence(const std::string &id, SDL_Surface *leftLawyer, SDL_Surface *rightLawyer);
+		bool animateCrossExamineSequence(const ustring &id, SDL_Surface *leftLawyer, SDL_Surface *rightLawyer);
 		
 		// animate a synchronized bounce animation
-		bool animateSyncBounce(const std::string &id);
+		bool animateSyncBounce(const ustring &id);
 		
 		// animate the green bar for cross examination attempts and other misc things
-		bool animateGreenBar(const std::string &id);
+		bool animateGreenBar(const ustring &id);
 		
 		// animate a gui button
-		bool animateGUIButton(const std::string &id);
+		bool animateGUIButton(const ustring &id);
 		
 	private:
 		// pointer to current case
 		Case::Case *m_Case;
 		
 		// map of registered animations
-		std::map<std::string, Animation> m_Animations;
+		std::map<ustring, Animation> m_Animations;
 };
 
 }; // namespace UI

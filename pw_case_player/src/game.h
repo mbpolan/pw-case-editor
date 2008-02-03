@@ -107,18 +107,18 @@ struct _GameState {
 	// trial variables
 	bool requestingEvidence;
 	bool requestingAnswer;
-	std::string requestedEvidenceParams;
-	std::string requestedAnswerParams;
-	std::string requestedContrParams;
+	ustring requestedEvidenceParams;
+	ustring requestedAnswerParams;
+	ustring requestedContrParams;
 	
 	// temporary image to be displayed over location background
-	std::string tempImage;
+	ustring tempImage;
 	
 	// x,y coordinates of examination cursor
 	Point examinePt;
 	
 	// region of contradiction in provided image of evidence
-	std::string contradictionImg;
+	ustring contradictionImg;
 	Rect contradictionRegion;
 	
 	// the previous screen displayed
@@ -131,7 +131,7 @@ struct _GameState {
 	bool continueMusic;
 	
 	// testimony variables
-	std::string curTestimony;
+	ustring curTestimony;
 	int curTestimonyPiece;
 	int barPercent; // amount of green bar filled in
 	bool curExamination;
@@ -139,35 +139,35 @@ struct _GameState {
 	
 	// special effects
 	int shake;
-	std::string fadeOut;
-	std::string fadeIn;
-	std::string flash;
-	std::string blink;
-	std::string gavel;
-	std::string courtCamera;
-	std::string testimonySequence;
-	std::string crossExamineSequence;
-	std::string exclamation;
+	ustring fadeOut;
+	ustring fadeIn;
+	ustring flash;
+	ustring blink;
+	ustring gavel;
+	ustring courtCamera;
+	ustring testimonySequence;
+	ustring crossExamineSequence;
+	ustring exclamation;
 	
 	// lawyer images for cross examination sequences
 	StringPair crossExamineLawyers;
 	
 	// the current evidence being shown
-	std::string shownEvidence;
+	ustring shownEvidence;
 	Position shownEvidencePos;
 	
 	// images to display for various parts of the courtroom
-	std::string crOverviewDefense;
-	std::string crOverviewProsecutor;
-	std::string crOverviewWitness;
+	ustring crOverviewDefense;
+	ustring crOverviewProsecutor;
+	ustring crOverviewWitness;
 	
 	// our current location
-	std::string currentLocation;
+	ustring currentLocation;
 	
 	// scheduled events
 	int queuedFlags;
-	std::string queuedLocation;
-	std::string queuedBlock;
+	ustring queuedLocation;
+	ustring queuedBlock;
 	
 	std::vector<StringPair> custom; // user defined flags
 	
@@ -175,10 +175,10 @@ struct _GameState {
 	std::vector<StringPair> talkOptions;
 	
 	// list of visible evidence (evidence that can be seen in court record)
-	std::vector<std::string> visibleEvidence;
+	std::vector<ustring> visibleEvidence;
 	
 	// list of visible profiles
-	std::vector<std::string> visibleProfiles;
+	std::vector<ustring> visibleProfiles;
 };
 typedef struct _GameState GameState;
 
@@ -186,7 +186,7 @@ typedef struct _GameState GameState;
 class Game {
 	public:
 		// constructor
-		Game(const std::string &rootPath, Case::Case *pcase);
+		Game(const ustring &rootPath, Case::Case *pcase);
 		
 		// destructor
 		~Game();
@@ -217,10 +217,10 @@ class Game {
 		void checkInputState();
 		
 		// get the id of the selected court record evidence
-		std::string getSelectedEvidence();
+		ustring getSelectedEvidence();
 		
 		// get the id of the selected court record profile
-		std::string getSelectedProfile();
+		ustring getSelectedProfile();
 		
 		// toggle game state flags
 		void toggle(int flags);
@@ -235,19 +235,19 @@ class Game {
 		bool canExamineRegion();
 		
 		// set the current backdrop location
-		void setLocation(const std::string &location);
+		void setLocation(const ustring &location);
 		
 		// set the evidence to draw on top screen
-		void setShownEvidence(const std::string &id, const Position &pos);
+		void setShownEvidence(const ustring &id, const Position &pos);
 		
 		// begin displaying a testimony
-		void displayTestimony(const std::string &id, bool crossExamine);
+		void displayTestimony(const ustring &id, bool crossExamine);
 		
 		// change the selected evidence/profile
 		void selectEvidence(bool evidence=true, bool increment=true);
 		
 		// see if a location is a court location
-		bool isCourtLocation(const std::string &id);
+		bool isCourtLocation(const ustring &id);
 		
 		// update current flags for game state
 		void updateFlags();
@@ -274,7 +274,7 @@ class Game {
 		void renderStand(const Stand stand);
 		
 		// initial screen button activated handler
-		void onInitialScreenClicked(const std::string &id);
+		void onInitialScreenClicked(const ustring &id);
 		
 		// top right button was clicked
 		void onTopRightButtonClicked();
@@ -298,10 +298,10 @@ class Game {
 		void onControlsClicked(int x, int y);
 		
 		// click handler for move scene
-		void onMoveSceneClicked(const std::string &button);
+		void onMoveSceneClicked(const ustring &button);
 		
 		// click handler for talk scene
-		void onTalkSceneClicked(const std::string &button);
+		void onTalkSceneClicked(const ustring &button);
 		
 		// court record page click handler
 		void onRecPageClickEvent(int x, int y);
@@ -334,10 +334,10 @@ class Game {
 		UI::Manager *m_UI;
 		
 		// current text block being executed
-		std::string m_CurBlock;
+		ustring m_CurBlock;
 		
 		// path where case file resides
-		std::string m_RootPath;
+		ustring m_RootPath;
 		
 		// the current state of the game
 		GameState m_State;

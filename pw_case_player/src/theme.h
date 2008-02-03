@@ -30,11 +30,11 @@
 namespace Theme {
 
 // our global theme
-typedef std::map<std::string, Color> ColorMap;
+typedef std::map<ustring, Color> ColorMap;
 extern ColorMap g_Theme;
 
 // get a color based on theme key
-Color lookup(const std::string &key);
+Color lookup(const ustring &key);
 
 }; // namespace Theme
 

@@ -29,7 +29,7 @@
 #include "iohandler.h"
 #include "utilities.h"
 
-std::string Application::VERSION="1.0b";
+ustring Application::VERSION="1.0b";
 
 // constructor
 Application::Application(int argc, char *argv[]) {
@@ -37,12 +37,12 @@ Application::Application(int argc, char *argv[]) {
 	
 	// iterate over arguments
 	for (int i=1; i<argc; i++) {
-		std::string arg=argv[i];
+		ustring arg=argv[i];
 		
 		// see if this is a switch
 		if (arg[0]=='-') {
-			std::string longArg=arg.substr(2, arg.size());
-			std::string shortArg=arg.substr(1, arg.size());
+			ustring longArg=arg.substr(2, arg.size());
+			ustring shortArg=arg.substr(1, arg.size());
 			
 			// don't output audio
 			if (longArg=="no-sound" || shortArg=="ns")

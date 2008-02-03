@@ -37,7 +37,7 @@ namespace Utils {
 }
 
 // get the current working directory
-std::string Utils::FS::cwd() {
+ustring Utils::FS::cwd() {
 	// NOTE: this function is currently useless, but that may not
 	// be the case in the future. maybe deprecate it if there is
 	// no potential use for this
@@ -45,8 +45,8 @@ std::string Utils::FS::cwd() {
 }
 
 // move a file on the filesystem
-void Utils::FS::move(const std::string &from, const std::string &to) {
-	std::string cmd;
+void Utils::FS::move(const ustring &from, const ustring &to) {
+	ustring cmd;
 #ifndef __WIN32__
 	cmd="mv ";
 	cmd+=from+" "+to;
@@ -57,7 +57,7 @@ void Utils::FS::move(const std::string &from, const std::string &to) {
 }
 
 // check if a directory exists
-bool Utils::FS::dirExists(const std::string &path) {
+bool Utils::FS::dirExists(const ustring &path) {
 	// simply try to open the directory
 	DIR *dir=opendir(path.c_str());
 	if (dir) {
@@ -70,12 +70,12 @@ bool Utils::FS::dirExists(const std::string &path) {
 }
 
 // create a directory
-void Utils::FS::makeDir(const std::string &path) {
+void Utils::FS::makeDir(const ustring &path) {
 	// no point in recreating an already existing directory
 	if (!dirExists(path)) {
 		
 #ifndef __WIN32__
-		std::string cmd="mkdir ";
+		ustring cmd="mkdir ";
 		cmd+=path;
 		system(cmd.c_str());
 #else
@@ -85,10 +85,10 @@ void Utils::FS::makeDir(const std::string &path) {
 }
 
 // remove a directory
-void Utils::FS::removeDir(const std::string &path) {
+void Utils::FS::removeDir(const ustring &path) {
 	// make sure that the directory even exists
 	if (dirExists(path)) {
-		std::string cmd;
+		ustring cmd;
 	
 #ifndef __WIN32__
 		cmd="rm -rf ";
@@ -127,10 +127,10 @@ void Utils::FS::removeDir(const std::string &path) {
 }
 
 // display an alert message to the user
-void Utils::alert(const std::string &text, const MessageType &type) {
+void Utils::alert(const ustring &text, const MessageType &type) {
 #ifndef __WIN32__
 	// first, format the prefix
-	std::string prefix="** ";
+	ustring prefix="** ";
 	switch(type) {
 		default:
 		case MESSAGE_CRITICAL: prefix+="CRITICAL"; break;
@@ -157,7 +157,7 @@ void Utils::alert(const std::string &text, const MessageType &type) {
 }
 
 // convert a court camera script string to animation limits
-void Utils::scriptToLimits(const std::string &str, UI::Limit &start, UI::Limit &end) {
+void Utils::scriptToLimits(const ustring &str, UI::Limit &start, UI::Limit &end) {
 	// first split the string
 	StringVector vec=explodeString(',', str);
 	
@@ -190,9 +190,9 @@ void Utils::scriptToLimits(const std::string &str, UI::Limit &start, UI::Limit &
 }
 
 // print a debug message
-void Utils::debugMessage(const std::string &msg) {
+void Utils::debugMessage(const ustring &msg) {
 	// the last message displayed
-	static std::string last="";
+	static ustring last="";
 	
 	if (Utils::g_DebugOn) {
 		// prevent the same message from coming up repeatedly
@@ -264,23 +264,23 @@ SDL_Surface* Utils::createSurface(int width, int height) {
 	return SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 32, 0, 0, 0, 0);
 }
 
-// convert a char to a string
-std::string Utils::ucharToStr(char ch) {
-	std::string str="";
+// convert a uchar to a string
+ustring Utils::ucharToStr(uchar ch) {
+	ustring str="";
 	str+=ch;
 	return str;
 }
 
 // convert an integer to string
-std::string Utils::itoa(int num) {
+ustring Utils::itoa(int num) {
 	std::stringstream ss;
 	ss << num;
 	return ss.str();
 }
 
 // break a string apart based on a delimiting string
-StringVector Utils::explodeString(const std::string &delimiter, const std::string &strc) {
-	std::string str=strc;
+StringVector Utils::explodeString(const ustring &delimiter, const ustring &strc) {
+	ustring str=strc;
 	StringVector split;
 	
 	do {
@@ -294,7 +294,7 @@ StringVector Utils::explodeString(const std::string &delimiter, const std::strin
 		}
 		
 		// get the string
-		std::string s=str.substr(0, npos);
+		ustring s=str.substr(0, npos);
 		split.push_back(s);
 		
 		str.erase(0, npos+delimiter.size());
@@ -304,14 +304,14 @@ StringVector Utils::explodeString(const std::string &delimiter, const std::strin
 }
 
 // break a string apart based on a delimiting character
-StringVector Utils::explodeString(char delimiter, const std::string &strc) {
-	std::string d;
+StringVector Utils::explodeString(uchar delimiter, const ustring &strc) {
+	ustring d;
 	d+=delimiter;
 	return explodeString(d, strc);
 }
 
 // count occurrences of a substring in a string
-int Utils::amountInString(const std::string &sub, const std::string &str) {
+int Utils::amountInString(const ustring &sub, const ustring &str) {
 	int c=0;
 	int i=0;
 	while((i=str.find(sub, i))!=-1) {

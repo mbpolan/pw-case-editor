@@ -55,29 +55,29 @@ const int FILE_MAGIC_NUM=(('T' << 16) + ('W' << 8) + 'P');
 const int FILE_VERSION=10;
 
 // sprite file information
-const std::string SPR_MAGIC_NUM="SPR";
+const ustring SPR_MAGIC_NUM="SPR";
 const int SPR_VERSION=10;
 
 // unpack the resource file
-bool unpackResourceFile(const std::string &path);
+bool unpackResourceFile(const ustring &path);
 
 // load a case from file
-bool loadCaseFromFile(const std::string &path, Case::Case &pcase);
+bool loadCaseFromFile(const ustring &path, Case::Case &pcase);
 
 // load a sprite from file
-bool loadSpriteFromFile(const std::string &path, Sprite &sprite);
+bool loadSpriteFromFile(const ustring &path, Sprite &sprite);
 
 // load stock assets config file
-bool loadStockFile(const std::string &path, Case::Case *pcase);
+bool loadStockFile(const ustring &path, Case::Case *pcase);
 
 // load theme from xml
-bool loadThemeXML(const std::string &path, Theme::ColorMap &map);
+bool loadThemeXML(const ustring &path, Theme::ColorMap &map);
 
 // read image data from file
 Textures::Texture readImage(FILE *f);
 
 // read a string
-std::string readString(FILE *f);
+ustring readString(FILE *f);
 
 }; // namespace IO
 

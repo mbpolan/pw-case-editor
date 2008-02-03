@@ -40,8 +40,8 @@ enum BackgroundType { BG_SINGLE_SCREEN=0, BG_DOUBLE_SCREEN };
 
 // general case data and technical info
 struct _Overview {
-	std::string name; // the name of the case (Turnabout Whatever, etc)
-	std::string author; // who wrote this case and its contents
+	ustring name; // the name of the case (Turnabout Whatever, etc)
+	ustring author; // who wrote this case and its contents
 	LawSystem lawSys; // the law system (how many days for a trial)
 };
 typedef struct _Overview Overview;
@@ -49,13 +49,13 @@ typedef struct _Overview Overview;
 // user-defined overrides
 struct _Overrides {
 	int textboxAlpha; // alpha value for text box
-	std::string titleScreen; // custom title screen image
+	ustring titleScreen; // custom title screen image
 };
 typedef struct _Overrides Overrides;
 
 // background data
 struct _Background {
-	std::string id; // id referenced from within the script
+	ustring id; // id referenced from within the script
 	BackgroundType type; // type of background (spans 2 screens or 1)
 	SDL_Surface *texture; // texture id
 };
@@ -63,11 +63,11 @@ typedef struct _Background Background;
 
 // evidence image/item data
 struct _Evidence {
-	std::string id; // id referenced from within the script
-	std::string name; // name of this piece of evidence
-	std::string caption; // caption displaying info about evidence
-	std::string description; // string describing the image
-	std::string checkID; // image id for check button
+	ustring id; // id referenced from within the script
+	ustring name; // name of this piece of evidence
+	ustring caption; // caption displaying info about evidence
+	ustring description; // string describing the image
+	ustring checkID; // image id for check button
 	SDL_Surface *texture; // texture id
 	SDL_Surface *thumb; // scaled thumbnail for evidence window
 };
@@ -76,40 +76,40 @@ typedef struct _Evidence Evidence;
 // an examinable area in a location
 struct _Hotspot {
 	Rect rect;
-	std::string block; // the block to execute if examined
+	ustring block; // the block to execute if examined
 };
 typedef struct _Hotspot Hotspot;
 
 // location data
 struct _Location {
-	std::string id; // id referenced from within the script
-	std::string name; // name of this location
-	std::string triggerBlock; // block to execute upon next arrival at location
+	ustring id; // id referenced from within the script
+	ustring name; // name of this location
+	ustring triggerBlock; // block to execute upon next arrival at location
 	
-	std::string character; // character located here
-	std::string music; // music being played at this location
+	ustring character; // character located here
+	ustring music; // music being played at this location
 	
-	std::string bg; // background id referenced from within script
+	ustring bg; // background id referenced from within script
 	SDL_Surface *bgScaled; // scaled background image
 	
 	std::vector<Hotspot> hotspots; // vector of examinable hotspots
-	std::vector<std::string> moveLocations; // ids of locations that player can move to from here
+	std::vector<ustring> moveLocations; // ids of locations that player can move to from here
 };
 typedef struct _Location Location;
 
 // arbitrary image
 struct _Image {
-	std::string id; // id referenced from within the script
+	ustring id; // id referenced from within the script
 	SDL_Surface *texture; // texture image itself
 };
 typedef struct _Image Image;
 
 // a single piece of testimony
 struct _TestimonyPiece {
-	std::string text;
-	std::string presentId;
-	std::string presentBlock;
-	std::string pressBlock;
+	ustring text;
+	ustring presentId;
+	ustring presentBlock;
+	ustring pressBlock;
 	bool hidden;
 };
 typedef struct _TestimonyPiece TestimonyPiece;
@@ -117,20 +117,20 @@ typedef struct _TestimonyPiece TestimonyPiece;
 // a single testimony from a character
 struct _Testimony {
 	// id of this testimony
-	std::string id;
+	ustring id;
 	
 	// testimony title
-	std::string title;
+	ustring title;
 	
 	// speaker
-	std::string speaker;
+	ustring speaker;
 	
 	// next block to follow upon completion
-	std::string nextBlock;
-	std::string followLocation;
+	ustring nextBlock;
+	ustring followLocation;
 	
 	// next block to follow upon cross examination end
-	std::string xExamineEndBlock;
+	ustring xExamineEndBlock;
 	
 	// vector of testimony pieces
 	std::vector<TestimonyPiece> pieces;
@@ -140,15 +140,15 @@ typedef struct _Testimony Testimony;
 }; // namespace Case
 
 // typedefs for cleaner code
-typedef std::map<std::string, Character> CharacterMap;
-typedef std::map<std::string, Case::Background> BackgroundMap;
-typedef std::map<std::string, Case::Evidence> EvidenceMap;
-typedef std::map<std::string, Case::Image> ImageMap;
-typedef std::map<std::string, Case::Location> LocationMap;
-typedef std::map<std::string, Case::Testimony> TestimonyMap;
-typedef std::map<std::string, std::string> BufferMap;
+typedef std::map<ustring, Character> CharacterMap;
+typedef std::map<ustring, Case::Background> BackgroundMap;
+typedef std::map<ustring, Case::Evidence> EvidenceMap;
+typedef std::map<ustring, Case::Image> ImageMap;
+typedef std::map<ustring, Case::Location> LocationMap;
+typedef std::map<ustring, Case::Testimony> TestimonyMap;
+typedef std::map<ustring, ustring> BufferMap;
 
-typedef std::vector<std::string> StringVector;
+typedef std::vector<ustring> StringVector;
 
 namespace Case {
 
@@ -169,10 +169,10 @@ class Case {
 		Overrides getOverrides() const { return m_Overrides; }
 		
 		// set the initial text block id
-		void setInitialBlockId(const std::string &id) { m_InitialBlockId=id; }
+		void setInitialBlockId(const ustring &id) { m_InitialBlockId=id; }
 		
 		// get the initial text block id
-		std::string getInitialBlockId() const { return m_InitialBlockId; }
+		ustring getInitialBlockId() const { return m_InitialBlockId; }
 		
 		// add a character
 		void addCharacter(const Character &character);
@@ -193,25 +193,25 @@ class Case {
 		void addTestimony(const Testimony &testimony);
 		
 		// add a text buffer
-		void addBuffer(const std::string &id, const std::string &contents);
+		void addBuffer(const ustring &id, const ustring &contents);
 		
 		// get a character
-		Character* getCharacter(const std::string &id);
+		Character* getCharacter(const ustring &id);
 		
 		// get a background
-		Background* getBackground(const std::string &id);
+		Background* getBackground(const ustring &id);
 		
 		// get a piece of evidence
-		Evidence* getEvidence(const std::string &id);
+		Evidence* getEvidence(const ustring &id);
 		
 		// get an image
-		Image* getImage(const std::string &id);
+		Image* getImage(const ustring &id);
 		
 		// get a location
-		Location* getLocation(const std::string &id);
+		Location* getLocation(const ustring &id);
 		
 		// get a testimony
-		Testimony* getTestimony(const std::string &id);
+		Testimony* getTestimony(const ustring &id);
 		
 		// return a vector of evidence based on vector of string ids
 		std::vector<Evidence*> getEvidenceFromIds(const StringVector &vec);
@@ -257,7 +257,7 @@ class Case {
 		Overview m_Overview;
 		
 		// initial text block that will be displayed when the case starts
-		std::string m_InitialBlockId;
+		ustring m_InitialBlockId;
 		
 		// map of characters
 		CharacterMap m_Characters;

@@ -40,25 +40,25 @@ struct _Texture {
 typedef struct _Texture Texture;
 
 // map of all allocated textures
-extern std::map<std::string, SDL_Surface*> g_TextureMap;
+extern std::map<ustring, SDL_Surface*> g_TextureMap;
 
 // get a texture from the map
-SDL_Surface* queryTexture(const std::string &id);
+SDL_Surface* queryTexture(const ustring &id);
 
 // add a new texture
-void pushTexture(const std::string &id, SDL_Surface *texture);
+void pushTexture(const ustring &id, SDL_Surface *texture);
 
 // remove a texture from the stack
-void popTexture(const std::string &id);
+void popTexture(const ustring &id);
 
 // clear the texture stack
 void clearStack();
 
 // create a texture after loading an image from file
-SDL_Surface* createTexture(const std::string &id, const std::string &file);
+SDL_Surface* createTexture(const ustring &id, const ustring &file);
 
 // create a texture from data
-SDL_Surface* createTexture(const std::string &id, const Texture &tex);
+SDL_Surface* createTexture(const ustring &id, const Texture &tex);
 
 }; // namespace Textures
 

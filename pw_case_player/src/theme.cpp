@@ -30,7 +30,7 @@ ColorMap g_Theme;
 }
 
 // get a color based on theme key
-Color Theme::lookup(const std::string &key) {
+Color Theme::lookup(const ustring &key) {
 	if (g_Theme.find(key)==g_Theme.end())
 		Utils::debugMessage("Theme element '"+key+"' was not.");
 	return g_Theme[key];

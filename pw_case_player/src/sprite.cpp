@@ -56,7 +56,7 @@ bool Sprite::done() {
 }
 
 // set animation to play
-void Sprite::setAnimation(const std::string &animation) {
+void Sprite::setAnimation(const ustring &animation) {
 	Animation *anim=getAnimation(animation);
 	if (!anim)
 		return;
@@ -131,7 +131,7 @@ void Sprite::renderFrame(int x, int y, int frame) {
 }
 
 // get an animation sequence
-Animation* Sprite::getAnimation(const std::string &id) {
+Animation* Sprite::getAnimation(const ustring &id) {
 	if (m_Animations.find(id)!=m_Animations.end())
 		return &m_Animations[id];
 	else
@@ -154,7 +154,7 @@ Frame* Sprite::getCurrentFrame() {
 }
 
 // add a frame to an animation sequence
-void Sprite::addFrame(const std::string &id, int time, SDL_Surface *frame) {
+void Sprite::addFrame(const ustring &id, int time, SDL_Surface *frame) {
 	// get the target animation
 	Animation *anim=getAnimation(id);
 	if (anim) {

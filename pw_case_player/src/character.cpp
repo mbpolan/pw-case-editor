@@ -22,7 +22,7 @@
 #include "character.h"
 
 // constructor
-Character::Character(const std::string &internal, const std::string &name, const std::string &caption, const std::string &description): 
+Character::Character(const ustring &internal, const ustring &name, const ustring &caption, const ustring &description): 
 		m_InternalName(internal), m_Name(name), m_Caption(caption), m_Description(description) {
 	m_HasTextBoxTag=false;
 	m_HasHeadshot=false;
@@ -33,12 +33,12 @@ Character::Character(const std::string &internal, const std::string &name, const
 }
 
 // add a talk option
-void Character::addTalkOption(const std::string &viewStr, const std::string &block) {
-	m_TalkOptions.push_back(std::make_pair<std::string, std::string>(viewStr, block));
+void Character::addTalkOption(const ustring &viewStr, const ustring &block) {
+	m_TalkOptions.push_back(std::make_pair<ustring, ustring>(viewStr, block));
 }
 
 // remove a talk option
-void Character::removeTalkOption(const std::string &id) {
+void Character::removeTalkOption(const ustring &id) {
 	// iterate over talk options
 	for (std::vector<StringPair>::iterator it=m_TalkOptions.begin(); it!=m_TalkOptions.end(); ++it) {
 		if ((*it).first==id) {
@@ -49,12 +49,12 @@ void Character::removeTalkOption(const std::string &id) {
 }
 
 // add a presentable piece of evidence
-void Character::addPresentable(const std::string &id, const std::string &target) {
-	m_AcceptedItems.push_back(std::make_pair<std::string, std::string>(id, target));
+void Character::addPresentable(const ustring &id, const ustring &target) {
+	m_AcceptedItems.push_back(std::make_pair<ustring, ustring>(id, target));
 }
 
 // remove presentable evidence
-void Character::removePresentable(const std::string &id) {
+void Character::removePresentable(const ustring &id) {
 	// iterate over evidence
 	for (std::vector<StringPair>::iterator it=m_AcceptedItems.begin(); it!=m_AcceptedItems.end(); ++it) {
 		if ((*it).first==id) {

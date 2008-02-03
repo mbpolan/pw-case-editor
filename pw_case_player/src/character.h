@@ -35,14 +35,14 @@ class Character {
 		enum Gender { GENDER_MALE=0, GENDER_FEMALE, GENDER_UNKNOWN };
 		
 		// constructor
-		Character(const std::string &internal="", const std::string &name="", 
-			  const std::string &caption="", const std::string &description="");
+		Character(const ustring &internal="", const ustring &name="", 
+			  const ustring &caption="", const ustring &description="");
 		
 		// add a talk option
-		void addTalkOption(const std::string &viewStr, const std::string &block);
+		void addTalkOption(const ustring &viewStr, const ustring &block);
 		
 		// remove a talk option
-		void removeTalkOption(const std::string &id);
+		void removeTalkOption(const ustring &id);
 		
 		// clear talk options
 		void clearTalkOptions() { m_TalkOptions.clear(); }
@@ -51,34 +51,34 @@ class Character {
 		std::vector<StringPair> getTalkOptions() const { return m_TalkOptions; }
 		
 		// add a presentable piece of evidence/profile
-		void addPresentable(const std::string &id, const std::string &targetBlock);
+		void addPresentable(const ustring &id, const ustring &targetBlock);
 		
 		// remove presentable evidence/profile
-		void removePresentable(const std::string &id);
+		void removePresentable(const ustring &id);
 		
 		// clear accepted evidence/profiles
 		void clearPresentableItems() { m_AcceptedItems.clear(); }
 		
 		// set the block id to use when a bad item is presented
-		void setBadPresentableBlock(const std::string &id) { m_BadPresentableBlock=id; }
+		void setBadPresentableBlock(const ustring &id) { m_BadPresentableBlock=id; }
 		
 		// set the block to use when a bad item is presented
-		std::string getBadPresentableBlock() const { return m_BadPresentableBlock; }
+		ustring getBadPresentableBlock() const { return m_BadPresentableBlock; }
 		
 		// return evidence that can be presented
 		std::vector<StringPair> getPresentableItems() const { return m_AcceptedItems; }
 		
 		// set the internal character name
-		void setInternalName(const std::string &name) { m_InternalName=name; }
+		void setInternalName(const ustring &name) { m_InternalName=name; }
 		
 		// get the internal character name
-		std::string getInternalName() const { return m_InternalName; }
+		ustring getInternalName() const { return m_InternalName; }
 		
 		// set the displayed name
-		void setName(const std::string &name) { m_Name=name; }
+		void setName(const ustring &name) { m_Name=name; }
 		
 		// get the displayed name
-		std::string getName() const { return m_Name; }
+		ustring getName() const { return m_Name; }
 		
 		// set the character's gender
 		void setGender(const Gender &g) { m_Gender=g; }
@@ -87,16 +87,16 @@ class Character {
 		Gender getGender() const { return m_Gender; }
 		
 		// set the caption
-		void setCaption(const std::string &caption) { m_Caption=caption; }
+		void setCaption(const ustring &caption) { m_Caption=caption; }
 		
 		// get the caption
-		std::string getCaption() const { return m_Caption; }
+		ustring getCaption() const { return m_Caption; }
 		
 		// set the description
-		void setDescription(const std::string &desc) { m_Description=desc; }
+		void setDescription(const ustring &desc) { m_Description=desc; }
 		
 		// get the description
-		std::string getDescription() const { return m_Description; }
+		ustring getDescription() const { return m_Description; }
 		
 		// set the sprite for this character
 		void setSprite(const Sprite &spr) { m_Sprite=spr; }
@@ -105,16 +105,16 @@ class Character {
 		Sprite* getSprite() { return &m_Sprite; }
 		
 		// set sprite name
-		void setSpriteName(const std::string &name) { m_SpriteName=name; }
+		void setSpriteName(const ustring &name) { m_SpriteName=name; }
 		
 		// get sprite name
-		std::string getSpriteName() const { return m_SpriteName; }
+		ustring getSpriteName() const { return m_SpriteName; }
 		
 		// set the root sprite animation (normal, smirk, etc)
-		void setRootAnimation(const std::string &anim) { m_RootAnim=anim; }
+		void setRootAnimation(const ustring &anim) { m_RootAnim=anim; }
 		
 		// get the root sprite animation
-		std::string getRootAnimation() const { return m_RootAnim; }
+		ustring getRootAnimation() const { return m_RootAnim; }
 		
 		// set if this character has a text box tag
 		void setHasTextBoxTag(bool b) { m_HasTextBoxTag=b; }
@@ -145,20 +145,20 @@ class Character {
 	
 	private:
 		// internal name
-		std::string m_InternalName;
+		ustring m_InternalName;
 		
 		// displayed name
-		std::string m_Name;
+		ustring m_Name;
 		
 		// caption
-		std::string m_Caption;
+		ustring m_Caption;
 		
 		// description
-		std::string m_Description;
+		ustring m_Description;
 		
 		// sprite name
-		std::string m_SpriteName;
-		std::string m_RootAnim;
+		ustring m_SpriteName;
+		ustring m_RootAnim;
 		
 		// text box image
 		bool m_HasTextBoxTag;
@@ -175,7 +175,7 @@ class Character {
 		
 		// vector of presentable evidence/profile ids and target blocks
 		std::vector<StringPair> m_AcceptedItems;
-		std::string m_BadPresentableBlock;
+		ustring m_BadPresentableBlock;
 		
 		// headshot image
 		bool m_HasHeadshot;

@@ -53,7 +53,7 @@ class SDLContext {
 		bool initAudio();
 		
 		// initialize the game
-		bool initGame(const std::string &pathToCase);
+		bool initGame(const ustring &pathToCase);
 		
 		// render the scene
 		void render();

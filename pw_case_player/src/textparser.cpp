@@ -47,7 +47,7 @@ TextParser::TextParser(Game *game): m_Game(game) {
 }
 
 // set the text block
-void TextParser::setBlock(const std::string &block) {
+void TextParser::setBlock(const ustring &block) {
 	reset();
 	
 	// set this block
@@ -76,7 +76,7 @@ void TextParser::reset() {
 }
 
 // parse the given control block
-std::string TextParser::parse(bool drawDialogue) {
+ustring TextParser::parse(bool drawDialogue) {
 	// if we are done parsing, return here
 	if (m_Done)
 		return "null";
@@ -104,7 +104,7 @@ std::string TextParser::parse(bool drawDialogue) {
 		
 		// start going over block
 		while(1) {
-			char ch=m_Block[0];
+			uchar ch=m_Block[0];
 			
 			// tag delimiter
 			if (ch=='<') {
@@ -142,12 +142,12 @@ std::string TextParser::parse(bool drawDialogue) {
 				int npos=m_Block.find(':');
 				
 				// get our trigger operator
-				std::string trigOp=m_Block.substr(2, npos-2);
+				ustring trigOp=m_Block.substr(2, npos-2);
 				m_Block.erase(0, npos+1);
 				
 				// get trigger command
 				npos=m_Block.find(';');
-				std::string trigComm=m_Block.substr(0, npos);
+				ustring trigComm=m_Block.substr(0, npos);
 				
 				// erase to the end of this trigger
 				int end=m_Block.find('}');
@@ -159,7 +159,7 @@ std::string TextParser::parse(bool drawDialogue) {
 					m_Dialogue+='^';
 					
 					// and append this trigger
-					m_QueuedTriggers.push(std::make_pair<std::string, std::string> (trigOp, trigComm));
+					m_QueuedTriggers.push(std::make_pair<ustring, ustring> (trigOp, trigComm));
 				}
 				
 				else {
@@ -232,7 +232,7 @@ std::string TextParser::parse(bool drawDialogue) {
 				// make sure useless characters aren't dealt with
 				if (ch!='\n') {
 					// add this character to the draw string
-					m_Dialogue+=(char) ch;
+					m_Dialogue+=(uchar) ch;
 					
 					// see if we are over the text limit and need to break
 					if (Fonts::lineWillBreak(Point(8, 134), SDL_GetVideoSurface()->w-8, m_Dialogue, Fonts::FONT_STANDARD)) {
@@ -273,7 +273,7 @@ std::string TextParser::parse(bool drawDialogue) {
 			m_LastChar=now;
 			
 			// our current character
-			char curChar=m_Dialogue[m_StrPos-1];
+			uchar curChar=m_Dialogue[m_StrPos-1];
 			
 			// see if we need to execute a trigger
 			if(curChar=='^') {
@@ -289,11 +289,11 @@ std::string TextParser::parse(bool drawDialogue) {
 			}
 			
 			// cache the previous and next characters
-			char prevChar=(m_StrPos>1 ? m_Dialogue[m_StrPos-2] : '0');
-			char nextChar=m_Dialogue[m_StrPos];
+			uchar prevChar=(m_StrPos>1 ? m_Dialogue[m_StrPos-2] : '0');
+			uchar nextChar=m_Dialogue[m_StrPos];
 			
 			// prepare the sound effect to potentially play
-			std::string sfx="";
+			ustring sfx="";
 			
 			// increase speed
 			if (curChar==TEXT_SPEED_INCR_CHAR) {
@@ -392,7 +392,7 @@ std::string TextParser::parse(bool drawDialogue) {
 						StringVector talkOp=Utils::explodeString(',', vec[i]);
 						
 						// add this pair to the state talk op vector
-						m_Game->m_State.talkOptions.push_back(std::make_pair<std::string, std::string>(talkOp[0], talkOp[1]));
+						m_Game->m_State.talkOptions.push_back(std::make_pair<ustring, ustring>(talkOp[0], talkOp[1]));
 					}
 					
 					// now modify flags
@@ -527,7 +527,7 @@ void TextParser::nextStep() {
 }
 
 // see if a dialogue sound effect should be played for a given character
-bool TextParser::shouldPlayDialogueEffect(char prev, char ch, char next) {
+bool TextParser::shouldPlayDialogueEffect(uchar prev, uchar ch, uchar next) {
 	// spaces are never played, nor trigger hooks
 	if (ch==' ' || ch=='^')
 		return false;
@@ -548,7 +548,7 @@ bool TextParser::shouldPlayDialogueEffect(char prev, char ch, char next) {
 }
 
 // see if a trigger should be executed right away
-bool TextParser::preparseTrigger(const std::string &trigger) {
+bool TextParser::preparseTrigger(const ustring &trigger) {
 	// in order to keep the script flowing nicely, certain triggers
 	// need to be executed before the script it set in motion
 	if (trigger=="speaker")
@@ -559,7 +559,7 @@ bool TextParser::preparseTrigger(const std::string &trigger) {
 }
 
 // see if a trigger matches a filter
-bool TextParser::filterTrigger(const std::string &id, const Filter &filter) {
+bool TextParser::filterTrigger(const ustring &id, const Filter &filter) {
 	switch(filter) {
 		default:
 		case FILTER_NONE: return false;
@@ -569,7 +569,7 @@ bool TextParser::filterTrigger(const std::string &id, const Filter &filter) {
 }
 
 // parse a tag and apply styling
-void TextParser::parseTag(const std::string &tag) {
+void TextParser::parseTag(const ustring &tag) {
 	// blue color tag -- set blue font
 	if (tag=="blue")
 		m_FontStyle.color=Fonts::COLOR_BLUE;
@@ -620,7 +620,7 @@ void TextParser::executeNextTrigger() {
 }
 
 // execute a trigger
-std::string TextParser::doTrigger(const std::string &trigger, const std::string &command) {
+ustring TextParser::doTrigger(const ustring &trigger, const ustring &command) {
 	Case::Case *pcase=m_Game->m_Case;
 	
 	// go to another text block
@@ -636,8 +636,8 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	// go to another block following a pause
 	else if (trigger=="timed_goto") {
 		// split this command string
-		std::vector<std::string> params=Utils::explodeString(',', command);
-		std::string nextBlock=params[0];
+		std::vector<ustring> params=Utils::explodeString(',', command);
+		ustring nextBlock=params[0];
 		int pause=atoi(params[1].c_str());
 		
 		// set the timing
@@ -676,8 +676,8 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	// show evidence on screen
 	else if (trigger=="show_evidence") {
 		StringVector params=Utils::explodeString(',', command);
-		std::string item=params[0];
-		std::string pos=params[1];
+		ustring item=params[0];
+		ustring pos=params[1];
 		
 		// given the id, get the actual evidence struct
 		if (pcase->getEvidence(item)) {
@@ -702,9 +702,9 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	// make a location accessible
 	else if (trigger=="add_location") {
 		// split this command string
-		std::vector<std::string> params=Utils::explodeString(',', command);
-		std::string target=params[0];
-		std::string location=params[1];
+		std::vector<ustring> params=Utils::explodeString(',', command);
+		ustring target=params[0];
+		ustring location=params[1];
 		
 		// add the target to the location, if the location exists
 		if (pcase->getLocation(location)) {
@@ -721,9 +721,9 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	// set a trigger block at a location
 	else if (trigger=="set_location_trigger") {
 		// split this command string
-		std::vector<std::string> params=Utils::explodeString(',', command);
-		std::string target=params[0];
-		std::string block=params[1];
+		std::vector<ustring> params=Utils::explodeString(',', command);
+		ustring target=params[0];
+		ustring block=params[1];
 		
 		// get the target location
 		if (pcase->getLocation(target)) {
@@ -740,9 +740,9 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	// set a character's animation
 	else if (trigger=="set_animation") {
 		// split this command string
-		std::vector<std::string> params=Utils::explodeString(',', command);
-		std::string ucharName=params[0];
-		std::string anim=params[1];
+		std::vector<ustring> params=Utils::explodeString(',', command);
+		ustring ucharName=params[0];
+		ustring anim=params[1];
 		
 		// get the character
 		Character *character=pcase->getCharacter(ucharName);
@@ -755,9 +755,9 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	// put a character at a location
 	else if (trigger=="put_character") {
 		// split this command string
-		std::vector<std::string> params=Utils::explodeString(',', command);
-		std::string character=params[0];
-		std::string target=params[1];
+		std::vector<ustring> params=Utils::explodeString(',', command);
+		ustring character=params[0];
+		ustring target=params[1];
 		
 		// get the target location
 		if (pcase->getLocation(target))
@@ -769,10 +769,10 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	// add a talk option to a character
 	else if (trigger=="add_talk_option") {
 		// split this command string
-		std::vector<std::string> params=Utils::explodeString(',', command);
-		std::string ucharName=params[0];
-		std::string viewString=params[1];
-		std::string blockId=params[2];
+		std::vector<ustring> params=Utils::explodeString(',', command);
+		ustring ucharName=params[0];
+		ustring viewString=params[1];
+		ustring blockId=params[2];
 		
 		// get the target character
 		Character *character=pcase->getCharacter(ucharName);
@@ -785,9 +785,9 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	// remove a talk option
 	else if (trigger=="remove_talk_option") {
 		// split this command string
-		std::vector<std::string> params=Utils::explodeString(',', command);
-		std::string ucharName=params[0];
-		std::string viewString=params[1];
+		std::vector<ustring> params=Utils::explodeString(',', command);
+		ustring ucharName=params[0];
+		ustring viewString=params[1];
 		
 		// get the target character
 		Character *character=pcase->getCharacter(ucharName);
@@ -810,10 +810,10 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	// add a presentable piece of evidence/profile to a character
 	else if (trigger=="add_presentable") {
 		// split this command string
-		std::vector<std::string> params=Utils::explodeString(',', command);
-		std::string ucharName=params[0];
-		std::string itemId=params[1];
-		std::string targetBlock=params[2];
+		std::vector<ustring> params=Utils::explodeString(',', command);
+		ustring ucharName=params[0];
+		ustring itemId=params[1];
+		ustring targetBlock=params[2];
 		
 		// get the character
 		Character *character=pcase->getCharacter(ucharName);
@@ -826,9 +826,9 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	// remove a piece of presentable evidence/profile
 	else if (trigger=="remove_presentable") {
 		// split this command string
-		std::vector<std::string> params=Utils::explodeString(',', command);
-		std::string ucharName=params[0];
-		std::string itemId=params[1];
+		std::vector<ustring> params=Utils::explodeString(',', command);
+		ustring ucharName=params[0];
+		ustring itemId=params[1];
 		
 		// get the character and remove presentable item
 		Character *character=pcase->getCharacter(ucharName);
@@ -851,9 +851,9 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	// set the block to use when a useless item was presented
 	else if (trigger=="set_bad_presentable_block") {
 		// split this command string
-		std::vector<std::string> params=Utils::explodeString(',', command);
-		std::string ucharName=params[0];
-		std::string target=params[1];
+		std::vector<ustring> params=Utils::explodeString(',', command);
+		ustring ucharName=params[0];
+		ustring target=params[1];
 		
 		// get the character
 		Character *character=pcase->getCharacter(ucharName);
@@ -866,9 +866,9 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	// set music to be played a location
 	else if (trigger=="set_location_music") {
 		// split this command string
-		std::vector<std::string> params=Utils::explodeString(',', command);
-		std::string musicId=params[0];
-		std::string target=params[1];
+		std::vector<ustring> params=Utils::explodeString(',', command);
+		ustring musicId=params[0];
+		ustring target=params[1];
 		
 		// if the court was requested, set all court locations to play the same music
 		if (target=="court" || target=="prosecutor_stand" || target=="defense_stand" ||
@@ -967,8 +967,8 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 	else if (trigger=="set_court_overview_image") {
 		// split the command string
 		StringVector params=Utils::explodeString(',', command);
-		std::string area=params[0];
-		std::string image=params[1];
+		ustring area=params[0];
+		ustring image=params[1];
 		
 		// depending on area, set image
 		if (area=="defense")
@@ -1045,7 +1045,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		Character *c=pcase->getCharacter(params[0]);
 		if (c) {
 			// verify that the string is padded by quote marks
-			std::string str=params[1];
+			ustring str=params[1];
 			if (str[0]!='"' || str[str.size()-1]!='"') {
 				Utils::debugMessage("Character profile string needs to be in between quotation marks: "+str);
 				return "null";
@@ -1076,7 +1076,7 @@ std::string TextParser::doTrigger(const std::string &trigger, const std::string 
 		Case::Evidence *e=pcase->getEvidence(params[0]);
 		if (e) {
 			// verify that the string is padded by quote marks
-			std::string str=params[1];
+			ustring str=params[1];
 			if (str[0]!='"' || str[str.size()-1]!='"') {
 				Utils::debugMessage("Evidence data string needs to be in between quotation marks: "+str);
 				return "null";

@@ -35,10 +35,10 @@ namespace Renderer {
 void drawRect(SDL_Surface *surface, const Point &p, int w, int h, const Color &color);
 
 // draw a full image at a point
-void drawImage(const Point &p, const std::string &texId);
+void drawImage(const Point &p, const ustring &texId);
 
 // draw a full image at a point
-void drawImage(const Point &p, SDL_Surface *dest, const std::string &texId);
+void drawImage(const Point &p, SDL_Surface *dest, const ustring &texId);
 
 // draw a full image at a point
 void drawImage(const Point &p, SDL_Surface *texture);
@@ -51,14 +51,14 @@ void drawImage(const Point &p, int w, int h, SDL_Surface *src, SDL_Surface *dest
 
 // draw an image
 // (x1,y1) are source coordinate pair; (x2,y2) are destination
-void drawImage(const Point &p1, int w, int h, const Point &p2, const std::string &texId);
+void drawImage(const Point &p1, int w, int h, const Point &p2, const ustring &texId);
 
 // draw a button with text
-void drawButton(const Point &p1, int w, const std::string &text);
+void drawButton(const Point &p1, int w, const ustring &text);
 
 // generate a correctly rendered court panorama based on shown sprites
-SDL_Surface* generateCourtPanorama(Case::Case *pcase, const std::string &prosecutor, 
-				   const std::string &attorney, const std::string &witness);
+SDL_Surface* generateCourtPanorama(Case::Case *pcase, const ustring &prosecutor, 
+				   const ustring &attorney, const ustring &witness);
 
 // draw the initial game screen
 void drawInitialScreen(UI::Manager *ui);
@@ -81,7 +81,7 @@ void drawProfileInfoPage(Character *character);
 void drawExamineScene(SDL_Surface *bg, const Point &cursor, bool slideBG=true);
 
 // draw the movement scene
-void drawMoveScene(const std::vector<std::string> &locations, LocationMap lmap, int selected);
+void drawMoveScene(const std::vector<ustring> &locations, LocationMap lmap, int selected);
 
 // draw talk scene
 void drawTalkScene(const std::vector<StringPair> &options, int selected, bool centered=false);

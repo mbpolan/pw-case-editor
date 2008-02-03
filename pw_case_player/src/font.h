@@ -57,37 +57,37 @@ typedef TTF_Font Font;
 extern std::map<int, Font*> g_Fonts;
 
 // load a font
-bool loadFont(const std::string &path, int size);
+bool loadFont(const ustring &path, int size);
 
 // get a surface with a rendered glyph
-SDL_Surface* renderGlyph(char ch, int size, const Color &color, const Quality &quality);
+SDL_Surface* renderGlyph(Uint16 ch, int size, const Color &color, const Quality &quality);
 
 // calculate the y coordinate for a glyph to render correctly on baseline
-int glyphBase(int y, char ch, int size);
+int glyphBase(int y, Uint16 ch, int size);
 
 // see if a character should not be drawn
-bool discardChar(char ch);
+bool discardChar(Uint16 ch);
 
 // see if this string is too long and needs to be broken
-bool lineWillBreak(const Point &p, int rightClamp, const std::string &str, int size);
+bool lineWillBreak(const Point &p, int rightClamp, const ustring &str, int size);
 
 // draw a string on the screen
-int drawString(const Point &p, const std::string &str, int size, const Color &color);
+int drawString(const Point &p, const ustring &str, int size, const Color &color);
 
 // draw a string with clamped restrictions and delimiter
-int drawString(const Point &p, int delimiter, int rightClamp, const std::string &str, int size, const Color &color);
+int drawString(const Point &p, int delimiter, int rightClamp, const ustring &str, int size, const Color &color);
 
 // draw a string centered on the screen
-int drawStringCentered(int y, int delimiter, const std::string &str, int size, const Color &color);
+int drawStringCentered(int y, int delimiter, const ustring &str, int size, const Color &color);
 
 // draw a ttf font string
-void drawStringBlended(const Point &p, const std::string &str, int size, const Color &color);
+void drawStringBlended(const Point &p, const ustring &str, int size, const Color &color);
 
 // get the width of a ttf string
-int getWidth(const std::string &str, int size);
+int getWidth(const ustring &str, int size);
 
 // get the width of a glyph
-int getGlyphWidth(char ch, int size);
+int getGlyphWidth(Uint16 ch, int size);
 
 // get the height of a ttf font
 int getHeight(int size);
