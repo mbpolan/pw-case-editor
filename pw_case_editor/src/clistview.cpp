@@ -42,11 +42,41 @@ void on_buffer_changed(Glib::RefPtr<Gtk::TextBuffer> buffer) {
 			
 			// see if the next character is recognized
 			end--;
+			
+			// dialogue control
 			if ((*end)=='b' || (*end)=='n' || (*end)=='+' || (*end)=='-' || (*end)=='=') {
+				// extend one more character
+				if ((*end)=='+' || (*end)=='-')
+					end++;
+				
 				end++;
 				
 				// apply the tag
 				buffer->apply_tag(buffer->get_tag_table()->lookup("dialogue_control"), it, end);
+			}
+			
+			// green color
+			else if ((*end)=='g') {
+				end++;
+				buffer->apply_tag(buffer->get_tag_table()->lookup("color_green"), it, end);
+			}
+			
+			// blue color
+			else if ((*end)=='c') {
+				end++;
+				buffer->apply_tag(buffer->get_tag_table()->lookup("color_blue"), it, end);
+			}
+			
+			// orange color
+			else if ((*end)=='o') {
+				end++;
+				buffer->apply_tag(buffer->get_tag_table()->lookup("color_orange"), it, end);
+			}
+			
+			// reset to white color
+			else if ((*end)=='w') {
+				end++;
+				buffer->apply_tag(buffer->get_tag_table()->lookup("color_white"), it, end);
 			}
 		}
 		
@@ -138,6 +168,18 @@ Glib::RefPtr<Gtk::TextBuffer> CListView::create_buffer() {
 	
 	tag=buffer->create_tag("dialogue_control");
 	tag->property_foreground().set_value("red");
+	
+	tag=buffer->create_tag("color_green");
+	tag->property_foreground().set_value("green");
+	
+	tag=buffer->create_tag("color_blue");
+	tag->property_foreground().set_value("blue");
+	
+	tag=buffer->create_tag("color_orange");
+	tag->property_foreground().set_value("orange");
+	
+	tag=buffer->create_tag("color_white");
+	tag->property_foreground().set_value("darkgray");
 	
 	// connect signals
 	buffer->signal_changed().connect(sigc::bind(sigc::ptr_fun(on_buffer_changed), buffer));

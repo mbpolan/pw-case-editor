@@ -222,6 +222,9 @@ void MainWindow::construct() {
 		// we need to manually add a trigger submenu to the Script menu
 		Gtk::Menu *refMenu=menuBar->items()[2].get_submenu();
 		
+		// allocate quick export menu
+		m_QExportMenu=Gtk::manage(new Gtk::Menu);
+		
 		// grab the list of items and add a new submenu
 		Gtk::Menu_Helpers::MenuList &list=refMenu->items();
 		Gtk::Menu_Helpers::MenuList::iterator it=list.begin(); it++;
@@ -245,6 +248,14 @@ void MainWindow::construct() {
 		// now insert a separator, and the actual recent files menu
 		list.insert(it, Gtk::Menu_Helpers::SeparatorElem());
 		list.insert(it, Gtk::Menu_Helpers::MenuElem("Open Recent", *m_RecentMenu));
+		
+		// again, skip past the open recent menu
+		for (int i=0; i<4; i++)
+			it++;
+		
+		// insert the quick export menu
+		list.insert(it, Gtk::Menu_Helpers::MenuElem("Quick Export", *m_QExportMenu));
+		list.insert(it, Gtk::Menu_Helpers::SeparatorElem());
 		
 		// read the recent files record
 		if (IO::read_recent_files(m_RecentFiles)) {
@@ -542,6 +553,31 @@ bool MainWindow::process_load_case(const Glib::ustring &path) {
 	return true;
 }
 
+// process a case and export it
+bool MainWindow::process_export(const Glib::ustring &path) {
+	m_Statusbar->push("Exporting case to file...");
+	
+	// export this case
+	IO::Code code;
+	if ((code=IO::export_case_to_file(path, m_Case, m_ScriptWidget->get_buffers()))!=IO::CODE_OK) {
+		// format the error message
+		Glib::ustring msg="An error prevented an export of your case!\n";
+		msg+="Reason: ";
+		msg+=Utils::io_error_to_str(code);
+		
+		// show a dialog
+		Gtk::MessageDialog md(*this, msg, false, Gtk::MESSAGE_ERROR);
+		md.run();
+		
+		m_Statusbar->push("Unable to export case");
+		return false;
+	}
+	
+	m_Statusbar->push("Exported case successfully");
+	
+	return true;
+}
+
 // new case handler
 void MainWindow::on_new() {
 	// ask to save
@@ -689,26 +725,31 @@ void MainWindow::on_export() {
 		if (ext!=".pwt")
 			path+=".pwt";
 		
-		m_Statusbar->push("Exporting case to file...");
-		
-		// export this case
-		IO::Code code;
-		if ((code=IO::export_case_to_file(path, m_Case, m_ScriptWidget->get_buffers()))!=IO::CODE_OK) {
-			// format the error message
-			Glib::ustring msg="An error prevented an export of your case!\n";
-			msg+="Reason: ";
-			msg+=Utils::io_error_to_str(code);
-			
-			// show a dialog
-			Gtk::MessageDialog md(*this, msg, false, Gtk::MESSAGE_ERROR);
-			md.run();
-			
-			m_Statusbar->push("Unable to export case");
+		// export this file
+		if (!process_export(path))
 			return;
+		
+		// iterate over items in the quick export menu, and see if we already have this case there
+		bool found=false;
+		Gtk::Menu_Helpers::MenuList &list=m_QExportMenu->items();
+		for (Gtk::Menu_Helpers::MenuList::iterator it=list.begin(); it!=list.end(); ++it) {
+			Gtk::Label *label=static_cast<Gtk::Label*> ((*it).get_child());
+			if (label && label->get_text()==path) {
+				found=true;
+				break;
+			}
 		}
 		
-		m_Statusbar->push("Exported case successfully");
+		// if we don't have this item, add it
+		if (!found)
+			list.push_front(Gtk::Menu_Helpers::MenuElem(path, 
+					sigc::bind(sigc::mem_fun(*this, &MainWindow::on_quick_export), path)));
 	}
+}
+
+// conveniently export a case
+void MainWindow::on_quick_export(const Glib::ustring &path) {
+	process_export(path);
 }
 
 // load case handler
@@ -1611,6 +1652,9 @@ void MainWindow::on_tools_sprite_editor() {
 			else
 				m_SprEditor.set_sprite_data(spr);
 		}
+		
+		else
+			m_SprEditor.clear();
 		
 		// show the sprite editor
 		m_SprEditor.show();

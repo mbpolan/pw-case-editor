@@ -1106,8 +1106,10 @@ void IO::write_string(FILE *f, const Glib::ustring &str) {
 	fwrite(&len, sizeof(int), 1, f);
 	
 	// now write the string
-	for (int i=0; i<str.size(); i++)
-		fputc(str[i], f);
+	for (int i=0; i<str.size(); i++) {
+		gunichar ch=(gunichar) str[i];
+		fwrite(&ch, sizeof(gunichar), 1, f);
+	}
 }
 
 // read a string from file
@@ -1118,8 +1120,11 @@ Glib::ustring IO::read_string(FILE *f) {
 	
 	// read the string
 	Glib::ustring str="";
-	for (int i=0; i<len; i++)
-		str+=(char) fgetc(f);
+	for (int i=0; i<len; i++) {
+		gunichar ch;
+		fread(&ch, sizeof(gunichar), 1, f);
+		str+=(gunichar) ch;
+	}
 	
 	return str;
 }

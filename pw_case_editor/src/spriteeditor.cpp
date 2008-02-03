@@ -42,6 +42,14 @@ SpriteEditor::SpriteEditor() {
 	construct();
 }
 
+// clear out previous sprite data
+void SpriteEditor::clear() {
+	m_Sprite=Sprite();
+	m_CurFrame=1;
+	m_Image->clear();
+	m_AnimCB->clear();
+}
+
 // set the path of a sprite to load
 void SpriteEditor::set_sprite_data(const Sprite &spr) {
 	// copy sprite data

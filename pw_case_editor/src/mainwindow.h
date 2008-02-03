@@ -23,6 +23,7 @@
 #define MAINWINDOW_H
 
 #include <gtkmm/actiongroup.h>
+#include <gtkmm/menu.h>
 #include <gtkmm/recentfilter.h>
 #include <gtkmm/recentmanager.h>
 #include <gtkmm/statusbar.h>
@@ -62,6 +63,9 @@ class MainWindow: public Gtk::Window {
 		// process a loaded case from file
 		bool process_load_case(const Glib::ustring &path);
 		
+		// process a case and export it
+		bool process_export(const Glib::ustring &path);
+		
 		// new case handler
 		void on_new();
 		
@@ -73,6 +77,9 @@ class MainWindow: public Gtk::Window {
 		
 		// export case handler
 		void on_export();
+		
+		// conveniently export a case
+		void on_quick_export(const Glib::ustring &path);
 		
 		// load case handler
 		void on_open();
@@ -144,6 +151,9 @@ class MainWindow: public Gtk::Window {
 		
 		// icon manager
 		IconManager m_IconMgr;
+		
+		// quick export menu
+		Gtk::Menu *m_QExportMenu;
 		
 		// sprite editor
 		SpriteEditor m_SprEditor;

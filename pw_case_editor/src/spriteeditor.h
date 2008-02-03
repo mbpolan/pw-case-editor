@@ -40,6 +40,9 @@ class SpriteEditor: public Gtk::Window {
 		// constructor
 		SpriteEditor();
 		
+		// clear out previous sprite data
+		void clear();
+		
 		// set sprite data to use
 		void set_sprite_data(const Sprite &spr);
 		

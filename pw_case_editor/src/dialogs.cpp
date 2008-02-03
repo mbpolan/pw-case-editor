@@ -838,7 +838,7 @@ void SpriteChooserDialog::construct() {
 	
 	// allocate labels
 	m_SpriteLabel=Gtk::manage(new Gtk::Label("Sprite"));
-	m_PathLabel=Gtk::manage(new Gtk::Label("Path Entry"));
+	m_PathLabel=Gtk::manage(new Gtk::Label("Path"));
 	
 	// allocate buttons
 	m_BrowseButton=Gtk::manage(new Gtk::Button("..."));
