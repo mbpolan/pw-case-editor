@@ -42,30 +42,26 @@ UI::Manager* UI::Manager::instance() {
 	return g_Manager;
 }
 
+// handle any mouse events on a gui element
+void UI::Manager::handleGUIClick(const Point &mouse, const ustring &id) {
+	StringVector vec;
+	vec.push_back(id);
+	
+	handleGUIClick(mouse, vec);
+}
+
 // handle any mouse events on gui elements
-void UI::Manager::handleGUIClick(const Point &p, int num, ...) {
-	// this shouldn't happen
-	if (num==0)
-		return;
-	
-	// argument lists
-	va_list a;
-	va_start(a, num);
-	
+void UI::Manager::handleGUIClick(const Point &p, const StringVector &ids) {
 	// iterate over provided buttons
-	for (int i=0; i<num; i++) {
-		ustring button=ustring(va_arg(a, const char*));
-		
+	for (int i=0; i<ids.size(); i++) {
 		// see if this button was clicked, and if it was, flag it
-		if (mouseOverButton(button, p)) {
-			clickGUIButton(button);
+		if (mouseOverButton(ids[i], p)) {
+			clickGUIButton(ids[i]);
 			
 			// don't check anything afterwards if this was clicked
 			return;
 		}
 	}
-	
-	va_end(a);
 }
 
 // reverse the velocity of a registered animation
@@ -335,6 +331,20 @@ void UI::Manager::registerExclamation(const ustring &id, const ustring &texture,
 	anim.ticks=0;
 	anim.texture=texture;
 	anim.current=p;
+	
+	// add the animation
+	m_Animations[id]=anim;
+}
+
+// register a sliding background animation
+void UI::Manager::registerBGSlide(const ustring &id) {
+	Animation anim;
+	
+	// fill in values
+	anim.type=ANIM_BG_SLIDE;
+	anim.speed=5;
+	anim.current=Point(0, 0);
+	anim.bottomLimit=192;
 	
 	// add the animation
 	m_Animations[id]=anim;
@@ -1055,6 +1065,38 @@ bool UI::Manager::exclamation(const ustring &id, const Character *source) {
 	// we're done
 	else {
 		anim.ticks=0;
+		return true;
+	}
+}
+
+// slide a background down
+bool UI::Manager::slideBG(const ustring &id, SDL_Surface *bg) {
+	// get the animation
+	if (m_Animations.find(id)==m_Animations.end()) {
+		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");
+		return true;
+	}
+	
+	Animation &anim=m_Animations[id];
+	
+	int y=anim.current.y();
+	if (y!=192) {
+		SDL_Rect srect= { 0, 192-y, 256, y };
+		SDL_Rect drect= { 0, 197 };
+		
+		SDL_BlitSurface(bg, &srect, SDL_GetVideoSurface(), &drect);
+		
+		y+=anim.speed;
+		if (y>192)
+			y=192;
+		
+		anim.current.setY(y);
+		
+		return false;
+	}
+	
+	else {
+		Renderer::drawImage(Point(0, 197), bg);
 		return true;
 	}
 }

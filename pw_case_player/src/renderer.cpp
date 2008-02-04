@@ -532,22 +532,8 @@ void Renderer::drawExamineScene(SDL_Surface *bg, const Point &cursor, bool slide
 	if (!screen)
 		return;
 	
-	if (bg) {
-		static int h=0;
-		if (h!=192) {
-			SDL_Rect srect= { 0, 192-h, 256, h };
-			SDL_Rect drect= { 0, 197 };
-			
-			SDL_BlitSurface(bg, &srect, screen, &drect);
-			
-			h+=5;
-			if (h>192)
-				h=192;
-		}
-		
-		else
-			Renderer::drawImage(Point(0, 197), bg);
-	}
+	if (bg)
+		UI::Manager::instance()->slideBG("an_bg_slide", bg);
 	
 	// get opaque screen and make it completely transparent
 	SDL_Surface *overlay=Textures::queryTexture("transparent");

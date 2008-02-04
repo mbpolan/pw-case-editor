@@ -157,9 +157,11 @@ class Manager {
 		// get the only instance of the ui manager
 		static Manager* instance();
 		
+		// handle any mouse events on a gui element
+		void handleGUIClick(const Point &mouse, const ustring &id);
+		
 		// handle any mouse events on gui elements
-		// mouse: mouse pointer location; num: number of buttons to test
-		void handleGUIClick(const Point &mouse, int num, ...);
+		void handleGUIClick(const Point &mouse, const StringVector &ids);
 		
 		// reverse the velocity of a registered animation
 		void reverseVelocity(const ustring &id);
@@ -222,6 +224,9 @@ class Manager {
 		// register an exclamation animation ("Objection!", "Hold It!", and "Take That!")
 		void registerExclamation(const ustring &id, const ustring &texture, const Point &p);
 		
+		// register a sliding background animation
+		void registerBGSlide(const ustring &id);
+		
 		// draw an animation
 		void drawAnimation(const ustring &id);
 		
@@ -242,6 +247,9 @@ class Manager {
 		
 		// perform an exclamation animation
 		bool exclamation(const ustring &id, const Character *source);
+		
+		// slide a background down
+		bool slideBG(const ustring &id, SDL_Surface *bg);
 		
 		// perform a court camera movement
 		bool moveCourtCamera(const ustring &id, SDL_Surface *panorama, Limit start, Limit end);

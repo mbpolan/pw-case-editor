@@ -168,6 +168,7 @@ struct _GameState {
 	int queuedFlags;
 	ustring queuedLocation;
 	ustring queuedBlock;
+	ustring resetAnimations;
 	
 	std::vector<StringPair> custom; // user defined flags
 	

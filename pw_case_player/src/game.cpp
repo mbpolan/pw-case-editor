@@ -88,6 +88,7 @@ Game::Game(const ustring &rootPath, Case::Case *pcase): m_RootPath(rootPath), m_
 	m_State.queuedFlags=0;
 	m_State.queuedLocation="null";
 	m_State.queuedBlock="null";
+	m_State.resetAnimations="null";
 	
 	// reset special effects
 	m_State.shake=0;
@@ -397,15 +398,30 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 		
 		// initial screen clicks
 		if (flagged(STATE_INITIAL_SCREEN))
-			m_UI->handleGUIClick(mouse, 1, "an_new_game_btn");
+			m_UI->handleGUIClick(mouse, "an_new_game_btn");
 		
 		// check for clicks on locations in move scene
-		if (flagged(STATE_MOVE))
-			m_UI->handleGUIClick(mouse, 4, "an_move_loc1_btn", "an_move_loc2_btn", "an_move_loc3_btn", "an_move_loc4_btn");
+		if (flagged(STATE_MOVE)) {
+			Case::Location *location=m_Case->getLocation(m_State.currentLocation);
+			StringVector ids;
+			for (int i=0; i<location->moveLocations.size(); i++)
+				ids.push_back("an_move_loc"+Utils::itoa(i+1)+"_btn");
+			
+			m_UI->handleGUIClick(mouse, ids);
+		}
 		
 		// check for clicks on talk scene
-		else if (flagged(STATE_TALK))
-			m_UI->handleGUIClick(mouse, 4, "an_talk_op1_btn", "an_talk_op2_btn", "an_talk_op3_btn", "an_talk_op4_btn");
+		else if (flagged(STATE_TALK)) {
+			Case::Location *location=m_Case->getLocation(m_State.currentLocation);
+			Character *character=m_Case->getCharacter(location->character);
+			
+			// include button ids for visible talk options
+			StringVector ids;
+			for (int i=0; i<character->getTalkOptions().size(); i++)
+				ids.push_back("an_talk_op"+Utils::itoa(i+1)+"_btn");
+			
+			m_UI->handleGUIClick(mouse, ids);
+		}
 		
 		// check for clicks on examine scene
 		if (flagged(STATE_EXAMINE)) {
@@ -588,6 +604,9 @@ void Game::registerAnimations() {
 	m_UI->registerFadeOut("an_fade_bottom_half", 1, UI::ANIM_FADE_OUT_BOTTOM_HALF);
 	m_UI->registerFadeOut("an_fade_both_half", 1, UI::ANIM_FADE_OUT_BOTH_HALF);
 	m_UI->registerFadeOut("an_gui_fade_bottom", 5, UI::ANIM_FADE_OUT_BOTTOM_GUI);
+	
+	// register background slide
+	m_UI->registerBGSlide("an_bg_slide");
 	
 	// register court camera effect
 	m_UI->registerCourtCameraMovement("an_court_camera");
@@ -1397,6 +1416,19 @@ bool Game::renderSpecialEffects() {
 				m_State.queuedFlags=0;
 			}
 			
+			// clear animations
+			if (m_State.resetAnimations!="null") {
+				StringVector vec=Utils::explodeString(',', m_State.resetAnimations);
+				
+				// since there could be multiple animations, make sure to reset them all
+				for (int i=0; i<vec.size(); i++) {
+					if (vec[i]=="an_bg_slide")
+						m_UI->registerBGSlide("an_bg_slide");
+				}
+				
+				m_State.resetAnimations="null";
+			}
+			
 			// set a location, if requested
 			if (m_State.queuedLocation!="null") {
 				setLocation(m_State.queuedLocation);
@@ -1995,6 +2027,7 @@ void Game::onBottomLeftButtonClicked() {
 			
 			m_State.fadeOut="gui";
 			m_State.queuedFlags=STATE_COURT_REC_BTN | STATE_CONTROLS | STATE_QUEUED;
+			m_State.resetAnimations="an_bg_slide";
 			
 		}
 		
