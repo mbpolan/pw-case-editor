@@ -29,6 +29,10 @@
 #include "iohandler.h"
 #include "utilities.h"
 
+#ifdef __WIN32__
+#include "stdafx.h"
+#endif
+
 // save a case and its associated data to file
 IO::Code IO::save_case_to_file(const Glib::ustring &path, const Case::Case &pcase,
 			   const BufferMap &buffers,
@@ -1317,13 +1321,12 @@ IO::Code IO::unpack_resource_file(const Glib::ustring &file) {
 	struct archive_entry *entry=archive_entry_new();
 	
 	// make our temporary directory
-	system("mkdir .temp");
+	Utils::FS::make_dir(".temp");
 	
 	// windows is a jerk and doesn't hide by prefixed dot, so we
 	// need to set some attributes
 #ifdef __WIN32__
-	Glib::ustring wincmd=Glib::ustring("attrib +h +s ")+Utils::FS::cwd()+".temp";
-	system(wincmd.c_str());
+	SetFileAttributes(".temp", FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM);
 #endif
 	
 	// iterate over files in archive

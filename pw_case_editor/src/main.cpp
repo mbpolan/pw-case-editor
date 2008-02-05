@@ -28,6 +28,10 @@
 #include "tooltips.h"
 #include "utilities.h"
 
+#ifdef __WIN32__
+#include "stdafx.h"
+#endif
+
 // routine for splash screen thread
 void on_thread(SplashScreen *sp) {
 	Glib::usleep(1500000);
@@ -35,7 +39,14 @@ void on_thread(SplashScreen *sp) {
 }
 
 // the "famous" entry point for the program
+#ifdef __WIN32__
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+	int argc=1;
+	char *argv[]={""};
+#else
 int main(int argc, char *argv[]) {
+#endif
+
 	// before we go anywhere, we need to unpack the resource file
 	if (IO::unpack_resource_file(Utils::FS::cwd()+"dat.dpkg")!=IO::CODE_OK) {
 		// FIXME: maybe show a message box of some sort here?
@@ -45,7 +56,7 @@ int main(int argc, char *argv[]) {
 	
 	// initialize threads and gtkmm
 	Glib::thread_init();
-	Gtk::Main app(argc, argv);
+	Gtk::Main app(&argc, NULL);
 	
 	// register tooltips for application
 	Tooltips::register_tooltips();

@@ -43,11 +43,11 @@ void FindDialog::construct() {
 	table->set_spacings(5);
 	
 	// allocate labels
-	m_QueryLabel=manage(new Gtk::Label("Query"));
-	m_ResultsLabel=manage(new Gtk::Label);
+	m_QueryLabel=Gtk::manage(new Gtk::Label("Query"));
+	m_ResultsLabel=Gtk::manage(new Gtk::Label);
 	
 	// allocate buttons
-	m_SearchButton=manage(new Gtk::Button("Search"));
+	m_SearchButton=Gtk::manage(new Gtk::Button("Search"));
 	m_SearchButton->set_sensitive(false);
 	m_SearchButton->signal_clicked().connect(sigc::mem_fun(*this, &FindDialog::on_search_clicked));
 	
@@ -56,7 +56,7 @@ void FindDialog::construct() {
 	m_QueryEntry->signal_changed().connect(sigc::mem_fun(*this, &FindDialog::on_entry_text_changed));
 	
 	// allocate list view
-	m_ResultsList=manage(new Gtk::ListViewText(2));
+	m_ResultsList=Gtk::manage(new Gtk::ListViewText(2));
 	m_ResultsList->set_column_title(0, "Block ID");
 	m_ResultsList->set_column_title(1, "Context");
 	
@@ -65,7 +65,7 @@ void FindDialog::construct() {
 				     sigc::mem_fun(*this, &FindDialog::on_selection_changed));
 	
 	// allocate containers
-	m_SWindow=manage(new Gtk::ScrolledWindow);
+	m_SWindow=Gtk::manage(new Gtk::ScrolledWindow);
 	m_SWindow->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
 	m_SWindow->add(*m_ResultsList);
 	m_SWindow->set_size_request(200, 250);

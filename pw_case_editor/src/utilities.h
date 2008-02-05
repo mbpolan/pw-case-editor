@@ -40,6 +40,9 @@ void move(const Glib::ustring &from, Glib::ustring &to);
 // check if a directory exists
 bool dir_exists(const Glib::ustring &path);
 
+// create a directory
+void make_dir(const Glib::ustring &path);
+
 // remove a directory
 void remove_dir(const Glib::ustring &path);
 

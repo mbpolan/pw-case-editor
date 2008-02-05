@@ -27,6 +27,11 @@
 
 #include "utilities.h"
 
+#ifdef __WIN32__
+#include "stdafx.h"
+#include <shellapi.h>
+#endif
+
 // get the current working directory
 Glib::ustring Utils::FS::cwd() {
 	// NOTE: this function is kinda useless since the current directory will be
@@ -40,13 +45,13 @@ void Utils::FS::move(const Glib::ustring &from, Glib::ustring &to) {
 	Glib::ustring cmd;
 
 #ifdef __WIN32__
-	cmd="move ";
+	MoveFileA(from.c_str(), to.c_str());
 #else
 	cmd="mv ";
-#endif
 	cmd+=from+" "+to;
 	
 	system(cmd.c_str());
+#endif
 }
 
 // check if a directory exists
@@ -62,6 +67,20 @@ bool Utils::FS::dir_exists(const Glib::ustring &path) {
 		return false;
 }
 
+// create a directory
+void Utils::FS::make_dir(const Glib::ustring &path) {
+	// no point in recreating an already existing directory
+	if (!dir_exists(path)) {
+		
+#ifndef __WIN32__
+		ustring cmd="mkdir ";
+		cmd+=path;
+		system(cmd.c_str());
+#else
+		CreateDirectory(path.c_str(), NULL);
+#endif
+	}
+}
 
 // remove a directory
 void Utils::FS::remove_dir(const Glib::ustring &path) {
@@ -72,12 +91,35 @@ void Utils::FS::remove_dir(const Glib::ustring &path) {
 #ifndef __WIN32__
 		cmd="rm -rf ";
 		cmd+=path;
-#else
-		cmd="rmdir /S /Q ";
-		cmd+=path;
-#endif
-		
 		system(cmd.c_str());
+#else
+		// for consistency and compatability...
+		LPCTSTR lpszPath=path.c_str();
+		int length=_tcslen(lpszPath);
+		
+		// this is our source field
+		TCHAR *from=new TCHAR[length+2];
+		_tcscpy(from, lpszPath);
+		
+		// SHFileOperation expects this to be double 0 terminated
+		from[length]=0;
+		from[length+1]=0;
+		
+		// fill in our file operations struct
+		SHFILEOPSTRUCT op;
+		op.hwnd=NULL;
+		op.wFunc=FO_DELETE;
+		op.pFrom=from;
+		op.pTo=NULL; // we're deleting; no target needed
+		op.fFlags = FOF_NOCONFIRMATION | FOF_SILENT;
+		op.fAnyOperationsAborted=false;
+		op.lpszProgressTitle=NULL;
+		op.hNameMappings=NULL;
+		
+		// perform this file operation
+		SHFileOperation(&op);
+		delete [] from;
+#endif
 	}
 }
 
