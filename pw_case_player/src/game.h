@@ -148,6 +148,7 @@ struct _GameState {
 	ustring testimonySequence;
 	ustring crossExamineSequence;
 	ustring exclamation;
+	ustring addEvidence;
 	
 	// lawyer images for cross examination sequences
 	StringPair crossExamineLawyers;

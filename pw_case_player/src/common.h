@@ -25,14 +25,24 @@
 #include <glibmm/ustring.h>
 #include <iostream>
 #include <signal.h>
+#include <vector>
 #include "SDL.h"
+
+class Color;
+class ValueRange;
 
 // ustring for internationalization
 typedef Glib::ustring ustring;
 typedef gunichar uchar;
 
+// null strings
+const ustring STR_NULL="null";
+
 // a value,key string pair
 typedef std::pair<ustring, ustring> StringPair;
+
+// vector used for mapping a range of characters to a color
+typedef std::vector<std::pair<ValueRange, Color> > ColorRangeVector;
 
 // function prototypes
 static void onSigSegv(int sig) { };
@@ -41,7 +51,7 @@ static void onSigSegv(int sig) { };
 class Color {
 	public:
 		// constructor
-		Color(uchar r=255, uchar g=255, uchar b=255, uchar a=255) {
+		Color(char r=255, char g=255, char b=255, char a=255) {
 			m_R=r;
 			m_G=g;
 			m_B=b;
@@ -52,14 +62,55 @@ class Color {
 		SDL_Color toSDLColor() const {SDL_Color color={ m_R, m_G, m_B }; return color; }
 		
 		// accessors
-		uchar r() const { return m_R; }
-		uchar g() const { return m_G; }
-		uchar b() const { return m_B; }
-		uchar a() const { return m_A; }
+		char r() const { return m_R; }
+		char g() const { return m_G; }
+		char b() const { return m_B; }
+		char a() const { return m_A; }
 		
 	private:
-		uchar m_R, m_G, m_B, m_A;
+		char m_R, m_G, m_B, m_A;
 };
+
+// a range between two values
+class ValueRange {
+	public:
+		// constructor
+		ValueRange(int low, int high) {
+			m_Low=low;
+			m_High=high;
+		}
+		
+		// compare this range to another
+		bool operator<(ValueRange r) const {
+			return (m_High!=r.getHighValue() || m_Low!=r.getLowValue());
+		}
+		
+		// compute the difference between the two values
+		int difference() const { return m_High-m_Low; }
+		
+		// see if a value is in this range
+		bool inRange(int val, bool inclusive=true) const {
+			if (inclusive)
+				return (val<=m_High && val>=m_Low);
+			else
+				return (m_High>val && val<m_Low);
+		}
+		
+		// accessors
+		int getLowValue() const { return m_Low; }
+		int getHighValue() const { return m_High; }
+		
+	private:
+		int m_Low;
+		int m_High;
+};
+
+
+// overloaded stream operator for range value output
+static std::ostream& operator<<(std::ostream &s, const ValueRange &range) {
+	s << range.getLowValue() << " to " << range.getHighValue() << std::endl;
+	return s;
+}
 
 // a point
 class Point {
@@ -116,6 +167,13 @@ class Rect {
 			m_Width=w;
 			m_Height=h;
 		}
+		
+		// get the top left corner
+		Point getPoint() const { return m_Corner; }
+		
+		// get the dimensions
+		int getWidth() const { return m_Width; }
+		int getHeight() const { return m_Height; }
 		
 		// get the geometry of the rectangle
 		void getGeometry(Point &p, int &w, int &h) const {

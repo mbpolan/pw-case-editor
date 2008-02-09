@@ -19,6 +19,8 @@
  ***************************************************************************/
 // textparser.cpp: implementation of TextParser class
 
+#include <cmath>
+
 #include "audio.h"
 #include "font.h"
 #include "game.h"
@@ -34,11 +36,11 @@ TextParser::TextParser(Game *game): m_Game(game) {
 	// reset variables
 	m_SpeakerGender=Character::GENDER_MALE;
 	m_Dialogue="";
-	m_QueuedFade="null";
-	m_QueuedTestimony="null";
-	m_QueuedExamination="null";
-	m_QueuedResume="null";
-	m_QueuedEvent="null";
+	m_QueuedFade=STR_NULL;
+	m_QueuedTestimony=STR_NULL;
+	m_QueuedExamination=STR_NULL;
+	m_QueuedResume=STR_NULL;
+	m_QueuedEvent=STR_NULL;
 	m_Direct=false;
 	m_TalkLocked=false;
 	m_BlockDiag=false;
@@ -70,7 +72,7 @@ void TextParser::reset() {
 	m_TagOpen=false;
 	m_TalkLocked=false;
 	m_CurTag="";
-	m_NextBlock="null";
+	m_NextBlock=STR_NULL;
 	
 	m_LastChar=0;
 }
@@ -79,7 +81,7 @@ void TextParser::reset() {
 ustring TextParser::parse(bool drawDialogue) {
 	// if we are done parsing, return here
 	if (m_Done)
-		return "null";
+		return STR_NULL;
 	
 	// if there is a timed paused, wait it out
 	if (m_TimedGoto!=0) {
@@ -89,7 +91,7 @@ ustring TextParser::parse(bool drawDialogue) {
 		if (m_TimedGoto==0)
 			nextStep();
 		
-		return "null";
+		return STR_NULL;
 	}
 	
 	// if the parser is not paused, start parsing the set block
@@ -101,6 +103,10 @@ ustring TextParser::parse(bool drawDialogue) {
 		m_Dialogue="";
 		m_BlockDiag=false;
 		m_StrPos=1;
+		m_FontStyle.colors.clear();
+		
+		// the current color and its starting point
+		static std::pair<char, int> color=std::pair<char, int>('\0', -1);
 		
 		// start going over block
 		while(1) {
@@ -163,7 +169,6 @@ ustring TextParser::parse(bool drawDialogue) {
 				}
 				
 				else {
-				
 					// execute the trigger right away
 					doTrigger(trigOp, trigComm);
 				}
@@ -173,15 +178,36 @@ ustring TextParser::parse(bool drawDialogue) {
 			
 			// dialogue control
 			else if (ch=='\\' && m_Block[1]!='n') {
+				char nextChar=m_Block[1];
 				bool erase=true;
 				
 				// check the next character
-				switch(m_Block[1]) {
+				switch(nextChar) {
+					// open a new text color
+					case 'c':
+					case 'g':
+					case 'o':
+					case 'w': {
+						// make sure to close any open colors thus far
+						if (color.second!=-1) {
+							// add this range to the color vector
+							m_FontStyle.colors.push_back(std::make_pair<ValueRange, Color> 
+									(ValueRange(color.second, m_Dialogue.size()-1),
+									 Utils::keyToColor(color.first)));
+							
+							color=std::pair<char, int>('\0', -1);
+						}
+						
+						// mark where the color itself, and where it first starts
+						color.first=nextChar;
+						color.second=m_Dialogue.size();
+					}; break;
+					
 					// dialogue break
 					case 'b': {
 						m_Pause=true;
 						m_Block.erase(0, 2);
-						return "null";
+						return STR_NULL;
 					}; break;
 					
 					// set blocking flag
@@ -249,11 +275,19 @@ ustring TextParser::parse(bool drawDialogue) {
 			if (m_Done) {
 				m_Pause=true;
 				
-				return "null";
+				return STR_NULL;
 			}
 			
 			// we have completely parsed this block
 			if (m_Block.empty()) {
+				// since the block is done, make sure to close any open colors
+				if (color.second!=-1) {
+					m_FontStyle.colors.push_back(std::make_pair<ValueRange, Color> 
+							(ValueRange(color.second,m_Dialogue.size()-1), Utils::keyToColor(color.first)));
+					
+					color=std::pair<char, int>('\0', -1);
+				}
+				
 				m_Pause=true;
 				return m_NextBlock;
 			}
@@ -355,11 +389,11 @@ ustring TextParser::parse(bool drawDialogue) {
 			
 			// draw the string
 			if (drawDialogue)
-				Fonts::drawString(Point(8, 134+shift), m_StrPos, SDL_GetVideoSurface()->w-8, 
-						  m_Dialogue, Fonts::FONT_STANDARD, m_FontStyle.color);
+				Fonts::drawStringMulticolor(Point(8, 134+shift), m_StrPos, SDL_GetVideoSurface()->w-8, 
+						  m_Dialogue, Fonts::FONT_STANDARD, m_FontStyle.colors);
 			
 			// since the dialog is done, execute queued events
-			if (m_QueuedEvent!="null" && dialogueDone()) {
+			if (m_QueuedEvent!=STR_NULL && dialogueDone()) {
 				// request evidence
 				if (m_QueuedEvent=="request_evidence") {
 					// set the variable in the game state
@@ -430,19 +464,19 @@ ustring TextParser::parse(bool drawDialogue) {
 					}
 				}
 				
-				m_QueuedEvent="null";
+				m_QueuedEvent=STR_NULL;
 			}
 		}
 	}
 	
-	return "null";
+	return STR_NULL;
 }
 
 // move on to the next break point
 void TextParser::nextStep() {
 	// if this block is empty and we didn't find the next one,
 	// then we flag that we're done
-	if (m_Block.empty() && m_NextBlock=="null" && m_StrPos==m_Dialogue.size()) {
+	if (m_Block.empty() && m_NextBlock==STR_NULL && m_StrPos==m_Dialogue.size()) {
 		// draw the previous screen
 		if (m_Game->m_State.prevScreen==SCREEN_EXAMINE)
 			m_Game->toggle(STATE_EXAMINE | STATE_COURT_REC_BTN | STATE_BACK_BTN);
@@ -481,21 +515,21 @@ void TextParser::nextStep() {
 		
 		// if we have queued effects, execute them now
 		// set fade effect
-		if (m_QueuedFade!="null") {
+		if (m_QueuedFade!=STR_NULL) {
 			m_Game->m_State.fadeOut=m_QueuedFade;
-			m_QueuedFade="null";
+			m_QueuedFade=STR_NULL;
 		}
 		
 		// display testimony from a character
-		if (m_QueuedTestimony!="null") {
+		if (m_QueuedTestimony!=STR_NULL) {
 			// set the testimony to the game engine
 			m_Game->displayTestimony(m_QueuedTestimony, false);
 			
-			m_QueuedTestimony="null";
+			m_QueuedTestimony=STR_NULL;
 		}
 		
 		// begin a cross examination
-		else if (m_QueuedExamination!="null") {
+		else if (m_QueuedExamination!=STR_NULL) {
 			StringVector params=Utils::explodeString(',', m_QueuedExamination);
 			
 			// begin the requested cross examination of testimony
@@ -505,11 +539,11 @@ void TextParser::nextStep() {
 			m_Game->m_State.crossExamineLawyers.first=params[1];
 			m_Game->m_State.crossExamineLawyers.second=params[2];
 			
-			m_QueuedExamination="null";
+			m_QueuedExamination=STR_NULL;
 		}
 		
 		// resume a cross examination
-		else if (m_QueuedResume!="null") {
+		else if (m_QueuedResume!=STR_NULL) {
 			m_Game->m_State.curExaminationPaused=false;
 			m_Game->m_State.curTestimonyPiece=atoi(m_QueuedResume.c_str());
 			
@@ -519,7 +553,7 @@ void TextParser::nextStep() {
 			m_Game->m_State.queuedLocation="witness_stand";
 			m_Game->m_State.queuedBlock="INTERNAL_testimony";
 			
-			m_QueuedResume="null";
+			m_QueuedResume=STR_NULL;
 		}
 		
 		m_Pause=false;
@@ -656,10 +690,44 @@ ustring TextParser::doTrigger(const ustring &trigger, const ustring &command) {
 		m_Game->m_State.hideTextBox=false;
 	
 	// add evidence to court record
-	else if (trigger=="add_evidence") {
-		// make sure this evidence exists at all
-		if (pcase->getEvidence(command))
-			m_Game->m_State.visibleEvidence.push_back(command);
+	else if (trigger.find("add_evidence")!=-1) {// make sure this evidence exists at all
+		if (pcase->getEvidence(command)) {
+			// no need to add the same evidence multiple times
+			for (int i=0; i<m_Game->m_State.visibleEvidence.size(); i++) {
+				if (m_Game->m_State.visibleEvidence[i]==command) {
+					Utils::debugMessage("Trigger "+trigger+" has no effect; evidence already in Court Record.");
+					return STR_NULL;
+				}
+			}
+			
+			// get the type of trigger command
+			int npos=trigger.rfind("_");
+			if (npos==-1)
+				Utils::debugMessage("Trigger add_evidence_* is missing last segment (either silent or animated)");
+			
+			else {
+				// determine the type of trigger
+				ustring type=trigger.substr(npos+1, trigger.size()-npos-1);
+				m_Game->m_State.visibleEvidence.push_back(command);
+				
+				// if the type is silent, then don't schedule an animation
+				if (type=="animated") {
+					// find the page where the evidence is now in the court record
+					int amount=m_Game->m_State.visibleEvidence.size();
+					if (amount>8)
+						m_Game->m_State.evidencePage=(int) floor(amount/8)-1;
+					else
+						m_Game->m_State.evidencePage=0;
+					
+					// now find what page it's on
+					m_Game->m_State.selectedEvidence=(amount%8)-1;
+					
+					// schedule an animation
+					m_Game->m_State.addEvidence=command;
+				}
+			}
+		}
+		
 		else
 			Utils::debugMessage("Unable to add unknown evidence: "+command);
 	}
@@ -693,7 +761,7 @@ ustring TextParser::doTrigger(const ustring &trigger, const ustring &command) {
 	
 	// hide shown evidence
 	else if (trigger=="hide_evidence")
-		m_Game->setShownEvidence("null", POSITION_LEFT);
+		m_Game->setShownEvidence(STR_NULL, POSITION_LEFT);
 	
 	// set a location
 	else if (trigger=="set_location")
@@ -895,7 +963,7 @@ ustring TextParser::doTrigger(const ustring &trigger, const ustring &command) {
 	else if (trigger=="clear_location_music") {
 		// get the target location
 		if (pcase->getLocation(command))
-			pcase->getLocation(command)->music="null";
+			pcase->getLocation(command)->music=STR_NULL;
 	}
 	
 	// flag that requires player to present evidence or answer
@@ -987,7 +1055,7 @@ ustring TextParser::doTrigger(const ustring &trigger, const ustring &command) {
 	
 	// hide a set temporary image
 	else if (trigger=="hide_temp_image")
-		m_Game->m_State.tempImage="null";
+		m_Game->m_State.tempImage=STR_NULL;
 	
 	// display a testimony
 	else if (trigger=="display_testimony") {
@@ -1048,7 +1116,7 @@ ustring TextParser::doTrigger(const ustring &trigger, const ustring &command) {
 			ustring str=params[1];
 			if (str[0]!='"' || str[str.size()-1]!='"') {
 				Utils::debugMessage("Character profile string needs to be in between quotation marks: "+str);
-				return "null";
+				return STR_NULL;
 			}
 			
 			// remove padding quote marks
@@ -1079,7 +1147,7 @@ ustring TextParser::doTrigger(const ustring &trigger, const ustring &command) {
 			ustring str=params[1];
 			if (str[0]!='"' || str[str.size()-1]!='"') {
 				Utils::debugMessage("Evidence data string needs to be in between quotation marks: "+str);
-				return "null";
+				return STR_NULL;
 			}
 			
 			// remove padding quote marks
@@ -1099,5 +1167,5 @@ ustring TextParser::doTrigger(const ustring &trigger, const ustring &command) {
 			Utils::debugMessage("Unknown evidence: "+params[0]);
 	}
 	
-	return "null";
+	return STR_NULL;
 }

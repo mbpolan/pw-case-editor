@@ -29,6 +29,11 @@
 #include "theme.h"
 #include "utilities.h"
 
+// draw a colored rectangle to the video surface
+void Renderer::drawRect(const Rect &rect, const Color &color) {
+	drawRect(SDL_GetVideoSurface(), rect.getPoint(), rect.getWidth(), rect.getHeight(), color);
+}
+
 // draw a colored rectangle
 void Renderer::drawRect(SDL_Surface *surface, const Point &p, int w, int h, const Color &color) {
 	SDL_Rect rect;
@@ -175,7 +180,7 @@ SDL_Surface* Renderer::generateCourtPanorama(Case::Case *pcase, const ustring &p
 	Renderer::drawImage(Point(0, 0), bg->w, bg->h, bg, panorama);
 	
 	// now draw the sprites themselves, if they are requested
-	if (prosecutor!="null" && pcase->getCharacter(prosecutor)) {
+	if (prosecutor!=STR_NULL && pcase->getCharacter(prosecutor)) {
 		// get the character's sprite
 		Sprite *sProsecutor=pcase->getCharacter(prosecutor)->getSprite();
 		
@@ -184,7 +189,7 @@ SDL_Surface* Renderer::generateCourtPanorama(Case::Case *pcase, const ustring &p
 		Renderer::drawImage(Point(bg->w-256, 0), image->w, image->h, image, panorama);
 	}
 	
-	if (defense!="null" && pcase->getCharacter(defense)) {
+	if (defense!=STR_NULL && pcase->getCharacter(defense)) {
 		// get the character's sprite
 		Sprite *sDefense=pcase->getCharacter(defense)->getSprite();
 		
@@ -193,7 +198,7 @@ SDL_Surface* Renderer::generateCourtPanorama(Case::Case *pcase, const ustring &p
 		Renderer::drawImage(Point(0, 0), image->w, image->h, image, panorama);
 	}
 	
-	if (witness!="null" && pcase->getCharacter(witness)) {
+	if (witness!=STR_NULL && pcase->getCharacter(witness)) {
 		// get the character's sprite
 		Sprite *sDefense=pcase->getCharacter(witness)->getSprite();
 		
@@ -218,13 +223,13 @@ SDL_Surface* Renderer::generateCourtPanorama(Case::Case *pcase, const ustring &p
 }
 
 // draw the initial game screen
-void Renderer::drawInitialScreen(UI::Manager *ui) {
+void Renderer::drawInitialScreen() {
 	// first, draw the background
 	Renderer::drawImage(Point(0, 197), "court_overview_g");
 	
 	// draw two buttons, one for New Game, and one for Continue
 	//Renderer::drawButton(Point(53, 240), 150, "New Game");
-	ui->animateGUIButton("an_new_game_btn");
+	UI::Manager::instance()->animateGUIButton("an_new_game_btn");
 	Renderer::drawButton(Point(53, 280), 150, "Continue");
 	
 	// draw scanlines to top it off
@@ -315,67 +320,23 @@ void Renderer::drawEvidencePage(const std::vector<Case::Evidence*> &evidence, in
 }
 
 // draw evidence information page
-void Renderer::drawEvidenceInfoPage(Case::Evidence *e) {
+void Renderer::drawEvidenceInfoPage(const Case::Evidence *e) {
 	// get pointer to screen surface
 	SDL_Surface *screen=SDL_GetVideoSurface();
 	if (!screen)
 		return;
 	
-	// keep track of y changes
-	int x=0;
-	int y=206;
-	
-	// draw transparent background
-	SDL_Surface *opaqueBlack=Textures::queryTexture("opaque_black");
-	SDL_SetAlpha(opaqueBlack, SDL_SRCALPHA, 80); // set transparent alpha value
-	drawImage(Point(0, 197), opaqueBlack);
-	
-	// draw info strip background
-	drawRect(screen, Point(0, y+25), 256, 77, Theme::lookup("court_record_bg"));
-	drawRect(screen, Point(8, y+101), 240, 52, Theme::lookup("court_record_bg"));
-	
-	// draw upper border
-	drawRect(screen, Point(0, y+25), 256, 6, Theme::lookup("info_box_border"));
-	y+=31;
+	// draw the info strip
+	Point p(0, 206);
+	Point n=drawInfoStrip(p, e->texture, e->name, e->caption, e->description, true);
 	
 	// draw button on left
-	drawImage(Point(0, y+4), "tc_small_btn_left");
+	drawImage(Point(0, n.y()+4), "tc_small_btn_left");
 	UI::Manager::instance()->drawAnimation("an_info_page_button_left");
 	
-	// draw the evidence
-	drawImage(Point(19, y), e->texture);
-	x+=92;
-	
-	// draw info box's border
-	drawRect(screen, Point(x, y), 148, 70, Theme::lookup("info_box_outline"));
-	
-	// draw info box title bar
-	drawRect(screen, Point(x+2, y+2), 144, 15, Theme::lookup("info_bar_bg"));
-	
-	// calculate center position for name
-	int centerx=(x+72)-(Fonts::getWidth(e->name, Fonts::FONT_INFO_PAGE)/2);
-	
-	// draw evidence name in title bar
-	Fonts::drawString(Point(centerx, y+4), e->name, Fonts::FONT_INFO_PAGE, Fonts::COLOR_YELLOW);
-	
-	// draw info box body
-	drawRect(screen, Point(x+2, y+17), 144, 51, Theme::lookup("info_box_bg"));
-	
-	// draw evidence caption in this area
-	Fonts::drawStringBlended(Point(x+5, y+18), e->caption, Fonts::FONT_INFO_PAGE, Fonts::COLOR_BLACK);
-	
-	// moving right along...
-	x+=148;
-	
 	// draw button with arrow on right
-	drawImage(Point(x+3, y+4), "tc_small_btn_right");
+	drawImage(Point(n.x()+3, n.y()+4), "tc_small_btn_right");
 	UI::Manager::instance()->drawAnimation("an_info_page_button_right");
-	
-	// draw lower border
-	drawRect(screen, Point(0, 308), 256, 6, Theme::lookup("info_box_border"));
-	
-	// draw evidence description in bottom area
-	Fonts::drawString(Point(16, y+81), e->description, Fonts::FONT_INFO_PAGE, Fonts::COLOR_WHITE);
 }
 
 // draw the profiles page
@@ -462,67 +423,76 @@ void Renderer::drawProfilesPage(const std::vector<Character*> &uchars, int page,
 }
 
 // draw the profile info page
-void Renderer::drawProfileInfoPage(Character *c) {
+void Renderer::drawProfileInfoPage(const Character *c) {
 	// get pointer to screen surface
 	SDL_Surface *screen=SDL_GetVideoSurface();
 	if (!screen)
 		return;
 	
-	// keep track of y changes
-	int x=0;
-	int y=206;
-	
-	// draw transparent background
-	SDL_Surface *opaqueBlack=Textures::queryTexture("opaque_black");
-	SDL_SetAlpha(opaqueBlack, SDL_SRCALPHA, 80); // set transparent alpha value
-	drawImage(Point(0, 197), opaqueBlack);
-	
-	// draw info strip background
-	drawRect(screen, Point(0, y+25), 256, 77, Theme::lookup("court_record_bg"));
-	drawRect(screen, Point(8, y+101), 240, 52, Theme::lookup("court_record_bg"));
-	
-	// draw upper border
-	drawRect(screen, Point(0, y+25), 256, 6, Theme::lookup("info_box_border"));
-	y+=31;
+	// draw the info strip
+	Point p(0, 206);
+	Point n=drawInfoStrip(p, const_cast<Character*> (c)->getHeadshot(), c->getName(), c->getCaption(), c->getDescription(), true);
 	
 	// draw button on left
-	drawImage(Point(0, y+4), "tc_small_btn_left");
+	drawImage(Point(0, n.y()+4), "tc_small_btn_left");
 	UI::Manager::instance()->drawAnimation("an_info_page_button_left");
 	
-	// draw the profile
-	drawImage(Point(19, y), c->getHeadshot());
+	// draw button with arrow on right
+	drawImage(Point(n.x()+3, n.y()+4), "tc_small_btn_right");
+	UI::Manager::instance()->drawAnimation("an_info_page_button_right");
+}
+
+// draw the strip containing evidence or profile
+Point Renderer::drawInfoStrip(const Point &p, SDL_Surface *image, const ustring &name,
+			      const ustring &caption, const ustring &desc, bool description) {
+	int x=p.x();
+	int y=p.y();
+	
+	// draw info strip background
+	drawRect(Rect(Point(x+0, y+25), 256, 77), Theme::lookup("court_record_bg"));
+	
+	// if descriptions are to be drawn, lengthen the background
+	if (description)
+		drawRect(Rect(Point(x+8, y+101), 240, 52), Theme::lookup("court_record_bg"));
+	
+	// draw upper border
+	drawRect(Rect(Point(x+0, y+25), 256, 6), Theme::lookup("info_box_border"));
+	y+=31;
+	
+	// draw the item
+	drawImage(Point(x+19, y), image);
 	x+=92;
 	
 	// draw info box's border
-	drawRect(screen, Point(x, y), 148, 70, Theme::lookup("info_box_outline"));
+	drawRect(Rect(Point(x, y), 148, 70), Theme::lookup("info_box_outline"));
 	
 	// draw info box title bar
-	drawRect(screen, Point(x+2, y+2), 144, 15, Theme::lookup("info_bar_bg"));
+	drawRect(Rect(Point(x+2, y+2), 144, 15), Theme::lookup("info_bar_bg"));
 	
 	// calculate center position for name
-	int centerx=(x+72)-(Fonts::getWidth(c->getName(), Fonts::FONT_INFO_PAGE)/2);
+	int centerx=(x+72)-(Fonts::getWidth(name, Fonts::FONT_INFO_PAGE)/2);
 	
-	// draw evidence name in title bar
-	Fonts::drawString(Point(centerx, y+4), c->getName(), Fonts::FONT_INFO_PAGE, Fonts::COLOR_YELLOW);
+	// draw name in title bar
+	Fonts::drawString(Point(centerx, y+4), name, Fonts::FONT_INFO_PAGE, Fonts::COLOR_YELLOW);
 	
 	// draw info box body
-	drawRect(screen, Point(x+2, y+17), 144, 51, Theme::lookup("info_box_bg"));
+	drawRect(Rect(Point(x+2, y+17), 144, 51), Theme::lookup("info_box_bg"));
 	
-	// draw character caption in this area
-	Fonts::drawStringBlended(Point(x+5, y+18), c->getCaption(), Fonts::FONT_INFO_PAGE, Fonts::COLOR_BLACK);
+	// draw caption in this area
+	Fonts::drawStringBlended(Point(x+5, y+18), caption, Fonts::FONT_INFO_PAGE, Fonts::COLOR_BLACK);
 	
 	// moving right along...
 	x+=148;
 	
-	// draw button with arrow on right
-	drawImage(Point(x+3, y+4), "tc_small_btn_right");
-	UI::Manager::instance()->drawAnimation("an_info_page_button_right");
-	
 	// draw lower border
-	drawRect(screen, Point(0, 308), 256, 6, Theme::lookup("info_box_border"));
+	drawRect(Rect(Point(p.x(), y+70), 256, 6), Theme::lookup("info_box_border"));
 	
-	// draw evidence description in bottom area
-	Fonts::drawString(Point(16, y+81), c->getDescription(), Fonts::FONT_INFO_PAGE, Fonts::COLOR_WHITE);
+	// draw description in bottom area
+	if (description)
+		Fonts::drawString(Point(p.x()+16, y+81), desc, Fonts::FONT_INFO_PAGE, Fonts::COLOR_WHITE);
+	
+	// return the modified coordinates
+	return Point(x, y);
 }
 
 // draw the examination scene

@@ -61,7 +61,8 @@ enum AnimType { ANIM_SIDE_HBOUNCE=0,
 		ANIM_GREEN_BAR,
 		ANIM_EXCLAMATION,
 		ANIM_GUI_BUTTON,
-		ANIM_BG_SLIDE };
+		ANIM_BG_SLIDE,
+		ANIM_ADD_EVIDENCE };
 
 // a struct containing animation data (not all variables pertinent)
 struct _Animation {
@@ -128,7 +129,7 @@ typedef struct _Animation Animation;
 class Button {
 	public:
 		// constructor
-		Button(const ustring &text, const Point &p, Callback slot, const ustring &sfx="null") {
+		Button(const ustring &text, const Point &p, Callback slot, const ustring &sfx=STR_NULL) {
 			m_Text=text;
 			m_Point=p;
 			m_Slot=slot;
@@ -156,6 +157,9 @@ class Manager {
 		
 		// get the only instance of the ui manager
 		static Manager* instance();
+		
+		// get a pointer to an animation struct
+		Animation* getAnimation(const ustring &id);
 		
 		// handle any mouse events on a gui element
 		void handleGUIClick(const Point &mouse, const ustring &id);
@@ -227,17 +231,28 @@ class Manager {
 		// register a sliding background animation
 		void registerBGSlide(const ustring &id);
 		
+		// register an animation to handle adding evidence
+		void registerAddEvidenceSequence(const ustring &id);
+		
 		// draw an animation
 		void drawAnimation(const ustring &id);
 		
 		/* 
 		   Note: most of the following functions return a bool, which signifies whether
 		   or not the animation in question has completed
+		
+		   If an animation returns an int, then the value returned will represent the current
+		   state of the animation; that is, these types of animations are done in two parts:
+			-1: animation is still progressing towards midpoint or towards the end
+			 0: animation has reached the midpoint
+			 1: animation is progressing to the end
 		*/
 		
 		// fade out the current scene to black
-		// returns -1 for beginning, 0 for midpoint, 1 when done
 		int fadeOut(const ustring &id);
+		
+		// animate the add evidence animation
+		int animateAddEvidence(const ustring &id, const Case::Evidence *evidence);
 		
 		// perform a flash effect
 		bool flash(const ustring &id);

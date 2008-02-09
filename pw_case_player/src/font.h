@@ -77,6 +77,9 @@ int drawString(const Point &p, const ustring &str, int size, const Color &color)
 // draw a string with clamped restrictions and delimiter
 int drawString(const Point &p, int delimiter, int rightClamp, const ustring &str, int size, const Color &color);
 
+// draw a multicolor string
+int drawStringMulticolor(const Point &p, int delimiter, int rightClamp, const ustring &str, int size, const ColorRangeVector &vec);
+
 // draw a string centered on the screen
 int drawStringCentered(int y, int delimiter, const ustring &str, int size, const Color &color);
 

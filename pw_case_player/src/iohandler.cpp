@@ -182,7 +182,7 @@ bool IO::loadCaseFromFile(const ustring &path, Case::Case &pcase) {
 		character.setSpriteName(str);
 		
 		// if the sprite name is not invalid, try loading said sprite
-		if (str!="null" && str!="") {
+		if (str!=STR_NULL && str!="") {
 			// the sprite should be in the /spr directory, extension .pws
 			ustring sprPath=root+"spr/"+str+".pws";
 			
@@ -202,7 +202,7 @@ bool IO::loadCaseFromFile(const ustring &path, Case::Case &pcase) {
 		
 		// if the tag exists, read the image
 		if (tag) {
-			SDL_Surface *texTag=Textures::createTexture("null", readImage(f));
+			SDL_Surface *texTag=Textures::createTexture(STR_NULL, readImage(f));
 			
 			// set alpha to match that of the text box
 			SDL_SetAlpha(texTag, SDL_SRCALPHA, 165);
@@ -218,10 +218,10 @@ bool IO::loadCaseFromFile(const ustring &path, Case::Case &pcase) {
 		// if the headshot exists, read the image
 		if (headshot) {
 			// read full image
-			SDL_Surface *headshot=Textures::createTexture("null", readImage(f));
+			SDL_Surface *headshot=Textures::createTexture(STR_NULL, readImage(f));
 			
 			// read scaled thumbnail
-			SDL_Surface *thumb=Textures::createTexture("null", readImage(f));
+			SDL_Surface *thumb=Textures::createTexture(STR_NULL, readImage(f));
 			
 			character.setHeadshot(headshot, thumb);
 		}
@@ -283,10 +283,10 @@ bool IO::loadCaseFromFile(const ustring &path, Case::Case &pcase) {
 		evidence.checkID=readString(f);
 		
 		// read pixbuf data
-		evidence.texture=Textures::createTexture("null", readImage(f));
+		evidence.texture=Textures::createTexture(STR_NULL, readImage(f));
 		
 		// read thumbnail data
-		evidence.thumb=Textures::createTexture("null", readImage(f));
+		evidence.thumb=Textures::createTexture(STR_NULL, readImage(f));
 		
 		// add this evidence
 		pcase.addEvidence(evidence);
@@ -307,7 +307,7 @@ bool IO::loadCaseFromFile(const ustring &path, Case::Case &pcase) {
 		img.id=readString(f);
 		
 		// read image
-		img.texture=Textures::createTexture("null", readImage(f));
+		img.texture=Textures::createTexture(STR_NULL, readImage(f));
 		
 		// add this image
 		pcase.addImage(img);
@@ -323,9 +323,9 @@ bool IO::loadCaseFromFile(const ustring &path, Case::Case &pcase) {
 	// iterate over locations
 	for (int i=0; i<locationCount; i++) {
 		Case::Location location;
-		location.triggerBlock="null";
-		location.character="null";
-		location.music="null";
+		location.triggerBlock=STR_NULL;
+		location.character=STR_NULL;
+		location.music=STR_NULL;
 		
 		// read id
 		location.id=readString(f);
@@ -342,7 +342,7 @@ bool IO::loadCaseFromFile(const ustring &path, Case::Case &pcase) {
 			
 			// scale it
 			location.bgScaled=zoomSurface(bg->texture, 0.3125, 0.3125, SMOOTHING_ON);
-			Textures::pushTexture("null", location.bgScaled);
+			Textures::pushTexture(STR_NULL, location.bgScaled);
 		}
 		
 		// read amount of hotspots
@@ -530,7 +530,7 @@ bool IO::loadSpriteFromFile(const ustring &path, Sprite &sprite) {
 			fr.sfx=readString(f);
 			
 			// read image
-			fr.image=Textures::createTexture("null", readImage(f));
+			fr.image=Textures::createTexture(STR_NULL, readImage(f));
 			
 			// add this frame
 			anim.frames.push_back(fr);
@@ -609,8 +609,8 @@ bool IO::loadStockFile(const ustring &path, Case::Case *pcase) {
 			character.setSprite(sprite);
 			
 			// see if a text box tag is present
-			if (vec[4]!="null") {
-				SDL_Surface *tag=Textures::createTexture("null", ".temp/data/stock/"+vec[4]);
+			if (vec[4]!=STR_NULL) {
+				SDL_Surface *tag=Textures::createTexture(STR_NULL, ".temp/data/stock/"+vec[4]);
 				if (tag) {
 					// set this tag
 					character.setHasTextBoxTag(true);
@@ -637,9 +637,9 @@ bool IO::loadStockFile(const ustring &path, Case::Case *pcase) {
 			Case::Location location;
 			location.id=sId;
 			location.bg=sFile;
-			location.triggerBlock="null";
-			location.character="null";
-			location.music="null";
+			location.triggerBlock=STR_NULL;
+			location.character=STR_NULL;
+			location.music=STR_NULL;
 			
 			// add this location
 			pcase->addLocation(location);

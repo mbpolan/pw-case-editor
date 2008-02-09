@@ -61,6 +61,9 @@ void alert(const ustring &text, const MessageType &type=MESSAGE_CRITICAL);
 // string should be in the form of: "location1,location2"
 void scriptToLimits(const ustring &str, UI::Limit &start, UI::Limit &end);
 
+// map a char representing a text color to the actual color
+Color keyToColor(char ch);
+
 // print a debug message
 void debugMessage(const ustring &msg);
 

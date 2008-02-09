@@ -50,30 +50,30 @@ Game::Game(const ustring &rootPath, Case::Case *pcase): m_RootPath(rootPath), m_
 	// reset trial variables
 	m_State.requestingEvidence=false;
 	m_State.requestingAnswer=false;
-	m_State.requestedEvidenceParams="null";
-	m_State.requestedAnswerParams="null";
+	m_State.requestedEvidenceParams=STR_NULL;
+	m_State.requestedAnswerParams=STR_NULL;
 	
 	// reset examination cursor position
 	m_State.examinePt=Point(256/2, 192/2);
 	
 	// reset contradiction image variables
-	m_State.contradictionImg="null";
+	m_State.contradictionImg=STR_NULL;
 	m_State.contradictionRegion=Rect(Point(0, 0), 0, 0);
 	
 	// reset temporary state variables
 	m_State.hideTextBox=false;
 	
 	// reset testimony variables
-	m_State.curTestimony="null";
+	m_State.curTestimony=STR_NULL;
 	m_State.curTestimonyPiece=0;
 	m_State.barPercent=100;
 	m_State.curExamination=false;
 	m_State.curExaminationPaused=false;
 	
 	// reset courtroom sprites
-	m_State.crOverviewDefense="null";
-	m_State.crOverviewProsecutor="null";
-	m_State.crOverviewWitness="null";
+	m_State.crOverviewDefense=STR_NULL;
+	m_State.crOverviewProsecutor=STR_NULL;
+	m_State.crOverviewWitness=STR_NULL;
 	
 	// reset previous page
 	m_State.prevScreen=0;
@@ -82,13 +82,13 @@ Game::Game(const ustring &rootPath, Case::Case *pcase): m_RootPath(rootPath), m_
 	m_State.continueMusic=false;
 	
 	// reset temporary image
-	m_State.tempImage="null";
+	m_State.tempImage=STR_NULL;
 	
 	// reset queued events
 	m_State.queuedFlags=0;
-	m_State.queuedLocation="null";
-	m_State.queuedBlock="null";
-	m_State.resetAnimations="null";
+	m_State.queuedLocation=STR_NULL;
+	m_State.queuedBlock=STR_NULL;
+	m_State.resetAnimations=STR_NULL;
 	
 	// reset special effects
 	m_State.shake=0;
@@ -100,14 +100,15 @@ Game::Game(const ustring &rootPath, Case::Case *pcase): m_RootPath(rootPath), m_
 	m_State.testimonySequence="none";
 	m_State.crossExamineSequence="none";
 	m_State.exclamation="none";
+	m_State.addEvidence="none";
 	
 	// reset cross examination lawyer image ids
-	m_State.crossExamineLawyers.first="null";
-	m_State.crossExamineLawyers.second="null";
+	m_State.crossExamineLawyers.first=STR_NULL;
+	m_State.crossExamineLawyers.second=STR_NULL;
 	
 	// null out variables
-	m_State.currentLocation="null";
-	m_State.shownEvidence="null";
+	m_State.currentLocation=STR_NULL;
+	m_State.shownEvidence=STR_NULL;
 	
 	// allocate text parser
 	m_Parser=new TextParser(this);
@@ -225,7 +226,7 @@ void Game::render() {
 	ustring status=m_Parser->parse(shouldDrawTextBox());
 	
 	// new block ready for parsing
-	if (status!="null") {
+	if (status!=STR_NULL) {
 		m_Parser->setBlock(m_Case->getBuffers()[status]);
 		m_Parser->nextStep();
 	}
@@ -276,7 +277,7 @@ void Game::onKeyboardEvent(SDL_KeyboardEvent *e) {
 			return;
 		
 		// check the character set here, if any
-		bool all=(location->character!="null");
+		bool all=(location->character!=STR_NULL);
 		
 		// select the right control
 		if (e->keysym.sym==SDLK_RIGHT) {
@@ -445,7 +446,7 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 				onBottomLeftButtonClicked();
 			
 			// confirm selection button
-			else if ((e->x>=177 && e->x<=256) && (e->y>=359 && e->y<=389) && m_State.contradictionImg!="null")
+			else if ((e->x>=177 && e->x<=256) && (e->y>=359 && e->y<=389) && m_State.contradictionImg!=STR_NULL)
 				onBottomRightButtonClicked();
 		}
 		
@@ -468,7 +469,7 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 		if (flagged(STATE_NEXT_BTN) && ((e->x>=16 && e->x<=16+223) && (e->y>=242 && e->y<=242+111)) &&
 		    !m_State.requestingAnswer && !m_State.requestingEvidence) {
 			// if the parser is blocking the dialogue, don't skip
-			if (!m_Parser->dialogueDone() && (m_Parser->isBlocking() || m_State.curTestimony!="null"))
+			if (!m_Parser->dialogueDone() && (m_Parser->isBlocking() || m_State.curTestimony!=STR_NULL))
 				return;
 			
 			// play a sound effect if done
@@ -479,7 +480,7 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 			
 			// if we are in the process of a testimony, set the next piece
 			// as the following block
-			if ((m_State.curTestimony!="null" && !m_State.curExamination) || 
+			if ((m_State.curTestimony!=STR_NULL && !m_State.curExamination) || 
 			   (m_State.curExamination && !m_State.curExaminationPaused)) {
 				Case::Testimony *testimony=m_Case->getTestimony(m_State.curTestimony);
 				
@@ -495,7 +496,7 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 					// reset everything related to a testimony
 					m_State.curTestimonyPiece=0;
 					m_State.blink="none";
-					m_State.curTestimony="null";
+					m_State.curTestimony=STR_NULL;
 				}
 				
 				// otherwise, move along
@@ -529,7 +530,7 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 		// check if one of the cross examination buttons was clicked
 		else if (flagged(STATE_CROSS_EXAMINE_BTNS)) {
 			// if the parser is blocking the dialogue, don't skip
-			if (!m_Parser->dialogueDone() && (m_Parser->isBlocking() || m_State.curTestimony!="null"))
+			if (!m_Parser->dialogueDone() && (m_Parser->isBlocking() || m_State.curTestimony!=STR_NULL))
 				return;
 			
 			Case::Testimony *testimony=m_Case->getTestimony(m_State.curTestimony);
@@ -578,8 +579,21 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 			onControlsClicked(e->x, e->y);
 		
 		// if the court record page is up, see if anything was clicked
-		if (flagged(STATE_EVIDENCE_PAGE) || flagged(STATE_PROFILES_PAGE))
-			onRecPageClickEvent(e->x, e->y);
+		if (flagged(STATE_EVIDENCE_PAGE) || flagged(STATE_PROFILES_PAGE)) {
+			// if we're in the add evidence animation's midpoint, toggle to progress it 
+			UI::Animation *anim=m_UI->getAnimation("an_add_evidence");
+			if (m_State.addEvidence!="none" && anim->current.x()==0) {
+				// move the animation along first
+				anim->current.setX(anim->current.x()-1);
+				anim->velocity=-1;
+				
+				// then switch back to dialogue
+				m_State.drawFlags=STATE_NEXT_BTN | STATE_COURT_REC_BTN | STATE_TEXT_BOX;
+			}
+			
+			else
+				onRecPageClickEvent(e->x, e->y);
+		}
 		
 		// same applies for evidence/profiles info page
 		else if (flagged(STATE_EVIDENCE_INFO_PAGE) || flagged(STATE_PROFILE_INFO_PAGE))
@@ -607,6 +621,9 @@ void Game::registerAnimations() {
 	
 	// register background slide
 	m_UI->registerBGSlide("an_bg_slide");
+	
+	// register evidence animations
+	m_UI->registerAddEvidenceSequence("an_add_evidence");
 	
 	// register court camera effect
 	m_UI->registerCourtCameraMovement("an_court_camera");
@@ -647,7 +664,7 @@ void Game::registerAnimations() {
 // check input device state
 void Game::checkInputState() {
 	// if the examination scene is shown, move the crosshairs
-	if (flagged(STATE_EXAMINE) || (flagged(STATE_CHECK_EVIDENCE_IMAGE) && m_State.contradictionImg!="null")) {
+	if (flagged(STATE_EXAMINE) || (flagged(STATE_CHECK_EVIDENCE_IMAGE) && m_State.contradictionImg!=STR_NULL)) {
 		// get the current keyboard state
 		Uint8 *keys=SDL_GetKeyState(NULL);
 		
@@ -762,17 +779,17 @@ void Game::setLocation(const ustring &locationId) {
 		Audio::haltMusic();
 		
 		// if this location has set music, then play it
-		if (location->music!="null")
+		if (location->music!=STR_NULL)
 			Audio::playMusic(location->music);
 	}
 	
 	// if this location has a trigger block, execute it now
-	if (location->triggerBlock!="null") {
+	if (location->triggerBlock!=STR_NULL) {
 		m_Parser->setBlock(m_Case->getBuffers()[location->triggerBlock]);
 		m_Parser->nextStep();
 		
 		// clear the trigger
-		location->triggerBlock="null";
+		location->triggerBlock=STR_NULL;
 	}
 	
 	// set the new location
@@ -781,11 +798,11 @@ void Game::setLocation(const ustring &locationId) {
 
 // set the evidence to draw on top screen
 void Game::setShownEvidence(const ustring &id, const Position &pos) {
-	if (id=="null") {
+	if (id==STR_NULL) {
 		// play hide effect
 		Audio::playEffect("sfx_hide_item", Audio::CHANNEL_GUI);
 		
-		m_State.shownEvidence="null";
+		m_State.shownEvidence=STR_NULL;
 	}
 	
 	else {
@@ -855,7 +872,7 @@ void Game::selectEvidence(bool evidence, bool increment) {
 		}
 		
 		// see if the check button should still be shown
-		if (m_Case->getEvidence(getSelectedEvidence())->checkID!="null")
+		if (m_Case->getEvidence(getSelectedEvidence())->checkID!=STR_NULL)
 			m_State.drawFlags |= STATE_CHECK_BTN;
 		else
 			m_State.drawFlags &= ~STATE_CHECK_BTN;
@@ -896,7 +913,7 @@ void Game::updateFlags() {
 	
 	// draw check image screen
 	if (flagged(STATE_CHECK_EVIDENCE_IMAGE)) {
-		if (m_State.contradictionImg=="null")
+		if (m_State.contradictionImg==STR_NULL)
 			flags |= STATE_BACK_BTN;
 		else
 			flags |= STATE_CONFIRM_BTN;
@@ -906,9 +923,12 @@ void Game::updateFlags() {
 	
 	// draw evidence page
 	else if (flagged(STATE_EVIDENCE_PAGE)) {
-		flags |= STATE_PROFILES_BTN;
 		flags |= STATE_EVIDENCE_PAGE;
-		flags |= STATE_BACK_BTN;
+		
+		if (m_State.addEvidence=="none") {
+			flags |= STATE_PROFILES_BTN;
+			flags |= STATE_BACK_BTN;
+		}
 			
 		if (m_State.curExamination && !m_State.curExaminationPaused)
 			flags |= STATE_COURT_GREEN_BAR;
@@ -997,7 +1017,7 @@ void Game::renderTopView() {
 	// if we are toggled in an initial screen, draw only the title on the top view
 	if (flagged(STATE_INITIAL_SCREEN)) {
 		// see if there is a user defined override
-		if (m_Case->getOverrides().titleScreen!="null") {
+		if (m_Case->getOverrides().titleScreen!=STR_NULL) {
 			Renderer::drawImage(Point(0, 0), m_Case->getImage(m_Case->getOverrides().titleScreen)->texture);
 		}
 		
@@ -1021,7 +1041,7 @@ void Game::renderTopView() {
 	}
 	
 	// temporary image has priority over background
-	if (m_State.tempImage!="null") {
+	if (m_State.tempImage!=STR_NULL) {
 		// see if this image exists
 		Case::Image *temp=m_Case->getImage(m_State.tempImage);
 		if (!temp)
@@ -1032,7 +1052,7 @@ void Game::renderTopView() {
 	}
 	
 	// draw the background for this location
-	else if (m_State.currentLocation!="null" && m_Case->getLocation(m_State.currentLocation)) {
+	else if (m_State.currentLocation!=STR_NULL && m_Case->getLocation(m_State.currentLocation)) {
 		// get the background surface
 		Case::Location *location=m_Case->getLocation(m_State.currentLocation);
 		
@@ -1172,7 +1192,7 @@ void Game::renderTopView() {
 		Renderer::drawImage(Point(0, 168), "tc_answer_bar");
 	
 	// if there is shown evidence, draw it as well
-	if (m_State.shownEvidence!="null") {
+	if (m_State.shownEvidence!=STR_NULL) {
 		Case::Evidence *ev=m_Case->getEvidence(m_State.shownEvidence);
 		if (!ev)
 			return;
@@ -1189,7 +1209,7 @@ void Game::renderTopView() {
 void Game::renderMenuView() {
 	// for initial screen, draw the New Game and Continue buttons
 	if (flagged(STATE_INITIAL_SCREEN)) {
-		Renderer::drawInitialScreen(m_UI);
+		Renderer::drawInitialScreen();
 		return;
 	}
 	
@@ -1207,7 +1227,7 @@ void Game::renderMenuView() {
 	// if requesting an image contradiction, or checking evidence, handle that now
 	if (flagged(STATE_CHECK_EVIDENCE_IMAGE)) {
 		// we're not expecting the user to point out a contradiction
-		if (m_State.contradictionImg=="null") {
+		if (m_State.contradictionImg==STR_NULL) {
 			// get the image for the evidence
 			ustring checkID=m_Case->getEvidence(m_State.visibleEvidence[m_State.selectedEvidence])->checkID;
 			Renderer::drawImage(Point(0, 197), m_Case->getImage(checkID)->texture);
@@ -1306,7 +1326,7 @@ void Game::renderMenuView() {
 		if (m_Case->getLocation(m_State.currentLocation)) {
 			// if there is a character set, enable the talk and present controls
 			Case::Location *location=m_Case->getLocation(m_State.currentLocation);
-			if (location->character!="null")
+			if (location->character!=STR_NULL)
 				renderControls(CONTROLS_ALL);
 			else
 				renderControls(CONTROLS_EXAMINE | CONTROLS_MOVE);
@@ -1331,7 +1351,7 @@ void Game::renderMenuView() {
 	}
 	
 	// top everything off with scanlines, except when presenting an image contradiction
-	if (!flagged(STATE_CHECK_EVIDENCE_IMAGE) || (flagged(STATE_CHECK_EVIDENCE_IMAGE) && m_State.contradictionImg=="null"))
+	if (!flagged(STATE_CHECK_EVIDENCE_IMAGE) || (flagged(STATE_CHECK_EVIDENCE_IMAGE) && m_State.contradictionImg==STR_NULL))
 		Renderer::drawImage(Point(0, 197), "scanlines_overlay");
 	
 	// draw the top and lower border bar
@@ -1417,7 +1437,7 @@ bool Game::renderSpecialEffects() {
 			}
 			
 			// clear animations
-			if (m_State.resetAnimations!="null") {
+			if (m_State.resetAnimations!=STR_NULL) {
 				StringVector vec=Utils::explodeString(',', m_State.resetAnimations);
 				
 				// since there could be multiple animations, make sure to reset them all
@@ -1426,17 +1446,17 @@ bool Game::renderSpecialEffects() {
 						m_UI->registerBGSlide("an_bg_slide");
 				}
 				
-				m_State.resetAnimations="null";
+				m_State.resetAnimations=STR_NULL;
 			}
 			
 			// set a location, if requested
-			if (m_State.queuedLocation!="null") {
+			if (m_State.queuedLocation!=STR_NULL) {
 				setLocation(m_State.queuedLocation);
-				m_State.queuedLocation="null";
+				m_State.queuedLocation=STR_NULL;
 			}
 			
 			// set the next block, if requested
-			if (m_State.queuedBlock!="null") {
+			if (m_State.queuedBlock!=STR_NULL) {
 				// return to the testimony
 				if (m_State.queuedBlock=="INTERNAL_testimony") {
 					m_Parser->setBlock(m_Case->getTestimony(m_State.curTestimony)->pieces[m_State.curTestimonyPiece].text);
@@ -1447,7 +1467,7 @@ bool Game::renderSpecialEffects() {
 					m_Parser->setBlock(m_Case->getBuffers()[m_State.queuedBlock]);
 				
 				m_Parser->nextStep();
-				m_State.queuedBlock="null";
+				m_State.queuedBlock=STR_NULL;
 			}
 			
 			// end half animations here
@@ -1477,6 +1497,22 @@ bool Game::renderSpecialEffects() {
 			m_State.gavel="none";
 		
 		return false;
+	}
+	
+	// draw add evidence animation
+	else if (m_State.addEvidence!="none") {
+		// progress the animation
+		int ret=m_UI->animateAddEvidence("an_add_evidence", m_Case->getEvidence(m_State.addEvidence));
+		
+		// if the midpoint is reached, open the court record
+		if (ret==0)
+			m_State.drawFlags=STATE_EVIDENCE_PAGE;
+		
+		// the animation is done, so remove it from the game state and progress the script
+		else if (ret==1) {
+			m_State.addEvidence="none";
+			m_Parser->nextStep();
+		}
 	}
 	
 	// draw court room camera movement
@@ -1515,12 +1551,12 @@ bool Game::renderSpecialEffects() {
 			m_UI->registerCourtCameraMovement("an_court_camera");
 			
 			// execute any queued cross examination blocks
-			if (m_State.curExamination && m_State.queuedBlock!="null") {
+			if (m_State.curExamination && m_State.queuedBlock!=STR_NULL) {
 				m_State.curExaminationPaused=true;
 				m_Parser->setBlock(m_Case->getBuffers()[m_State.queuedBlock]);
 				m_Parser->nextStep();
 				
-				m_State.queuedBlock="null";
+				m_State.queuedBlock=STR_NULL;
 			}
 			
 			return true;
@@ -1625,8 +1661,8 @@ void Game::renderTextBox() {
 	// draw the actual text box body
 	Renderer::drawImage(Point(0, 128+shift), "tc_text_box");
 	
-	// character speaking
-	if (speaker!="none" && speaker!="" && m_Case->getCharacter(speaker)) {
+	// character speaking (ignore speaker during "add evidence" animations)
+	if (speaker!="none" && speaker!="" && m_Case->getCharacter(speaker) && m_State.addEvidence=="none") {
 		// get the tag
 		SDL_Surface *tag=m_Case->getCharacter(speaker)->getTextBoxTag();
 		
@@ -1735,7 +1771,7 @@ void Game::renderCourtroomOverview() {
 	// we need to draw any specified images from the GameState at this point
 	
 	// first, we check to see if there are any defense stand images
-	if (m_State.crOverviewDefense!="null") {
+	if (m_State.crOverviewDefense!=STR_NULL) {
 		// get the image
 		Case::Image *image=m_Case->getImage(m_State.crOverviewDefense);
 		if (image)
@@ -1745,7 +1781,7 @@ void Game::renderCourtroomOverview() {
 	}
 	
 	// draw prosecutor image
-	if (m_State.crOverviewProsecutor!="null") {
+	if (m_State.crOverviewProsecutor!=STR_NULL) {
 		// get the image
 		Case::Image *image=m_Case->getImage(m_State.crOverviewProsecutor);
 		if (image)
@@ -1766,7 +1802,7 @@ void Game::renderCourtroomOverview() {
 void Game::renderStand(const Stand stand) {
 	// the background and sprite should be drawn by this point
 	// we just need to superimpose the bench seen ingame over the sprite
-	ustring sId="null";
+	ustring sId=STR_NULL;
 	switch(stand) {
 		case COURT_PROSECUTOR_STAND: sId="prosecutor_bench"; break;
 		case COURT_DEFENSE_STAND: sId="defense_bench"; break;
@@ -1846,7 +1882,7 @@ void Game::onTopRightButtonClicked() {
 			}
 			
 			// if the presentable evidence was not found, then fall back on appropriate block
-			if (!found && character->getBadPresentableBlock()!="null") {
+			if (!found && character->getBadPresentableBlock()!=STR_NULL) {
 				m_Parser->setBlock(m_Case->getBuffers()[character->getBadPresentableBlock()]);
 				m_Parser->nextStep();
 			}
@@ -1952,7 +1988,7 @@ void Game::onTopRightButtonClicked() {
 		
 		// include a check button for evidence with images
 		if (m_Case->getEvidence(getSelectedEvidence()) && 
-		    m_Case->getEvidence(getSelectedEvidence())->checkID!="null")
+		    m_Case->getEvidence(getSelectedEvidence())->checkID!=STR_NULL)
 			flags |= STATE_CHECK_BTN;
 		
 		// if the text box is also present, draw it as well
@@ -2095,9 +2131,9 @@ void Game::onBottomRightButtonClicked() {
 				m_Parser->setBlock(m_Case->getBuffers()[vec[1]]);
 			
 			// reset our variables relating to this image contradiction
-			m_State.contradictionImg="null";
+			m_State.contradictionImg=STR_NULL;
 			m_State.contradictionRegion=Rect(Point(0, 0), 0, 0);
-			m_State.requestedContrParams="null";
+			m_State.requestedContrParams=STR_NULL;
 			
 			m_State.drawFlags &= ~STATE_CHECK_EVIDENCE_IMAGE;
 			
@@ -2114,7 +2150,7 @@ void Game::onPresentCenterClicked() {
 		m_State.requestingEvidence=false;
 		
 		// get the current evidence/profile
-		ustring id="null";
+		ustring id=STR_NULL;
 		if (flagged(STATE_EVIDENCE_INFO_PAGE) && !m_State.visibleEvidence.empty())
 			id=m_State.visibleEvidence[m_State.evidencePage*8+m_State.selectedEvidence];
 		
@@ -2141,7 +2177,7 @@ void Game::onPresentCenterClicked() {
 		m_Parser->nextStep();
 		
 		// clear variables
-		m_State.requestedEvidenceParams="null";
+		m_State.requestedEvidenceParams=STR_NULL;
 		
 		// and toggle flags
 		toggle(STATE_COURT_REC_BTN | STATE_NEXT_BTN);
@@ -2285,7 +2321,7 @@ void Game::onTalkSceneClicked(const ustring &button) {
 // court record page click handler
 void Game::onRecPageClickEvent(int x, int y) {
 	// see where the click occurred
-	int ex=24+12;
+	int ex=36;
 	int ey=259;
 	
 	// cache the page
@@ -2304,7 +2340,7 @@ void Game::onRecPageClickEvent(int x, int y) {
 				int flags=STATE_EVIDENCE_INFO_PAGE | STATE_BACK_BTN;
 				
 				// show check button where applicable
-				if (m_Case->getEvidence(getSelectedEvidence())->checkID!="null")
+				if (m_Case->getEvidence(getSelectedEvidence())->checkID!=STR_NULL)
 					flags |= STATE_CHECK_BTN;
 				
 				// if the previous screen was the present screen, then draw present button instead

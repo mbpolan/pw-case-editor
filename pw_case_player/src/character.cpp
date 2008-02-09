@@ -26,9 +26,9 @@ Character::Character(const ustring &internal, const ustring &name, const ustring
 		m_InternalName(internal), m_Name(name), m_Caption(caption), m_Description(description) {
 	m_HasTextBoxTag=false;
 	m_HasHeadshot=false;
-	m_SpriteName="null";
+	m_SpriteName=STR_NULL;
 	m_RootAnim="normal";
-	m_BadPresentableBlock="null";
+	m_BadPresentableBlock=STR_NULL;
 	m_Gender=GENDER_MALE;
 }
 

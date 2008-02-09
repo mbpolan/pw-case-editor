@@ -27,7 +27,7 @@ Case::Case::Case() {
 	clear();
 	
 	// add some default blocks
-	addBuffer("INTERNAL_testimony", "null");
+	addBuffer("INTERNAL_testimony", STR_NULL);
 }
 
 // destructor
@@ -144,14 +144,14 @@ std::vector<Character*> Case::Case::getCharactersFromIds(const StringVector &vec
 void Case::Case::clear() {
 	// clear out overrides
 	m_Overrides.textboxAlpha=-1;
-	m_Overrides.titleScreen="null";
+	m_Overrides.titleScreen=STR_NULL;
 	
 	// clear out overview
 	m_Overview.name="";
 	m_Overview.author="";
 	m_Overview.lawSys=TWO_DAY;
 	
-	m_InitialBlockId="null";
+	m_InitialBlockId=STR_NULL;
 	
 	// clear out the rest of the pertinent stuff
 	m_Evidence.clear();

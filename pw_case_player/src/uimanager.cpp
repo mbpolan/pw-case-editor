@@ -42,6 +42,14 @@ UI::Manager* UI::Manager::instance() {
 	return g_Manager;
 }
 
+// get a pointer to an animation struct
+UI::Animation* UI::Manager::getAnimation(const ustring &id) {
+	if (m_Animations.find(id)==m_Animations.end())
+		return NULL;
+	
+	return &m_Animations[id];
+}
+
 // handle any mouse events on a gui element
 void UI::Manager::handleGUIClick(const Point &mouse, const ustring &id) {
 	StringVector vec;
@@ -120,7 +128,7 @@ void UI::Manager::clickGUIButton(const ustring &id) {
 	anim.velocity=1;
 	
 	// play the sound effect
-	if (anim.sfx!="null")
+	if (anim.sfx!=STR_NULL)
 		Audio::playEffect(anim.sfx, Audio::CHANNEL_GUI);
 }
 
@@ -350,15 +358,30 @@ void UI::Manager::registerBGSlide(const ustring &id) {
 	m_Animations[id]=anim;
 }
 
+// register an animation to handle adding evidence
+void UI::Manager::registerAddEvidenceSequence(const ustring &id) {
+	Animation anim;
+	
+	// fill in values
+	anim.type=ANIM_ADD_EVIDENCE;
+	anim.lastDraw=0;
+	anim.velocity=1;
+	anim.speed=5;
+	anim.current=Point(256, 0);
+	
+	// add the animation
+	m_Animations[id]=anim;
+}
+
 // draw an animation
 void UI::Manager::drawAnimation(const ustring &id) {
 	// get the requested animation
-	if (m_Animations.find(id)==m_Animations.end()) {
+	if (!getAnimation(id)) {
 		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");
 		return;
 	}
 	
-	UI::Animation &anim=m_Animations[id];
+	UI::Animation &anim=*getAnimation(id);
 	
 	// see if it's time to progress the animation
 	int now=SDL_GetTicks();
@@ -387,13 +410,13 @@ void UI::Manager::drawAnimation(const ustring &id) {
 
 // fade out the current scene to black
 int UI::Manager::fadeOut(const ustring &id) {
-	if (m_Animations.find(id)==m_Animations.end()) {
+	if (!getAnimation(id)) {
 		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");
 		return 1;
 	}
 	
 	// get the animation
-	UI::Animation &anim=m_Animations[id];
+	UI::Animation &anim=*getAnimation(id);
 	
 	// see if it's time to increase the alpha
 	int now=SDL_GetTicks();
@@ -461,14 +484,59 @@ int UI::Manager::fadeOut(const ustring &id) {
 	return -1;
 }
 
+// animate the add evidence animation
+int UI::Manager::animateAddEvidence(const ustring &id, const Case::Evidence *evidence) {
+	// get the animation
+	if (!getAnimation(id)) {
+		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");
+		return 1;
+	}
+	
+	Animation &anim=*getAnimation(id);
+	
+	// draw the info strip across the top of the screen
+	Renderer::drawInfoStrip(anim.current, evidence->texture, evidence->name, evidence->caption, evidence->description, false);
+	
+	// moving the info strip to the left
+	int x=anim.current.x();
+	if (x!=0) {
+		anim.current.setX(x-anim.speed);
+		
+		// still moving left initially
+		if (anim.velocity==1) {
+			// midpoint at x=0
+			if (x<0) {
+				anim.current.setX(0);
+				return 0;
+			}
+			
+			return -1;
+		}
+		
+		// moving left after midpoint
+		else {
+			// we're done if we hit -256
+			if (x<-256) {
+				anim.current.setX(-256);
+				return 1;
+			}
+			
+			return -1;
+		}
+	}
+	
+	else
+		return 0;
+}
+
 // perform a flash effect
 bool UI::Manager::flash(const ustring &id) {
 	// get the animation
-	if (m_Animations.find(id)==m_Animations.end()) {
+	if (!getAnimation(id)) {
 		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");
 		return false;
 	}
-	Animation &anim=m_Animations[id];
+	Animation &anim=*getAnimation(id);
 	bool ret;
 	
 	// increment tick count
@@ -495,12 +563,12 @@ bool UI::Manager::flash(const ustring &id) {
 // perform a blinking animation
 bool UI::Manager::blink(const ustring &id) {
 	// make sure the animation is valid
-	if (m_Animations.find(id)==m_Animations.end()) {
+	if (!getAnimation(id)) {
 		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");
 		return true;
 	}
 	
-	Animation &anim=m_Animations[id];
+	Animation &anim=*getAnimation(id);
 	
 	// get the texture
 	SDL_Surface *tex=Textures::queryTexture(anim.texture);
@@ -525,7 +593,7 @@ bool UI::Manager::blink(const ustring &id) {
 // perform a court camera movement
 bool UI::Manager::moveCourtCamera(const ustring &id, SDL_Surface *panorama, UI::Limit start, UI::Limit end) {
 	// make sure the animation is valid
-	if (m_Animations.find(id)==m_Animations.end()) {
+	if (!getAnimation(id)) {
 		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");
 		return true;
 	}
@@ -537,7 +605,7 @@ bool UI::Manager::moveCourtCamera(const ustring &id, SDL_Surface *panorama, UI::
 	}
 	
 	// get the animation
-	Animation &anim=m_Animations[id];
+	Animation &anim=*getAnimation(id);
 	Point &cur=anim.current;
 	
 	// modify velocity based on direction once
@@ -628,12 +696,12 @@ bool UI::Manager::moveCourtCamera(const ustring &id, SDL_Surface *panorama, UI::
 // animate the testimony sprite sequence
 bool UI::Manager::animateTestimonySequence(const ustring &id) {
 	// make sure the animation is valid
-	if (m_Animations.find(id)==m_Animations.end()) {
+	if (!getAnimation(id)) {
 		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");
 		return true;
 	}
 	
-	Animation &anim=m_Animations[id];
+	Animation &anim=*getAnimation(id);
 	
 	// check for existance of sprites
 	Character *tt=m_Case->getCharacter("testimony_top");
@@ -756,12 +824,12 @@ bool UI::Manager::animateTestimonySequence(const ustring &id) {
 bool UI::Manager::animateCrossExamineSequence(const ustring &id, 
 					      SDL_Surface *leftImg, SDL_Surface *rightImg) {
 	// make sure the animation is valid
-	if (m_Animations.find(id)==m_Animations.end()) {
+	if (!getAnimation(id)) {
 		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");
 		return true;
 	}
 	
-	Animation &anim=m_Animations[id];
+	Animation &anim=*getAnimation(id);
 	
 	// check for existance of sprites
 	Character *xt=m_Case->getCharacter("cross_examine_top");
@@ -933,12 +1001,12 @@ bool UI::Manager::animateCrossExamineSequence(const ustring &id,
 // animate a synchronized bounce animation
 bool UI::Manager::animateSyncBounce(const ustring &id) {
 	// get the animation
-	if (m_Animations.find(id)==m_Animations.end()) {
+	if (!getAnimation(id)) {
 		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");
 		return true;
 	}
 	
-	Animation &anim=m_Animations[id];
+	Animation &anim=*getAnimation(id);
 	
 	// see if its time to progress the animation
 	int now=SDL_GetTicks();
@@ -975,12 +1043,12 @@ bool UI::Manager::animateSyncBounce(const ustring &id) {
 // animate the green bar for cross examination attempts and other misc things
 bool UI::Manager::animateGreenBar(const ustring &id) {
 	// get the animation
-	if (m_Animations.find(id)==m_Animations.end()) {
+	if (!getAnimation(id)) {
 		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");
 		return true;
 	}
 	
-	Animation &anim=m_Animations[id];
+	Animation &anim=*getAnimation(id);
 	
 	// get the texture
 	SDL_Surface *texture=Textures::queryTexture(anim.texture);
@@ -1027,12 +1095,12 @@ bool UI::Manager::animateGreenBar(const ustring &id) {
 // perform an exclamation animation
 bool UI::Manager::exclamation(const ustring &id, const Character *source) {
 	// get the animation
-	if (m_Animations.find(id)==m_Animations.end()) {
+	if (!getAnimation(id)) {
 		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");
 		return true;
 	}
 	
-	Animation &anim=m_Animations[id];
+	Animation &anim=*getAnimation(id);
 	
 	// get the texture
 	SDL_Surface *texture=Textures::queryTexture(anim.texture);
@@ -1072,12 +1140,12 @@ bool UI::Manager::exclamation(const ustring &id, const Character *source) {
 // slide a background down
 bool UI::Manager::slideBG(const ustring &id, SDL_Surface *bg) {
 	// get the animation
-	if (m_Animations.find(id)==m_Animations.end()) {
+	if (!getAnimation(id)) {
 		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");
 		return true;
 	}
 	
-	Animation &anim=m_Animations[id];
+	Animation &anim=*getAnimation(id);
 	
 	int y=anim.current.y();
 	if (y!=192) {
@@ -1104,12 +1172,12 @@ bool UI::Manager::slideBG(const ustring &id, SDL_Surface *bg) {
 // animate a gui button
 bool UI::Manager::animateGUIButton(const ustring &id) {
 	// get the animation
-	if (m_Animations.find(id)==m_Animations.end()) {
+	if (!getAnimation(id)) {
 		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");
 		return true;
 	}
 	
-	Animation &anim=m_Animations[id];
+	Animation &anim=*getAnimation(id);
 	
 	// if velocity is 1, then the button was clicked
 	if (anim.velocity==1) {

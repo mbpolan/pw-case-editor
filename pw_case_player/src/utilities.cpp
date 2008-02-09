@@ -30,6 +30,7 @@
 #include <shellapi.h>
 #endif
 
+#include "font.h"
 #include "utilities.h"
 
 namespace Utils {
@@ -121,7 +122,6 @@ void Utils::FS::removeDir(const ustring &path) {
 		// perform this file operation
 		SHFileOperation(&op);
 		delete [] from;
-				
 #endif
 	}
 }
@@ -186,6 +186,17 @@ void Utils::scriptToLimits(const ustring &str, UI::Limit &start, UI::Limit &end)
 			start=limit;
 		else
 			end=limit;
+	}
+}
+
+// map a char representing a text color to the actual color
+Color Utils::keyToColor(char ch) {
+	switch(ch) {
+		default:
+		case 'w': return Fonts::COLOR_WHITE; break;
+		case 'c': return Fonts::COLOR_BLUE; break;
+		case 'g': return Fonts::COLOR_GREEN; break;
+		case 'o': return Fonts::COLOR_ORANGE; break;
 	}
 }
 

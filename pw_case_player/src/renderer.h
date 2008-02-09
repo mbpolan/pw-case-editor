@@ -31,6 +31,9 @@
 
 namespace Renderer {
 
+// draw a colored rectangle to the video surface
+void drawRect(const Rect &rect, const Color &color);
+
 // draw a colored rectangle
 void drawRect(SDL_Surface *surface, const Point &p, int w, int h, const Color &color);
 
@@ -61,21 +64,24 @@ SDL_Surface* generateCourtPanorama(Case::Case *pcase, const ustring &prosecutor,
 				   const ustring &attorney, const ustring &witness);
 
 // draw the initial game screen
-void drawInitialScreen(UI::Manager *ui);
+void drawInitialScreen();
 
 // draw the evidence page
 // page should be based on index 0, and selected should be an index between 0 and 7
 void drawEvidencePage(const std::vector<Case::Evidence*> &evidence, int page, int selected);
 
 // draw evidence information page
-void drawEvidenceInfoPage(Case::Evidence *evidence);
+void drawEvidenceInfoPage(const Case::Evidence *evidence);
 
 // draw the profiles page
 // page should be based on index 0, and selected should be an index between 0 and 7
 void drawProfilesPage(const std::vector<Character*> &uchars, int page, int selected);
 
 // draw profile information page
-void drawProfileInfoPage(Character *character);
+void drawProfileInfoPage(const Character *character);
+
+// draw the strip containing evidence or profile
+Point drawInfoStrip(const Point &p, SDL_Surface *image, const ustring &name, const ustring &caption, const ustring &desc, bool description);
 
 // draw the examination scene
 void drawExamineScene(SDL_Surface *bg, const Point &cursor, bool slideBG=true);

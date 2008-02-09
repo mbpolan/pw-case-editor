@@ -79,7 +79,7 @@ SDL_Surface* Textures::createTexture(const ustring &id, const ustring &str) {
 		SDL_SetColorKey(surface, SDL_SRCCOLORKEY, SDL_MapRGB(SDL_GetVideoSurface()->format, 0, 255, 0));
 		
 		// add this texture to the map
-		if (id=="null") {
+		if (id==STR_NULL) {
 			// use next available name
 			std::stringstream ss;
 			ss << "UNKNOWN_TEXTURE_" << g_TextureMap.size()+20;
@@ -128,7 +128,7 @@ SDL_Surface* Textures::createTexture(const ustring &id, const Textures::Texture 
 	SDL_SetColorKey(surface, SDL_SRCCOLORKEY, SDL_MapRGB(surface->format, 0, 255, 0));
 	
 	// add this texture to the map
-	if (id=="null") {
+	if (id==STR_NULL) {
 		// use next available id
 		std::stringstream ss;
 		ss << "UNKNOWN_TEXTURE_" << g_TextureMap.size()+20;

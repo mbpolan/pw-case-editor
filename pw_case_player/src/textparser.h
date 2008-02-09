@@ -24,14 +24,19 @@
 
 #include <iostream>
 #include <queue>
+#include <map>
+
+#include "common.h"
 
 class Game;
+class ValueRange;
 
 // struct that stores the current font style
 struct _FontStyle {
 	ustring type; // built-in types: date, etc
 	Color color;
 	int speed;
+	ColorRangeVector colors;
 };
 typedef struct _FontStyle FontStyle;
 
@@ -113,7 +118,7 @@ class TextParser {
 		// execute a trigger
 		ustring doTrigger(const ustring &trigger, const ustring &command);
 		
-		// current block
+		// current and next blocks
 		ustring m_Block;
 		ustring m_NextBlock;
 		

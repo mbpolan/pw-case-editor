@@ -178,6 +178,15 @@ int Fonts::drawString(const Point &p, const ustring &str, int size, const Color 
 
 // draw a string with clamped restrictions
 int Fonts::drawString(const Point &p, int limit, int rightClamp, const ustring &str, int size, const Color &color) {
+	ColorRangeVector vec;
+	vec.push_back(std::make_pair<ValueRange, Color> (ValueRange(0, 256), color));
+	
+	// draw the string using just this color
+	drawStringMulticolor(p, limit, rightClamp, str, size, vec);
+}
+
+// draw a multicolor string
+int Fonts::drawStringMulticolor(const Point &p, int limit, int rightClamp, const ustring &str, int size, const ColorRangeVector &vec) {
 	// also, make sure the default video surface exists
 	SDL_Surface *screen=SDL_GetVideoSurface();
 	
@@ -260,26 +269,22 @@ int Fonts::drawString(const Point &p, int limit, int rightClamp, const ustring &
 			drect.x=p.x();
 			drect.y+=SIZE_LINE_BREAK;
 			
-			// modify the y coordinate
-			SDL_Rect r={ drect.x, drect.y };
-			r.y=glyphBase(drect.y, ch, size);
-			
-			// blit the character that was supposed to be here
-			SDL_Surface *glyph=renderGlyph(ch, size, color, QUALITY_SOLID);
-			SDL_BlitSurface(glyph, NULL, screen, &r);
-			SDL_FreeSurface(glyph);
-			
-			// move to next one
-			drect.x+=getGlyphWidth(ch, size)+SIZE_CHAR_SPACE;
-			
 			breakCount++;
-			continue;
 		}
 		
 		// draw the glyph
 		// modify the y coordinate
 		SDL_Rect r={ drect.x, drect.y };
 		r.y=glyphBase(drect.y, ch, size);
+		
+		// see if we should apply a color to this glyph
+		Color color=COLOR_WHITE;
+		for (int c=0; c<vec.size(); c++) {
+			if (vec[c].first.inRange(i)) {
+				color=vec[c].second;
+				break;
+			}
+		}
 		
 		SDL_Surface *glyph=renderGlyph(ch, size, color, QUALITY_SOLID);
 		SDL_BlitSurface(glyph, NULL, screen, &r);
