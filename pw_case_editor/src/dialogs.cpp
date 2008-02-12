@@ -33,6 +33,118 @@
 #include "testimonyeditor.h"
 
 // constructor
+ChangeSpeedDialog::ChangeSpeedDialog() {
+	construct();
+}
+
+// get the text speed
+Glib::ustring ChangeSpeedDialog::get_text_speed() {
+	Glib::ustring str;
+	if (m_Scale->get_value()<0)
+		str="-";
+	else
+		str="+";
+	
+	std::stringstream ss;
+	ss << (int) abs(m_Scale->get_value());
+	str+=ss.str();
+	
+	return str;
+}
+
+// build the ui
+void ChangeSpeedDialog::construct() {
+	// allocate table
+	Gtk::Table *table=manage(new Gtk::Table);
+	
+	// allocate labels
+	m_SlowerLabel=manage(new Gtk::Label("Slower"));
+	m_FasterLabel=manage(new Gtk::Label("Faster"));
+	
+	// allocate slider
+	Gtk::Adjustment *adj=manage(new Gtk::Adjustment(0, -9, 9, 1, 1, 1));
+	m_Scale=manage(new Gtk::HScale(*adj));
+	
+	// place widgets
+	table->attach(*m_SlowerLabel, 0, 1, 0, 1);
+	table->attach(*m_FasterLabel, 1, 2, 0, 1);
+	table->attach(*m_Scale, 0, 2, 1, 2);
+	
+	get_vbox()->pack_start(*table, Gtk::PACK_SHRINK);
+	
+	m_OKButton=add_button("OK", Gtk::RESPONSE_OK);
+	add_button("Cancel", Gtk::RESPONSE_CANCEL);
+	
+	m_OKButton->set_sensitive(false);
+	
+	// connect signals
+	m_Scale->signal_value_changed().connect(sigc::mem_fun(*this, &ChangeSpeedDialog::on_value_changed));
+	
+	show_all_children();
+}
+
+// handler for value changes in slider
+void ChangeSpeedDialog::on_value_changed() {
+	m_OKButton->set_sensitive(m_Scale->get_value()!=0);
+}
+
+/***************************************************************************/
+
+// constructor
+ChangeColorDialog::ChangeColorDialog() {
+	construct();
+}
+
+// get the selected color
+Glib::ustring ChangeColorDialog::get_color() {
+	if (m_BlueButton->get_active())
+		return "b";
+	else if (m_GreenButton->get_active())
+		return "g";
+	else if (m_OrangeButton->get_active())
+		return "o";
+	else if (m_WhiteButton->get_active())
+		return "w";
+}
+
+// build the ui
+void ChangeColorDialog::construct() {
+	// allocate layout vbox
+	Gtk::VBox *vb=manage(new Gtk::VBox);
+	vb->set_spacing(5);
+	
+	// allocate buttons
+	m_BlueButton=manage(new Gtk::RadioButton(m_Group));
+	m_GreenButton=manage(new Gtk::RadioButton(m_Group));
+	m_OrangeButton=manage(new Gtk::RadioButton(m_Group));
+	m_WhiteButton=manage(new Gtk::RadioButton(m_Group));
+	
+	// place the color widgets
+	m_BlueButton->add(*manage(new ColorWidget(107, 198, 247)));
+	m_GreenButton->add(*manage(new ColorWidget(0, 247, 0)));
+	m_OrangeButton->add(*manage(new ColorWidget("orange")));
+	m_WhiteButton->add(*manage(new ColorWidget(255, 255, 255)));
+	
+	// set white by default
+	m_WhiteButton->set_active(true);
+	
+	// place the buttons
+	vb->pack_start(*m_BlueButton, Gtk::PACK_SHRINK);
+	vb->pack_start(*m_GreenButton, Gtk::PACK_SHRINK);
+	vb->pack_start(*m_OrangeButton, Gtk::PACK_SHRINK);
+	vb->pack_start(*m_WhiteButton, Gtk::PACK_SHRINK);
+	
+	get_vbox()->pack_start(*vb, Gtk::PACK_SHRINK);
+	
+	add_button("OK", Gtk::RESPONSE_OK);
+	add_button("Cancel", Gtk::RESPONSE_CANCEL);
+	
+	show_all_children();
+}
+
+/***************************************************************************/
+
+// constructor
 ProgressDialog::ProgressDialog(const Glib::ustring &label) {
 	construct();
 	

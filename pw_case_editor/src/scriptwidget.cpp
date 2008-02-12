@@ -127,8 +127,8 @@ void ScriptWidget::set_trial_notebook_list(int index) {
 	on_combo_box_changed();
 }
 
-// insert a trigger at the cursor
-void ScriptWidget::insert_trigger_at_cursor(const Glib::ustring &str) {
+// insert text at the cursor
+void ScriptWidget::insert_text_at_cursor(const Glib::ustring &str) {
 	if (m_TextView->get_buffer())
 		m_TextView->get_buffer()->insert_at_cursor(str);
 }

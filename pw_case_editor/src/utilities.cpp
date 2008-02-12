@@ -73,7 +73,7 @@ void Utils::FS::make_dir(const Glib::ustring &path) {
 	if (!dir_exists(path)) {
 		
 #ifndef __WIN32__
-		ustring cmd="mkdir ";
+		Glib::ustring cmd="mkdir ";
 		cmd+=path;
 		system(cmd.c_str());
 #else

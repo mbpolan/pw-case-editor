@@ -32,14 +32,71 @@
 #include <gtkmm/listviewtext.h>
 #include <gtkmm/notebook.h>
 #include <gtkmm/progressbar.h>
+#include <gtkmm/scale.h>
 #include <gtkmm/scrolledwindow.h>
 #include <gtkmm/textbuffer.h>
 #include <gtkmm/textview.h>
+#include <gtkmm/togglebutton.h>
 
 #include "case.h"
 #include "casecombobox.h"
 #include "character.h"
+#include "colorwidget.h"
 #include "hotspotwidget.h"
+
+// dialog to let the user change text speed
+class ChangeSpeedDialog: public Gtk::Dialog {
+	public:
+		// constructor
+		ChangeSpeedDialog();
+		
+		// get the text speed
+		Glib::ustring get_text_speed();
+		
+	private:
+		// build the ui
+		void construct();
+		
+		// handler for value changes in slider
+		void on_value_changed();
+		
+		// buttons
+		Gtk::Button *m_OKButton;
+		
+		// labels
+		Gtk::Label *m_SlowerLabel;
+		Gtk::Label *m_FasterLabel;
+		
+		// scale for selecting value
+		Gtk::HScale *m_Scale;
+};
+
+/***************************************************************************/
+
+// dialog to let the user change the dialogue text color
+class ChangeColorDialog: public Gtk::Dialog {
+	public:
+		// constructor
+		ChangeColorDialog();
+		
+		// get the selected color
+		Glib::ustring get_color();
+		
+	private:
+		// build the ui
+		void construct();
+		
+		// buttons containing colors
+		Gtk::RadioButton *m_BlueButton;
+		Gtk::RadioButton *m_GreenButton;
+		Gtk::RadioButton *m_OrangeButton;
+		Gtk::RadioButton *m_WhiteButton;
+		
+		// radio buttons
+		Gtk::RadioButtonGroup m_Group;
+};
+
+/***************************************************************************/
 
 // dialog to display progress of a task
 class ProgressDialog: public Gtk::Dialog {

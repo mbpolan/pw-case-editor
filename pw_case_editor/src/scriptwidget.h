@@ -65,8 +65,8 @@ class ScriptWidget: public Gtk::VBox {
 		// set a list in a notebook tab
 		void set_trial_notebook_list(int index);
 		
-		// insert a trigger at the cursor
-		void insert_trigger_at_cursor(const Glib::ustring &str);
+		// insert text at the cursor
+		void insert_text_at_cursor(const Glib::ustring &str);
 		
 		// return buffers used in internal list
 		BufferMap get_buffers() const;

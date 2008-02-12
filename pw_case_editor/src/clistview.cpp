@@ -44,7 +44,7 @@ void on_buffer_changed(Glib::RefPtr<Gtk::TextBuffer> buffer) {
 			end--;
 			
 			// dialogue control
-			if ((*end)=='b' || (*end)=='n' || (*end)=='+' || (*end)=='-' || (*end)=='=') {
+			if ((*end)=='b' || (*end)=='n' || (*end)=='+' || (*end)=='-' || (*end)=='=' || (*end)=='*') {
 				// extend one more character
 				if ((*end)=='+' || (*end)=='-')
 					end++;

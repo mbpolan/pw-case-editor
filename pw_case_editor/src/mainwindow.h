@@ -99,6 +99,12 @@ class MainWindow: public Gtk::Window {
 		// insert a trigger into block
 		void on_script_insert_trigger(const Glib::ustring &trigger);
 		
+		// change the text color
+		void on_script_change_text_color();
+		
+		// change text speed
+		void on_script_change_text_speed();
+		
 		// add character
 		void on_case_add_char();
 		

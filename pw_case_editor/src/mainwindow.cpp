@@ -104,6 +104,10 @@ void MainWindow::construct() {
 	
 	m_ActionGroup->add(Gtk::Action::create("ScriptInsertDialogue", AppStock::INSERT_DIALOGUE, "_Insert Dialogue"),
 			   sigc::mem_fun(*this, &MainWindow::on_script_insert_dialogue));
+	m_ActionGroup->add(Gtk::Action::create("ScriptChangeColor", Gtk::Stock::SELECT_COLOR, "_Change Text Color"),
+			   sigc::mem_fun(*this, &MainWindow::on_script_change_text_color));
+	m_ActionGroup->add(Gtk::Action::create("ScriptChangeSpeed", Gtk::Stock::ITALIC, "_Change Text Speed"),
+			   sigc::mem_fun(*this, &MainWindow::on_script_change_text_speed));
 	
 	m_ActionGroup->add(Gtk::Action::create("CaseAddChar", AppStock::ADD_CHARACTER, "_Add Character"),
 			   sigc::mem_fun(*this, &MainWindow::on_case_add_char));
@@ -174,6 +178,9 @@ void MainWindow::construct() {
 			"	</menu>"
 			"	<menu action='ScriptMenu'>"
 			"		<menuitem action='ScriptInsertDialogue'/>"
+			"		<separator/>"
+			"		<menuitem action='ScriptChangeColor'/>"
+			"		<menuitem action='ScriptChangeSpeed'/>"
 			"	</menu>"
 			"	<menu action='CaseMenu'>"
 			"		<menuitem action='CaseAddChar'/>"
@@ -289,6 +296,19 @@ void MainWindow::construct() {
 		
 		// append script buttons
 		standardTB->append(*insertDiagButton, sigc::mem_fun(*this, &MainWindow::on_script_insert_dialogue));
+		
+		// allocate separator between script buttons and color buttons
+		standardTB->append(*Gtk::manage(new Gtk::SeparatorToolItem));
+		
+		// allocate color button
+		Gtk::ToolButton *colorButton=Gtk::manage(new Gtk::ToolButton(*Gtk::manage(new Gtk::Image(Gtk::Stock::SELECT_COLOR,
+				Gtk::ICON_SIZE_LARGE_TOOLBAR))));
+		standardTB->append(*colorButton, sigc::mem_fun(*this, &MainWindow::on_script_change_text_color));
+		
+		// allocate speed button
+		Gtk::ToolButton *speedButton=Gtk::manage(new Gtk::ToolButton(*Gtk::manage(new Gtk::Image(Gtk::Stock::ITALIC,
+				Gtk::ICON_SIZE_LARGE_TOOLBAR))));
+		standardTB->append(*speedButton, sigc::mem_fun(*this, &MainWindow::on_script_change_text_speed));
 		
 		vb->pack_start(*Gtk::manage(standardTB), Gtk::PACK_SHRINK);
 	}
@@ -912,7 +932,7 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 			}
 			
 			// finally, insert it
-			m_ScriptWidget->insert_trigger_at_cursor(trig);
+			m_ScriptWidget->insert_text_at_cursor(trig);
 		}
 	}
 	
@@ -932,7 +952,7 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 			trig+=data.id;
 			trig+=";*}";
 			
-			m_ScriptWidget->insert_trigger_at_cursor(trig);
+			m_ScriptWidget->insert_text_at_cursor(trig);
 		}
 	}
 	
@@ -957,7 +977,7 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 			
 			trig+=";*}";
 			
-			m_ScriptWidget->insert_trigger_at_cursor(trig);
+			m_ScriptWidget->insert_text_at_cursor(trig);
 		}
 	}
 	
@@ -974,7 +994,7 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 			
 			trig+=";*}";
 			
-			m_ScriptWidget->insert_trigger_at_cursor(trig);
+			m_ScriptWidget->insert_text_at_cursor(trig);
 		}
 	}
 	
@@ -989,7 +1009,7 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 			trig+=diag.get_location();
 			trig+=";*}";
 			
-			m_ScriptWidget->insert_trigger_at_cursor(trig);
+			m_ScriptWidget->insert_text_at_cursor(trig);
 		}
 	}
 	
@@ -1014,7 +1034,7 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 			trig+=p.second;
 			trig+=";*}";
 			
-			m_ScriptWidget->insert_trigger_at_cursor(trig);
+			m_ScriptWidget->insert_text_at_cursor(trig);
 		}
 	}
 	
@@ -1043,7 +1063,7 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 			trig+=p.second;
 			trig+=";*}";
 			
-			m_ScriptWidget->insert_trigger_at_cursor(trig);
+			m_ScriptWidget->insert_text_at_cursor(trig);
 		}
 	}
 	
@@ -1064,7 +1084,7 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 			trig+=p.second;
 			trig+=";*}";
 			
-			m_ScriptWidget->insert_trigger_at_cursor(trig);
+			m_ScriptWidget->insert_text_at_cursor(trig);
 		}
 	}
 	
@@ -1085,7 +1105,7 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 			trig+=p.second;
 			trig+=";*}";
 			
-			m_ScriptWidget->insert_trigger_at_cursor(trig);
+			m_ScriptWidget->insert_text_at_cursor(trig);
 		}
 	}
 	
@@ -1108,7 +1128,7 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 			trig+=t.third;
 			trig+=";*}";
 			
-			m_ScriptWidget->insert_trigger_at_cursor(trig);
+			m_ScriptWidget->insert_text_at_cursor(trig);
 		}
 	}
 	
@@ -1129,7 +1149,7 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 			trig+=p.second;
 			trig+=";*}";
 			
-			m_ScriptWidget->insert_trigger_at_cursor(trig);
+			m_ScriptWidget->insert_text_at_cursor(trig);
 		}
 	}
 	
@@ -1147,7 +1167,7 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 			trig+=diag.get_character();
 			trig+=";*}";
 			
-			m_ScriptWidget->insert_trigger_at_cursor(trig);
+			m_ScriptWidget->insert_text_at_cursor(trig);
 		}
 	}
 	
@@ -1170,7 +1190,7 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 			trig+=t.third;
 			trig+=";*}";
 			
-			m_ScriptWidget->insert_trigger_at_cursor(trig);
+			m_ScriptWidget->insert_text_at_cursor(trig);
 		}
 	}
 	
@@ -1191,7 +1211,7 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 			trig+=p.second;
 			trig+=";*}";
 			
-			m_ScriptWidget->insert_trigger_at_cursor(trig);
+			m_ScriptWidget->insert_text_at_cursor(trig);
 		}
 	}
 	
@@ -1212,7 +1232,7 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 			trig+=p.second;
 			trig+=";*}";
 			
-			m_ScriptWidget->insert_trigger_at_cursor(trig);
+			m_ScriptWidget->insert_text_at_cursor(trig);
 		}
 	}
 	
@@ -1233,7 +1253,7 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 			trig+=p.second;
 			trig+=";*}";
 			
-			m_ScriptWidget->insert_trigger_at_cursor(trig);
+			m_ScriptWidget->insert_text_at_cursor(trig);
 		}
 	}
 	
@@ -1249,7 +1269,7 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 			trig+=diag.get_location();
 			trig+=";*}";
 			
-			m_ScriptWidget->insert_trigger_at_cursor(trig);
+			m_ScriptWidget->insert_text_at_cursor(trig);
 		}
 	}
 	
@@ -1265,7 +1285,7 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 			trig+=diag.get_speaker();
 			trig+=";*}";
 			
-			m_ScriptWidget->insert_trigger_at_cursor(trig);
+			m_ScriptWidget->insert_text_at_cursor(trig);
 		}
 	}
 	
@@ -1281,13 +1301,13 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 			trig+=diag.get_audio();
 			trig+=";*}";
 			
-			m_ScriptWidget->insert_trigger_at_cursor(trig);
+			m_ScriptWidget->insert_text_at_cursor(trig);
 		}
 	}
 	
 	// halt_music trigger
 	else if (trigger=="halt_music")
-		m_ScriptWidget->insert_trigger_at_cursor("{*halt_music:true;*}");
+		m_ScriptWidget->insert_text_at_cursor("{*halt_music:true;*}");
 	
 	// request evidence trigger
 	else if (trigger=="request_evidence") {
@@ -1308,7 +1328,7 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 			trig+=t.third;
 			trig+=";*}";
 			
-			m_ScriptWidget->insert_trigger_at_cursor(trig);
+			m_ScriptWidget->insert_text_at_cursor(trig);
 		}
 	}
 	
@@ -1334,7 +1354,7 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 			
 			trig+=";*}";
 			
-			m_ScriptWidget->insert_trigger_at_cursor(trig);
+			m_ScriptWidget->insert_text_at_cursor(trig);
 		}
 	}
 	
@@ -1351,7 +1371,7 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 			trig+=p.second;
 			trig+=";*}";
 			
-			m_ScriptWidget->insert_trigger_at_cursor(trig);
+			m_ScriptWidget->insert_text_at_cursor(trig);
 		}
 	}
 	
@@ -1363,13 +1383,13 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 			trig+=diag.get_selection();
 			trig+=";*}";
 			
-			m_ScriptWidget->insert_trigger_at_cursor(trig);
+			m_ScriptWidget->insert_text_at_cursor(trig);
 		}
 	}
 	
 	// flash
 	else if (trigger=="flash")
-		m_ScriptWidget->insert_trigger_at_cursor("{*flash:top;*}");
+		m_ScriptWidget->insert_text_at_cursor("{*flash:top;*}");
 	
 	// set an image for court overview
 	else if (trigger=="set_court_overview_image") {
@@ -1388,7 +1408,7 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 			trig+=p.second;
 			trig+=";*}";
 			
-			m_ScriptWidget->insert_trigger_at_cursor(trig);
+			m_ScriptWidget->insert_text_at_cursor(trig);
 		}
 	}
 	
@@ -1404,13 +1424,13 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 			trig+=diag.get_image();
 			trig+=";*}";
 			
-			m_ScriptWidget->insert_trigger_at_cursor(trig);
+			m_ScriptWidget->insert_text_at_cursor(trig);
 		}
 	}
 	
 	// hide temporary image
 	else if (trigger=="hide_temp_image")
-		m_ScriptWidget->insert_trigger_at_cursor("{*hide_temp_image:true;*}");
+		m_ScriptWidget->insert_text_at_cursor("{*hide_temp_image:true;*}");
 	
 	// display a testimony
 	else if (trigger=="display_testimony") {
@@ -1424,8 +1444,28 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 			trig+=diag.get_testimony();
 			trig+=";*}";
 			
-			m_ScriptWidget->insert_trigger_at_cursor(trig);
+			m_ScriptWidget->insert_text_at_cursor(trig);
 		}
+	}
+}
+
+// change the text color
+void MainWindow::on_script_change_text_color() {
+	// display the change color dialog
+	ChangeColorDialog diag;
+	if (diag.run()==Gtk::RESPONSE_OK) {
+		// get the color and add it to the buffer
+		m_ScriptWidget->insert_text_at_cursor("\\"+diag.get_color());
+	}
+}
+
+// change text speed
+void MainWindow::on_script_change_text_speed() {
+	// display the dialog
+	ChangeSpeedDialog diag;
+	if (diag.run()==Gtk::RESPONSE_OK) {
+		// get the speed and add it to the buffer
+		m_ScriptWidget->insert_text_at_cursor("\\"+diag.get_text_speed());
 	}
 }
 
