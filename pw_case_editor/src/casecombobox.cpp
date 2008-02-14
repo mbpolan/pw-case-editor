@@ -56,7 +56,7 @@ Glib::ustring CharComboBox::get_selected_internal() const {
 
 // get the selected character
 Character* CharComboBox::get_selected_character() {
-	return &(m_Characters[get_selected_internal()]);
+	return &(m_Characters[get_selected_name()]);
 }
 
 /***************************************************************************/

@@ -34,6 +34,7 @@
 
 // constructor
 ChangeSpeedDialog::ChangeSpeedDialog() {
+	set_title("Change Text Speed");
 	construct();
 }
 
@@ -92,6 +93,7 @@ void ChangeSpeedDialog::on_value_changed() {
 
 // constructor
 ChangeColorDialog::ChangeColorDialog() {
+	set_title("Change Text Color");
 	construct();
 }
 
@@ -146,6 +148,7 @@ void ChangeColorDialog::construct() {
 
 // constructor
 ProgressDialog::ProgressDialog(const Glib::ustring &label) {
+	set_title("Progress");
 	construct();
 	
 	m_Label->set_text(label);
@@ -185,6 +188,7 @@ void ProgressDialog::construct() {
 
 // constructor
 TestimonyManager::TestimonyManager(const TestimonyMap &tmap, const StringVector &testimonyIds) {
+	set_title("Manage Testimonies");
 	construct();
 	
 	// store record of testimonies
@@ -365,6 +369,7 @@ void TestimonyManager::on_selection_changed() {
 
 // constructor
 ImageDialog::ImageDialog(const ImageMap &imap, const StringVector &imgIds) {
+	set_title("Image Assets");
 	construct();
 	
 	// copy ids and map
@@ -507,6 +512,7 @@ void ImageDialog::on_selection_changed() {
 
 // constructor
 NewHotspotDialog::NewHotspotDialog() {
+	set_title("Location Hotspot");
 	construct();
 }
 
@@ -634,6 +640,7 @@ void NewHotspotDialog::on_dimension_entry_changed() {
 
 // constructor
 LocationsDialog::LocationsDialog(const LocationMap &locations, const BackgroundMap &bgs, const StringVector &usedIds) {
+	set_title("Locations");
 	set_size_request(500, 400);
 	construct();
 	
@@ -910,6 +917,7 @@ void LocationsDialog::on_selection_changed() {
 
 // constructor
 SpriteChooserDialog::SpriteChooserDialog() {
+	set_title("Sprite Editor");
 	construct();
 }
 
@@ -1054,6 +1062,7 @@ void SpriteChooserDialog::on_from_gifs_toggled() {
 
 // constructor
 TextInputDialog::TextInputDialog(const Glib::ustring &label, const Glib::ustring &defaultValue) {
+	set_title("Input Text");
 	construct(label, defaultValue);
 }
 
@@ -1090,6 +1099,7 @@ void TextInputDialog::construct(const Glib::ustring &label, const Glib::ustring 
 
 // constructor
 AudioDialog::AudioDialog() {
+	set_title("Audio Assets");
 	set_size_request(250, 300);
 	
 	construct();
@@ -1214,6 +1224,7 @@ void AudioDialog::on_remove_audio() {
 
 // constructor
 NewEvidenceDialog::NewEvidenceDialog(const StringVector &ids) {
+	set_title("Add Evidence");
 	construct();
 	
 	m_UsedIds=ids;
@@ -1317,6 +1328,7 @@ void NewEvidenceDialog::on_browse_button_clicked() {
 EvidenceDialog::EvidenceDialog(const EvidenceMap &evidence,
 			       const ImageMap &images,
 			       const StringVector &evidenceIds) {
+	set_title("Evidence Assets");
 	construct(images);
 	
 	// copy data
@@ -1545,6 +1557,7 @@ void EvidenceDialog::on_selection_changed() {
 // constructor
 BackgroundsDialog::BackgroundsDialog(const BackgroundMap &bgs,
 				     const StringVector &bgIds) {
+	set_title("Background Assets");
 	construct();
 	
 	// copy data
@@ -1685,6 +1698,7 @@ void BackgroundsDialog::on_selection_changed() {
 
 // constructor
 NewBackgroundDialog::NewBackgroundDialog(const StringVector &bgIds) {
+	set_title("Add Background");
 	construct();
 	m_UsedBGs=bgIds;
 }
@@ -1798,6 +1812,7 @@ void NewBackgroundDialog::on_id_changed() {
 
 // constructor
 NewDialog::NewDialog() {
+	set_title("New Case");
 	construct();
 }
 
@@ -1884,6 +1899,7 @@ void NewDialog::construct() {
 
 // constructor
 CharBrowser::CharBrowser(const CharacterMap &cmap) {
+	set_title("Browse Characters");
 	construct();
 	
 	// set values
@@ -1998,6 +2014,7 @@ void CharBrowser::on_combo_box_changed() {
 
 // constructor
 NewCharDialog::NewCharDialog(const StringVector &names) {
+	set_title("Character Manager");
 	m_UsedNames=names;
 	m_CheckInternals=true;
 	construct();
@@ -2323,6 +2340,8 @@ Gtk::Container* NewCharDialog::build_graphics_page() {
 
 // constructor
 InitialBlockDialog::InitialBlockDialog(const Glib::ustring &id, BufferMap blocks) {
+	set_title("Initial Text Block");
+	
 	// iterate over blocks and remove the list ids
 	for (BufferMap::iterator it=blocks.begin(); it!=blocks.end(); ++it) {
 		// remove list id
@@ -2351,7 +2370,7 @@ void InitialBlockDialog::construct() {
 	table->set_spacings(5);
 	
 	// allocate labels
-	m_BlockLabel=Gtk::manage(new Gtk::Label("Initial block to execute:"));
+	m_BlockLabel=Gtk::manage(new Gtk::Label("Initial block to execute"));
 	m_PreviewLabel=Gtk::manage(new Gtk::Label("Text Block Preview"));
 	
 	// allocate combo box

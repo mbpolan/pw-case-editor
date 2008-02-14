@@ -436,6 +436,10 @@ void MainWindow::create_trigger_submenu(Gtk::Menu *menu) {
 	list.push_back(Gtk::Menu_Helpers::MenuElem("Add Talk Option", 
 		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "add_talk_option")));
 	
+	list.push_back(Gtk::Menu_Helpers::MenuElem("Change Evidence Data", 
+		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "change_evidence_*")));
+	list.push_back(Gtk::Menu_Helpers::MenuElem("Change Profile Data", 
+		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "change_character_*")));
 	list.push_back(Gtk::Menu_Helpers::MenuElem("Clear Location Music", 
 		       sigc::bind(sigc::mem_fun(*this, &MainWindow::on_script_insert_trigger), "clear_location_music")));
 	list.push_back(Gtk::Menu_Helpers::MenuElem("Clear Presentables", 
@@ -944,8 +948,10 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 			
 			Glib::ustring trig="{*add_";
 			
-			if (data.type==AddCourtRecDialog::TYPE_ADD_EVIDENCE)
-				trig+="evidence:";
+			if (data.type==AddCourtRecDialog::TYPE_ADD_EVIDENCE_SILENT)
+				trig+="evidence_silent:";
+			else if (data.type==AddCourtRecDialog::TYPE_ADD_EVIDENCE_ANIMATED)
+				trig+="evidence_animated:";
 			else
 				trig+="profile:";
 			
@@ -1446,6 +1452,78 @@ void MainWindow::on_script_insert_trigger(const Glib::ustring &trigger) {
 			
 			m_ScriptWidget->insert_text_at_cursor(trig);
 		}
+	}
+	
+	// change profile data
+	else if (trigger=="change_character_*" || trigger=="change_evidence_*") {
+		EditRecItemDialog *diag;
+		
+		Glib::ustring trig=(trigger=="change_character_*" ? "character" : "evidence");
+		if (trig=="character") {
+			if (!check_case_element("characters", 1))
+				return;
+			
+			diag=new EditRecItemDialog(m_Case.get_characters());
+		}
+		
+		else {
+			if (!check_case_element("evidence", 1))
+				return;
+			
+			diag=new EditRecItemDialog(m_Case.get_evidence());
+		}
+		
+		// run the dialog
+		
+		if (diag->run()==Gtk::RESPONSE_OK) {
+			EditRecItemDialog::Data data=diag->get_data();
+			
+			// change the character's name
+			if (data.name!="null") {
+				Glib::ustring str="{*change_"+trig+"_name:";
+				str+=data.id;
+				str+=",\"";
+				str+=data.name;
+				str+="\";*}";
+				
+				m_ScriptWidget->insert_text_at_cursor(str);
+			}
+			
+			// change the character's gender
+			if (data.gender!="null" && trig=="character") {
+				Glib::ustring str="{*change_character_gender:";
+				str+=data.id;
+				str+=",";
+				str+=data.gender;
+				str+=";*}";
+				
+				m_ScriptWidget->insert_text_at_cursor(str);
+			}
+			
+			// change the character's caption
+			if (data.caption!="null") {
+				Glib::ustring str="{*change_"+trig+"_caption:";
+				str+=data.id;
+				str+=",\"";
+				str+=data.caption;
+				str+="\";*}";
+				
+				m_ScriptWidget->insert_text_at_cursor(str);
+			}
+			
+			// change the character's description
+			if (data.desc!="null") {
+				Glib::ustring str="{*change_"+trig+"_desc:";
+				str+=data.id;
+				str+=",\"";
+				str+=data.desc;
+				str+="\";*}";
+				
+				m_ScriptWidget->insert_text_at_cursor(str);
+			}
+		}
+		
+		delete diag;
 	}
 }
 

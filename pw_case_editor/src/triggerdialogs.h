@@ -63,7 +63,7 @@ class AbstractDialog: public Gtk::Dialog {
 class AddCourtRecDialog: public AbstractDialog {
 	public:
 		// type of trigger
-		enum Type { TYPE_ADD_EVIDENCE, TYPE_ADD_PROFILE };
+		enum Type { TYPE_ADD_EVIDENCE_SILENT, TYPE_ADD_EVIDENCE_ANIMATED, TYPE_ADD_PROFILE };
 		
 		// data representing selection
 		struct _Data {
@@ -99,6 +99,9 @@ class AddCourtRecDialog: public AbstractDialog {
 		Gtk::Label *m_ProfileLabel;
 		Gtk::Label *m_EvidencePreviewLabel;
 		Gtk::Label *m_ProfilePreviewLabel;
+		
+		// check buttons
+		Gtk::CheckButton *m_EvidenceAnimCB;
 		
 		// combo boxes
 		EvidenceComboBox *m_EvidenceCB;
@@ -768,6 +771,75 @@ class DisplayTestimonyDialog: public AbstractDialog {
 		
 		// combo boxes
 		Gtk::ComboBoxText *m_TestimonyCB;
+};
+
+/***************************************************************************/
+
+// change_character[evidence]_* triggers
+class EditRecItemDialog: public AbstractDialog {
+	public:
+		// data for this dialog
+		struct _Data {
+			Glib::ustring id;
+			Glib::ustring name;
+			Glib::ustring gender;
+			Glib::ustring caption;
+			Glib::ustring desc;
+		};
+		typedef struct _Data Data;
+		
+		// dialog mode
+		enum Mode { MODE_EVIDENCE=0, MODE_CHARACTER };
+		
+		// constructor for character edit
+		EditRecItemDialog(const CharacterMap &chars);
+		
+		// constructor for evidence edit
+		EditRecItemDialog(const EvidenceMap &map);
+		
+		// get the updated character/evidence data
+		Data get_data() const;
+		
+	private:
+		// build the dialog with character map
+		void construct(const CharacterMap &chars);
+		
+		// build the dialog with evidence map
+		void construct(const EvidenceMap &evidence);
+		
+		// build the other portions of the dialog
+		void construct_internal();
+		
+		// combo box changed
+		void on_combo_box_changed();
+		
+		// check button toggle handler
+		void on_button_toggled(const Glib::ustring &button);
+		
+		// dialog mode
+		Mode m_Mode;
+		
+		// main layout table
+		Gtk::Table *m_Table;
+		
+		// labels
+		Gtk::Label *m_ItemLabel;
+		
+		// entries
+		Gtk::Entry *m_NameEntry;
+		Gtk::Entry *m_CaptionEntry;
+		Gtk::Entry *m_DescEntry;
+		
+		// combo boxes
+		CharComboBox *m_CharCB;
+		EvidenceComboBox *m_EvidenceCB;
+		Gtk::ComboBoxText *m_GenderCB;
+		
+		// check buttons
+		Gtk::CheckButton *m_NameCB;
+		Gtk::CheckButton *m_CGenderCB;
+		Gtk::CheckButton *m_CaptionCB;
+		Gtk::CheckButton *m_DescCB;
 };
 
 #endif

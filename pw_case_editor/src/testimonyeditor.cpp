@@ -31,6 +31,7 @@
 // constructor
 TestimonyEditor::TestimonyEditor(const CharacterMap &chars, const LocationMap &locations, 
 				 const BufferMap &buffers, const StringVector &testimonyIds) {
+	set_title("Testimony Editor");
 	construct(chars, locations, buffers);
 	
 	// add a default piece

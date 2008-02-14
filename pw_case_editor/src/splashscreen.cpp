@@ -28,6 +28,11 @@ using namespace Utils;
 
 // constructor
 SplashScreen::SplashScreen(const Glib::ustring &file) {
+	// really no need to give a splash screen dialog a title, but just in case
+	// the window manager doesn't hide the decorations as requested, the user will be
+	// left staring at an unnamed window for a few seconds
+	set_title("Phoenix Wright Case Editor");
+	
 	// ask to receive button presses
 	add_events(Gdk::BUTTON_PRESS_MASK);
 	

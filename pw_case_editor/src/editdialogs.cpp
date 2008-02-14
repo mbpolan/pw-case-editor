@@ -28,6 +28,7 @@
 
 // constructor
 FindDialog::FindDialog(const BufferMap &buffers): m_Buffers(buffers) {
+	set_title("Find in Blocks");
 	construct();
 	m_CurBlock="null";
 }

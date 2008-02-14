@@ -25,6 +25,7 @@
 
 // constructor
 TextBoxDialog::TextBoxDialog() {
+	set_title("Format Dialogue");
 	set_resizable(false);
 	
 	construct();

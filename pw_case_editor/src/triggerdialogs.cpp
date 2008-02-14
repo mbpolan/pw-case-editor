@@ -29,6 +29,8 @@
 
 // abstract dialog constructor
 AbstractDialog::AbstractDialog(const Glib::ustring &trigger) {
+	set_title("Insert Trigger");
+	
 	Gtk::VBox *vb=get_vbox();
 	vb->set_spacing(5);
 	vb->set_border_width(10);
@@ -64,13 +66,19 @@ AddCourtRecDialog::AddCourtRecDialog(const EvidenceMap &ev, const CharacterMap &
 AddCourtRecDialog::Data AddCourtRecDialog::get_data() const {
 	AddCourtRecDialog::Data data;
 	
-	data.type=(m_NB->get_current_page()==0 ? TYPE_ADD_EVIDENCE : TYPE_ADD_PROFILE);
-	
-	if (data.type==TYPE_ADD_EVIDENCE)
+	if (m_NB->get_current_page()==0) {
+		if (m_EvidenceAnimCB->get_active())
+			data.type=TYPE_ADD_EVIDENCE_ANIMATED;
+		else
+			data.type=TYPE_ADD_EVIDENCE_SILENT;
+		
 		data.id=m_EvidenceCB->get_selected_internal();
+	}
 	
-	else
+	else {
+		data.type==TYPE_ADD_PROFILE;
 		data.id=m_ProfileCB->get_selected_internal();
+	}
 	
 	return data;
 }
@@ -121,11 +129,16 @@ Gtk::Table* AddCourtRecDialog::build_evidence_page(const EvidenceMap &ev) {
 	m_EvidenceImage=Gtk::manage(new Gtk::Image);
 	m_EvidenceImage->set_size_request(70, 70);
 	
+	// allocate check button
+	m_EvidenceAnimCB=manage(new Gtk::CheckButton("Show Animation with Message"));
+	m_EvidenceAnimCB->set_active(false);
+	
 	// place widgets
 	table->attach(*m_EvidenceLabel, 0, 1, 0, 1);
 	table->attach(*m_EvidenceCB, 1, 2, 0, 1);
 	table->attach(*m_EvidencePreviewLabel, 0, 1, 1, 2);
 	table->attach(*m_EvidenceImage, 1, 2, 1, 2);
+	table->attach(*m_EvidenceAnimCB, 0, 2, 2, 3);
 	
 	return table;
 }
@@ -1403,4 +1416,198 @@ void DisplayTestimonyDialog::construct(const TestimonyMap &map) {
 	get_vbox()->pack_start(*hb, Gtk::PACK_SHRINK);
 	
 	show_all_children();
+}
+
+/***************************************************************************/
+
+// constructor
+EditRecItemDialog::EditRecItemDialog(const CharacterMap &chars): AbstractDialog("change_character_*") {
+	m_Mode=MODE_CHARACTER;
+	
+	construct(chars);
+}
+
+// constructor
+EditRecItemDialog::EditRecItemDialog(const EvidenceMap &evidence): AbstractDialog("change_evidence_*") {
+	m_Mode=MODE_EVIDENCE;
+	
+	construct(evidence);
+}
+
+// get the inputted data
+EditRecItemDialog::Data EditRecItemDialog::get_data() const {
+	Data data;
+	
+	data.name=(m_NameCB->get_active() ? m_NameEntry->get_text() : "null");
+	data.caption=(m_CaptionCB->get_active() ? m_CaptionEntry->get_text() : "null");
+	data.desc=(m_DescCB->get_active() ? m_DescEntry->get_text() : "null");
+	
+	if (m_Mode==MODE_CHARACTER) {
+		data.id=m_CharCB->get_selected_internal();
+		
+		if (m_CGenderCB->get_active()) {
+			// make sure to bring the string to lowercase
+			char *str=const_cast<char*> (m_GenderCB->get_active_text().c_str());
+			str[0]=tolower(str[0]);
+			data.gender=str;
+		}
+		else
+			data.gender="null";
+	}
+	
+	else
+		data.id=m_EvidenceCB->get_selected_internal();
+	
+	return data;
+}
+
+// build the dialog
+void EditRecItemDialog::construct(const CharacterMap &chars) {
+	// allocate labels
+	m_ItemLabel=manage(new Gtk::Label("Character"));
+	
+	// allocate combo boxes
+	m_CharCB=manage(new CharComboBox(chars));
+	m_GenderCB=manage(new Gtk::ComboBoxText);
+	
+	// allocate gender check button
+	m_CGenderCB=manage(new Gtk::CheckButton("Gender"));
+	
+	// append text to the combo box
+	m_GenderCB->append_text("Male");
+	m_GenderCB->append_text("Female");
+	m_GenderCB->append_text("Unknown");
+	m_GenderCB->set_active(0);
+	
+	construct_internal();
+}
+
+// build the dialog with evidence map
+void EditRecItemDialog::construct(const EvidenceMap &evidence) {
+	// allocate labels
+	m_ItemLabel=manage(new Gtk::Label("Evidence"));
+	
+	// allocate combo boxes
+	m_EvidenceCB=manage(new EvidenceComboBox(evidence));
+	
+	construct_internal();
+}
+
+// build the other portions of the dialog
+void EditRecItemDialog::construct_internal() {
+	// allocate table
+	Gtk::Table *m_Table=manage(new Gtk::Table);
+	m_Table->set_spacings(5);
+	
+	// allocate entries
+	m_NameEntry=manage(new Gtk::Entry);
+	m_CaptionEntry=manage(new Gtk::Entry);
+	m_DescEntry=manage(new Gtk::Entry);
+	
+	// allocate check buttons
+	m_NameCB=manage(new Gtk::CheckButton("Name"));
+	m_CaptionCB=manage(new Gtk::CheckButton("Caption"));
+	m_DescCB=manage(new Gtk::CheckButton("Description"));
+	
+	// keep proper alignment in case of missing widgets
+	int spacer=(m_Mode==MODE_EVIDENCE ? 1 : 0);
+	
+	// place widgets
+	m_Table->attach(*m_ItemLabel, 0, 1, 0, 1);
+	
+	// get a pointer to the right combo box
+	Gtk::Widget *cb;
+	if (m_Mode==MODE_CHARACTER)
+		cb=(Gtk::Widget*) m_CharCB;
+	else
+		cb=(Gtk::Widget*) m_EvidenceCB;
+	
+	m_Table->attach(*cb, 1, 2, 0, 1);
+	m_Table->attach(*m_NameCB, 0, 1, 1, 2);
+	m_Table->attach(*m_NameEntry, 1, 2, 1, 2);
+	
+	if (m_Mode==MODE_CHARACTER) {
+		m_Table->attach(*m_CGenderCB, 0, 1, 2, 3);
+		m_Table->attach(*m_GenderCB, 1, 2, 2, 3);
+	}
+	
+	m_Table->attach(*m_CaptionCB, 0, 1, 3-spacer, 4-spacer);
+	m_Table->attach(*m_CaptionEntry, 1, 2, 3-spacer, 4-spacer);
+	m_Table->attach(*m_DescCB, 0, 1, 4-spacer, 5-spacer);
+	m_Table->attach(*m_DescEntry, 1, 2, 4-spacer, 5-spacer);
+	
+	get_vbox()->pack_start(*m_Table, Gtk::PACK_SHRINK);
+	
+	// connect signals for check buttons
+	m_NameCB->signal_toggled().connect(sigc::bind(sigc::mem_fun(*this, &EditRecItemDialog::on_button_toggled), "m_NameCB"));
+	m_CaptionCB->signal_toggled().connect(sigc::bind(sigc::mem_fun(*this, &EditRecItemDialog::on_button_toggled), "m_CaptionCB"));
+	m_DescCB->signal_toggled().connect(sigc::bind(sigc::mem_fun(*this, &EditRecItemDialog::on_button_toggled), "m_DescCB"));
+	
+	// disable check buttons by default
+	m_NameCB->set_active(false);
+	m_CaptionCB->set_active(false);
+	m_DescCB->set_active(false);
+	
+	// make our changes take effect
+	on_button_toggled("m_NameCB");
+	on_button_toggled("m_CaptionCB");
+	on_button_toggled("m_DescCB");
+	
+	// deal with certain widgets only in certain modes
+	if (m_Mode==MODE_CHARACTER) {
+		// connect gender combo box signal
+		m_CGenderCB->signal_toggled().connect(sigc::bind(sigc::mem_fun(*this, &EditRecItemDialog::on_button_toggled), "m_CGenderCB"));
+		m_CGenderCB->set_active(false);
+		on_button_toggled("m_CGenderCB");
+		
+		// connect character combo box signal
+		m_CharCB->signal_changed().connect(sigc::mem_fun(*this, &EditRecItemDialog::on_combo_box_changed));
+		m_CharCB->set_active(0);
+	}
+	
+	else {
+		// connect evidence combo box signal
+		m_EvidenceCB->signal_changed().connect(sigc::mem_fun(*this, &EditRecItemDialog::on_combo_box_changed));
+		m_EvidenceCB->set_active(0);
+	}
+	
+	on_combo_box_changed();
+	
+	show_all_children();
+}
+
+// character combo box changed
+void EditRecItemDialog::on_combo_box_changed() {
+	if (m_Mode==MODE_CHARACTER) {
+		Character *c=m_CharCB->get_selected_character();
+		
+		// update the fields
+		m_NameEntry->set_text(c->get_name());
+		m_GenderCB->set_active(c->get_gender());
+		m_CaptionEntry->set_text(c->get_caption());
+		m_DescEntry->set_text(c->get_description());
+	}
+	
+	else {
+		Case::Evidence *e=m_EvidenceCB->get_selected_evidence();
+		
+		// update the fields
+		m_NameEntry->set_text(e->name);
+		m_CaptionEntry->set_text(e->caption);
+		m_DescEntry->set_text(e->description);
+	}
+}
+
+// check button toggle handler
+void EditRecItemDialog::on_button_toggled(const Glib::ustring &button) {
+	if (button=="m_NameCB")
+		m_NameEntry->set_sensitive(m_NameCB->get_active());
+	else if (button=="m_CGenderCB")
+		m_GenderCB->set_sensitive(m_CGenderCB->get_active());
+	else if (button=="m_CaptionCB")
+		m_CaptionEntry->set_sensitive(m_CaptionCB->get_active());
+	else if (button=="m_DescCB")
+		m_DescEntry->set_sensitive(m_DescCB->get_active());
+	else
+		g_error("Unrecognized button ID sent in signal: %s", button.c_str());
 }

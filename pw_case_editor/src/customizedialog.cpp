@@ -26,6 +26,7 @@
 
 // constructor
 CustomizeDialog::CustomizeDialog(const Case::Overrides &overrides, const ImageMap &images) {
+	set_title("Customize");
 	construct(images);
 	
 	// set the data based on overrides data

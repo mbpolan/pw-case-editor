@@ -35,6 +35,8 @@
 
 // constructor
 SpriteEditor::SpriteEditor() {
+	set_title("Sprite Editor");
+	
 	// default to no sprite path
 	m_SpritePath="null";
 	m_CurFrame=1;
