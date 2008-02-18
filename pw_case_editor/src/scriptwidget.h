@@ -32,74 +32,126 @@
 
 #include "clistview.h"
 
-// widget that implements the text editor and other relevant widgets
+/** Widget that implements the text editor and other relevant widgets.
+  * The body of a MainWindow class consists primarily of this widget. It implements 
+  * the text editor where the text blocks are displayed, along with the series of 
+  * lists where the blocks themselves are organized.
+*/
 class ScriptWidget: public Gtk::VBox {
 	public:
-		// constructor
+		/** Constructor
+		  * \param system The type of LawSystem in this case
+		*/
 		ScriptWidget(Case::LawSystem system=Case::TWO_DAY);
 		
-		// destructor
+		/// Destructor
 		~ScriptWidget();
 		
-		// clear all data
+		/** Completely reset the entire widget
+		  * \param system The new LawSystem to use
+		*/
 		void clear(Case::LawSystem system);
 		
-		// activate a page of the internal notebook for trial parts
+		/** Switch between the Investigation and Trial notebook tabs
+		  * \param trial <b>true</b> for Trial, <b>false</b> for Investigation
+		*/
 		void activate_trial_notebook_tab(bool trial);
 		
-		// add a character to the list
-		// passing -1 for both day and stage will add this character to all lists
+		/** Add a character to a text block list
+		  * Passing -1 for both day and stage will add this character to all lists
+		  * \param day The day (based on LawSystem), 0 based index
+		  * \param stage 0 for Investigation, 1 for Trial
+		  * \param name The display name for the character
+		  * \param internal The internal name for the character
+		*/
 		void add_character(int day, int stage, const Glib::ustring &name, const Glib::ustring &internal);
 		
-		// remove a character from the list based on name (either displayed or internal)
+		/** Remove a character from the lists
+		  * \param name Either internal or display name of character to remove
+		*/
 		void remove_character(const Glib::ustring &name);
 		
-		// add a text block under an exiting category
+		/** Add a text block under an exiting top-level node
+		  * \param day The day of the case (based on LawSystem), 0 based index
+		  * \param stage 0 for Investigation, 1 for Trial
+		  * \param parent The name of the parent node
+		  * \param blockName The name of the block
+		  * \param desc Brief description of the block
+		  * \param buffer The text of the block
+		*/
 		void add_text_block(int day, int stage, const Glib::ustring &parent,
 				    const Glib::ustring &blockName, const Glib::ustring &desc,
 				    const Glib::RefPtr<Gtk::TextBuffer> &buffer);
 		
-		// locates a block within the tree views and returns the toplevel tree view
+		/** Locate a block within the tree views and returns the top-level tree view
+		  * \param id ID of the block
+		  * \param index 0 based index of the lists
+		  * \return Pointer to a list where the block was found, null if not found
+		*/
 		CListView* find_block(const Glib::ustring &id, int &index);
 		
-		// set a list in a notebook tab
+		/** Set a list to display in a notebook tab
+		  * \param index 0 based index of the list
+		*/
 		void set_trial_notebook_list(int index);
 		
-		// insert text at the cursor
+		/** Insert text at the cursor in current block
+		  * \param str The text
+		*/
 		void insert_text_at_cursor(const Glib::ustring &str);
 		
-		// return buffers used in internal list
+		/** Get all of the buffers in this widget
+		  * \return A map of all buffers
+		*/
 		BufferMap get_buffers() const;
 		
-		// return buffer descriptions
+		/** Get the buffer descriptions
+		  * \return A map of block IDs and descriptions
+		*/
 		std::map<Glib::ustring, Glib::ustring> get_buffer_descriptions();
 		
-		// return the currently displayed buffer
+		/** Get the currently displayed block
+		  * \return The text of the current block
+		*/
 		Glib::RefPtr<Gtk::TextBuffer> get_current_buffer() { return m_TextView->get_buffer(); }
 	
 	private:
-		// build the ui
+		/// Build the widget's UI
 		void construct();
 		
-		// get the current tree view
+		/** Get the currently displayed list
+		  * \return Pointer to current list
+		*/
 		CListView* get_current_list();
 		
-		// get a unique id for a text block
+		/** Get a unique ID for a text block
+		  * \param rootString The text to preprend to the ID
+		  * \return An ID that is unique for this block
+		*/
 		Glib::ustring unique_id(const Glib::ustring &rootString);
 		
-		// clistview handler to add a new text block
+		/** Handler to add a new text block
+		  * \param root The root node
+		  * \param isCharacter Whether or not this is a character's text block
+		  * \param list The list to add the block to
+		*/
 		void on_list_add_text_block(const Glib::ustring &root, bool isCharacter, CListView *list);
 		
-		// reset the combo box
+		/// Reset the combo box with the case days
 		void reset_combo_box();
 		
-		// combo box selection handler
+		/// Handler for day combo box selection changes
 		void on_combo_box_changed();
 		
-		// display buffer handler
+		/** Handler to display a buffer in the editor
+		  * \param id The ID of the block
+		  * \param buffer The text of the buffer
+		*/
 		void on_display_buffer(Glib::ustring id, Glib::RefPtr<Gtk::TextBuffer> buffer);
 		
-		// select a row
+		/** Handler to select a row of the current list
+		  * \param it Iterator pointing to the node
+		*/
 		void on_select_row(Gtk::TreeModel::iterator it);
 		
 		// combo box
@@ -117,10 +169,10 @@ class ScriptWidget: public Gtk::VBox {
 		// the text view for editing the script
 		Gtk::TextView *m_TextView;
 		
-		// list views
+		/// Vector of lists
 		std::vector<CListView*> m_TreeViews;
 		
-		// keep track of law system
+		/// Internal record of LawSystem
 		Case::LawSystem m_LawSystem;
 };
 

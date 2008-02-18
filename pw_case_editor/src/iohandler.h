@@ -32,9 +32,10 @@
 #include "iconmanager.h"
 #include "sprite.h"
 
+/// Namespace for all file loading/saving functions
 namespace IO {
 
-// various error codes
+/// Various error codes that are used to identify if something went wrong
 enum Code { CODE_OK=		 	 1,
 	    CODE_OPEN_FAILED=	 	 0,
 	    CODE_WRONG_MAGIC_NUM=	-1,
@@ -42,7 +43,9 @@ enum Code { CODE_OK=		 	 1,
 	    CODE_VALIDATE_FAILED=	-3
 };
 
-// the pwt file header
+/** The header for the PWT file format.
+  * This is the header that is saved with each exported case file
+*/
 struct _PWTHeader {
 	int ident; // magic number
 	int version; // file version
@@ -61,64 +64,124 @@ struct _PWTHeader {
 };
 typedef struct _PWTHeader PWTHeader;
 
-// case file information
+/// Magic number for PWT file format
 const int FILE_MAGIC_NUM=(('T' << 16) + ('W' << 8) + 'P');
+
+/// Supported version for PWT file
 const int FILE_VERSION=10;
 
-// sprite file information
+/// Magic number for SPR file format
 const Glib::ustring SPR_MAGIC_NUM="SPR";
+
+/// Supported SPR file version
 const int SPR_VERSION=10;
 
-// expected size of resource file
+/// The expected size in bytes of the resource file
 const long RESOURCE_FILE_SIZE=192434;
 
-// save a case and its associated data to file
+/** Save a case and its associated data to file
+  * \param path The path to save to
+  * \param pcase The case to save
+  * \param buffers The buffers in this case
+  * \param bufferDescriptions Descriptions of buffers
+  * \return IO::CODE_OK if successful, other codes if an error occurred.
+*/
 IO::Code save_case_to_file(const Glib::ustring &path, const Case::Case &pcase,
 		       const BufferMap &buffers,
 		       std::map<Glib::ustring, Glib::ustring> &bufferDescriptions);
 
-// export a case to file
+/** Export a case to file
+  * \param path The path to export to
+  * \param pcase The case to export
+  * \param buffers The buffers in this case
+  * \return IO::CODE_OK if successful, other codes if an error occurred.
+*/
 IO::Code export_case_to_file(const Glib::ustring &path, const Case::Case &pcase, const BufferMap &buffers);
 
-// load a case from file
+/** Load a case from file
+  * \param path The path to the case file to load
+  * \param pcase Empty Case object to populate
+  * \param buffers Empty buffer map to populate
+  * \param bufferDescriptions Empty map of descriptions to populate
+  * \return IO::CODE_OK if successful, other codes if an error occurred.
+*/
 IO::Code load_case_from_file(const Glib::ustring &path, Case::Case &pcase,
 			 BufferMap &buffers,
 		         std::map<Glib::ustring, Glib::ustring> &bufferDescriptions);
 
-// save a sprite to file
+/** Save a sprite to file
+  * \param path The path to save to
+  * \param spr The Sprite object to save
+  * \return IO::CODE_OK if successful, other codes if an error occurred.
+*/
 IO::Code save_sprite_to_file(const Glib::ustring &path, const Sprite &spr);
 
-// export a sprite to file
+/** Export a sprite to file
+  * \param path The path to export to
+  * \param spr The Sprite to export
+  * \return IO::CODE_OK if successful, other codes if an error occurred.
+*/
 IO::Code export_sprite_to_file(const Glib::ustring &path, const Sprite &spr);
 
-// load a sprite from file
+/** Load a sprite from file
+  * \param path The path to the sprite to load
+  * \param spr Empty Sprite object to populate
+  * \return IO::CODE_OK if successful, other codes if an error occurred.
+*/
 IO::Code load_sprite_from_file(const Glib::ustring &path, Sprite &spr);
 
-// write a string to file
+/** Write a string to file
+  * \param f Pointer to open FILE handle
+  * \param str The string to write
+*/
 void write_string(FILE *f, const Glib::ustring &str);
 
-// read a string from file
+/** Read a string from file
+  * \param f Pointer to open FILE handle
+  * \return The resulting string
+*/
 Glib::ustring read_string(FILE *f);
 
-// write a pixbuf to compressed, internal format
+/** Write a pixbuf to compressed, internal format
+  * \param f Pointer to open FILE handle
+  * \param pixbuf The actual image data to write
+*/
 void write_export_image(FILE *f, const Glib::RefPtr<Gdk::Pixbuf> &pixbuf);
 
-// write a pixbuf to file
+/** Write a pixbuf in uncompressed format to file
+  * \param f Pointer to open FILE handle
+  * \param pixbuf The image data to write
+*/
 void write_pixbuf(FILE *f, const Glib::RefPtr<Gdk::Pixbuf> &pixbuf);
 
-// read a pixbuf from file
+/** Read an uncompressed pixbuf from file
+  * \param f Pointer to open FILE handle
+  * \return The resulting image
+*/
 Glib::RefPtr<Gdk::Pixbuf> read_pixbuf(FILE *f);
 
-// add a file to the recent files record
+/** Add a file to the recent files record
+  * \param uri The path to the recent file
+  * \param display The display string
+*/
 void add_recent_file(const Glib::ustring &uri, const Glib::ustring &display);
 
-// read the recent files record
+/** Read the recent files record
+  * \param vec Empty vector to populate with files
+  * \return IO::CODE_OK if successful, other codes if an error occurred.
+*/
 IO::Code read_recent_files(std::vector<StringPair> &vec);
 
-// unpack the resource file
+/** Unpack the resource file
+  * \param file The path to the resource file
+  * \return IO::CODE_OK if successful, other codes if an error occurred.
+*/
 IO::Code unpack_resource_file(const Glib::ustring &file);
 
-// read icons from a theme file
+/** Read icons from a theme file
+  * \param icons Empty map of icons to populate
+  * \return IO::CODE_OK if successful, other codes if an error occurred.
+*/
 IO::Code read_icons_from_file(IconMap &icons);
 
 }; // namespace IO

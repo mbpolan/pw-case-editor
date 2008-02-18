@@ -27,7 +27,7 @@
 #include <gtkmm/stockid.h>
 #include <map>
 
-// stock icons for this application
+/// Namespace for stock icons for this application
 namespace AppStock {
 	extern Gtk::StockID ADD_CHARACTER;
 	extern Gtk::StockID AUDIO;
@@ -45,20 +45,31 @@ namespace AppStock {
 typedef std::map<Glib::ustring, Glib::RefPtr<Gdk::Pixbuf> > IconMap;
 typedef std::map<Glib::ustring, Gtk::IconSet> SetMap;
 
-// manager for application icons
+/** Class that is responsible for managing custom icons.
+  * Since the editor uses a set of custom icons, this class is needed 
+  * to simplify handling the stock IDs and looking up specific icons.
+*/
 class IconManager {
 	public:
-		// create icons sets from file
+		/** Create icons sets from file
+		  * \param file The path to the resource file
+		  * \return <b>true</b> if there were no errors, <b>false</b> otherwise
+		*/
 		bool create_from_file(const Glib::ustring &file);
 		
-		// look up a stock id based on icon set string
+		/** Look up a stock ID based on icon set string
+		  * \param str ID of a particular icons set
+		  * \return The stock ID of that icon
+		*/
 		Gtk::StockID lookup_from_set(const Glib::ustring &str);
 		
 	private:
-		// create complete icon sets for given icons
+		/** Create complete icon sets for given icons
+		  * \param icons The map of icons to generate a set for
+		*/
 		void create_icon_sets(const IconMap &icons);
 		
-		// default icon sets
+		/// Default icon sets
 		SetMap m_DefaultSets;
 };
 

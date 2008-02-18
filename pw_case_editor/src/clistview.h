@@ -28,57 +28,81 @@
 
 #include "case.h"
 
-// implements a customized TreeView interface
+/** Implements a customized TreeView interface.
+  * Normally, GTK's list widget provides the usual functions and API needed
+  * to take care of most editor requirements. This class extends that API 
+  * with custom functions that deal specifically with the editor's unique 
+  * needs for handling text block nodes, descriptions, and everything else.
+*/
 class CListView: public Gtk::TreeView {
 	public:
-		// constructor
+		/// Default constructor
 		CListView();
 		
-		// create a buffer ready for use in this list
+		/** Create a buffer ready for use in this list.
+		  * All text blocks should be created using this function, as it 
+		  * also configures the buffer to use styling tags and whatnot.
+		  * \return The text block
+		*/
 		static Glib::RefPtr<Gtk::TextBuffer> create_buffer();
 		
-		// clear all data
+		/// Clear all data in this list
 		void clear();
 		
-		// append toplevel text to list
+		/** Append top-level text to this list
+		  * \param text The text to append
+		*/
 		void append_toplevel_text(const Glib::ustring &text);
 		
-		// append text as child of a parent node
+		/** Append text as child of a parent node
+		  * \param parent The ID of the parent node
+		  * \param id The ID of the new node
+		  * \param text The description of the node
+		  * \param buffer The text block to associate with this node
+		*/
 		void append_child_text(const Glib::ustring &parent, const Glib::ustring &id, 
 				       const Glib::ustring &text, const Glib::RefPtr<Gtk::TextBuffer> &buffer);
 		
-		// remove a toplevel text element
+		/** Remove a top-level text element
+		  * \param text The text node to remove
+		*/
 		void delete_toplevel_text(const Glib::ustring &text);
 		
-		// activate a block
+		/** Activate a text block and emit the display_buffer signal
+		  * \param block Either the ID or full text of block
+		  * \param row GTK row pointing to the block
+		*/
 		void select_block(const Glib::ustring &block, Gtk::TreeRow *row);
 		
-		// return the buffers present in the list
-		// template argument 1 is buffer id; argument 2 is the buffer
+		/** Get the buffers present in the list
+		  * \return The map of buffers
+		*/
 		BufferMap get_buffers() const { return m_Buffers; }
 		
-		// return buffer descriptions
-		// template argument 1: buffer id; argument 2 is the actual description
+		/** Get buffer descriptions for this list
+		  * Map parameter 1 is the buffer ID; parameter 2 is the actual description
+		  * \return The map of buffer descriptions
+		*/
 		std::map<Glib::ustring, Glib::ustring> get_buffer_descriptions();
 		
-		// signal to request buffer to be displayed
+		/// Signal to request buffer to be displayed
 		sigc::signal<void, Glib::ustring, Glib::RefPtr<Gtk::TextBuffer> > 
 				signal_display_buffer() const { return m_DisplayBufferSignal; }
 		
-		// signal to request adding a new text block
+		/// Signal to request adding a new text block
 		sigc::signal<void, Glib::ustring, bool, CListView*> signal_add_text_block() const { return m_AddBlockSignal; }
 		
-		// signal to request a selection
+		/// Signal to request a selection change
 		sigc::signal<void, Gtk::TreeModel::iterator> signal_select() const { return m_SelectSignal; }
 		
 	private:
-		// signal to request buffer to be displayed
+		/// Signal object to request buffer to be displayed
 		sigc::signal<void, Glib::ustring, Glib::RefPtr<Gtk::TextBuffer> > m_DisplayBufferSignal;
 		
-		// signal to request a row be selected
+		/// Signal object to request a row be selected
 		sigc::signal<void, Gtk::TreeModel::iterator> m_SelectSignal;
 		
-		// signal to request adding a new text block
+		/// Signal object to request adding a new text block
 		sigc::signal<void, Glib::ustring, bool, CListView*> m_AddBlockSignal;
 		
 		// handle selection changes
@@ -121,7 +145,7 @@ class CListView: public Gtk::TreeView {
 		// column record instance
 		ColumnRec m_ColumnRec;
 		
-		// map of buffers (first template argument is internal block id without description)
+		/// Map of buffers
 		BufferMap m_Buffers;
 };
 

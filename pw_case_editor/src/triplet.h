@@ -24,28 +24,42 @@
 
 #include <glibmm/ustring.h>
 
-// class that extends std::pair; stores three elements
+/** Template class that extends std::pair.
+  * This is a template that stores up to three different elements
+*/
 template <class X, class Y, class Z>
 class Triplet {
 	public:
-		// constructor
+		/** Constructor
+		  * \param x The first element
+		  * \param y The second element
+		  * \param z The third element
+		*/
 		Triplet(const X &x, const Y &y, const Z &z):
 			first(x), second(y), third(z) { };
 		
-		// elements
+		/// The first element
 		X first;
+		
+		/// The second element
 		Y second;
+		
+		/// The third element
 		Z third;
 };
 
-// create a triplet
+/** Convenience function to create a Triplet
+  * \param x The first element
+  * \param y The second element
+  * \param z The third element
+*/
 template <class X, class Y, class Z>
 Triplet<X, Y, Z> make_triplet(const X &x, const Y &y, const Z&z) {
 	Triplet<X, Y, Z> t(x, y, z);
 	return t;
 }
 
-// common triplet types
+/// A Triplet containing only strings
 typedef Triplet<Glib::ustring, Glib::ustring, Glib::ustring> StringTriplet;
 
 #endif

@@ -33,27 +33,45 @@
 #include "case.h"
 #include "casecombobox.h"
 
-// class that handles editing of testimonies
+/** Dialog that provides an interface for editing testimonies.
+  * The TestimonyEditor makes use of several widgets to let the user 
+  * easily manipulate and create character testimonies
+*/
 class TestimonyEditor: public Gtk::Dialog {
 	public:
-		// constructor
+		/** Constructor
+		  * \param chars Map of characters
+		  * \param locations Map of locations
+		  * \param buffers Map of text block buffers
+		  * \param testimonyIds Vector of present testimony IDs
+		*/
 		TestimonyEditor(const CharacterMap &chars, const LocationMap &locations, 
 				const BufferMap &buffers, const StringVector &testimonyIds);
 		
-		// set a testimony to use
+		/** Set a testimony to edit
+		  * \param testimony The testimony to edit
+		*/
 		void set_testimony(const Case::Testimony &testimony);
 		
-		// return the current testimony data
+		/** Get the current testimony data
+		  * \return Updated Testimony struct
+		*/
 		Case::Testimony get_testimony_data();
 		
 	private:
-		// build the ui
+		/** Build the dialog's UI
+		  * \param chars The map of characters
+		  * \param locations The map of locations
+		  * \param buffers The map of text block buffers
+		*/
 		void construct(const CharacterMap &chars, const LocationMap &locations, const BufferMap &buffers);
 		
-		// create a default testimony piece
+		/** Create a default testimony piece
+		  * \return The newly created struct
+		*/
 		Case::TestimonyPiece create_testimony_piece();
 		
-		// update the dialog state
+		/// Update the dialog's widgets based on its current state
 		void update();
 		
 		// format title button click handler
@@ -133,13 +151,13 @@ class TestimonyEditor: public Gtk::Dialog {
 		Gtk::ScrolledWindow *m_SWindow;
 		Gtk::Frame *m_PieceFrame;
 		
-		// current testimony
+		/// The current testimony
 		Case::Testimony m_Testimony;
 		
-		// current testimony piece
+		/// Current testimony piece
 		int m_CurPiece;
 		
-		// record of testimony ids
+		/// Record of testimony IDs
 		StringVector m_Ids;
 };
 

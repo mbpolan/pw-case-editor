@@ -22,10 +22,15 @@
 #ifndef EXCEPTIONS_H
 #define EXCEPTIONS_H
 
-// exception thrown when a case element is not acceptable
-// specifically in MainWindow::check_case_element
+/** Exception thrown when a case element is not acceptable.
+  * Used only in MainWindow::check_case_element, where programmer 
+  * errors could occur.
+*/
 class ElementEx: public std::exception {
 	public:
+		/** Get a string of what went wrong
+		  * \return The string description of the error
+		*/
 		virtual const char* what() const throw() {
 			return "Case element provided is not acceptable";
 		}

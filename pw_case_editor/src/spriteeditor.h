@@ -34,65 +34,72 @@
 
 #include "sprite.h"
 
-// window used to edit sprites
+/** Window that displays widgets used in editing a sprite.
+  * The actualy sprite can be edited using this window. It provides all of the 
+  * basic frame handling, sound effect, and preview functionality.
+*/
 class SpriteEditor: public Gtk::Window {
 	public:
-		// constructor
+		/// Constructor
 		SpriteEditor();
 		
-		// clear out previous sprite data
+		/// Clear out previous sprite data
 		void clear();
 		
-		// set sprite data to use
+		/** Set sprite data to use
+		  * \param spr The sprite to edit
+		*/
 		void set_sprite_data(const Sprite &spr);
 		
-		// return the working sprite
+		/** Get the working sprite
+		  * \return The updated sprite
+		*/
 		Sprite get_sprite_data() const { return m_Sprite; }
 		
 	private:
-		// build the ui
+		/// Build the window's UI
 		void construct();
 		
-		// update the progress label
+		/// Update the progress label and other widgets
 		void update_progress_label();
 		
-		// save the current sprite
+		/// Handler to save the current sprite
 		void on_save();
 		
-		// export the current sprite
+		/// Handler to export the current sprite
 		void on_export();
 		
-		// close the window
+		/// Handler to close the window
 		void on_close();
 		
-		// preview an animation
+		/// Handler to preview an animation
 		void on_preview_animation();
 		
-		// handler for loop check button toggle
+		/// Handler for loop check button toggles
 		void on_loop_cb_toggled();
 		
-		// handler for combo box changes
+		/// Handler for combo box changes
 		void on_anim_cb_changed();
 		
-		// amend button handler
+		/// Handler for amend button clicks
 		void on_amend_button_clicked();
 		
-		// new animation button click handler
+		/// Handler for new animation button clicks
 		void on_new_animation_button_clicked();
 		
-		// delete animation button click handler
+		/// Handler for delete animation button clicks
 		void on_delete_animation_button_clicked();
 		
-		// add frame button click handler
+		/// Handler for add frame button clicks
 		void on_add_frame_button_clicked();
 		
-		// delete frame button click handler
+		/// Handler for delete frame button clicks
 		void on_delete_frame_button_clicked();
 		
-		// previous frame button click handler
+		/// Handler for previous frame button clicks
 		void on_prev_frame_button_clicked();
 		
-		// next frame button click handler
+		/// Handler for next frame button clicks
 		void on_next_frame_button_clicked();
 		
 		// labels
@@ -127,24 +134,29 @@ class SpriteEditor: public Gtk::Window {
 		// combo box
 		Gtk::ComboBoxText *m_AnimCB;
 		
-		// current sprite we are editing
+		/// Current sprite path
 		Glib::ustring m_SpritePath;
 		
-		// sprite we are editing
+		/// The sprite we are editing
 		Sprite m_Sprite;
 		
-		// current frame of animation
+		/// Current frame of animation
 		int m_CurFrame;
 };
 
-// animation player to previews
+/** Animation player for previewing a sprite.
+  * This dialog acts like a "media player" for animations. It 
+  * can start, stop, and pause animations.
+*/
 class AnimPlayer: public Gtk::Dialog {
 	public:
-		// constructor
+		/** Constructor
+		  * \param anim The animation to play
+		*/
 		AnimPlayer(const Animation &anim);
 		
 	private:
-		// build the interface
+		/// Build the dialog's UI
 		void construct();
 		
 		// timeout for new frame
@@ -172,10 +184,10 @@ class AnimPlayer: public Gtk::Dialog {
 		// connection to timer slot
 		sigc::connection m_TimerSlot;
 		
-		// the current frame
+		/// The current frame
 		int m_CurFrame;
 		
-		// internal animation
+		/// Internal animation we're playing
 		Animation m_Animation;
 };
 

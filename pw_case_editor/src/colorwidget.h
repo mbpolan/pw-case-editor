@@ -24,17 +24,26 @@
 
 #include <gtkmm/drawingarea.h>
 
-// widget that displays a color
+/** Widget that displays a color.
+  * The given color is drawn in a small rectangle area. This widget is 
+  * intended to provide a preview sample of a color.
+*/
 class ColorWidget: public Gtk::DrawingArea {
 	public:
-		// constructor taking string representation of color
+		/** Constructor taking string representation of color
+		  * \param color String representing a color
+		*/
 		ColorWidget(const Glib::ustring &color);
 		
-		// constructor taking an RGB color
+		/** Constructor taking an RGB color
+		  * \param r The red component
+		  * \param g The green component
+		  * \param b The blue component
+		*/
 		ColorWidget(char r, char g, char b);
 		
 	private:
-		// initialize the widget
+		/// Initialize the widget
 		void init();
 		
 		// realize event handler

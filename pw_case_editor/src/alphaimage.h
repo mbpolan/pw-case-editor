@@ -25,16 +25,25 @@
 #include <cairomm/surface.h>
 #include <gtkmm/drawingarea.h>
 
-// image widget with optional alpha value
+/** Image widget with optional alpha value.
+  * This widget displays an image with a customizable alpha value 
+  * for transparency
+*/
 class AlphaImage: public Gtk::DrawingArea {
 	public:
-		// constructor
+		/** Constructor
+		  * \param file Path to image file
+		*/
 		AlphaImage(const std::string &file);
 		
-		// set the alpha value
+		/** Set the alpha value for the image
+		  * \param alpha The alpha value, should be between 0.0 to 1.0
+		*/
 		void set_alpha(double alpha);
 		
-		// get the alpha value
+		/** Get the alpha value
+		  * \return The image's alpha value
+		*/
 		double get_alpha() const { return m_Alpha; }
 		
 	private:
@@ -44,7 +53,7 @@ class AlphaImage: public Gtk::DrawingArea {
 		// our background image
 		Cairo::RefPtr<Cairo::ImageSurface> m_Image;
 		
-		// alpha value
+		/// The internal alpha value
 		double m_Alpha;
 };
 

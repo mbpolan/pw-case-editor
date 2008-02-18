@@ -30,116 +30,176 @@
 
 #include "character.h"
 
-// a rectangle
+/// A basic struct representing a rectangle.
 struct _Rect {
-	int x, y;
-	int w, h;
+	/// The x-coordinate
+	int x;
+	
+	/// The y-coordinate
+	int y;
+	
+	/// The width of the rectangle
+	int w;
+	
+	/// The height of the rectangle
+	int h;
 };
 typedef struct _Rect Rect;
 
 
-// case namespace
+/// Namespace for all Case related objects and definitions
 namespace Case {
 
-// law system for cases to follow
+/// The amount of days that each trial lasts
 enum LawSystem { SINGLE_TRIAL=1, TWO_DAY, THREE_DAY };
 
-// background types
+/// The type of background
 enum BackgroundType { BG_SINGLE_SCREEN=0, BG_DOUBLE_SCREEN };
 
-// general case data and technical info
+/// General case data and technical info
 struct _Overview {
-	Glib::ustring name; // the name of the case (Turnabout Whatever, etc)
-	Glib::ustring author; // who wrote this case and its contents
-	LawSystem lawSys; // the law system (how many days for a trial)
+	/// The name of the case (Turnabout Whatever, etc)
+	Glib::ustring name;
+	
+	/// Who wrote this case and its contents
+	Glib::ustring author;
+	
+	 /// The law system (how many days for a trial)
+	LawSystem lawSys;
 };
 typedef struct _Overview Overview;
 
-// user-defined overrides
+/// Struct to store user-defined overrides and customizations
 struct _Overrides {
-	int textboxAlpha; // alpha value for text box
-	Glib::ustring titleScreen; // custom title screen image
+	/// Alpha value for the textbox
+	int textboxAlpha;
+	
+	/// ID of custom image to use for the title screen
+	Glib::ustring titleScreen;
 };
 typedef struct _Overrides Overrides;
 
-// background data
+/// Information about a single background
 struct _Background {
-	Glib::ustring id; // id referenced from within the script
-	BackgroundType type; // type of background (spans 2 screens or 1)
-	Glib::RefPtr<Gdk::Pixbuf> pixbuf; // pixbuf containing image data
+	/// ID referenced from within the script
+	Glib::ustring id;
+	
+	/// The amount of screens that this background spans
+	BackgroundType type;
+	
+	/// Pixbuf containing image data
+	Glib::RefPtr<Gdk::Pixbuf> pixbuf;
 };
 typedef struct _Background Background;
 
-// evidence image/item data
+/// Information about a piece of evidence
 struct _Evidence {
-	Glib::ustring id; // id referenced from within the script
-	Glib::ustring name; // name of this piece of evidence
-	Glib::ustring caption; // who this evidence was received from, etc
-	Glib::ustring description; // string describing the image
-	Glib::ustring checkID; // check image id
-	Glib::RefPtr<Gdk::Pixbuf> pixbuf; // pixbuf containing image data
+	/// ID referenced from within the script
+	Glib::ustring id;
+	
+	/// The display name of this piece of evidence
+	Glib::ustring name;
+	
+	/// Text shown in the green box in the Court Record
+	Glib::ustring caption;
+	
+	/// Text displayed below the image and caption in the Court Record
+	Glib::ustring description;
+	
+	/// ID of image to display when the user clicks the Check button
+	Glib::ustring checkID;
+	
+	/// Pixbuf containing image data
+	Glib::RefPtr<Gdk::Pixbuf> pixbuf;
 };
 typedef struct _Evidence Evidence;
 
-// location hotspot
+/// Information about an examinable hotspot in a location
 struct _Hotspot {
-	Rect rect; // the rectangle in which this hotspot resides
-	Glib::ustring block; // block to parse when examined
+	/// The bounding rectangle for this hotspot
+	Rect rect;
+	
+	/// ID of block to set when this hotspot is examined
+	Glib::ustring block;
 };
 typedef struct _Hotspot Hotspot;
 
-// location data
+/// Information about a location
 struct _Location {
-	Glib::ustring id; // id referenced from within the script
-	Glib::ustring name; // name of this location
-	Glib::ustring bg; // background id to show in locations list
-	std::vector<Hotspot> hotspots; // examinable hotspots
+	/// ID referenced from within the script
+	Glib::ustring id;
+	
+	/// The display name of this location
+	Glib::ustring name;
+	
+	/// ID of background to show in locations list in Move screen
+	Glib::ustring bg;
+	
+	/// Vector of examinable hotspots
+	std::vector<Hotspot> hotspots;
 };
 typedef struct _Location Location;
 
-// audio data
+/// Information about a sample of audio
 struct _Audio {
-	Glib::ustring id; // id referenced from within the script
-	Glib::ustring name; // name of file
+	/// ID referenced from within the script
+	Glib::ustring id;
+	
+	/// Name of file relative to the case file
+	Glib::ustring name;
 };
 typedef struct _Audio Audio;
 
-// misc image
+/// Information about an image
 struct _Image {
-	Glib::ustring id; // id referenced from within the script
-	Glib::RefPtr<Gdk::Pixbuf> pixbuf; // image data
+	/// ID referenced from within the script
+	Glib::ustring id;
+	
+	/// Pixbuf containing image data
+	Glib::RefPtr<Gdk::Pixbuf> pixbuf;
 };
 typedef struct _Image Image;
 
-// a single piece of testimony
+/// A single piece of testimony
 struct _TestimonyPiece {
+	/// The dialogue spoken in this piece of testimony
 	Glib::ustring text;
+	
+	/// ID of evidence that can be presented at this point
 	Glib::ustring presentId;
+	
+	/// ID of block to set if the user presents evidence
 	Glib::ustring presentBlock;
+	
+	/// ID of block to set if the user presses the witness
 	Glib::ustring pressBlock;
+	
+	/// Whether or not this piece is initially hidden
 	bool hidden;
 };
 typedef struct _TestimonyPiece TestimonyPiece;
 
-// a single testimony from a character
+/// A single testimony from a character
 struct _Testimony {
-	// id of this testimony
+	/// ID of this testimony referenced from within the script
 	Glib::ustring id;
 	
-	// testimony title
+	/// Display title of testimony
 	Glib::ustring title;
 	
-	// speaker
+	/// The witness who presents this testimony
 	Glib::ustring speaker;
 	
-	// block to execute following testimony completion
+	/// Block to execute following testimony completion
 	Glib::ustring nextBlock;
+	
+	/// ID of court location to go to after testimony is completed
 	Glib::ustring followLoc;
 	
-	// block to execute if the cross examination is scrolled through
+	/// Block to execute if the cross examination is completed
 	Glib::ustring xExamineEndBlock;
 	
-	// vector of testimony pieces
+	/// Vector of pieces making up this testimony
 	std::vector<TestimonyPiece> pieces;
 };
 typedef struct _Testimony Testimony;
@@ -160,165 +220,233 @@ typedef std::pair<Glib::ustring, Glib::ustring> StringPair;
 
 namespace Case {
 
-// core class that holds all pertinent data about a case
-// this class should also be reused as-is in the engine
+/** Core class that holds all pertinent data about a case.
+  * This class stores all of the individual bits and pieces of a case, 
+  * such as testimonies, text blocks, images, characters, etc.
+*/ 
 class Case {
 	public:
-		// constructor
+		/// Default constructor
 		Case();
 		
-		// set the case overrides
-		void set_overrides(const Overrides &ov) { m_Overrides=ov; }
-		
-		// get the case overrides
-		Overrides get_overrides() const { return m_Overrides; }
-		
-		// set the initial text block id
-		void set_initial_block_id(const Glib::ustring &id) { m_InitialBlockId=id; }
-		
-		// get the initial text block id
-		Glib::ustring get_initial_block_id() const { return m_InitialBlockId; }
-		
-		// add a character
-		void add_character(const Character &character);
-		
-		// remove a character based on name
-		void remove_character(const Glib::ustring &name);
-		
-		// add an image
-		void add_image(const Image &image);
-		
-		// remove an image
-		void remove_image(const Glib::ustring &id);
-		
-		// add testimony
-		void add_testimony(const Testimony &testimony);
-		
-		// remove testimony
-		void remove_testimony(const Glib::ustring &id);
-		
-		// add a background
-		void add_background(const Background &bg);
-		
-		// remove a background based on id
-		void remove_background(const Glib::ustring &id);
-		
-		// add a piece of evidence
-		void add_evidence(const Evidence &evidence);
-		
-		// remove a piece of evidence based on id
-		void remove_evidence(const Glib::ustring &id);
-		
-		// add a location
-		void add_location(const Location &loc);
-		
-		// add an audio sample
-		void add_audio(const Audio &audio);
-		
-		// remove a location based on id
-		void remove_location(const Glib::ustring &id);
-		
-		// return a vector of character internal names
-		StringVector get_character_names();
-		
-		// return a vector of image internal ids
-		StringVector get_image_ids();
-		
-		// return a vector of background internal ids
-		StringVector get_background_ids();
-		
-		// return a vector of evidence internal ids
-		StringVector get_evidence_ids();
-		
-		// return a vector of location internal ids
-		StringVector get_location_ids();
-		
-		// return a vector of audio internal ids
-		StringVector get_audio_ids();
-		
-		// return a vector of testimony internal ids
-		StringVector get_testimony_ids();
-		
-		// clear the entire case information
-		void clear();
-		
-		// clear backgrounds
-		void clear_backgrounds() { m_Backgrounds.clear(); }
-		
-		// clear images
-		void clear_images() { m_Images.clear(); }
-		
-		// clear characters
-		void clear_characters() { m_Characters.clear(); }
-		
-		// clear the evidence (a potential crime for tampering :D)
-		void clear_evidence() { m_Evidence.clear(); }
-		
-		// clear location map
-		void clear_locations() { m_Locations.clear(); }
-		
-		// clear audio map
-		void clear_audio() { m_Audio.clear(); }
-		
-		// clear testimony map
-		void clear_testimonies() { m_Testimonies.clear(); }
-		
-		// set the case overview
+		/** Set the case overview
+		 * \param overview An Overview struct
+		 */
 		void set_overview(const Overview &overview);
 		
-		// return the current case overview
+		/** Get the current case overview
+		 * \return The Overview struct for this case
+		 */
 		Overview get_overview() const { return m_Overview; }
 		
-		// return full map of characters
+		/** Set the overrides for this case
+		  * \param ov A filled Overrides struct
+		*/
+		void set_overrides(const Overrides &ov) { m_Overrides=ov; }
+		
+		/** Get the case overrides
+		  * \return The set Overrides struct
+		*/
+		Overrides get_overrides() const { return m_Overrides; }
+		
+		/** Set the ID of the initial text block
+		  * \param id ID of the text block
+		*/
+		void set_initial_block_id(const Glib::ustring &id) { m_InitialBlockId=id; }
+		
+		/** Get the initial text block ID
+		  * \return ID of the initial text block
+		*/
+		Glib::ustring get_initial_block_id() const { return m_InitialBlockId; }
+		
+		/** Add a character to the internal map
+		  * \param character The character
+		*/
+		void add_character(const Character &character);
+		
+		/** Remove a character based on name
+		  * \param name The name of the character to remove
+		*/
+		void remove_character(const Glib::ustring &name);
+		
+		/** Add an image to the internal map
+		  * \param image The image
+		*/
+		void add_image(const Image &image);
+		
+		/** Remove an image from the case
+		  * \param id The ID of the image to remove
+		*/
+		void remove_image(const Glib::ustring &id);
+		
+		/** Add a testimony to the internal map
+		  * \param testimony The testimony
+		*/
+		void add_testimony(const Testimony &testimony);
+		
+		/** Remove a testimony from the case
+		  * \param id ID of testimony to remove
+		*/
+		void remove_testimony(const Glib::ustring &id);
+		
+		/** Add a background to the internal map
+		  * \param bg The background
+		*/
+		void add_background(const Background &bg);
+		
+		/** Remove a background from the case
+		  * \param id ID of background to remove
+		*/
+		void remove_background(const Glib::ustring &id);
+		
+		/** Add a piece of evidence to the internal map
+		  * \param evidence The evidence
+		*/
+		void add_evidence(const Evidence &evidence);
+		
+		/** Remove a piece of evidence from the case
+		  * \param id ID of evidence to remove
+		*/
+		void remove_evidence(const Glib::ustring &id);
+		
+		/** Add a location to the internal map
+		  * \param loc The location
+		*/
+		void add_location(const Location &loc);
+		
+		/** Remove a location from the case
+		  * \param id ID of location
+		*/
+		void remove_location(const Glib::ustring &id);
+		
+		/** Add an audio sample to the internal map
+		  * \param audio The audio sample
+		*/
+		void add_audio(const Audio &audio);
+		
+		/** Get all character internal names
+		  * \return A vector with internal names
+		*/
+		StringVector get_character_names();
+		
+		/** Get all image internal IDs
+		  * \return A vector with image IDs
+		*/
+		StringVector get_image_ids();
+		
+		/** Get all background internal IDs
+		 * \return A vector with background IDs
+		*/
+		StringVector get_background_ids();
+		
+		/** Get all evidence internal IDs
+		 * \return A vector with evidence IDs
+		*/
+		StringVector get_evidence_ids();
+		
+		/** Get all location internal IDs
+		 * \return A vector with location IDs
+		*/
+		StringVector get_location_ids();
+		
+		/** Get all audio internal IDs
+		 * \return A vector with audio IDs
+		*/
+		StringVector get_audio_ids();
+		
+		/** Get all testimony internal IDs
+		 * \return A vector with testimony IDs
+		*/
+		StringVector get_testimony_ids();
+		
+		/// Clear the entire case information
+		void clear();
+		
+		/// Clear all backgrounds
+		void clear_backgrounds() { m_Backgrounds.clear(); }
+		
+		/// Clear all images
+		void clear_images() { m_Images.clear(); }
+		
+		/// Clear all characters
+		void clear_characters() { m_Characters.clear(); }
+		
+		/// Clear all of the evidence
+		void clear_evidence() { m_Evidence.clear(); }
+		
+		/// Clear all locations
+		void clear_locations() { m_Locations.clear(); }
+		
+		/// Clear all audio samples
+		void clear_audio() { m_Audio.clear(); }
+		
+		/// Clear all testimonies
+		void clear_testimonies() { m_Testimonies.clear(); }
+		
+		/** Get a full map of characters
+		  * \return Map of every character
+		*/
 		CharacterMap get_characters() const { return m_Characters; }
 		
-		// return full map of images
+		/** Get a full map of images
+		  * \return Map of every image
+		*/
 		ImageMap get_images() const { return m_Images; }
 		
-		// return full map of backgrounds
+		/** Get a full map of backgrounds
+		  * \return Map of every background
+		*/
 		BackgroundMap get_backgrounds() const { return m_Backgrounds; }
 		
-		// return full map of evidence
+		/** Get a full map of evidence
+		  * \return Map of every piece of evidence
+		*/
 		EvidenceMap get_evidence() const { return m_Evidence; }
 		
-		// return full map of locations
+		/** Get a full map of locations
+		  * \return Map of every location
+		*/
 		LocationMap get_locations() const { return m_Locations; }
 		
-		// return a full map of audio
+		/** Get a full map of audio
+		  * \return Map of every audio sample
+		*/
 		AudioMap get_audio() const { return m_Audio; }
 		
-		// return a full map of testimonies
+		/** Get a full map of testimonies
+		  * \return Map of every testimony
+		*/
 		TestimonyMap get_testimonies() const { return m_Testimonies; }
 	
 	private:
-		// user-defined overrides
+		/// User-defined overrides
 		Overrides m_Overrides;
 		
-		// general case data
+		/// General case data
 		Overview m_Overview;
 		
-		// initial text block that will be displayed when the case starts
+		/// Initial text block that will be displayed when the case starts
 		Glib::ustring m_InitialBlockId;
 		
-		// map of characters
+		/// Map of characters
 		CharacterMap m_Characters;
 		
-		// map of images
+		/// Map of images
 		ImageMap m_Images;
 		
-		// map of backgrounds
+		/// Map of backgrounds
 		BackgroundMap m_Backgrounds;
 		
-		// map of evidence
+		/// Map of evidence
 		EvidenceMap m_Evidence;
 		
-		// map of locations
+		/// Map of locations
 		LocationMap m_Locations;
 		
-		// map of audio
+		/// Map of audio
 		AudioMap m_Audio;
 		
-		// map of testimonies
+		/// Map of testimonies
 		TestimonyMap m_Testimonies;
 		
 };

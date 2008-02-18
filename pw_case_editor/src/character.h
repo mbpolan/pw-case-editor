@@ -25,101 +25,153 @@
 #include <gdkmm/pixbuf.h>
 #include <glibmm/ustring.h>
 
-// class representing a character and its associated sprites
+/** Class representing a character and its associated sprites.
+  * Each character in the case has his or her own set of attributes, and an associated 
+  * sprite. All of this data is condensed in this class.
+*/
 class Character {
 	public:
-		// gender
+		/// The character's gender
 		enum Gender { GENDER_MALE=0, GENDER_FEMALE, GENDER_UNKNOWN };
 		
-		// constructor
+		/** Constructor
+		  * \param internal The internal name
+		  * \param name The display name
+		  * \param caption The text displayed in the green box in the Court Record
+		  * \param description Text displayed below the caption in the Court Record
+		*/
 		Character(const Glib::ustring &internal="", const Glib::ustring &name="", 
 			  const Glib::ustring &caption="", const Glib::ustring &description="");
 		
-		// set the internal character name
+		/** Set the internal character name
+		  * \param name The new internal name
+		*/
 		void set_internal_name(const Glib::ustring &name) { m_InternalName=name; }
 		
-		// get the internal character name
+		/** Get the internal character name
+		  * \return The internal name
+		*/
 		Glib::ustring get_internal_name() const { return m_InternalName; }
 		
-		// set the displayed name
+		/** Set the display name
+		  * \param name The character's new display name
+		*/
 		void set_name(const Glib::ustring &name) { m_Name=name; }
 		
-		// get the displayed name
+		/** Get the display name
+		  * \return The character's display name
+		*/
 		Glib::ustring get_name() const { return m_Name; }
 		
-		// set gender of this character
+		/** Set gender of this character
+		  * \param g The new gender type
+		*/
 		void set_gender(const Gender &g) { m_Gender=g; }
 		
-		// get the gender of this character
+		/** Get the gender of this character
+		  * \return The character's gender
+		*/
 		Gender get_gender() const { return m_Gender; }
 		
-		// set the caption
+		/** Set the caption for this character
+		  * \param cap The caption
+		*/
 		void set_caption(const Glib::ustring &cap) { m_Caption=cap; }
 		
-		// get the caption
+		/** Get the caption for this character
+		  * \return The character's caption
+		*/
 		Glib::ustring get_caption() const { return m_Caption; }
 		
-		// set the description
+		/** Set the description for this character
+		  * \param desc The description
+		*/
 		void set_description(const Glib::ustring &desc) { m_Description=desc; }
 		
-		// get the description
+		/** Get the description for this character
+		  * \return This character's description
+		*/
 		Glib::ustring get_description() const { return m_Description; }
 		
-		// set the name of the sprite file to associated
+		/** Set the name of the sprite file to associate with this character
+		  * \param spr Path relative to case file for the sprite
+		*/
 		void set_sprite_name(const Glib::ustring &spr) { m_SpriteName=spr; }
 		
-		// get sprite name associated with this character
+		/** Get sprite file name associated with this character
+		  * \return The file path
+		*/
 		Glib::ustring get_sprite_name() const { return m_SpriteName; }
 		
-		// set if this character has a text box tag
+		/** Set if this character has a textbox tag
+		  * \param b <b>true</b> if this character has a tag, <b>false</b> otherwise
+		*/
 		void set_has_text_box_tag(bool b) { m_HasTextBoxTag=b; }
 		
-		// check if this character has a text box tag
+		/** Check if this character has a textbox tag
+		  * \return <b>true</b> if yes, <b>false</b> otherwise
+		*/
 		bool has_text_box_tag() const { return m_HasTextBoxTag; }
 		
-		// set the text box pixbuf
+		/** Set the textbox tag image
+		  * \param pixbuf The Gdk::Pixbuf containing textbox tag image data
+		*/
 		void set_text_box_tag(const Glib::RefPtr<Gdk::Pixbuf> &pixbuf) { m_TextBoxTag=pixbuf; }
 		
-		// get the text box tag pixbuf
+		/** Get the textbox tag image
+		  * \return The textbox tag image, if it exists
+		*/
 		Glib::RefPtr<Gdk::Pixbuf> get_text_box_tag() const { return m_TextBoxTag; }
 		
-		// set if this character has a headshot image
+		/** Set if this character has a headshot image
+		  * \param b <b>true</b> if yes, <b>false</b> otherwise
+		*/
 		void set_has_headshot(bool b) { m_HasHeadshot=b; }
 		
-		// check if this character has a headshot image
+		/** Check if this character has a headshot image
+		  * \return <b>true</b> if yes, <b>false</b> otherwise
+		*/
 		bool has_headshot() const { return m_HasHeadshot; }
 		
-		// set the headshot image
+		/** Set the headshot image
+		  * \param pixbuf The Gdk::Pixbuf containing the image data
+		*/
 		void set_headshot(const Glib::RefPtr<Gdk::Pixbuf> &pixbuf) { m_Headshot=pixbuf; }
 		
-		// get the headshot image
+		/** Get the headshot image
+		  * \return The headshot image, if it exists
+		*/
 		Glib::RefPtr<Gdk::Pixbuf> get_headshot() const { return m_Headshot; }
 	
 	private:
-		// internal name
+		/// Internal name
 		Glib::ustring m_InternalName;
 		
-		// displayed name
+		/// Displayed name
 		Glib::ustring m_Name;
 		
-		// caption
+		/// Caption
 		Glib::ustring m_Caption;
 		
-		// description
+		/// Description
 		Glib::ustring m_Description;
 		
-		// sprite name
+		/// Character's sprite name
 		Glib::ustring m_SpriteName;
 		
-		// character gender
+		/// Character's gender
 		Gender m_Gender;
 		
-		// text box tag image
+		/// Flag if this character has a textbox tag
 		bool m_HasTextBoxTag;
+		
+		/// The textbox tag image
 		Glib::RefPtr<Gdk::Pixbuf> m_TextBoxTag;
 		
-		// headshot image
+		/// Flag if this character has a headshot image
 		bool m_HasHeadshot;
+		
+		/// The headshot image
 		Glib::RefPtr<Gdk::Pixbuf> m_Headshot;
 };
 

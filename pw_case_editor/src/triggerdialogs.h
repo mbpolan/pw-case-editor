@@ -40,10 +40,15 @@
 #include "locationwidget.h"
 #include "triplet.h"
 
-// abstract dialog for inserting triggers
+/** Abstract dialog for inserting triggers.
+  * All such dialogs should be derived from this one, since 
+  * much common functionality is provided.
+*/
 class AbstractDialog: public Gtk::Dialog {
 	public:
-		// constructor
+		/** Constructor
+		  * \param trigger The name of the trigger
+		*/
 		AbstractDialog(const Glib::ustring &trigger);
 		
 	protected:
@@ -59,7 +64,8 @@ class AbstractDialog: public Gtk::Dialog {
 
 /***************************************************************************/
 
-// add_evidence/add_profile triggers
+/** Dialog for add_evidence/add_profile triggers
+*/
 class AddCourtRecDialog: public AbstractDialog {
 	public:
 		// type of trigger
@@ -114,7 +120,8 @@ class AddCourtRecDialog: public AbstractDialog {
 
 /***************************************************************************/
 
-// speaker trigger
+/** Dialog for speaker trigger
+*/
 class SpeakerDialog: public AbstractDialog {
 	public:
 		// constructor
@@ -136,7 +143,8 @@ class SpeakerDialog: public AbstractDialog {
 
 /***************************************************************************/
 
-// goto (and its relatives) trigger
+/** Dialog for goto (and its relatives) trigger
+*/
 class GotoDialog: public AbstractDialog {
 	public:
 		// type
@@ -176,7 +184,8 @@ class GotoDialog: public AbstractDialog {
 
 /***************************************************************************/
 
-// show_evidence_* triggers
+/** Dialog for show_evidence_* triggers
+*/
 class ShowEvidenceDialog: public AbstractDialog {
 	public:
 		// position of evidence
@@ -215,7 +224,8 @@ class ShowEvidenceDialog: public AbstractDialog {
 
 /***************************************************************************/
 
-// hide_evidence_* trigger
+/** Dialog for hide_evidence_* trigger
+*/
 class HideEvidenceDialog: public AbstractDialog {
 	public:
 		enum Type { TYPE_POS_LEFT, TYPE_POS_RIGHT };
@@ -241,7 +251,8 @@ class HideEvidenceDialog: public AbstractDialog {
 
 /***************************************************************************/
 
-// set_location trigger
+/** Dialog for set_location trigger
+*/
 class SetLocationDialog: public AbstractDialog {
 	public:
 		// constructor
@@ -260,7 +271,8 @@ class SetLocationDialog: public AbstractDialog {
 
 /***************************************************************************/
 
-// add_location trigger
+/** Dialog for add_location trigger
+*/
 class AddLocationDialog: public AbstractDialog {
 	public:
 		// constructor
@@ -287,7 +299,8 @@ class AddLocationDialog: public AbstractDialog {
 
 /***************************************************************************/
 
-// set location trigger
+/** Dialog for set location trigger
+*/
 class LocationTriggerDialog: public AbstractDialog {
 	public:
 		// constructor
@@ -320,7 +333,8 @@ class LocationTriggerDialog: public AbstractDialog {
 
 /***************************************************************************/
 
-// set_animation trigger
+/** Dialog for set_animation trigger
+*/
 class SetAnimationDialog: public AbstractDialog {
 	public:
 		// constructor
@@ -346,7 +360,8 @@ class SetAnimationDialog: public AbstractDialog {
 
 /***************************************************************************/
 
-// put_character trigger
+/** Dialog for put_character trigger
+*/
 class PutCharDialog: public AbstractDialog {
 	public:
 		// constructor
@@ -371,7 +386,8 @@ class PutCharDialog: public AbstractDialog {
 
 /***************************************************************************/
 
-// add_talk_option trigger
+/** Dialog for add_talk_option trigger
+*/
 class AddTalkDialog: public AbstractDialog {
 	public:
 		// constructor
@@ -399,7 +415,8 @@ class AddTalkDialog: public AbstractDialog {
 
 /***************************************************************************/
 
-// remove_talk_option trigger
+/** Dialog for remove_talk_option trigger
+*/
 class RemoveTalkDialog: public AbstractDialog {
 	public:
 		// constructor
@@ -425,7 +442,8 @@ class RemoveTalkDialog: public AbstractDialog {
 
 /***************************************************************************/
 
-// clear_* triggers
+/** Dialog for clear_* triggers
+*/
 class ClearCharDialog: public AbstractDialog {
 	public:
 		// constructor
@@ -447,7 +465,8 @@ class ClearCharDialog: public AbstractDialog {
 
 /***************************************************************************/
 
-// add_presentable trigger
+/** Dialog for add_presentable trigger
+*/
 class AddPresentDialog: public AbstractDialog {
 	public:
 		// constructor
@@ -475,7 +494,8 @@ class AddPresentDialog: public AbstractDialog {
 
 /***************************************************************************/
 
-// remove_presentable trigger
+/** Dialog for remove_presentable trigger
+*/
 class RemovePresentDialog: public AbstractDialog {
 	public:
 		// constructor
@@ -501,7 +521,8 @@ class RemovePresentDialog: public AbstractDialog {
 
 /***************************************************************************/
 
-// set_bad_presentable_block
+/** Dialog for set_bad_presentable_block
+*/
 class BadPresentDialog: public AbstractDialog {
 	public:
 		// constructor
@@ -525,7 +546,8 @@ class BadPresentDialog: public AbstractDialog {
 
 /***************************************************************************/
 
-// set_location_music trigger
+/** Dialog for set_location_music trigger
+*/
 class LocMusicDialog: public AbstractDialog {
 	public:
 		// constructor
@@ -550,7 +572,8 @@ class LocMusicDialog: public AbstractDialog {
 
 /***************************************************************************/
 
-// play_music trigger
+/** Dialog for play_music trigger
+*/
 class MusicDialog: public AbstractDialog {
 	public:
 		// constructor
@@ -572,7 +595,8 @@ class MusicDialog: public AbstractDialog {
 
 /***************************************************************************/
 
-// request_evidence trigger
+/** Dialog for request_evidence trigger
+*/
 class ReqEvidenceDialog: public AbstractDialog {
 	public:
 		// constructor
@@ -600,7 +624,8 @@ class ReqEvidenceDialog: public AbstractDialog {
 
 /***************************************************************************/
 
-// request_answer trigger
+/** Dialog for request_answer trigger
+*/
 class ReqAnswerDialog: public AbstractDialog {
 	public:
 		// constructor
@@ -632,7 +657,8 @@ class ReqAnswerDialog: public AbstractDialog {
 
 /***************************************************************************/
 
-// move_court_camera trigger
+/** Dialog for move_court_camera trigger
+*/
 class CourtCamDialog: public AbstractDialog {
 	public:
 		// constructor
@@ -659,7 +685,8 @@ class CourtCamDialog: public AbstractDialog {
 
 /***************************************************************************/
 
-// fade_out trigger
+/** Dialog for fade_out trigger
+*/
 class FadeDialog: public AbstractDialog {
 	public:
 		// constructor
@@ -681,7 +708,8 @@ class FadeDialog: public AbstractDialog {
 
 /***************************************************************************/
 
-// set_court_overview_image trigger
+/** Dialog for set_court_overview_image trigger
+*/
 class OverImageDialog: public AbstractDialog {
 	public:
 		// constructor
@@ -721,7 +749,8 @@ class OverImageDialog: public AbstractDialog {
 
 /***************************************************************************/
 
-// set_temp_image trigger
+/** Dialog for set_temp_image trigger
+*/
 class TempImgDialog: public AbstractDialog {
 	public:
 		// constructor
@@ -753,7 +782,8 @@ class TempImgDialog: public AbstractDialog {
 
 /***************************************************************************/
 
-// display_testimony trigger
+/** Dialog for display_testimony trigger
+*/
 class DisplayTestimonyDialog: public AbstractDialog {
 	public:
 		// constructor
@@ -775,7 +805,8 @@ class DisplayTestimonyDialog: public AbstractDialog {
 
 /***************************************************************************/
 
-// change_character[evidence]_* triggers
+/** Dialog for change_character[evidence]_* triggers
+*/
 class EditRecItemDialog: public AbstractDialog {
 	public:
 		// data for this dialog

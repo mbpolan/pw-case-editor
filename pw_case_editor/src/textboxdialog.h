@@ -29,23 +29,30 @@
 
 #include "textboxeditor.h"
 
-// dialog used for formatting dialogue text
+/** Dialog used for formatting dialogue text.
+  * The TextBoxEditor widget is encapsulated in this dialog, which 
+  * provides the basic functionality.
+*/
 class TextBoxDialog: public Gtk::Dialog {
 	public:
-		// constructor
+		/// Default constructor
 		TextBoxDialog();
 		
-		// get the formatted text
+		/** Get the formatted text
+		  * \return Formatted text, ready to be inserted into a text block
+		*/
 		Glib::ustring get_text() const;
 		
-		// return a pointer to the internal drawing area
+		/** Get a pointer to the internal drawing area
+		  * \return A pointer to the TextBoxEditor widget used by this dialog
+		*/
 		TextBoxEditor* get_editor() { return m_TextBox; }
 		
 	private:
-		// build the ui
+		/// Build the dialog's UI
 		void construct();
 		
-		// entry change handler
+		/// Handler for text entry changes
 		void on_entry_changed(int line);
 		
 		// check button
@@ -62,7 +69,7 @@ class TextBoxDialog: public Gtk::Dialog {
 		Gtk::Entry *m_Line2Entry;
 		Gtk::Entry *m_Line3Entry;
 		
-		// textbox editor widget for preview
+		/// TextBoxEditor widget for preview
 		TextBoxEditor *m_TextBox;
 };
 

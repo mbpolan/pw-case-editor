@@ -44,13 +44,16 @@
 #include "colorwidget.h"
 #include "hotspotwidget.h"
 
-// dialog to let the user change text speed
+/** Dialog to let the user change text speed
+*/
 class ChangeSpeedDialog: public Gtk::Dialog {
 	public:
-		// constructor
+		/// Constructor
 		ChangeSpeedDialog();
 		
-		// get the text speed
+		/** Get the text speed
+		  * \return String representation of text speed
+		*/
 		Glib::ustring get_text_speed();
 		
 	private:
@@ -73,13 +76,16 @@ class ChangeSpeedDialog: public Gtk::Dialog {
 
 /***************************************************************************/
 
-// dialog to let the user change the dialogue text color
+/** Dialog to let the user change the dialogue text color
+*/
 class ChangeColorDialog: public Gtk::Dialog {
 	public:
-		// constructor
+		/// Constructor
 		ChangeColorDialog();
 		
-		// get the selected color
+		/** Get the selected color
+		  * \return String representation of selected color
+		*/
 		Glib::ustring get_color();
 		
 	private:
@@ -98,13 +104,18 @@ class ChangeColorDialog: public Gtk::Dialog {
 
 /***************************************************************************/
 
-// dialog to display progress of a task
+/** Dialog to display progress of a task
+*/
 class ProgressDialog: public Gtk::Dialog {
 	public:
-		// constructor
+		/** Constructor
+		  * \param label The text to display in the dialog
+		*/
 		ProgressDialog(const Glib::ustring &label);
 		
-		// set the amount of progress done
+		/** Set the amount of progress done
+		  * \param amount Percentage of task completed
+		*/
 		void set_progress(double amount);
 		
 	private:
@@ -120,13 +131,19 @@ class ProgressDialog: public Gtk::Dialog {
 
 /***************************************************************************/
 
-// dialog used to manage testimonies
+/** Dialog used to manage testimonies
+*/
 class TestimonyManager: public Gtk::Dialog {
 	public:
-		// constructor
+		/** Constructor
+		  * \param tmap Map of testimonies
+		  * \param testimonyIds String vector of testimony internal IDs
+		*/
 		TestimonyManager(const TestimonyMap &tmap, const StringVector &testimonyIds);
 		
-		// return map of testimonies
+		/** Get updated map of testimonies
+		  * \return Map of testimonies
+		*/
 		TestimonyMap get_testimonies() const { return m_Testimonies; }
 		
 	private:
@@ -165,13 +182,19 @@ class TestimonyManager: public Gtk::Dialog {
 
 /***************************************************************************/
 
-// dialog used to manage images
+/** Dialog used to manage images
+*/
 class ImageDialog: public Gtk::Dialog {
 	public:
-		// constructor
+		/** Constructor
+		  * \param imap Map of images
+		  * \param imgIds String vector of image internal IDs
+		*/
 		ImageDialog(const ImageMap &imap, const StringVector &imgIds);
 		
-		// return map of images
+		/** Get updated map of images
+		  * \return New map of images
+		*/
 		ImageMap get_images() const { return m_Images; }
 		
 	private:
@@ -211,16 +234,21 @@ class ImageDialog: public Gtk::Dialog {
 
 /***************************************************************************/
 
-// dialog used to add a hotspot to a location
+/** Dialog used to add a hotspot to a location
+*/
 class NewHotspotDialog: public Gtk::Dialog {
 	public:
-		// constructor
+		/// Constructor
 		NewHotspotDialog();
 		
-		// set pixbuf for background
+		/** Set pixbuf containing image data for background
+		  * \param pixbuf The image data for the background
+		*/
 		void set_pixbuf(const Glib::RefPtr<Gdk::Pixbuf> &pixbuf) { m_HSWidget->set_image(pixbuf); }
 		
-		// return the hotspot
+		/** Get the hotspot
+		  * \return Completed Case::Hotspot struct
+		*/
 		Case::Hotspot get_hotspot();
 		
 	private:
@@ -259,13 +287,20 @@ class NewHotspotDialog: public Gtk::Dialog {
 
 /***************************************************************************/
 
-// dialog used to manage locations
+/** Dialog used to manage locations
+*/
 class LocationsDialog: public Gtk::Dialog {
 	public:
-		// constructor
+		/** Constructor
+		  * \param locations Map of locations
+		  * \param bgs Map of backgrounds
+		  * \param usedIds String vector of used location internal IDs
+		*/
 		LocationsDialog(const LocationMap &locations, const BackgroundMap &bgs, const StringVector &usedIds);
 		
-		// return the stored location map
+		/** Get updated location map
+		  * \return New map of locations
+		*/
 		LocationMap get_locations() const { return m_Locations; }
 		
 	private:
@@ -344,18 +379,24 @@ class LocationsDialog: public Gtk::Dialog {
 
 /***************************************************************************/
 
-// dialog displayed before viewing sprite editor
+/** Dialog displayed before viewing sprite editor
+*/
 class SpriteChooserDialog: public Gtk::Dialog {
 	public:
+		/// Specifies what type of sprite action is requested by the user
 		enum SpriteMode { SPRITE_NEW=0, SPRITE_EXISTING, SPRITE_FROM_GIFS };
 		
-		// constructor
+		/// Constructor
 		SpriteChooserDialog();
 		
-		// get the selected sprite option
+		/** Get the selected sprite option
+		  * \return The corresponding SpriteMode as requested by the user
+		*/
 		SpriteMode get_sprite_mode() const;
 		
-		// get path name
+		/** Get the path to open a sprite or directory of GIFs
+		  * \return The path in the entry
+		*/
 		Glib::ustring get_path() const { return m_PathEntry->get_text(); }
 		
 	private:
@@ -393,13 +434,20 @@ class SpriteChooserDialog: public Gtk::Dialog {
 
 /***************************************************************************/
 
-// generic input dialog for text
+/** Generic input dialog for text.
+  * This could be used where ever simple text input is needed
+*/
 class TextInputDialog: public Gtk::Dialog {
 	public:
-		// constructor
+		/** Constructor
+		  * \param label Text to display in the label
+		  * \param defaultValue Default text to display in entry
+		*/
 		TextInputDialog(const Glib::ustring &label="Input text:", const Glib::ustring &defaultValue="");
 		
-		// get inputted text
+		/** Get the inputted text
+		  * \return Text from the entry
+		*/
 		Glib::ustring get_text() const { return m_Entry->get_text(); }
 		
 	private:
@@ -415,16 +463,21 @@ class TextInputDialog: public Gtk::Dialog {
 
 /***************************************************************************/
 
-// dialog used to manage audio clips
+/** Dialog used to manage audio samples
+*/
 class AudioDialog: public Gtk::Dialog {
 	public:
-		// constructor
+		/// Constructor
 		AudioDialog();
 		
-		// set audio to use
+		/** Set the audio samples to display
+		  * \param audio Map of audio samples
+		*/
 		void set_audio(const AudioMap &audio);
 		
-		// return the list of audio
+		/** Get updated map of audio samples
+		  * \return New map of audio samples
+		*/
 		AudioMap get_audio_data();
 		
 	private:
@@ -470,16 +523,23 @@ class AudioDialog: public Gtk::Dialog {
 
 /***************************************************************************/
 
-// dialog used for adding new evidence
+/** Dialog used for adding new evidence
+*/
 class NewEvidenceDialog: public Gtk::Dialog {
 	public:
-		// constructor
+		/** Constructor
+		  * \param ids String vector of used evidence internal IDs
+		*/
 		NewEvidenceDialog(const StringVector &ids);
 		
-		// get the inputted evidence data
+		/** Get the inputted evidence data
+		  * \return Completed Case::Evidence struct with values filled
+		*/
 		Case::Evidence get_evidence_data();
 		
-		// get inputted path to image
+		/** Get the inputted path to evidence image
+		  * \return The provided path to the image
+		*/
 		Glib::ustring get_image_path() const { return m_PathEntry->get_text(); }
 		
 	private:
@@ -510,15 +570,22 @@ class NewEvidenceDialog: public Gtk::Dialog {
 
 /***************************************************************************/
 
-// dialog used to manage evidence
+/** Dialog used to manage evidence
+*/
 class EvidenceDialog: public Gtk::Dialog {
 	public:
-		// constructor
+		/** Constructor
+		  * \param evidence Map of evidence
+		  * \param images Map of images
+		  * \param evidenceIds String vector of used evidence internal IDs
+		*/
 		EvidenceDialog(const EvidenceMap &evidence,
 			       const ImageMap &images,
 			       const StringVector &evidenceIds);
 		
-		// get the evidence data stored in the dialog
+		/** Get the evidence map stored in the dialog
+		  * \return New map of evidence
+		*/
 		EvidenceMap get_evidence() const { return m_Evidence; }
 		
 	private:
@@ -597,14 +664,20 @@ class EvidenceDialog: public Gtk::Dialog {
 
 /***************************************************************************/
 
-// dialog used for managing backgrounds
+/** Dialog used for managing backgrounds
+*/
 class BackgroundsDialog: public Gtk::Dialog {
 	public:
-		// constructor
+		/** Constructor
+		  * \param bgs Map of backgrounds
+		  * \param bgIds String vector of used background internal IDs
+		*/
 		BackgroundsDialog(const BackgroundMap &bgs,
 				  const StringVector &bgIds);
 		
-		// get the backgrounds stored in the dialog
+		/** Get the backgrounds stored in the dialog
+		  * \return New map of updated backgrounds
+		*/
 		BackgroundMap get_backgrounds() const { return m_Backgrounds; }
 		
 	private:
@@ -660,16 +733,23 @@ class BackgroundsDialog: public Gtk::Dialog {
 
 /***************************************************************************/
 
-// dialog used for adding new backgrounds
+/** Dialog used for adding new backgrounds
+*/
 class NewBackgroundDialog: public Gtk::Dialog {
 	public:
-		// constructor
+		/** Constructor
+		  * \param bgIds String vector of used background internal IDs
+		*/
 		NewBackgroundDialog(const StringVector &bgIds);
 		
-		// get the data in the dialog compiled in Background struct
+		/** Get the data in the dialog
+		  * \return Completed Case::Background struct
+		*/
 		Case::Background get_background_data();
 		
-		// get the path to the requested image
+		/** Get the path to the requested image
+		  * \return Path to background image
+		*/
 		Glib::ustring get_path() const { return m_PathEntry->get_text(); }
 		
 	private:
@@ -706,16 +786,21 @@ class NewBackgroundDialog: public Gtk::Dialog {
 
 /***************************************************************************/
 
-// dialog displayed for making new cases
+/** Dialog displayed for making new cases
+*/
 class NewDialog: public Gtk::Dialog {
 	public:
-		// constructor
+		/// Constructor
 		NewDialog();
 		
-		// set case overview
+		/** Set the case overview to use
+		  * \param overview Case::Overview struct to default values to
+		*/
 		void set_overview(const Case::Overview &overview);
 		
-		// get case information
+		/** Get updated or new case information
+		  * \return Completed Case::Overview struct
+		*/
 		Case::Overview get_overview();
 	
 	private:
@@ -737,16 +822,23 @@ class NewDialog: public Gtk::Dialog {
 
 /***************************************************************************/
 
-// dialog displayed to browse characters
+/** Dialog displayed to browse characters
+*/
 class CharBrowser: public Gtk::Dialog {
 	public:
-		// constructor
+		/** Constructor
+		  * \param cmap Map of characters
+		*/
 		CharBrowser(const CharacterMap &cmap);
 		
-		// check if a character was changed
+		/** Check if a character was changed
+		  * \return <b>true</b> if the current character needs to be updated, <b>false</b> otherwise
+		*/
 		bool was_changed() const { return m_CharChanged; }
 		
-		// return the character map
+		/** Get the updated character map
+		  * \return Updated map of characters
+		*/
 		CharacterMap get_characters() const { return m_CharacterMap; }
 		
 	private:
@@ -785,16 +877,23 @@ class CharBrowser: public Gtk::Dialog {
 
 /***************************************************************************/
 
-// dialog displayed when adding a new character
+/** Dialog displayed when adding a new character
+*/
 class NewCharDialog: public Gtk::Dialog {
 	public:
-		// constructor
+		/** Constructor
+		  * \param names String vector of used character display names
+		*/
 		NewCharDialog(const StringVector &names);
 		
-		// set character data
+		/** Set the character data to default dialog values to
+		  * \param ch The character to set
+		*/
 		void set_character_data(const Character &ch);
 		
-		// return the data in the dialog
+		/** Get the data in the dialog
+		  * \return Completed Character object
+		*/
 		Character get_character_data();
 		
 	private:
@@ -864,13 +963,19 @@ class NewCharDialog: public Gtk::Dialog {
 
 /***************************************************************************/
 
-// dialog displayed to select initial text block
+/** Dialog displayed to select initial text block
+*/
 class InitialBlockDialog: public Gtk::Dialog {
 	public:
-		// constructor
+		/** Constructor
+		  * \param id Internal ID of the block
+		  * \param blocks Map of blocks
+		*/
 		InitialBlockDialog(const Glib::ustring &id, BufferMap blocks);
 		
-		// get the selected text block id
+		/** Get the selected text block ID
+		  * \return The selected block's internal ID
+		*/
 		Glib::ustring get_selected_block_id() const { return m_BlocksCB->get_active_text(); }
 		
 	private:

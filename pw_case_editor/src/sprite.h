@@ -26,18 +26,34 @@
 #include <glibmm/ustring.h>
 #include <map>
 
-// struct representing a frame of animation
+/** Struct representing a frame of animation.
+  * Each sprite frame is stored in this struct. Multiple 
+  * frames are then combined into Animation structs
+*/
 struct _Frame {
+	/// The time delay in milliseconds for this frame
 	int time;
+	
+	/// Sound effect to play, if any
 	Glib::ustring sfx;
+	
+	/// Image data for this frame
 	Glib::RefPtr<Gdk::Pixbuf> pixbuf;
 };
 typedef struct _Frame Frame;
 
-// struct representing a single animation
+/** Struct representing a single animation.
+  * Each animation is made up of multiple frames, which can be played 
+  * with looping enabled or just once through.
+*/
 struct _Animation {
+	/// The internal ID of this particular animation
 	Glib::ustring id;
+	
+	/// Flag whether or not to continually loop the animation
 	bool loop;
+	
+	/// Vector of frames
 	std::vector<Frame> frames;
 };
 typedef struct _Animation Animation;
@@ -45,44 +61,74 @@ typedef struct _Animation Animation;
 typedef std::map<Glib::ustring, Animation> AnimationMap;
 typedef std::map<Glib::ustring, Animation>::iterator AnimationMapIter;
 
-// clss representing a sprite
+/** General clss representing a sprite.
+  * The Sprite class stores all of the image data needed to function. It also keeps 
+  * track of the current frame of animation, as well as management of many animations. In addition, 
+  * it provides the utility to create animations from a series of GIF files. 
+  * Besides just storing data, the Sprite class is also in charge of playing the 
+  * actual animations, including correctly timing each frame.
+*/
 class Sprite {
 	public:
-		// constructor
+		/// Default constructor
 		Sprite() { }
 		
-		// create a sprite from gifs in a directory
+		/** Create a sprite from GIFs in a directory
+		  * \param path The path to the directory
+		  * \return <b>true</b> if successful, <b>false</b> otherwise
+		*/
 		bool create_from_gifs(const Glib::ustring &path);
 		
-		// add an entire animation
+		/** Add an entire animation to the sprite
+		  * \param anim The animation
+		*/
 		void add_animation(const Animation &anim) { m_Animations[anim.id]=anim; }
 		
-		// add an animation from a gif
+		/** Add an animation from a GIF image
+		  * \param id The new ID for this animation
+		  * \param path The path to the GIF
+		*/
 		void add_animation_from_gif(const Glib::ustring &id, const Glib::ustring &path);
 		
-		// get an animation sequence
+		/** Get an animation from the sprite
+		  * \param id The ID of the animation
+		  * \return The requested animation, if found
+		*/
 		Animation& get_animation(const Glib::ustring &id) { return m_Animations[id]; }
 		
-		// get full map of animations
+		/** Get the full map of animations
+		  * \return A map of all sprite animations
+		*/
 		AnimationMap get_animations() const { return m_Animations; }
 		
-		// get the amount of animations in this sprite
+		/** Get the amount of animations in this sprite
+		  * \return The amount of animations
+		*/
 		int num_animations() const { return m_Animations.size(); }
 		
-		// remove an animation based on id
+		/** Remove an animation based on ID
+		  * \param id The ID of the animation
+		*/
 		void remove_animation(const Glib::ustring &id) { m_Animations.erase(id); }
 		
-		// add a frame to an animation sequence
+		/** Add a frame to an animation
+		  * \param id The ID of the target animation
+		  * \param time Time delay of the frame
+		  * \param pixbuf Image data for this frame
+		*/
 		void add_frame(const Glib::ustring &id, int time, const Glib::RefPtr<Gdk::Pixbuf> &pixbuf);
 		
-		// remove a frame from an animation sequence
+		/** Remove a frame from an animation
+		  * \param id The target animation's ID
+		  * \param index The 0 based index of the frame to remove
+		*/
 		void remove_frame(const Glib::ustring &id, int index);
 		
-		// clear out all animations and other data
+		/// Clear out all animations and other data
 		void clear() { m_Animations.clear(); }
 		
 	private:
-		// map of animations
+		/// Map of animations
 		AnimationMap m_Animations;
 };
 

@@ -28,28 +28,41 @@
 
 #include "case.h"
 
-// widget that allows the user to select areas on an image
+/** Widget that allows the user to select areas on an image.
+  * Although this widget can be used for a variety of reasons, it's primary goal 
+  * is to facilitate adding examinable hotspots to a location.
+*/
 class HotspotWidget: public Gtk::DrawingArea {
 	public:
-		// constructor
+		/// Default constructor
 		HotspotWidget();
 		
-		// update (x,y) coordinate pair
+		/** Update (x,y) coordinate pair for the rectangle
+		  * \param x X-coordinate
+		  * \param y Y-coordinate
+		*/
 		void update_coords(int x, int y);
 		
-		// update dimensions
+		/** Update the dimensions of the rectangle
+		  * \param w New width
+		  * \param h New height
+		*/
 		void update_dimensions(int w, int h);
 		
-		// set the pixbuf to draw
+		/** Set the pixbuf for the background image to draw
+		  * \param pb The pixbug containing image data
+		*/
 		void set_image(const Glib::RefPtr<Gdk::Pixbuf> &pb) { m_Pixbuf=pb; }
 		
-		// return the inputted hotspot
+		/** Get the inputted hotspot
+		  * \return A completed Case::Hotspot struct with new hotspot definition
+		*/
 		Case::Hotspot get_hotspot() const { return m_Hotspot; }
 		
-		// signal emitted when (x,y) pair has changed
+		/// Signal emitted when (x,y) pair has changed
 		sigc::signal<void, int, int> signal_point_changed() const { return m_SigPointChanged; }
 		
-		// signal emitted when width,height have changed
+		/// Signal emitted when width/height have changed
 		sigc::signal<void, int, int> signal_dimensions_changed() const { return m_SigDimensionsChanged; }
 		
 	private:
@@ -78,10 +91,10 @@ class HotspotWidget: public Gtk::DrawingArea {
 		// colors we use
 		Gdk::Color m_Red;
 		
-		// flag if the button is down
+		/// Flag if the mouse button is down
 		bool m_MouseDown;
 		
-		// the hotspot we are editing
+		/// The hotspot we are editing
 		Case::Hotspot m_Hotspot;
 };
 

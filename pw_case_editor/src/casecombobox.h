@@ -26,156 +26,238 @@
 
 #include "case.h"
 
-// combo box for characters
+/** Combo box displaying characters
+*/
 class CharComboBox: public Gtk::ComboBoxText {
 	public:
-		// constructor
+		/** Constructor
+		  * \param characters Map of characters to include
+		*/
 		CharComboBox(const CharacterMap &characters);
 		
-		// see if the combo box is empty
+		/** See if the combo box is empty
+		  * \return <b>true</b> if empty, <b>false</b> otherwise
+		*/
 		bool empty() const { return m_Characters.empty(); }
 		
-		// set the active character by internal name
+		/** Set the active character by internal name
+		  * \param name The internal name
+		*/
 		void set_active_internal(const Glib::ustring &name);
 		
-		// get the selected character's name
+		/** Get the selected character's name
+		  * \return The character's display name
+		*/
 		Glib::ustring get_selected_name() const;
 		
-		// get the selected character's internal name
+		/** Get the selected character's internal name
+		  * \return The character's internal name
+		*/
 		Glib::ustring get_selected_internal() const;
 		
-		// get the selected character
+		/** Get the selected character
+		  * \return Pointer to selected Character object
+		*/
 		Character* get_selected_character();
 		
 	protected:
+		/// Internal map of characters
 		CharacterMap m_Characters;
 };
 
 /***************************************************************************/
 
-// combo box for locations
+/** Combo box to display locations
+*/
 class LocationComboBox: public Gtk::ComboBoxText {
 	public:
-		// constructor
+		/** Constructor
+		  * \param locations Map of locations to display
+		*/
 		LocationComboBox(const LocationMap &locations);
 		
-		// see if the combo box is empty
+		/** See if the combo box is empty
+		  * \return <b>true</b> if empty, <b>false</b> otherwise
+		*/
 		bool empty() const { return m_Locations.empty(); }
 		
-		// set the active location via internal name
+		/** Set the active location by internal name
+		  * \param id The internal ID
+		*/
 		void set_active_internal(const Glib::ustring &id);
 		
-		// get the selected location's name
+		/** Get the selected location's name
+		  * \return The selected location's display name
+		*/
 		Glib::ustring get_selected_name() const;
 		
-		// get the selected locations's internal name
+		/** Get the selected locations's internal name
+		  * \return The internal name
+		*/
 		Glib::ustring get_selected_internal();
 		
-		// get the selected location
+		/** Get the selected location
+		  * \return Pointer to selected Case::Location object
+		*/
 		Case::Location* get_selected_location();
 		
 	protected:
-		// check if a location is a court location (uses display name as argument)
+		/** Check if a location is a court location
+		  * \param str The display name of the location to test
+		  * \return "null" if not a court location, internal ID of court location otherwise
+		*/
 		Glib::ustring is_court_location(const Glib::ustring &str);
 		
-		// check if a location is a court location (uses internal id as argument)
+		/** Check if a location is a court location by internal ID
+		  * \param str The internal ID of the location to test
+		  * \return "null" if not a court location, display name of court location otherwise
+		*/
 		Glib::ustring internal_is_court_location(const Glib::ustring &str);
 		
+		/// Internal map of locations
 		LocationMap m_Locations;
 };
 
 /***************************************************************************/
 
-// combo box for evidence
+/** Combo box to display evidence
+*/
 class EvidenceComboBox: public Gtk::ComboBoxText {
 	public:
-		// constructor
+		/** Constructor
+		  * \param ev Map of evidence to display
+		*/
 		EvidenceComboBox(const EvidenceMap &ev);
 		
-		// see if the combo box is empty
+		/** See if the combo box is empty
+		  * \return <b>true</b> if empty, <b>false</b> otherwise
+		*/
 		bool empty() const { return m_Evidence.empty(); }
 		
-		// set the active evidence via internal id
+		/** Set the active evidence by internal ID
+		  * \param id The internal ID
+		*/
 		void set_active_internal(const Glib::ustring &id);
 		
-		// get the selected location's name
+		/** Get the selected evidence's name
+		  * \return The display name of the selected evidence
+		*/
 		Glib::ustring get_selected_name() const;
 		
-		// get the selected locations's internal name
+		/** Get the selected evidence's internal ID
+		  * \return The internal ID of the selected evidence
+		*/
 		Glib::ustring get_selected_internal() const;
 		
-		// get the selected evidence
+		/** Get the selected evidence
+		  * \return Pointer to selected Case::Evidence object
+		*/
 		Case::Evidence* get_selected_evidence();
 		
 	protected:
+		/// Internal record of evidence
 		EvidenceMap m_Evidence;
 };
 
 /***************************************************************************/
 
-// combo box for text blocks
+/** Combo box to display text blocks
+*/
 class BlockComboBox: public Gtk::ComboBoxText {
 	public:
-		// constructor
+		/** Constructor
+		  * \param blocks Map of buffers to display
+		*/
 		BlockComboBox(const BufferMap &blocks);
 		
-		// see if the combo box is empty
+		/** See if the combo box is empty
+		  * \return <b>true</b> if empty, <b>false</b> otherwise
+		*/
 		bool empty() const { return m_Buffers.empty(); }
 		
-		// get the selected block internal name
+		/** Get the selected block's internal ID
+		  * \return Internal ID of selected block
+		*/
 		Glib::ustring get_selected_internal() const;
 		
-		// get the selected block
+		/** Get the selected block's contents
+		  * \return The selected block's text
+		*/
 		Glib::RefPtr<Gtk::TextBuffer> get_selected_block();
 		
 	protected:
+		/// Internal map of blocks
 		BufferMap m_Buffers;
 };
 
 /***************************************************************************/
 
-// combo box for audio
+/** Combo box to display audio samples
+*/
 class AudioComboBox: public Gtk::ComboBoxText {
 	public:
+		/// Specifies what samples should not be included in the combo box
 		enum Filter { FILTER_NONE, FILTER_SFX, FILTER_MUSIC };
 		
-		// constructor
+		/** Constructor
+		  * \param map Map of audio samples to display
+		  * \param filter What types of samples to cull
+		*/
 		AudioComboBox(const AudioMap &map, const Filter &filter=FILTER_NONE);
 		
-		// see if the combo box is empty
+		/** See if the combo box is empty
+		  * \return <b>true</b> if empty, <b>false</b> otherwise
+		*/
 		bool empty() const { return m_Audio.empty(); }
 		
-		// get the selected audio's internal name
+		/** Get the selected audio sample's internal ID
+		  * \return Internal ID of selected sample
+		*/
 		Glib::ustring get_selected_internal() const;
 		
-		// get the selected evidence
+		/** Get the selected audio sample
+		  * \return Pointer to selected Case::Audio object
+		*/
 		Case::Audio* get_selected_audio();
 		
 	protected:
+		/// Internal map of audio samples
 		AudioMap m_Audio;
 };
 
 /***************************************************************************/
 
-// combo box for images
+/** Combo box to display images
+*/
 class ImgComboBox: public Gtk::ComboBoxText {
 	public:
-		// constructor
+		/** Constructor
+		  * \param map Map of images to display
+		*/
 		ImgComboBox(const ImageMap &map);
 		
-		// see if the combo box is empty
+		/** See if the combo box is empty
+		  * \return <b>true</b> if empty, <b>false</b> otherwise
+		*/
 		bool empty() const { return m_Images.empty(); }
 		
-		// set the active image via internal id
+		/** Set the active image by internal ID
+		  * \param id Internal ID of image
+		*/
 		void set_active_internal(const Glib::ustring &id);
 		
-		// get the selected image's internal name
+		/** Get the selected image's internal ID
+		  * \return The selected image's internal ID
+		*/
 		Glib::ustring get_selected_internal() const;
 		
-		// get the selected image
+		/** Get the selected image
+		  * \return Pointer to selected Case::Image object
+		*/
 		Case::Image* get_selected_image();
 		
 	protected:
+		/// Internal record of images
 		ImageMap m_Images;
 };
 

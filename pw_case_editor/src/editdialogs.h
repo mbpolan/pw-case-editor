@@ -31,17 +31,24 @@
 
 #include "case.h"
 
-// dialog used to search blocks
+/** Dialog used to search through text blocks.
+  * Queries can be carried out using this dialog, which performs a literal
+  * search of all text blocks for user provided substrings.
+*/
 class FindDialog: public Gtk::Dialog {
 	public:
-		// constructor
+		/** Constructor
+		  * \param buffers Map of all case buffers
+		*/
 		FindDialog(const BufferMap &buffers);
 		
-		// get the selected block
+		/** Get the selected block result
+		  * \return The selected result, which is the ID of a text block
+		*/
 		Glib::ustring get_selected() { return m_ResultsList->get_text(m_ResultsList->get_selected()[0], 0); }
 		
 	private:
-		// build the ui
+		/// Build the dialog's UI
 		void construct();
 		
 		// search button click handler
@@ -73,7 +80,7 @@ class FindDialog: public Gtk::Dialog {
 		// listview for results
 		Gtk::ListViewText *m_ResultsList;
 		
-		// blocks
+		/// Record of case text blocks
 		BufferMap m_Buffers;
 };
 

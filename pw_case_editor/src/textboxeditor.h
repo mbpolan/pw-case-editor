@@ -26,19 +26,28 @@
 #include <gtkmm/drawingarea.h>
 #include <map>
 
-// widget that allows for editing a character's text box dialogue
+/** Widget that allows for editing a character's textbox dialogue.
+  * In order to provide a good tool for users to insert formatted dialogue, a preview 
+  * should be shown. This widget draws up to three lines of text, and sizes them so 
+  * they look as though they were drawn in the player.
+*/
 class TextBoxEditor: public Gtk::DrawingArea {
 	public:
-		// define formats for text
+		/// Predefined formats for text
 		enum Format { FORMAT_PLAIN=0, FORMAT_BLUE, FORMAT_DATE, FORMAT_TESTIMONY_TITLE };
 		
-		// constructor
+		/// Default constructor
 		TextBoxEditor();
 		
-		// set text for a given line
+		/** Set text for a given line
+		  * \param line The line number, a value between [1,3], inclusive
+		  * \param text The text to set
+		*/
 		void set_text(int line, const Glib::ustring &text);
 		
-		// set the format to use for text
+		/** Set the format to use for text
+		  * \param format A predefined format
+		*/
 		void set_format(const Format &format) { m_Format=format; }
 		
 	private:
@@ -54,16 +63,19 @@ class TextBoxEditor: public Gtk::DrawingArea {
 		// background image
 		Cairo::RefPtr<Cairo::ImageSurface> m_BG;
 		
-		// default text format
+		/// Record of text format
 		Format m_Format;
 		
-		// height of a line of text
+		/// Largest height of a line of text
 		int m_TextHeight;
 		
-		// mouse location
-		int m_MouseX, m_MouseY;
+		/// X-coordinate of mouse
+		int m_MouseX;
 		
-		// lines of text
+		/// Y-coordinate of mouse
+		int m_MouseY;
+		
+		/// Map of lines of text
 		std::map<int, Glib::ustring> m_Text;
 };
 

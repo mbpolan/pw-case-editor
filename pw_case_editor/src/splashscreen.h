@@ -25,10 +25,15 @@
 #include <gtkmm/image.h>
 #include <gtkmm/window.h>
 
-// borderless window that functions like a splash screen
+/** Borderless window that functions like a splash screen.
+  * Since GTK doesn't provide a stock widget to do splash screens, 
+  * this window serves to emulate one.
+*/
 class SplashScreen: public Gtk::Window {
 	public:
-		// constructor
+		/** Constructor
+		  * \param file The path to the image
+		*/
 		SplashScreen(const Glib::ustring &file);
 		
 	private:

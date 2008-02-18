@@ -29,13 +29,21 @@
 #include "case.h"
 #include "casecombobox.h"
 
-// widget that lists built-in locations and let's the user choose one
+/** Widget that lists built-in locations and let's the user choose one.
+  * Built-in locations are generally court locations, since they can't 
+  * be removed by the user. This widget provides a list of such locations, 
+  * and allows custom ones to be added as a separate list.
+*/
 class LocationWidget: public Gtk::Notebook {
 	public:
-		// constructor
+		/** Constructor
+		  * \param locations Map of case locations
+		*/
 		LocationWidget(const LocationMap &locations);
 		
-		// get the selected location
+		/** Get the selected location
+		  * \return The selected location
+		*/
 		Glib::ustring get_selected_location() const;
 		
 	private:
