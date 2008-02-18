@@ -32,17 +32,28 @@
 #include "alphaimage.h"
 #include "casecombobox.h"
 
-// dialog used to customize internal graphics
+/** Dialog used to customize internal graphics.
+  * Users can choose to customize certain parts of the player that are
+  * otherwise hardcoded. This dialog provides an easy way for the user to
+  * change the defaults
+*/
 class CustomizeDialog: public Gtk::Dialog {
 	public:
-		// constructor
+		/** Constructor
+		  * \param overrides Case::Overrides struct to set default values in dialog
+		  * \param images Map of images
+		*/
 		CustomizeDialog(const Case::Overrides &overrides, const ImageMap &images);
 		
-		// get the modified data
+		/** Get the modified overrides data
+		  * \return Updated Case::Overrides struct
+		*/
 		Case::Overrides get_data();
 		
 	protected:
-		// build the dialog
+		/** Build the dialog's UI
+		  * \param images Map of images
+		*/
 		void construct(const ImageMap &images);
 		
 		// text box custom image check button clicks
