@@ -688,7 +688,7 @@ bool UI::Manager::moveCourtCamera(const ustring &id, SDL_Surface *panorama, UI::
 	}
 	
 	// draw the panorama
-	Renderer::drawImage(Point(cur.x(), 0), 256, 192, panorama, SDL_GetVideoSurface());
+	Renderer::drawImage(Rect(Point(cur.x(), 0), 256, 192), panorama, SDL_GetVideoSurface());
 	
 	return false;
 }
@@ -792,7 +792,7 @@ bool UI::Manager::animateTestimonySequence(const ustring &id) {
 			SDL_Surface *screen=SDL_GetVideoSurface();
 			
 			// draw the rectangle
-			Renderer::drawRect(screen, Point(0, 0), 256, 192, Color(255, 255, 255));
+			Renderer::drawRect(screen, Rect(Point(0, 0), 256, 192), Color(255, 255, 255));
 			ticks++;
 		}
 		
@@ -862,11 +862,11 @@ bool UI::Manager::animateCrossExamineSequence(const ustring &id,
 	Renderer::drawImage(Point(0, 197), "court_overview_c");
 	
 	// now draw bounding rectangles for containment of lawyer images
-	Renderer::drawRect(SDL_GetVideoSurface(), Point(0, 227), 256, 2, Color(0, 0, 0));
-	Renderer::drawRect(SDL_GetVideoSurface(), Point(0, 277), 256, 2, Color(0, 0, 0));
+	Renderer::drawRect(SDL_GetVideoSurface(), Rect(Point(0, 227), 256, 2), Color(0, 0, 0));
+	Renderer::drawRect(SDL_GetVideoSurface(), Rect(Point(0, 277), 256, 2), Color(0, 0, 0));
 	
-	Renderer::drawRect(SDL_GetVideoSurface(), Point(0, 307), 256, 2, Color(0, 0, 0));
-	Renderer::drawRect(SDL_GetVideoSurface(), Point(0, 357), 256, 2, Color(0, 0, 0));
+	Renderer::drawRect(SDL_GetVideoSurface(), Rect(Point(0, 307), 256, 2), Color(0, 0, 0));
+	Renderer::drawRect(SDL_GetVideoSurface(), Rect(Point(0, 357), 256, 2), Color(0, 0, 0));
 	
 	// then draw the blue line images
 	Renderer::drawImage(Point(0, 229), "blueline");
@@ -963,7 +963,7 @@ bool UI::Manager::animateCrossExamineSequence(const ustring &id,
 			SDL_Surface *screen=SDL_GetVideoSurface();
 			
 			// draw the rectangle
-			Renderer::drawRect(screen, Point(0, 0), 256, 192, Color(255, 255, 255));
+			Renderer::drawRect(screen, Rect(Point(0, 0), 256, 192), Color(255, 255, 255));
 			ticks++;
 		}
 		

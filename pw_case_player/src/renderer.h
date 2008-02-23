@@ -29,67 +29,136 @@
 #include "common.h"
 #include "uimanager.h"
 
+/// Namespace for all higher level drawing functions
 namespace Renderer {
 
-// draw a colored rectangle to the video surface
+/** Draw a colored rectangle
+  * \param rect The rectangle to draw
+  * \param color The color for the rectangle
+*/
 void drawRect(const Rect &rect, const Color &color);
 
-// draw a colored rectangle
-void drawRect(SDL_Surface *surface, const Point &p, int w, int h, const Color &color);
+/** Draw a colored rectangle to another surface
+  * \param surface The surface to draw to
+  * \param rect The rectangle to draw
+  * \param color The color for the rectangle
+*/
+void drawRect(SDL_Surface *surface, const Rect &rect, const Color &color);
 
-// draw a full image at a point
+/** Draw a full image from the stack at a point
+  * \param p The point to draw the image at
+  * \param texId The ID of the image to draw
+*/
 void drawImage(const Point &p, const ustring &texId);
 
-// draw a full image at a point
+/** Draw a full image at a point onto another surface
+  * \param p The point to draw the image at
+  * \param dest The destination surface to draw the image on
+  * \param texId The ID of the image to draw
+*/
 void drawImage(const Point &p, SDL_Surface *dest, const ustring &texId);
 
-// draw a full image at a point
+/** Draw a full image at a point
+  * \param p The point to draw the image at
+  * \param texture The image to draw
+*/
 void drawImage(const Point &p, SDL_Surface *texture);
 
-// draw a full image at a point onto another surface
+/** Draw a full image at a point onto another surface
+  * \param p The point to draw the image at
+  * \param dest The destination surface to draw on
+  * \param texture The image to draw
+*/
 void drawImage(const Point &p, SDL_Surface *dest, SDL_Surface *texture);
 
-// draw a part of an image onto another
-void drawImage(const Point &p, int w, int h, SDL_Surface *src, SDL_Surface *dest);
+/** Draw a part of an image onto another surface
+  * \param rect The region of the image to draw
+  * \param src The source image
+  * \param dest The destination surface
+*/
+void drawImage(const Rect &rect, SDL_Surface *src, SDL_Surface *dest);
 
-// draw an image
-// (x1,y1) are source coordinate pair; (x2,y2) are destination
-void drawImage(const Point &p1, int w, int h, const Point &p2, const ustring &texId);
+/** Draw part of an image to a specific point onto the screen
+  * \param rect The part of the region to draw
+  * \param p2 The destination point
+  * \param texId The ID of the image
+*/
+void drawImage(const Rect &rect, const Point &p2, const ustring &texId);
 
-// draw a button with text
+/** Draw a flat button with text
+  * \param p1 The point at which to draw the button at
+  * \param w The width of the button
+  * \param text The text for the button
+*/
 void drawButton(const Point &p1, int w, const ustring &text);
 
-// generate a correctly rendered court panorama based on shown sprites
+/** Generate a correctly rendered court panorama based on shown sprites
+  * \param pcase Pointer to current Case::Case object
+  * \param prosecutor ID of prosecutor character, or STR_NULL if none
+  * \param attorney ID of defense character, or STR_NULL if none
+  * \param witness ID of witness character, or STR_NULL if none
+  * \return Surface containing panorama
+*/
 SDL_Surface* generateCourtPanorama(Case::Case *pcase, const ustring &prosecutor, 
 				   const ustring &attorney, const ustring &witness);
 
-// draw the initial game screen
+/// Draw the initial game screen
 void drawInitialScreen();
 
-// draw the evidence page
-// page should be based on index 0, and selected should be an index between 0 and 7
+/** Draw the evidence Court Record page
+  * \param evidence Vector of evidence in the Court Record
+  * \param page Selected page, should be 0 based
+  * \param selected Selected evidence item, should be 0 based and in the range [0,7]
+*/
 void drawEvidencePage(const std::vector<Case::Evidence*> &evidence, int page, int selected);
 
-// draw evidence information page
+/** Draw evidence information page in Court Record
+  * \param evidence Pointer to displayed evidence
+*/
 void drawEvidenceInfoPage(const Case::Evidence *evidence);
 
-// draw the profiles page
-// page should be based on index 0, and selected should be an index between 0 and 7
+/** Draw the profiles page in the Court Record
+  * \param uchars Vector of characters in the Court Record
+  * \param page Selected page, should be 0 based
+  * \param selected Selected profile, should be 0 based and in the range [0,7]
+*/
 void drawProfilesPage(const std::vector<Character*> &uchars, int page, int selected);
 
-// draw profile information page
+/** Draw the profile information page in the Court Record
+  * \param character Pointer to displayed character profile
+*/
 void drawProfileInfoPage(const Character *character);
 
-// draw the strip containing evidence or profile
+/** Draw the strip containing evidence or profile
+  * \param p The point at which to draw the strip at
+  * \param image The image to display in the small box
+  * \param name The name of the evidence or profile
+  * \param caption Text to display in the green box
+  * \param desc Description text to display below the image and caption
+  * \param description Whether or not to include the description
+  * \return Point with the current, updated drawing coordinates relative to <i>p</i>
+*/
 Point drawInfoStrip(const Point &p, SDL_Surface *image, const ustring &name, const ustring &caption, const ustring &desc, bool description);
 
-// draw the examination scene
+/** Draw the examination scene
+  * \param bg The background for the location
+  * \param cursor Position of the examine cursor
+  * \param slideBG Flag whether or not to show the animation of the background sliding down
+*/
 void drawExamineScene(SDL_Surface *bg, const Point &cursor, bool slideBG=true);
 
-// draw the movement scene
+/** Draw the movement scene
+  * \param locations Vector of location IDs to draw
+  * \param lmap Map of all locations
+  * \param selected 0 based index of selected location
+*/
 void drawMoveScene(const std::vector<ustring> &locations, LocationMap lmap, int selected);
 
-// draw talk scene
+/** Draw the talk scene
+  * \param options String vector of talk options
+  * \param selected 0 based index of selected option
+  * \param centered Whether or not to draw the buttons centered on screen
+*/
 void drawTalkScene(const std::vector<StringPair> &options, int selected, bool centered=false);
 
 }; // namespace Renderer

@@ -28,158 +28,246 @@
 #include "common.h"
 #include "sprite.h"
 
-// class representing a character and its associated sprites
+/** Class representing a character and its associated sprites.
+  * Each character in the case has his or her own set of attributes, and an associated 
+  * sprite. All of this data is condensed in this class.
+*/
 class Character {
 	public:
-		// character gender
+		/// The character's gender
 		enum Gender { GENDER_MALE=0, GENDER_FEMALE, GENDER_UNKNOWN };
 		
-		// constructor
+		/** Constructor
+		  * \param internal The internal name
+		  * \param name The display name
+		  * \param caption The text displayed in the green box in the Court Record
+		  * \param description Text displayed below the caption in the Court Record
+		*/
 		Character(const ustring &internal="", const ustring &name="", 
 			  const ustring &caption="", const ustring &description="");
 		
-		// add a talk option
+		/** Add a talk option
+		  * \param viewStr The display string for this option
+		  * \param block The block to execute if selected
+		*/
 		void addTalkOption(const ustring &viewStr, const ustring &block);
 		
-		// remove a talk option
+		/** Remove a talk option
+		  * \param id The name of the talk option to remove
+		*/
 		void removeTalkOption(const ustring &id);
 		
-		// clear talk options
+		/// Clear all talk options
 		void clearTalkOptions() { m_TalkOptions.clear(); }
 		
-		// return talk options
+		/** Get a vector of all talk options
+		  * \return A string vector of all talk options
+		*/
 		std::vector<StringPair> getTalkOptions() const { return m_TalkOptions; }
 		
-		// add a presentable piece of evidence/profile
+		/** Add a presentable piece of evidence/profile
+		  * \param id The ID of the item
+		  * \param targetBlock Block to execute if selected
+		*/
 		void addPresentable(const ustring &id, const ustring &targetBlock);
 		
-		// remove presentable evidence/profile
+		/** Remove a presentable evidence/profile
+		  * \param id The ID of the item to remove
+		*/
 		void removePresentable(const ustring &id);
 		
-		// clear accepted evidence/profiles
+		/// Clear all accepted evidence/profiles
 		void clearPresentableItems() { m_AcceptedItems.clear(); }
 		
-		// set the block id to use when a bad item is presented
+		/** Set the block ID to use when a bad item is presented
+		  * \param id The ID of the block
+		*/
 		void setBadPresentableBlock(const ustring &id) { m_BadPresentableBlock=id; }
 		
-		// set the block to use when a bad item is presented
+		/** Get the block to use when a bad item is presented
+		  * \return The ID of the block
+		*/
 		ustring getBadPresentableBlock() const { return m_BadPresentableBlock; }
 		
-		// return evidence that can be presented
+		/** Get all the evidence and profiles that can be presented
+		  * \return String vector of item IDs
+		*/
 		std::vector<StringPair> getPresentableItems() const { return m_AcceptedItems; }
 		
-		// set the internal character name
+		/** Set the internal character name
+		  * \param name The new internal name
+		*/
 		void setInternalName(const ustring &name) { m_InternalName=name; }
 		
-		// get the internal character name
+		/** Get the internal character name
+		  * \return The internal name
+		*/
 		ustring getInternalName() const { return m_InternalName; }
 		
-		// set the displayed name
+		/** Set the display name
+		  * \param name The character's new display name
+		*/
 		void setName(const ustring &name) { m_Name=name; }
 		
-		// get the displayed name
+		/** Get the display name
+		  * \return The character's display name
+		*/
 		ustring getName() const { return m_Name; }
 		
-		// set the character's gender
+		/** Set gender of this character
+		  * \param g The new gender type
+		*/
 		void setGender(const Gender &g) { m_Gender=g; }
 		
-		// get the character's gender
+		/** Get the gender of this character
+		  * \return The character's gender
+		*/
 		Gender getGender() const { return m_Gender; }
 		
-		// set the caption
+		/** Set the caption for this character
+		  * \param cap The caption
+		*/
 		void setCaption(const ustring &caption) { m_Caption=caption; }
 		
-		// get the caption
+		/** Get the caption for this character
+		  * \return The character's caption
+		*/
 		ustring getCaption() const { return m_Caption; }
 		
-		// set the description
+		/** Set the description for this character
+		  * \param desc The description
+		*/
 		void setDescription(const ustring &desc) { m_Description=desc; }
 		
-		// get the description
+		/** Get the description for this character
+		  * \return This character's description
+		*/
 		ustring getDescription() const { return m_Description; }
 		
-		// set the sprite for this character
+		/** Set the sprite for this character
+		  * \param spr The sprite to set
+		*/
 		void setSprite(const Sprite &spr) { m_Sprite=spr; }
 		
-		// get the sprite for this animation
+		/** Get the sprite for this character
+		  * \return Pointer to the sprite, or NULL if there is none
+		*/
 		Sprite* getSprite() { return &m_Sprite; }
 		
-		// set sprite name
+		/** Set the name of the sprite file to associate with this character
+		  * \param spr Path relative to case file for the sprite
+		*/
 		void setSpriteName(const ustring &name) { m_SpriteName=name; }
 		
-		// get sprite name
+		/** Get sprite file name associated with this character
+		  * \return The file path
+		*/
 		ustring getSpriteName() const { return m_SpriteName; }
 		
-		// set the root sprite animation (normal, smirk, etc)
+		/** Set the root sprite animation (normal, smirk, etc)
+		  * \param anim The ID of the root animation
+		*/
 		void setRootAnimation(const ustring &anim) { m_RootAnim=anim; }
 		
-		// get the root sprite animation
+		/** Get the root sprite animation
+		  * \return The ID of the root animation
+		*/
 		ustring getRootAnimation() const { return m_RootAnim; }
 		
-		// set if this character has a text box tag
+		/** Set if this character has a textbox tag
+		  * \param b <b>true</b> if this character has a tag, <b>false</b> otherwise
+		*/
 		void setHasTextBoxTag(bool b) { m_HasTextBoxTag=b; }
 		
-		// check if this character has a text box tag
+		/** Check if this character has a textbox tag
+		  * \return <b>true</b> if yes, <b>false</b> otherwise
+		*/
 		bool hasTextBoxTag() const { return m_HasTextBoxTag; }
 		
-		// set the text box image
+		/** Set the textbox tag image
+		  * \param surface The textbox tag image
+		*/
 		void setTextBoxTag(SDL_Surface *surface) { m_TextBoxTag=surface; }
 		
-		// get the text box tag image
+		/** Get the textbox tag image
+		  * \return The textbox tag image, if it exists
+		*/
 		SDL_Surface* getTextBoxTag() { return m_TextBoxTag; }
 		
-		// set if this character has a headshot image
+		/** Set if this character has a headshot image
+		  * \param b <b>true</b> if yes, <b>false</b> otherwise
+		*/
 		void setHasHeadshot(bool b) { m_HasHeadshot=b; }
 		
-		// check if this character has a headshot image
+		/** Check if this character has a headshot image
+		  * \return <b>true</b> if yes, <b>false</b> otherwise
+		*/
 		bool hasHeadshot() const { return m_HasHeadshot; }
 		
-		// set the headshot image
+		/** Set the headshot (profile) image
+		  * \param pixbuf The image for the profile headshot
+		*/
 		void setHeadshot(SDL_Surface *full, SDL_Surface *thumb) { m_Headshot=full; m_HeadshotThumb=thumb; }
 		
-		// get the headshot image
+		/** Get the headshot (profile) image
+		  * \return The headshot image, if it exists
+		*/
 		SDL_Surface* getHeadshot() { return m_Headshot; }
 		
-		// get the scaled headshot image
+		/** Get the scaled headshot image.
+		  * The scaled image is used in certain animations, and it automatically generated when ever
+		  * the headshot image gets updated or changed
+		  * \return The scaled headshot iamge, if it exists
+		*/
 		SDL_Surface* getHeadshotThumb() { return m_HeadshotThumb; }
 	
 	private:
-		// internal name
+		/// The internal name
 		ustring m_InternalName;
 		
-		// displayed name
+		/// The displayed name
 		ustring m_Name;
 		
-		// caption
+		/// The caption
 		ustring m_Caption;
 		
-		// description
+		/// The description
 		ustring m_Description;
 		
-		// sprite name
+		/// The sprite name
 		ustring m_SpriteName;
+		
+		/// The ID of the root animation
 		ustring m_RootAnim;
 		
-		// text box image
+		/// Flag whether or not this character has a textbox tag
 		bool m_HasTextBoxTag;
+		
+		/// The textbox tag image
 		SDL_Surface *m_TextBoxTag;
 		
-		// sprite
+		/// Sprite associated with this character
 		Sprite m_Sprite;
 		
-		// character gender
+		/// Character's gender
 		Gender m_Gender;
 		
-		// vector of talk options
+		/// Vector of talk options
 		std::vector<StringPair> m_TalkOptions;
 		
-		// vector of presentable evidence/profile ids and target blocks
+		/// Vector of presentable evidence/profile IDs and target blocks
 		std::vector<StringPair> m_AcceptedItems;
+		
+		/// Block to execute if a useless item is presented
 		ustring m_BadPresentableBlock;
 		
-		// headshot image
+		/// Flag whether or not this character has a headshot (profile) image
 		bool m_HasHeadshot;
+		
+		/// The headshot image
 		SDL_Surface *m_Headshot;
+		
+		/// The scaled headshot image
 		SDL_Surface *m_HeadshotThumb;
 };
 

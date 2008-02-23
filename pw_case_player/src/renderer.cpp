@@ -31,16 +31,16 @@
 
 // draw a colored rectangle to the video surface
 void Renderer::drawRect(const Rect &rect, const Color &color) {
-	drawRect(SDL_GetVideoSurface(), rect.getPoint(), rect.getWidth(), rect.getHeight(), color);
+	drawRect(SDL_GetVideoSurface(), rect, color);
 }
 
 // draw a colored rectangle
-void Renderer::drawRect(SDL_Surface *surface, const Point &p, int w, int h, const Color &color) {
+void Renderer::drawRect(SDL_Surface *surface, const Rect &irect, const Color &color) {
 	SDL_Rect rect;
-	rect.x=p.x();
-	rect.y=p.y();
-	rect.w=w;
-	rect.h=h;
+	rect.x=irect.getPoint().x();
+	rect.y=irect.getPoint().y();
+	rect.w=irect.getWidth();
+	rect.h=irect.getHeight();
 	
 	SDL_FillRect(surface, &rect, SDL_MapRGB(SDL_GetVideoSurface()->format, color.r(), color.g(), color.b()));
 }
@@ -94,19 +94,19 @@ void Renderer::drawImage(const Point &p, SDL_Surface *dest, SDL_Surface *texture
 }
 
 // draw a part of an image onto another
-void Renderer::drawImage(const Point &p, int w, int h, SDL_Surface *src, SDL_Surface *dest) {
+void Renderer::drawImage(const Rect &irect, SDL_Surface *src, SDL_Surface *dest) {
 	// define our region
 	SDL_Rect rect;
-	rect.x=p.x();
-	rect.y=p.y();
-	rect.w=w;
-	rect.h=h;
+	rect.x=irect.getPoint().x();
+	rect.y=irect.getPoint().y();
+	rect.w=irect.getWidth();
+	rect.h=irect.getHeight();
 	
 	SDL_BlitSurface(src, &rect, dest, NULL);
 }
 
 // draw a textured quad
-void Renderer::drawImage(const Point &p1, int w, int h, const Point &p2, const ustring &texId) {
+void Renderer::drawImage(const Rect &rect, const Point &p2, const ustring &texId) {
 	// get pointer to screen surface
 	SDL_Surface *screen=SDL_GetVideoSurface();
 	if (!screen)
@@ -123,10 +123,10 @@ void Renderer::drawImage(const Point &p1, int w, int h, const Point &p2, const u
 	SDL_Rect srcRect, destRect;
 	
 	// fill in data
-	srcRect.x=p1.x();
-	srcRect.y=p1.y();
-	srcRect.w=w;
-	srcRect.h=h;
+	srcRect.x=rect.getPoint().x();
+	srcRect.y=rect.getPoint().y();
+	srcRect.w=rect.getWidth();
+	srcRect.h=rect.getHeight();
 	
 	destRect.x=p2.x();
 	destRect.y=p2.y();
@@ -177,7 +177,7 @@ SDL_Surface* Renderer::generateCourtPanorama(Case::Case *pcase, const ustring &p
 	SDL_FillRect(panorama, NULL, 0);
 	
 	// draw the panorama onto the blank
-	Renderer::drawImage(Point(0, 0), bg->w, bg->h, bg, panorama);
+	Renderer::drawImage(Rect(Point(0, 0), bg->w, bg->h), bg, panorama);
 	
 	// now draw the sprites themselves, if they are requested
 	if (prosecutor!=STR_NULL && pcase->getCharacter(prosecutor)) {
@@ -186,7 +186,7 @@ SDL_Surface* Renderer::generateCourtPanorama(Case::Case *pcase, const ustring &p
 		
 		// draw the prosecutor on the right
 		SDL_Surface *image=sProsecutor->getCurrentFrame()->image;
-		Renderer::drawImage(Point(bg->w-256, 0), image->w, image->h, image, panorama);
+		Renderer::drawImage(Rect(Point(bg->w-256, 0), image->w, image->h), image, panorama);
 	}
 	
 	if (defense!=STR_NULL && pcase->getCharacter(defense)) {
@@ -195,7 +195,7 @@ SDL_Surface* Renderer::generateCourtPanorama(Case::Case *pcase, const ustring &p
 		
 		// draw the defense attorney on the left
 		SDL_Surface *image=sDefense->getCurrentFrame()->image;
-		Renderer::drawImage(Point(0, 0), image->w, image->h, image, panorama);
+		Renderer::drawImage(Rect(Point(0, 0), image->w, image->h), image, panorama);
 	}
 	
 	if (witness!=STR_NULL && pcase->getCharacter(witness)) {
@@ -204,20 +204,20 @@ SDL_Surface* Renderer::generateCourtPanorama(Case::Case *pcase, const ustring &p
 		
 		// draw the witness in the center
 		SDL_Surface *image=sDefense->getCurrentFrame()->image;
-		Renderer::drawImage(Point(472, 0), image->w, image->h, image, panorama);
+		Renderer::drawImage(Rect(Point(472, 0), image->w, image->h), image, panorama);
 	}
 	
 	// draw prosecuter side bench
 	SDL_Surface *pb=Textures::queryTexture("prosecutor_bench");
-	Renderer::drawImage(Point(bg->w-256, 0), pb->w, pb->h, pb, panorama);
+	Renderer::drawImage(Rect(Point(bg->w-256, 0), pb->w, pb->h), pb, panorama);
 	
 	// draw defense side bench
 	SDL_Surface *db=Textures::queryTexture("defense_bench");
-	Renderer::drawImage(Point(0, 0), db->w, db->h, db, panorama);
+	Renderer::drawImage(Rect(Point(0, 0), db->w, db->h), db, panorama);
 	
 	// draw witness bench
 	SDL_Surface *wb=Textures::queryTexture("witness_bench");
-	Renderer::drawImage(Point(472, 0), wb->w, wb->h, wb, panorama);
+	Renderer::drawImage(Rect(Point(472, 0), wb->w, wb->h), wb, panorama);
 	
 	return panorama;
 }
@@ -244,14 +244,14 @@ void Renderer::drawEvidencePage(const std::vector<Case::Evidence*> &evidence, in
 		return;
 	
 	// draw the background
-	drawRect(screen, Point(24, 233), 208, 124, Theme::lookup("court_record_bg"));
+	drawRect(screen, Rect(Point(24, 233), 208, 124), Theme::lookup("court_record_bg"));
 	
 	// draw top info bar borders
-	drawRect(screen, Point(24, 233), 208, 20, Theme::lookup("court_record_info_bar_top"));
-	drawRect(screen, Point(25, 234), 207, 19, Theme::lookup("court_record_info_bar_bottom"));
+	drawRect(screen, Rect(Point(24, 233), 208, 20), Theme::lookup("court_record_info_bar_top"));
+	drawRect(screen, Rect(Point(25, 234), 207, 19), Theme::lookup("court_record_info_bar_bottom"));
 	
 	// draw the top info bar
-	drawRect(screen, Point(26, 235), 204, 16, Theme::lookup("info_bar_bg"));
+	drawRect(screen, Rect(Point(26, 235), 204, 16), Theme::lookup("info_bar_bg"));
 	
 	// draw buttons
 	drawImage(Point(1, 253), "tc_large_btn_left");
@@ -271,10 +271,10 @@ void Renderer::drawEvidencePage(const std::vector<Case::Evidence*> &evidence, in
 	int y=259;
 	for (int i=0; i<8; i++) {
 		// draw the border
-		drawRect(screen, Point(x, y), 39, 39, Theme::lookup("court_record_item_border"));
+		drawRect(screen, Rect(Point(x, y), 39, 39), Theme::lookup("court_record_item_border"));
 		
 		// draw filled center
-		drawRect(screen, Point(x+2, y+2), 35, 35, Theme::lookup("court_record_bg"));
+		drawRect(screen, Rect(Point(x+2, y+2), 35, 35), Theme::lookup("court_record_bg"));
 		
 		// see if there is a piece of evidence at this slot
 		if (index<=evidence.size()-1 && !evidence.empty()) {
@@ -296,7 +296,7 @@ void Renderer::drawEvidencePage(const std::vector<Case::Evidence*> &evidence, in
 				Fonts::drawString(Point(24+centerx, 238), name, Fonts::FONT_INFO_PAGE, Fonts::COLOR_YELLOW);
 				
 				// draw selection box
-				drawRect(screen, Point(x-1, y-1), 42, 42, Theme::lookup("selection_box"));
+				drawRect(screen, Rect(Point(x-1, y-1), 42, 42), Theme::lookup("selection_box"));
 			}
 			
 			// draw evidence thumbnail over the empty slot borders
@@ -347,14 +347,14 @@ void Renderer::drawProfilesPage(const std::vector<Character*> &uchars, int page,
 		return;
 	
 	// draw the background
-	drawRect(screen, Point(24, 233), 208, 124, Theme::lookup("court_record_bg"));
+	drawRect(screen, Rect(Point(24, 233), 208, 124), Theme::lookup("court_record_bg"));
 	
 	// draw top info bar borders
-	drawRect(screen, Point(24, 233), 208, 20, Theme::lookup("court_record_info_bar_top"));
-	drawRect(screen, Point(25, 234), 207, 19, Theme::lookup("court_record_info_bar_bottom"));
+	drawRect(screen, Rect(Point(24, 233), 208, 20), Theme::lookup("court_record_info_bar_top"));
+	drawRect(screen, Rect(Point(25, 234), 207, 19), Theme::lookup("court_record_info_bar_bottom"));
 	
 	// draw the top info bar
-	drawRect(screen, Point(26, 235), 204, 16, Theme::lookup("info_bar_bg"));
+	drawRect(screen, Rect(Point(26, 235), 204, 16), Theme::lookup("info_bar_bg"));
 	
 	// draw buttons
 	drawImage(Point(1, 253), "tc_large_btn_left");
@@ -374,10 +374,10 @@ void Renderer::drawProfilesPage(const std::vector<Character*> &uchars, int page,
 	int y=259;
 	for (int i=0; i<8; i++) {
 		// draw the border
-		drawRect(screen, Point(x, y), 39, 39, Theme::lookup("court_record_item_border"));
+		drawRect(screen, Rect(Point(x, y), 39, 39), Theme::lookup("court_record_item_border"));
 		
 		// draw filled center
-		drawRect(screen, Point(x+2, y+2), 35, 35, Theme::lookup("court_record_bg"));
+		drawRect(screen, Rect(Point(x+2, y+2), 35, 35), Theme::lookup("court_record_bg"));
 		
 		// see if there is a profile at this slot
 		if (index<=uchars.size()-1 && !uchars.empty()) {
@@ -399,7 +399,7 @@ void Renderer::drawProfilesPage(const std::vector<Character*> &uchars, int page,
 				Fonts::drawString(Point(24+centerx, 238), name, Fonts::FONT_INFO_PAGE, Fonts::COLOR_YELLOW);
 				
 				// draw selection box
-				drawRect(screen, Point(x-1, y-1), 42, 42, Theme::lookup("selection_box"));
+				drawRect(screen, Rect(Point(x-1, y-1), 42, 42), Theme::lookup("selection_box"));
 			}
 			
 			// draw profile thumbnail over the empty slot borders

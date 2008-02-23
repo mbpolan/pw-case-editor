@@ -31,139 +31,213 @@
 class Game;
 class ValueRange;
 
-// struct that stores the current font style
+/// Struct that stores the current font style
 struct _FontStyle {
-	ustring type; // built-in types: date, etc
+	ustring type;
 	Color color;
 	int speed;
 	ColorRangeVector colors;
 };
 typedef struct _FontStyle FontStyle;
 
-// class that parsers text blocks and executes them
+/** The parser and trigger handler for the game script.
+  * The TextParser class forms the foundation of the entire game engine. It 
+  * handles text blocks, extracts and draws dialogue strings with correct timing, 
+  * and executes triggers.
+*/
 class TextParser {
 	public:
-		// filters for trigger classification
-		enum Filter { FILTER_NONE=0,		// don't filter anything
-			      FILTER_CROSS_EXAMINE	// any trigger that shouldn't show up in cross examination
+		/// Filters for trigger classification
+		enum Filter { FILTER_NONE=0,		///< Don't filter anything
+			      FILTER_CROSS_EXAMINE	///< Remove any trigger that shouldn't show up in cross examination
 			    };
 		
 		// constants
-		static const int NORMAL_FONT_SPEED=50;
-		static const uchar TEXT_SPEED_INCR_CHAR='[';
-		static const uchar TEXT_SPEED_DECR_CHAR=']';
-		static const uchar TEXT_SPEED_NORM_CHAR='|';
-		static const uchar SHAKE_SCREEN_CHAR='#';
+		static const int NORMAL_FONT_SPEED=50;		///< Regular text speed
+		static const uchar TEXT_SPEED_INCR_CHAR='[';	///< Character to increase text speed
+		static const uchar TEXT_SPEED_DECR_CHAR=']';	///< Character to decrease text speed
+		static const uchar TEXT_SPEED_NORM_CHAR='|';	///< Character to normalize text speed
+		static const uchar SHAKE_SCREEN_CHAR='#';	///< Character to shake the screen
 		
-		// constructor
+		/** Constructor
+		  * \param game Pointer to the Game engine object
+		*/
 		TextParser(Game *game);
 		
-		// set a text block to focus on
+		/** Set a text block to parse
+		  * \param block The block to parse
+		*/
 		void setBlock(const ustring &block);
 		
-		// reset the parser
+		/// Reset the parser
 		void reset();
 		
-		// see if parsing the block has paused
+		/** See if parsing the block has paused
+		  * \return <b>true</b> if done, <b>false</b> otherwise
+		*/
 		bool paused() const { return m_Pause; }
 		
-		// see if this parser is done
+		/** See if this parser is done with the current block
+		  * \return <b>true</b> if done, <b>false</b> otherwise
+		*/
 		bool done() const { return m_Done; }
 		
-		// see if this block's dialogue can't be skipped
+		/** See if this block's dialogue can't be skipped
+		  * \return <b>true</b> if dialogue can be skipped, <b>false</b> otherwise
+		*/
 		bool isBlocking() const { return m_BlockDiag; }
 		
-		// see if the current dialogue string is still be drawn
+		/** See if the current dialogue string is still being drawn
+		  * \return <b>true</b> if done, <b>false</b> otherwise
+		*/
 		bool dialogueDone() const { return (m_StrPos==m_Dialogue.size()); }
 		
-		// manually lock/unlock the _talk animation
+		/** Manually lock/unlock the speaking character's _talk animation
+		  * \param t <b>true</b> to lock the animation, <b>false</b> to unlock
+		*/
 		void lockTalk(bool t) { m_TalkLocked=t; };
 		
-		// see if the script requests that dialogue not be spoken (disable _talk animation)
+		/** See if the script requests that dialogue not be spoken (disable _talk animation)
+		  * \return <b>true</b> if the animation should be disabled, <b>false</b> otherwise
+		  * \see TextParser::lockTalk()
+		*/
 		bool talkLocked() const { return m_TalkLocked; }
 		
-		// manually set the speaker
+		/** Manually set the speaker
+		  * \param speaker ID of the speaking character
+		*/
 		void setSpeaker(const ustring &speaker) { m_Speaker=speaker; }
 		
-		// return the currently speaking character, if any
+		/** Return the currently speaking character, if any
+		  * \return The speaking character
+		*/
 		ustring getSpeaker() const { return m_Speaker; }
 		
-		// parse the given control block
-		// returns: next text block to go to, ustring::null if this one is not done
-		// being parsed
+		/** Parse the given control block
+		  * \param drawDialogue Flag whether or not to draw the dialogue text
+		  * \return ID of next block to parse, STR_NULL if no other block is to follow
+		*/
 		ustring parse(bool drawDialogue);
 		
-		// move on to the next break point
+		/// Move on to the next break point
 		void nextStep();
 		
 	private:
-		// see if a dialogue sound effect should be played for a given character
+		/** See if a dialogue sound effect should be played for a given character
+		  * \param prev The previous character
+		  * \param ch The current character
+		  * \param next The next character
+		  * \return <b>true</b> is a sound effect should be played, <b>false</b> otherwise
+		*/
 		bool shouldPlayDialogueEffect(uchar prev, uchar ch, uchar next);
 		
-		// see if a trigger should be executed right away
+		/** See if a trigger should be executed right away
+		  * \param trigger The trigger to test
+		  * \return <b>true</b> to execute immediately, <b>false</b> otherwise
+		*/
 		bool preparseTrigger(const ustring &trigger);
 		
-		// see if a trigger matches a filter
+		/** See if a trigger matches a filter
+		  * \param trigger The trigger to test
+		  * \param filter The filter to test against
+		  * \return <b>true</b> if the trigger should be filtered, <b>false</b> otherwise
+		*/
 		bool filterTrigger(const ustring &trigger, const Filter &filter);
 		
-		// parse a tag and apply styling
+		/** Parse a tag and apply styling
+		  * \param tag The tag to handle
+		*/
 		void parseTag(const ustring &tag);
 		
-		// clear current font formatting
+		/// Clear current font formatting
 		void clearFormatting();
 		
-		// execute the next trigger
+		/// Execute the next scheduled trigger
 		void executeNextTrigger();
 		
-		// execute a trigger
+		/** Execute a trigger
+		  * \param trigger The trigger to execute
+		  * \param command The trigger parameters
+		  * \return The return value of a trigger
+		*/
 		ustring doTrigger(const ustring &trigger, const ustring &command);
 		
-		// current and next blocks
+		/// The current block
 		ustring m_Block;
+		
+		/// The next block to parse
 		ustring m_NextBlock;
 		
-		// current speaking character (internal name)
+		/// Internal name of current speaking character
 		ustring m_Speaker;
+		
+		/// Gender of the current speaking character
 		Character::Gender m_SpeakerGender;
 		
-		// position in block where execution stopped
+		/// Position in block where parser was paused
 		int m_BreakPoint;
+		
+		/// Whether or not the parser is paused
 		bool m_Pause;
+		
+		/// Whether or not the parser is done with the current block
 		bool m_Done;
-		bool m_Direct; // flag if the parser should go right to the next block
-		bool m_BlockDiag; // flag if the dialogue should be blocked from being skipped
+		
+		/// Flag if the parser should go right to the next block
+		bool m_Direct;
+		
+		/// Flag if the dialogue should be blocked from being skipped
+		bool m_BlockDiag;
+		
+		/// Flag if the speaking character's _talk animation should be disabled
 		bool m_TalkLocked;
 		
-		// current dialog string data
+		/// Current dialogue string data
 		ustring m_Dialogue;
-		int m_StrPos; // position in current dialogue
-		int m_LastChar; // last time the character was drawn
-		int m_Speed; // speed of font drawing
 		
-		// is a styling tag open?
+		/// Position in current dialogue
+		int m_StrPos;
+		
+		/// The last time the previous character was drawn
+		int m_LastChar;
+		
+		/// Speed of font drawing
+		int m_Speed;
+		
+		/// Flag whether or not the a styling tag is open
 		bool m_TagOpen;
+		
+		/// The current styling tag, if any
 		ustring m_CurTag;
 		
-		// font formatting
+		/// Current font formatting
 		FontStyle m_FontStyle;
 		
-		// triggers to take place
+		/// Triggers to be executed in a linear manner
 		std::queue<StringPair> m_QueuedTriggers;
 		
-		// queued special effects or specific end of text events
+		/// Scheduled fade out
 		ustring m_QueuedFade;
+		
+		/// Scheduled testimony sprite sequence
 		ustring m_QueuedTestimony;
+		
+		/// Scheduled cross examination sprite sequence
 		ustring m_QueuedExamination;
+		
+		/// Scheduled cross examination to resume
 		ustring m_QueuedResume;
 		
-		// generic events to perform
+		//@{
+		/** Generic scheduled events to perform */
 		ustring m_QueuedEvent;
 		ustring m_QueuedEventArgs;
+		//@}
 		
-		// wait times before parsing block
+		/// Wait time before parsing block
 		int m_TimedGoto;
 		
-		// game engine pointer
+		/// Pointer to Game engine object
 		Game *m_Game;
 };
 

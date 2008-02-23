@@ -220,7 +220,7 @@ void Game::render() {
 	
 	// that annoying black bar separating the top and bottom screens? yeah,
 	// we need to redraw it as well
-	Renderer::drawRect(SDL_GetVideoSurface(), Point(0, 192), 256, 5, Color(0, 0, 0));
+	Renderer::drawRect(SDL_GetVideoSurface(), Rect(Point(0, 192), 256, 5), Color(0, 0, 0));
 	
 	// once everything static is drawn, parse the block
 	ustring status=m_Parser->parse(shouldDrawTextBox());
@@ -436,7 +436,7 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 			
 			// examine button clicked
 			else if ((e->x>=177 && e->x<=256) && (e->y>=369 && e->y<=369+21))
-				onExamineThing(m_State.examinePt.x(), m_State.examinePt.y()+197);
+				onExamineThing(Point(m_State.examinePt.x(), m_State.examinePt.y()+197));
 		}
 		
 		// check for clicks on check image scene
@@ -576,7 +576,7 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 		
 		// if the controls are drawn, see if one was clicked
 		else if (flagged(STATE_CONTROLS))
-			onControlsClicked(e->x, e->y);
+			onControlsClicked(Point(e->x, e->y));
 		
 		// if the court record page is up, see if anything was clicked
 		if (flagged(STATE_EVIDENCE_PAGE) || flagged(STATE_PROFILES_PAGE)) {
@@ -592,12 +592,12 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 			}
 			
 			else
-				onRecPageClickEvent(e->x, e->y);
+				onRecPageClickEvent(Point(e->x, e->y));
 		}
 		
 		// same applies for evidence/profiles info page
 		else if (flagged(STATE_EVIDENCE_INFO_PAGE) || flagged(STATE_PROFILE_INFO_PAGE))
-			onRecInfoPageClickEvent(e->x, e->y);
+			onRecInfoPageClickEvent(Point(e->x, e->y));
 	}
 }
 
@@ -2205,10 +2205,13 @@ void Game::onCheckButtonClicked() {
 }
 
 // click handler for controls
-void Game::onControlsClicked(int x, int y) {
-	// 8, 134
+void Game::onControlsClicked(const Point &p) {
 	bool clicked=false;
 	int dy=251;
+	
+	// cache coordinates
+	int x=p.x();
+	int y=p.y();
 	
 	// examine control
 	if ((x>=8 && x<=118) && (y>=dy && y<=dy+26)) {
@@ -2319,10 +2322,14 @@ void Game::onTalkSceneClicked(const ustring &button) {
 }
 
 // court record page click handler
-void Game::onRecPageClickEvent(int x, int y) {
+void Game::onRecPageClickEvent(const Point &p) {
 	// see where the click occurred
 	int ex=36;
 	int ey=259;
+	
+	// cache the coordinates
+	int x=p.x();
+	int y=p.y();
 	
 	// cache the page
 	bool evidence=flagged(STATE_EVIDENCE_PAGE);
@@ -2450,9 +2457,13 @@ void Game::onRecPageClickEvent(int x, int y) {
 }
 
 // court record info page click handler
-void Game::onRecInfoPageClickEvent(int x, int y) {
+void Game::onRecInfoPageClickEvent(const Point &p) {
 	int ex=0;
 	int ey=237;
+	
+	// cache the coordinates
+	int x=p.x();
+	int y=p.y();
 	
 	// see if one of the buttons was clicked
 	// left button
@@ -2505,7 +2516,7 @@ void Game::onPresentButtonActivated() {
 }
 
 // examine the hotspot in provided coordinate range
-void Game::onExamineThing(int x, int y) {
+void Game::onExamineThing(const Point &p) {
 	// get our current location
 	Case::Location *location=m_Case->getLocation(m_State.currentLocation);
 	if (!location)
@@ -2516,8 +2527,7 @@ void Game::onExamineThing(int x, int y) {
 		Case::Hotspot hspot=location->hotspots[i];
 		
 		// see if the click occured in this area
-		//if ((x>=hspot.x && x<=hspot.x+hspot.w) && (y>=197+hspot.y && y<=197+hspot.y+hspot.h)) {
-		if (Utils::pointInRect(Point(x, y), hspot.rect)) {
+		if (Utils::pointInRect(p, hspot.rect)) {
 			if (m_Case->getBuffers().find(hspot.block)!=m_Case->getBuffers().end()) {
 				m_Parser->setBlock(m_Case->getBuffers()[hspot.block]);
 				m_Parser->nextStep();

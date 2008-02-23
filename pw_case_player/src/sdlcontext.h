@@ -28,56 +28,83 @@
 #include "case.h"
 #include "game.h"
 
-// SDL rendering context
+/** Context used for rendering using SDL.
+  * Since the game engine is backed by SDL, a context needs to first
+  * be allocated before any drawing can take place. This context then
+  * handles swapping drawing buffers, and sets up all of SDL's subsystems.
+  * It also makes sure the window is correctly set up and updated.
+*/
 class SDLContext {
 	public:
-		// create a rendering context
+		/// Create a rendering context
 		static std::auto_ptr<SDLContext> create();
 		
-		// destructor
+		/// Destructor
 		~SDLContext();
 		
-		// return the context's drawing area width
+		/** Get the context's drawing area width
+		  * \return The width of the context
+		*/
 		int getWidth() const { return m_Width; }
 		
-		// return the context's drawing area height
+		/** Get the context's drawing area height
+		  * \return The height of the context
+		*/
 		int getHeight() const { return m_Height; }
 		
-		// initialize basic functionality
+		/** Initialize basic functionality
+		  * \return <b>true</b> if no errors occurred, <b>false</b> otherwise
+		*/
 		bool init();
 		
-		// initialize video output
+		/** Initialize video output
+		  * \param width The width of the video context
+		  * \param height The height of the video context
+		  * \param fullscreen Whether or not to enable fullscreen by default
+		  * \return <b>true</b> if no errors occurred, <b>false</b> otherwise
+		*/
 		bool initVideo(int width, int height, bool fullscreen);
 		
-		// initialize audio output
+		/** Initialize audio output
+		  * \return <b>true</b> if no errors occurred, <b>false</b> otherwise
+		*/
 		bool initAudio();
 		
-		// initialize the game
+		/** Initialize the game
+		  * \param pathToCase Path to the case file
+		  * \return <b>true</b> if no errors occurred, <b>false</b> otherwise
+		*/
 		bool initGame(const ustring &pathToCase);
 		
-		// render the scene
+		/// Render the scene
 		void render();
 		
-		// handle keyboard event
+		/** Handle keyboard events
+		  * \param e SDL struct representing the keyboard event
+		*/
 		void onKeyboardEvent(SDL_KeyboardEvent *e);
 		
-		// handle mouse click event
+		/** Handle mouse click events
+		  * \param e SDL struct representing the mouse event
+		*/
 		void onMouseEvent(SDL_MouseButtonEvent *e);
 		
 	private:
-		// hidden constructor
+		/// Constructor
 		SDLContext();
 		
-		// dimensions of drawing area
+		//@{
+		/** Dimensions of context */
 		static int m_Width, m_Height;
+		//@}
 		
-		// flags passed to set the video mode
+		/// Flags passed to set the video mode
 		int m_VFlags;
 		
-		// game engine
+		/// The Game engine
 		Game *m_Game;
 		
-		// screen surface
+		/// Screen surface
 		SDL_Surface *m_Screen;
 };
 

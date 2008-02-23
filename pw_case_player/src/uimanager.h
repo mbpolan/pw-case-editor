@@ -31,18 +31,18 @@
 class Case::Case;
 class Game;
 
-// the UI namespace
+/// Namespace for animations and other interface components
 namespace UI {
 
 typedef void (Game::*Callback) (const ustring &);
 
-// define limits for special animations
+/// Limits for animations involving movement of court camera
 enum Limit { LIMIT_NONE=0,
              LIMIT_DEFENSE_STAND,
              LIMIT_PROSECUTOR_STAND,
              LIMIT_WITNESS_STAND };
 
-// animation types
+/// Types of animations
 enum AnimType { ANIM_SIDE_HBOUNCE=0,
 		ANIM_SIDE_VBOUNCE,
 		ANIM_FADE_OUT_TOP,
@@ -64,71 +64,97 @@ enum AnimType { ANIM_SIDE_HBOUNCE=0,
 		ANIM_BG_SLIDE,
 		ANIM_ADD_EVIDENCE };
 
-// a struct containing animation data (not all variables pertinent)
+/** A struct containing animation data.
+  * This is a general purpose struct that holds any pertinent data about 
+  * an animation. Not all variables are used by some animations.
+*/
 struct _Animation {
-	// texture images associated with this animation
+	/// First texture image associated with this animation
 	ustring texture;
+	
+	/// Second texture image associated with this animation
 	ustring texture2;
 	
-	// enabled textures
+	/// Flag that enables drawing the first texture
 	bool texture1Active;
+	
+	/// Flag that enables drawing the second texture
 	bool texture2Active;
 	
-	// direct pointer to texture
+	/// A direct pointer to texture
 	SDL_Surface *surface;
 	
-	// text for gui
+	/// Text for GUI elements
 	ustring txt;
 	
-	// sound effect
+	/// ID of a sound effect
 	ustring sfx;
 	
-	// callback for gui clicks
+	/// Callback for GUI clicks
 	Callback callback;
 	
-	// dimensions
+	/// Arbitrary width
 	int w;
+	
+	/// Arbitrary height
 	int h;
 	
-	// current position of element
+	/// Current position of an element
 	Point current;
 	
-	// points of origin for sync bounce animations
+	//@{
+	/** Points of origin for sync bounce animations */
 	Point p1;
 	Point p2;
+	//@}
 	
-	// location differences
+	/// Used to store difference of two other points
 	Point delta;
 	
-	// type of animation
+	/// Type of animation this struct represents
 	AnimType type;
 	
-	// for sideways bounce limitations
+	//@{
+	/** Variables to store coordinates for side bounce animations */
 	int leftLimit;
 	int rightLimit;
 	int topLimit;
 	int bottomLimit;
+	//@}
 	
-	// the velocity and its speed multiplier of the animation
+	/// The pixel velocity of the animation
 	int velocity;
+	
+	/// Value included in calculations in animation speed
 	int multiplier;
 	
-	// current alpha value
+	/// The current alpha value
 	int alpha;
 	
-	// internal tick counter
+	/// Internal tick counter
 	int ticks;
 	
-	// speed of the animation in milliseconds
+	/// The duration of the animation in milliseconds
 	int speed;
+	
+	/// The last time this animation was drawn
 	int lastDraw;
 };
 typedef struct _Animation Animation;
 
-// a gui button
+/** Class that represents a GUI button.
+  * For simplicity, each GUI button has to be allocated by providing this class
+  * with the proper values. The UI::Manager then handles converting the values to 
+  * correctly assign the Animation struct members.
+*/
 class Button {
 	public:
-		// constructor
+		/** Constructor
+		  * \param text The text of the button
+		  * \param p The top-left corner where this button should be drawn
+		  * \param slot The function to call when clicked, or NULL to take no action
+		  * \param sfx Optional sound effect to play on click
+		*/
 		Button(const ustring &text, const Point &p, Callback slot, const ustring &sfx=STR_NULL) {
 			m_Text=text;
 			m_Point=p;
@@ -136,10 +162,24 @@ class Button {
 			m_SFX=sfx;
 		}
 		
-		// get attributes of button
+		/** Get the text in the button
+		  * \return The button label text
+		*/
 		ustring getText() const { return m_Text; }
+		
+		/** Get the sound effect associated with this button
+		  * \return The associated sound effect, or "null" if none
+		*/
 		ustring getSFX() const { return m_SFX; }
+		
+		/** Get the top-left corner where this button is drawn
+		  * \return The top-left point
+		*/
 		Point getPoint() const { return m_Point; }
+		
+		/** Get the function callback for this button
+		  * \return The callback function
+		*/
 		Callback getSlot() const { return m_Slot; }
 		
 	private:
@@ -149,146 +189,275 @@ class Button {
 		Callback m_Slot;
 };
 
-// class that manages ui state
+/** The core class that manages all user interface animations and GUI effects.
+  * This class is responsible for storing, allocating, and drawing various types of
+  * animations that are found in the player. There should only be once instance of this
+  * class, and that is in the actual Game class itself, although other functions can make
+  * use of the UI::Manager's drawing utilities by calling the UI::Manager::instance() function,
+  * which will return the pointer to the instance of the allocated class itself.
+  *
+  * Most of the rendering functions return a bool, which signifies whether or not the animation 
+  * in question has completed. If an animation returns an int, then the value returned will 
+  * represent the current state of the animation; that is, these types of animations are done in two parts:
+	- -1: animation is still progressing towards midpoint or towards the end
+	- 0: animation has reached the midpoint
+	- 1: animation is progressing to the end
+*/
 class Manager {
 	public:
-		// constructor
+		/** Constructor
+		  * \param pcase Pointer to a Case::Case object to use for this manager
+		*/
 		Manager(Case::Case *pcase);
 		
-		// get the only instance of the ui manager
+		/** Get the only instance of this class
+		  * \return A pointer to the only instance of this class
+		*/
 		static Manager* instance();
 		
-		// get a pointer to an animation struct
+		/** Get a pointer to an animation struct
+		  * \return A pointer to the Animation struct requested, NULL if it doesn't exist
+		*/
 		Animation* getAnimation(const ustring &id);
 		
-		// handle any mouse events on a gui element
+		/** Handle any mouse events on a GUI element
+		  * \param mouse Current position of cursor
+		  * \param id ID of GUI element to check
+		*/
 		void handleGUIClick(const Point &mouse, const ustring &id);
 		
-		// handle any mouse events on gui elements
+		/** Iterate over all GUI elements, see which were clicked, and execute callbacks
+		  * \param mouse Current position of cursor
+		  * \param ids String vector of IDs of elements to check
+		*/
 		void handleGUIClick(const Point &mouse, const StringVector &ids);
 		
-		// reverse the velocity of a registered animation
+		/** Reverse the velocity of a registered animation
+		  * \param id The ID of the animation
+		*/
 		void reverseVelocity(const ustring &id);
 		
-		// disable one texture of a synchronized bounce animation
-		// passing true disables left texture, false disables right
+		/** Disable one texture of a synchronized bounce animation
+		  * \param id The ID of the animation
+		  * \param left Passing <b>true</b> disables left texture, <b>false</b> disables right
+		*/
 		void unsyncBounceTexture(const ustring &id, bool left);
 		
-		// enable one texture of a synchronized bounce animation
-		// passing true enables left texture, false enables right
+		/** Enable one texture of a synchronized bounce animation
+		  * \param id The ID of the animation
+		  * \param left Passing <b>true</b> enables left texture, <b>false</b> enables right
+		*/
 		void resyncBounceTexture(const ustring &id, bool left);
 		
-		// see if any gui animations are still occurring
+		/** See if any GUI animations are still occurring
+		  * \return <b>true</b> if there are animations still active, <b>false</b> otherwise
+		*/
 		bool isGUIBusy();
 		
-		// set button text for a gui button
+		/** Set button text for a GUI button
+		  * \param id The ID of the button
+		  * \param text The text to set
+		*/
 		void setGUIButtonText(const ustring &id, const ustring &text);
 		
-		// check to see if the mouse is over a button
+		/** Check to see if the mouse is over a button
+		  * \param id The ID of the button to check
+		  * \param p The current position of the cursor
+		  * \return <b>true</b> if there is a button under the cursor, <b>false</b> otherwise
+		*/
 		bool mouseOverButton(const ustring &id, const Point &p);
 		
-		// set a gui button's state to clicked
+		/** Executes the callback for the clicked button and prepares it for animation
+		  * \param id The ID of the button
+		*/
 		void clickGUIButton(const ustring &id);
 		
-		// register a gui button
+		/** Register a GUI button
+		  * \param id The ID of the button
+		  * \param w The maximum width this button can occupy
+		  * \param button The Button object to register
+		*/
 		void registerGUIButton(const ustring &id, int w, const Button &button);
 		
-		// register a ui animation that bounces the image from side to side
-		// limits are relative to origin; that is, if origin is (100, 100), and if the animation
-		// should bounce sideways 10 pixels in each direction, limits should be -10 and 10, respectively
+		/** Register an animation that bounces an image from side to side.
+		  * Limits are relative to origin; that is, if origin is (100, 100), and if the animation
+		  * should bounce sideways 10 pixels in each direction, limits should be -10 and 10, respectively
+		  * \param id The ID of the animation
+		  * \param texture The image to associate
+		  * \param horizontal Flag whether or not this animation bounces the image horizontally, or vertically
+		  * \param origin The initial starting point
+		  * \param limitA The left limit
+		  * \param limitB The right limit
+		  * \param speed The speed of the animation
+		*/
 		void registerSideBounceAnimation(const ustring &id, const ustring &texture, bool horizontal, 
 						 const Point &origin, int limitA, int limitB, int speed);
 		
-		// register a fade out effect
+		/** Register a fade out effect
+		  * \param id The ID of the animation
+		  * \param speed The speed of the fade out
+		  * \param type The type of fade out
+		*/
 		void registerFadeOut(const ustring &id, int speed, const AnimType &type);
 		
-		// register a flash effect
+		/** Register a flash effect
+		  * \param id The ID of the animation
+		  * \param speed The speed of the flash
+		*/
 		void registerFlash(const ustring &id, int speed);
 		
-		// register a court camera effect
+		/** Register a court camera movement effect
+		  * \param id The ID of the animation
+		*/
 		void registerCourtCameraMovement(const ustring &id);
 		
-		// register a testimony sprite sequence animation
+		/** Register a testimony sprite sequence animation
+		  * \param id The ID of the animation
+		*/
 		void registerTestimonySequence(const ustring &id);
 		
-		// register a cross examination sprite sequence animation
+		/** Register a cross examination sprite sequence animation
+		  * \param id The ID of the animation
+		*/
 		void registerCrossExamineSequence(const ustring &id);
 		
-		// register a blinking animation
+		/** Register an animation that blinks an image
+		  * \param id The ID of the animation
+		  * \param texture The image to associate
+		  * \param p The point at which to draw the image
+		  * \param speed The speed of the blinking effect
+		*/
 		void registerBlink(const ustring &id, const ustring &texture, const Point &p, int speed);
 		
-		// register a synchronized bounce animation
-		// offset: see registerSideBounceAnimation
+		/** Register a synchronized image bounce animation.
+		  * For an explanation of the limits in this function, see the documentation for
+		  * UI::Manager::registerSideBounceAnimation()
+		  * \param id The ID of the animation
+		  * \param tex1 The first image
+		  * \param tex2 The second image
+		  * \param p1 The point at which to draw the first image
+		  * \param p2 The point at which to draw the second image
+		  * \param limA The left limit
+		  * \param limB The right limit
+		  * \param speed The speed of the bounce animation
+		*/
 		void registerSyncBounce(const ustring &id, const ustring &tex1, const ustring &tex2,
 					const Point &p1, const Point &p2, int limA, int limB, int speed);
 		
-		// register a green bar control animation
+		/** Register a green bar control animation
+		  * \param id The ID of the animation
+		  * \param texture The image to use for the green bar
+		  * \param p The point at which to draw this animation
+		*/
 		void registerGreenBarControl(const ustring &id, const ustring &texture, const Point &p);
 		
-		// register an exclamation animation ("Objection!", "Hold It!", and "Take That!")
+		/** Register an exclamation animation ("Objection!", "Hold It!", and "Take That!")
+		  * \param id The ID of the animation
+		  * \param texture The image to use for the exclamation
+		  * \param p The point at which to draw the animation
+		*/
 		void registerExclamation(const ustring &id, const ustring &texture, const Point &p);
 		
-		// register a sliding background animation
+		/** Register a sliding background animation
+		  * \param id The ID of the animation
+		*/
 		void registerBGSlide(const ustring &id);
 		
-		// register an animation to handle adding evidence
+		/** Register an animation to handle adding evidence
+		  * \param id The ID of the animation
+		*/
 		void registerAddEvidenceSequence(const ustring &id);
 		
-		// draw an animation
+		/** Draw an arbitrary animation
+		  * \param id The ID of the animation
+		*/
 		void drawAnimation(const ustring &id);
 		
-		/* 
-		   Note: most of the following functions return a bool, which signifies whether
-		   or not the animation in question has completed
-		
-		   If an animation returns an int, then the value returned will represent the current
-		   state of the animation; that is, these types of animations are done in two parts:
-			-1: animation is still progressing towards midpoint or towards the end
-			 0: animation has reached the midpoint
-			 1: animation is progressing to the end
+		/** Fade out the current scene to black
+		  * \param id The ID of the animation
+		  * \return An animation return code (see the description of these functions)
 		*/
-		
-		// fade out the current scene to black
 		int fadeOut(const ustring &id);
 		
-		// animate the add evidence animation
+		/** animate the add evidence animation
+		  * \param id The ID of the animation
+		  * \param evidence Pointer to evidence to include in the animation
+		  * \return An animation return code (see the description of these functions)
+		*/
 		int animateAddEvidence(const ustring &id, const Case::Evidence *evidence);
 		
-		// perform a flash effect
+		/** Perform a flash effect
+		  * \param id The ID of the animation
+		  * \return <b>true</b> if the animation is done, <b>false</b> otherwise
+		*/
 		bool flash(const ustring &id);
 		
-		// perform a blinking animation
+		/** Perform an image blink animation
+		  * \param id The ID of the animation
+		  * \return <b>true</b> if the animation is done, <b>false</b> otherwise
+		*/
 		bool blink(const ustring &id);
 		
-		// perform an exclamation animation
+		/** Perform an exclamation animation
+		  * \param id The ID of the animation
+		  * \param source The character who is the source of this exclamation
+		  * \return <b>true</b> if the animation is done, <b>false</b> otherwise
+		*/
 		bool exclamation(const ustring &id, const Character *source);
 		
-		// slide a background down
+		/** Slide a background image
+		  * \param id The ID of the animation
+		  * \param bg The background image
+		  * \return <b>true</b> if the animation is done, <b>false</b> otherwise
+		*/
 		bool slideBG(const ustring &id, SDL_Surface *bg);
 		
-		// perform a court camera movement
+		/** Perform a court camera movement
+		  * \param id The ID of the animation
+		  * \param panorama Pointer to an image of a panorama of the court
+		  * \param start The starting location
+		  * \param end The ending location
+		  * \return <b>true</b> if the animation is done, <b>false</b> otherwise
+		*/
 		bool moveCourtCamera(const ustring &id, SDL_Surface *panorama, Limit start, Limit end);
 		
-		// animate the testimony sprite sequence
+		/** Animate the testimony sprite sequence
+		  * \param id The ID of the animation
+		  * \return <b>true</b> if the animation is done, <b>false</b> otherwise
+		*/
 		bool animateTestimonySequence(const ustring &id);
 		
-		// animate the cross examination sprite sequence
+		/** Animate the cross examination sprite sequence
+		  * \param id The ID of the animation
+		  * \param leftLawyer Image of the character to appear in the upper image strip
+		  * \param rightLawyer Image of the character to appear in the lower image strip
+		  * \return <b>true</b> if the animation is done, <b>false</b> otherwise
+		*/
 		bool animateCrossExamineSequence(const ustring &id, SDL_Surface *leftLawyer, SDL_Surface *rightLawyer);
 		
-		// animate a synchronized bounce animation
+		/** Animate a synchronized bounce animation
+		  * \param id The ID of the animation
+		  * \return <b>true</b> if the animation is done, <b>false</b> otherwise
+		*/
 		bool animateSyncBounce(const ustring &id);
 		
-		// animate the green bar for cross examination attempts and other misc things
+		/** Animate the green bar for cross examination attempts and other misc things
+		  * \param id The ID of the animation
+		  * \return <b>true</b> if the animation is done, <b>false</b> otherwise
+		*/
 		bool animateGreenBar(const ustring &id);
 		
-		// animate a gui button
+		/** Animate a GUI button
+		  * \param id The ID of the button
+		  * \return <b>true</b> if the animation is done, <b>false</b> otherwise
+		*/
 		bool animateGUIButton(const ustring &id);
 		
 	private:
-		// pointer to current case
+		/// Pointer to current case
 		Case::Case *m_Case;
 		
-		// map of registered animations
+		/// Map of registered animations
 		std::map<ustring, Animation> m_Animations;
 };
 

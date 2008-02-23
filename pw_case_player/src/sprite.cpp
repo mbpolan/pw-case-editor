@@ -112,7 +112,7 @@ void Sprite::animate(int x, int y, SDL_Surface *dest) {
 }
 
 // render a single frame of current animation
-void Sprite::renderFrame(int x, int y, int frame) {
+void Sprite::renderFrame(const Point &p, int frame) {
 	// get the current animation
 	Animation *anim=getAnimation(m_CurAnim);
 	if (!anim)
@@ -127,7 +127,7 @@ void Sprite::renderFrame(int x, int y, int frame) {
 		return;
 	
 	// draw the requested frame
-	Renderer::drawImage(Point(x, y), anim->frames[frame].image);
+	Renderer::drawImage(p, anim->frames[frame].image);
 }
 
 // get an animation sequence

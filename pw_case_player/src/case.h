@@ -30,109 +30,167 @@
 #include "character.h"
 #include "common.h"
 
+/// Namespace for all Case related objects and definitions
 namespace Case {
 
-// law system for cases to follow
+/// The amount of days that each trial lasts
 enum LawSystem { TWO_DAY=0, THREE_DAY };
 
-// background types
+/// The type of background
 enum BackgroundType { BG_SINGLE_SCREEN=0, BG_DOUBLE_SCREEN };
 
-// general case data and technical info
+/// General case data and technical info
 struct _Overview {
-	ustring name; // the name of the case (Turnabout Whatever, etc)
-	ustring author; // who wrote this case and its contents
-	LawSystem lawSys; // the law system (how many days for a trial)
+	/// The name of the case (Turnabout Whatever, etc)
+	ustring name;
+	
+	/// Who wrote this case and its contents
+	ustring author;
+	
+	/// The law system (how many days for a trial)
+	LawSystem lawSys;
 };
 typedef struct _Overview Overview;
 
-// user-defined overrides
+/// Struct to store user-defined overrides and customizations
 struct _Overrides {
-	int textboxAlpha; // alpha value for text box
-	ustring titleScreen; // custom title screen image
+	/// Alpha value for the textbox
+	int textboxAlpha;
+	
+	/// ID of custom image to use for the title screen
+	ustring titleScreen;
 };
 typedef struct _Overrides Overrides;
 
-// background data
+/// Information about a single background
 struct _Background {
-	ustring id; // id referenced from within the script
-	BackgroundType type; // type of background (spans 2 screens or 1)
-	SDL_Surface *texture; // texture id
+	/// ID referenced from within the script
+	ustring id;
+	
+	/// The amount of screens that this background spans
+	BackgroundType type;
+	
+	/// The actual background image
+	SDL_Surface *texture;
 };
 typedef struct _Background Background;
 
-// evidence image/item data
+/// Information about a piece of evidence
 struct _Evidence {
-	ustring id; // id referenced from within the script
-	ustring name; // name of this piece of evidence
-	ustring caption; // caption displaying info about evidence
-	ustring description; // string describing the image
-	ustring checkID; // image id for check button
-	SDL_Surface *texture; // texture id
-	SDL_Surface *thumb; // scaled thumbnail for evidence window
+	/// ID referenced from within the script
+	ustring id;
+	
+	/// The display name of this piece of evidence
+	ustring name;
+	
+	/// Text shown in the green box in the Court Record
+	ustring caption;
+	
+	/// Text displayed below the image and caption in the Court Record
+	ustring description;
+	
+	/// ID of image to display when the user clicks the Check button
+	ustring checkID;
+	
+	/// The actual image of the evidence
+	SDL_Surface *texture;
+	
+	/// Scaled image of the evidence
+	SDL_Surface *thumb;
 };
 typedef struct _Evidence Evidence;
 
-// an examinable area in a location
+/// Information about an examinable hotspot in a location
 struct _Hotspot {
+	/// The bounding rectangle for this hotspot
 	Rect rect;
-	ustring block; // the block to execute if examined
+	
+	/// ID of block to set when this hotspot is examined
+	ustring block;
 };
 typedef struct _Hotspot Hotspot;
 
-// location data
+/// Information about a location
 struct _Location {
-	ustring id; // id referenced from within the script
-	ustring name; // name of this location
-	ustring triggerBlock; // block to execute upon next arrival at location
+	/// ID referenced from within the script
+	ustring id;
 	
-	ustring character; // character located here
-	ustring music; // music being played at this location
+	/// The display name of this location
+	ustring name;
 	
-	ustring bg; // background id referenced from within script
-	SDL_Surface *bgScaled; // scaled background image
+	/// Block to execute upon arriving at location
+	ustring triggerBlock;
 	
-	std::vector<Hotspot> hotspots; // vector of examinable hotspots
-	std::vector<ustring> moveLocations; // ids of locations that player can move to from here
+	/// Character placed at this location
+	ustring character;
+	
+	/// Music at this location
+	ustring music;
+	
+	/// ID of background to show in locations list in Move screen
+	ustring bg;
+	
+	/// Scaled background image
+	SDL_Surface *bgScaled;
+	
+	/// Vector of examinable hotspots
+	std::vector<Hotspot> hotspots;
+	
+	/// IDs of locations that player can move to from here
+	std::vector<ustring> moveLocations; 
 };
 typedef struct _Location Location;
 
-// arbitrary image
+/// Information about an image
 struct _Image {
-	ustring id; // id referenced from within the script
-	SDL_Surface *texture; // texture image itself
+	/// ID referenced from within the script
+	ustring id;
+	
+	/// The image data
+	SDL_Surface *texture;
 };
 typedef struct _Image Image;
 
-// a single piece of testimony
+/// A single piece of testimony
 struct _TestimonyPiece {
+	/// The dialogue spoken in this piece of testimony
 	ustring text;
+	
+	/// ID of evidence that can be presented at this point
 	ustring presentId;
+	
+	/// ID of block to set if the user presents evidence
 	ustring presentBlock;
+	
+	/// ID of block to set if the user presses the witness
 	ustring pressBlock;
+	
+	/// Whether or not this piece is initially hidden
 	bool hidden;
 };
 typedef struct _TestimonyPiece TestimonyPiece;
 
-// a single testimony from a character
+/// A single testimony from a character
 struct _Testimony {
-	// id of this testimony
-	ustring id;
+	/// ID of this testimony referenced from within the script
+	Glib::ustring id;
 	
-	// testimony title
-	ustring title;
+	/// Display title of testimony
+	Glib::ustring title;
 	
-	// speaker
-	ustring speaker;
+	/// The witness who presents this testimony
+	Glib::ustring speaker;
 	
-	// next block to follow upon completion
-	ustring nextBlock;
-	ustring followLocation;
+	/// Block to execute following testimony completion
+	Glib::ustring nextBlock;
 	
-	// next block to follow upon cross examination end
-	ustring xExamineEndBlock;
+	/// ID of court location to go to after testimony is completed
+	Glib::ustring followLocation;
 	
-	// vector of testimony pieces
+	/// Block to execute if the cross examination is completed
+	Glib::ustring xExamineEndBlock;
+	
+	/// Vector of pieces making up this testimony
 	std::vector<TestimonyPiece> pieces;
 };
 typedef struct _Testimony Testimony;
@@ -152,132 +210,199 @@ typedef std::vector<ustring> StringVector;
 
 namespace Case {
 
-// core class that holds all pertinent data about a case
-// this class should also be reused as-is in the engine
+/** Core class that holds all pertinent data about a case.
+  * This class stores all of the individual bits and pieces of a case, 
+  * such as testimonies, text blocks, images, characters, etc.
+*/
 class Case {
 	public:
-		// constructor
+		/// Default constructor
 		Case();
 		
-		// destructor
+		/// Destructor
 		~Case();
 		
-		// set the case overrides
-		void setOverrides(const Overrides &ov) { m_Overrides=ov; }
-		
-		// get the case overrides
-		Overrides getOverrides() const { return m_Overrides; }
-		
-		// set the initial text block id
-		void setInitialBlockId(const ustring &id) { m_InitialBlockId=id; }
-		
-		// get the initial text block id
-		ustring getInitialBlockId() const { return m_InitialBlockId; }
-		
-		// add a character
-		void addCharacter(const Character &character);
-		
-		// add a background
-		void addBackground(const Background &bg);
-		
-		// add a piece of evidence
-		void addEvidence(const Evidence &evidence);
-		
-		// add an image
-		void addImage(const Image &image);
-		
-		// add a location
-		void addLocation(const Location &loc);
-		
-		// add a testimony
-		void addTestimony(const Testimony &testimony);
-		
-		// add a text buffer
-		void addBuffer(const ustring &id, const ustring &contents);
-		
-		// get a character
-		Character* getCharacter(const ustring &id);
-		
-		// get a background
-		Background* getBackground(const ustring &id);
-		
-		// get a piece of evidence
-		Evidence* getEvidence(const ustring &id);
-		
-		// get an image
-		Image* getImage(const ustring &id);
-		
-		// get a location
-		Location* getLocation(const ustring &id);
-		
-		// get a testimony
-		Testimony* getTestimony(const ustring &id);
-		
-		// return a vector of evidence based on vector of string ids
-		std::vector<Evidence*> getEvidenceFromIds(const StringVector &vec);
-		
-		// return a vector of characters based on vector of string ids
-		std::vector<Character*> getCharactersFromIds(const StringVector &vec);
-		
-		// clear the entire case information
-		void clear();
-		
-		// set overview
+		/** Set the case overview
+		  * \param overview An Overview struct
+		*/
 		void setOverview(const Overview &overview);
 		
-		// return the current case overview
+		/** Get the current case overview
+		  * \return The Overview struct for this case
+		*/
 		Overview getOverview() const { return m_Overview; }
 		
-		// return full map of characters
+		/** Set the overrides for this case
+		  * \param ov A filled Overrides struct
+		*/
+		void setOverrides(const Overrides &ov) { m_Overrides=ov; }
+		
+		/** Get the case overrides
+		  * \return The set Overrides struct
+		*/
+		Overrides getOverrides() const { return m_Overrides; }
+		
+		/** Set the ID of the initial text block
+		  * \param id ID of the text block
+		*/
+		void setInitialBlockId(const ustring &id) { m_InitialBlockId=id; }
+		
+		/** Get the initial text block ID
+		  * \return ID of the initial text block
+		*/
+		ustring getInitialBlockId() const { return m_InitialBlockId; }
+		
+		/** Add a character to the internal map
+		  * \param character The character
+		*/
+		void addCharacter(const Character &character);
+		
+		/** Add a background to the internal map
+		  * \param bg The background
+		*/
+		void addBackground(const Background &bg);
+		
+		/** Add a piece of evidence to the internal map
+		  * \param evidence The evidence
+		*/
+		void addEvidence(const Evidence &evidence);
+		
+		/** Add an image to the internal map
+		  * \param image The image
+		*/
+		void addImage(const Image &image);
+		
+		/** Add a location to the internal map
+		  * \param loc The location
+		*/
+		void addLocation(const Location &loc);
+		
+		/** Add a testimony to the internal map
+		  * \param testimony The testimony
+		*/
+		void addTestimony(const Testimony &testimony);
+		
+		/** Add a text buffer to the internal map
+		  * \param id The ID of the block
+		  * \param contents The block contents
+		*/
+		void addBuffer(const ustring &id, const ustring &contents);
+		
+		/** Get a character
+		  * \param id The ID of the character
+		  * \return Pointer to a Character object
+		*/
+		Character* getCharacter(const ustring &id);
+		
+		/** Get a background
+		  * \param id The ID of the background
+		  * \return Pointer to a Case::Background object
+		*/
+		Background* getBackground(const ustring &id);
+		
+		/** Get a piece of evidence
+		  * \param id The ID of the evidence
+		  * \return Pointer to a Case::Evidence object
+		*/
+		Evidence* getEvidence(const ustring &id);
+		
+		/** Get an image
+		  * \param id The ID of the image
+		  * \return Pointer to a Case::Image object
+		*/
+		Image* getImage(const ustring &id);
+		
+		/** Get a location
+		  * \param id The ID of the location
+		  * \return Pointer to a Case::Location object
+		*/
+		Location* getLocation(const ustring &id);
+		
+		/** Get a testimony
+		  * \param id The ID of the testimony
+		  * \return Pointer to a Case::Testimony object
+		*/
+		Testimony* getTestimony(const ustring &id);
+		
+		/** Get a vector of evidence based on vector of string IDs
+		  * \param vec The vector of IDs
+		  * \return A vector of Case::Evidence pointers matching the IDs
+		*/
+		std::vector<Evidence*> getEvidenceFromIds(const StringVector &vec);
+		
+		/** Get a vector of characters based on vector of string IDs
+		  * \param vec Vector of IDs
+		  * \return A vector of Character pointers matching the IDs
+		*/
+		std::vector<Character*> getCharactersFromIds(const StringVector &vec);
+		
+		/// Clear the entire case information
+		void clear();
+		
+		/** Get a full map of characters
+		  * \return Map of all characters
+		*/
 		CharacterMap getCharacters() const { return m_Characters; }
 		
-		// return full map of backgrounds
+		/** Get a full map of backgrounds
+		  * \return Map of all backgrounds
+		*/
 		BackgroundMap getBackgrounds() const { return m_Backgrounds; }
 		
-		// return full map of evidence
+		/** Get a full map of evidence
+		  * \return Map of all evidence
+		*/
 		EvidenceMap getEvidence() const { return m_Evidence; }
 		
-		// return full map of images
+		/** Get a full map of images
+		  * \return Map of all images
+		*/
 		ImageMap getImages() const { return m_Images; }
 		
-		// return a full map of locations
+		/** Get a full map of locations
+		  * \return Map of all locations
+		*/
 		LocationMap getLocations() const { return m_Locations; }
 		
-		// return a full map of testimonies
+		/** Get a full map of testimonies
+		  * \return Map of all testimonies
+		*/
 		TestimonyMap getTestimonies() const { return m_Testimonies; }
 		
-		// return map of buffers
+		/** Get a map of buffers
+		  * \return Map of all text buffers
+		*/
 		BufferMap getBuffers() const { return m_Buffers; }
 	
 	private:
-		// overrides
+		/// Case overrides
 		Overrides m_Overrides;
 		
-		// general case data
+		/// General case data
 		Overview m_Overview;
 		
-		// initial text block that will be displayed when the case starts
+		/// Initial text block that will be displayed when the case starts
 		ustring m_InitialBlockId;
 		
-		// map of characters
+		/// Map of characters
 		CharacterMap m_Characters;
 		
-		// map of backgrounds
+		/// Map of backgrounds
 		BackgroundMap m_Backgrounds;
 		
-		// map of evidence
+		/// Map of evidence
 		EvidenceMap m_Evidence;
 		
-		// map of images
+		/// Map of images
 		ImageMap m_Images;
 		
-		// map of locations
+		/// Map of locations
 		LocationMap m_Locations;
 		
-		// map of testimonies
+		/// Map of testimonies
 		TestimonyMap m_Testimonies;
 		
-		// map of buffers
+		/// Map of buffers
 		BufferMap m_Buffers;
 };
 

@@ -28,36 +28,54 @@
 
 #include "common.h"
 
+/// Namespace for management of individual images used in the player
 namespace Textures {
 
+/// Intermediate struct used for loading an image
 struct _Texture {
-	int w;
-	int h;
-	short bpp;
-	char *pixels;
+	int w;		///< The width
+	int h;		///< The height
+	short bpp;	///< The bits per pixel
+	char *pixels;	///< Pixel data
 	SDL_Surface *surface;
 };
 typedef struct _Texture Texture;
 
-// map of all allocated textures
+/// Map of all allocated images
 extern std::map<ustring, SDL_Surface*> g_TextureMap;
 
-// get a texture from the map
+/** Get an image from the map
+  * \param id The ID of the image
+  * \return Pointer to a surface of the image
+*/
 SDL_Surface* queryTexture(const ustring &id);
 
-// add a new texture
+/** Add a new image to the internal map
+  * \param id The ID of the image to use
+  * \param texture Pointer to allocated surface of the image
+*/
 void pushTexture(const ustring &id, SDL_Surface *texture);
 
-// remove a texture from the stack
+/** Remove an image from the stack and free allocated memory
+  * \param id The ID of the image
+*/
 void popTexture(const ustring &id);
 
-// clear the texture stack
+/// Clear the image stack
 void clearStack();
 
-// create a texture after loading an image from file
+/** Create a usable surface after loading an image from file
+  * \param id The ID of the image
+  * \param file The path to the image
+  * \return Pointer to a new image surface
+*/
 SDL_Surface* createTexture(const ustring &id, const ustring &file);
 
-// create a texture from data
+/** Create a usable surface after loading a texture from memory
+  * \param id The ID of the image
+  * \param tex Texture struct prepared from memory
+  * \return Pointer to a new image surface
+*/
 SDL_Surface* createTexture(const ustring &id, const Texture &tex);
 
 }; // namespace Textures

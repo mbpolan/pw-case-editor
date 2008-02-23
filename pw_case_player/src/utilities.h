@@ -24,77 +24,139 @@
 #include "case.h"
 #include "uimanager.h"
 
-// utilities namespace
+/// Namespace for all various functions that don't belong to any class
 namespace Utils {
 
-// message types
+/// Error message types
 enum MessageType { MESSAGE_CRITICAL=0, MESSAGE_WARNING };
 
-// whether or not debugging is on
+/// Whether or not debugging is enabled in the player
 extern bool g_DebugOn;
 
-// general filesystem functions for cross-platform compatability
+/// Namespace for general filesystem functions for cross-platform compatability
 namespace FS {
 
-// get the current working directory
+/** Get the current working directory
+  * \return The current working directory
+*/
 ustring cwd();
 
-// move a file on the filesystem
+/** Move a file on the filesystem
+  * \param from The original file path
+  * \param to The destination path
+*/
 void move(const ustring &from, const ustring &to);
 
-// check if a directory exists
+/** Check if a directory exists
+  * \param path The path to the directory in question
+  * \return <b>true</b> if it exists, <b>false</b> otherwise
+*/
 bool dirExists(const ustring &path);
 
-// create a directory
+/** Create a directory
+  * \param path The path of the new directory
+*/
 void makeDir(const ustring &path);
 
-// remove a directory
+/** Recursively remove a directory
+  * \param path The directory's path
+*/
 void removeDir(const ustring &path);
 
 } // namespace FS
 
-// display an alert message to the user
-// this will show a message box on Windows
+/** Display an alert message to the user.
+  * \note This will show a message box on Windows, and console output on Linux
+  * \param text The text to display
+  * \param type The type of message
+*/
 void alert(const ustring &text, const MessageType &type=MESSAGE_CRITICAL);
 
-// convert a court camera script string to animation limits
-// string should be in the form of: "location1,location2"
+/** Convert a court camera script string to animation limits.
+  * The provided string should be in the form of: "location1,location2" or the
+  * returned limits won't be correct
+  * \param str The string
+  * \param start The returned beginning location
+  * \param end The returned end location
+*/
 void scriptToLimits(const ustring &str, UI::Limit &start, UI::Limit &end);
 
-// map a char representing a text color to the actual color
+/** Map a char representing a text color to the actual color
+  * \param ch The color code character
+  * \return Completed Color object based on provided color code
+*/
 Color keyToColor(char ch);
 
-// print a debug message
+/** Print a debug message
+  * \note: On Windows, this will display a message box
+  * \param msg The string to display
+*/
 void debugMessage(const ustring &msg);
 
-// see if a point is in a rectangle
+/** See if a point is in a rectangle
+  * \param p The point to test
+  * \param rect The rect to test against
+  * \return <b>true</b> if the point is in range, <b>false</b> otherwise
+*/
 bool pointInRect(const Point &p, const Rect &rect);
 
-// calculate a random offset point (used during shake animations)
+/** Calculate a random offset point (used during shake animations)
+  * \param highestRadius The largest radius to use in the calculation
+  * \return The computed point
+*/
 Point calculateShakePoint(int highestRadius);
 
-// get a random number in the provided range
+/** Get a random number in the provided range
+  * \param min The lower value in the range
+  * \param max The upper value in the range
+  * \return A random number in this range
+*/
 int randomRange(int min, int max);
 
-// get the location of the mouse pointer
+/** Get the location of the mouse pointer
+  * \param modState Optional SDL mod button state
+  * \return The current mouse location
+*/
 Point getMouseLocation(Uint8 *modState=NULL);
 
-// create a blank surface
+/** Create a blank surface
+  * \param width The width
+  * \param height The height
+  * \return A new surface
+*/
 SDL_Surface* createSurface(int width, int height);
 
-// convert a uchar to a string
+/** Convert a Unicode char to a string
+  * \param ch The character
+  * \return A string with this character
+*/
 ustring ucharToStr(uchar ch);
 
-// convert an integer to string
+/** Convert an integer to string
+  * \param num The integer value
+  * \return A string with this value
+*/
 ustring itoa(int num);
 
-// break a string apart based on a delimiting string
+/** Break a string apart based on a delimiting substring
+  * \param delimiter The substring to use as a separator
+  * \param str The string to break apart
+  * \return A string vector with the pieces of the broken string
+*/
 StringVector explodeString(const ustring &delimiter, const ustring &str);
 
-// break a string apart based on a delimiting character
+/** Break a string apart based on a delimiting character
+  * \param delimiter The character to use as a separator
+  * \param str The string to break apart
+  * \return A string vector with the pieces of the broken string
+*/
 StringVector explodeString(uchar delimiter, const ustring &str);
 
-// count occurrences of a substring in a string
+/** Count occurrences of a substring in a string
+  * \param sub The substring to test
+  * \param str The string to test
+  * \return The amount of times <i>sub</i> is found in <i>str</i>
+*/
 int amountInString(const ustring &sub, const ustring &str);
 
 }; // namespace UI

@@ -29,9 +29,10 @@
 #include "texture.h"
 #include "theme.h"
 
+/// Namespace for file loading and parsing functions
 namespace IO {
 
-// the pwt file header
+/// The header found in each case file
 struct _PWTHeader {
 	int ident; // magic number
 	int version; // file version
@@ -50,33 +51,62 @@ struct _PWTHeader {
 };
 typedef struct _PWTHeader PWTHeader;
 
-// case file information
+/// Magic number for PWT case file
 const int FILE_MAGIC_NUM=(('T' << 16) + ('W' << 8) + 'P');
+
+/// Supported version of the PWT case file
 const int FILE_VERSION=10;
 
-// sprite file information
+/// Magic number for the sprite file
 const ustring SPR_MAGIC_NUM="SPR";
+
+/// Supported sprite file version
 const int SPR_VERSION=10;
 
-// unpack the resource file
+/** Unpack and extract the resource file
+  * \param path Path to the resource file
+  * \return <b>true</b> if no errors occurred, <b>false</b> otherwise
+*/
 bool unpackResourceFile(const ustring &path);
 
-// load a case from file
+/** Load a case from file
+  * \param path The path to the file
+  * \param pcase Case::Case object to load the data into
+  * \return <b>true</b> if no errors occurred, <b>false</b> otherwise
+*/
 bool loadCaseFromFile(const ustring &path, Case::Case &pcase);
 
-// load a sprite from file
+/** Load a sprite from file
+  * \param path Path to the sprite file
+  * \param sprite Sprite object to load the dat into
+  * \return <b>true</b> if no errors occurred, <b>false</b> otherwise
+*/
 bool loadSpriteFromFile(const ustring &path, Sprite &sprite);
 
-// load stock assets config file
+/** Load the stock assets config file
+  * \param path Path to the config file
+  * \param pcase Pointer to Case::Case object to load the config options into
+  * \return <b>true</b> if no errors occurred, <b>false</b> otherwise
+*/
 bool loadStockFile(const ustring &path, Case::Case *pcase);
 
-// load theme from xml
+/** Load the theme from XML
+  * \param path The path to the config file
+  * \param map A Theme::ColorMap object to load theme data into
+  * \return <b>true</b> if no errors occurred, <b>false</b> otherwise
+*/
 bool loadThemeXML(const ustring &path, Theme::ColorMap &map);
 
-// read image data from file
+/** Read image data from the file
+  * \param f FILE handle with read pointer set to image
+  * \return A Textures::Texture object with data
+*/
 Textures::Texture readImage(FILE *f);
 
-// read a string
+/** Read a string from the file
+  * \param f FILE handle with read pointer set to string
+  * \return The read string
+*/
 ustring readString(FILE *f);
 
 }; // namespace IO

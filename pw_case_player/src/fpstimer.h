@@ -22,29 +22,40 @@
 #ifndef FPSTIMER_H
 #define FPSTIMER_H
 
-// timer class used for game engine fps consistency purposes
+/** Timer class used for game engine FPS consistency purposes.
+  * Since not all computers run graphics games at equal speeds, this
+  * class is responsible for keeping the frame rate at a reasonable level
+*/
 class FPSTimer {
 	public:
-		// constructor
+		/// Constructor
 		FPSTimer();
 		
-		// set the fps to lock; used in delay()
+		/** Set the fps to lock the frame rate to; used in delay()
+		  * \param fps The frame rate
+		*/
 		void setFPSLock(double fps) { m_FPSLock=fps; }
 		
-		// set the time that the last frame was drawn
+		/** Set the time that the last frame was drawn
+		  * \param ticks Last frame's drawing time
+		*/
 		void setLastFrame(int ticks) { m_LastFrame=ticks; }
 		
-		// calculate delta in seconds between two sets of ticks
+		/** Calculate delta in seconds between two sets of ticks
+		  * \param ticks1 The first tick count
+		  * \param ticks2 The second tick count
+		  * \return The difference between the two ticks, in seconds
+		*/
 		double deltaSeconds(int ticks1, int ticks2);
 		
-		// delay the engine until the locked fps rate is reached
+		/// Delay the engine until the locked FPS rate is reached
 		void delay();
 		
 	private:
-		// last time a frame was drawn
+		/// The last time a frame was drawn
 		int m_LastFrame;
 		
-		// rate of fps to lock
+		/// Rate of FPS to lock
 		double m_FPSLock;
 };
 

@@ -27,13 +27,19 @@
 
 #include "common.h"
 
+/// Namespace for functions that handle the theme in the player
 namespace Theme {
 
-// our global theme
+/// Typedef'd map for key,color combinations
 typedef std::map<ustring, Color> ColorMap;
+
+/// The global theme map
 extern ColorMap g_Theme;
 
-// get a color based on theme key
+/** Get a color based on theme key
+  * \param key The key to look up
+  * \return The color from the theme
+*/
 Color lookup(const ustring &key);
 
 }; // namespace Theme

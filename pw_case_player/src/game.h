@@ -32,36 +32,37 @@
 
 class Game;
 
-// game state flags
+/// Flags that define what should be drawn every cycle
 enum GameFlags {
-	STATE_QUEUED=			1 << 0,
-	STATE_COURT_REC_BTN=		1 << 1,
-	STATE_EVIDENCE_BTN=		1 << 2,
-	STATE_PROFILES_BTN=		1 << 3,
-	STATE_BACK_BTN=			1 << 4,
-	STATE_PRESENT_BTN=		1 << 5,
-	STATE_EVIDENCE_PAGE=		1 << 6,
-	STATE_PROFILES_PAGE=		1 << 7,
-	STATE_EVIDENCE_INFO_PAGE=	1 << 8,
-	STATE_PROFILE_INFO_PAGE=	1 << 9,
-	STATE_NEXT_BTN=			1 << 10,
-	STATE_TEXT_BOX=			1 << 11,
-	STATE_CONTROLS=			1 << 12,
-	STATE_EXAMINE=			1 << 13,
-	STATE_MOVE=			1 << 14,
-	STATE_TALK=			1 << 15,
-	STATE_PRESENT_TOP_BTN=		1 << 16,
-	STATE_CROSS_EXAMINE_BTNS=	1 << 17,
-	STATE_PRESS_BTN=		1 << 18,
-	STATE_COURT_GREEN_BAR=		1 << 19,
-	STATE_CHECK_BTN=		1 << 20,
-	STATE_CHECK_EVIDENCE_IMAGE=	1 << 21,
-	STATE_CONFIRM_BTN=		1 << 22,
-	STATE_INITIAL_SCREEN=		1 << 23,
-	STATE_EPISODE_SELECTION=	1 << 24,
-	STATE_CONTINUE_SCREEN=		1 << 25 };
+	STATE_QUEUED=			1 << 0,  ///< Specifies that the flags are queued to be drawn
+	STATE_COURT_REC_BTN=		1 << 1,  ///< Draw the Court Record button
+	STATE_EVIDENCE_BTN=		1 << 2,  ///< Draw the Evidence button
+	STATE_PROFILES_BTN=		1 << 3,  ///< Draw the Profiles button
+	STATE_BACK_BTN=			1 << 4,  ///< Draw the Back button
+	STATE_PRESENT_BTN=		1 << 5,  ///< Draw the Present button
+	STATE_EVIDENCE_PAGE=		1 << 6,  ///< Draw the evidence page in the Court Record
+	STATE_PROFILES_PAGE=		1 << 7,  ///< Draw the profiles page in the Court Record
+	STATE_EVIDENCE_INFO_PAGE=	1 << 8,  ///< Draw the evidence information page
+	STATE_PROFILE_INFO_PAGE=	1 << 9,  ///< Draw the profile information page
+	STATE_NEXT_BTN=			1 << 10, ///< Draw the large button on the lower screen
+	STATE_TEXT_BOX=			1 << 11, ///< Draw the textbox
+	STATE_CONTROLS=			1 << 12, ///< Draw the Examine, Move, Talk, and Present buttons
+	STATE_EXAMINE=			1 << 13, ///< Draw the examine cursors over a background
+	STATE_MOVE=			1 << 14, ///< Draw the locations and previews to move to
+	STATE_TALK=			1 << 15, ///< Draw the talk options for a character
+	STATE_PRESENT_TOP_BTN=		1 << 16, ///< Draw the Present button centered on the lower screen
+	STATE_CROSS_EXAMINE_BTNS=	1 << 17, ///< Draw the two buttons during a cross examination
+	STATE_PRESS_BTN=		1 << 18, ///< Draw the Press button
+	STATE_COURT_GREEN_BAR=		1 << 19, ///< Draw the green bar for penalties
+	STATE_CHECK_BTN=		1 << 20, ///< Draw the Check button to view evidence
+	STATE_CHECK_EVIDENCE_IMAGE=	1 << 21, ///< Draw the evidence's check image
+	STATE_CONFIRM_BTN=		1 << 22, ///< Draw the Confirm button
+	STATE_INITIAL_SCREEN=		1 << 23, ///< Draw the title screen
+	STATE_EPISODE_SELECTION=	1 << 24, ///< Draw the episode selection screen
+	STATE_CONTINUE_SCREEN=		1 << 25  ///< Draw the continue game screen
+						};
 
-// menu controls to draw
+/// Menu controls to draw
 enum Controls {
 	CONTROLS_ALL=		1 << 0,
 	CONTROLS_EXAMINE=	1 << 1,
@@ -69,12 +70,12 @@ enum Controls {
 	CONTROLS_TALK=		1 << 3,
 	CONTROLS_PRESENT=	1 << 4 };
 
-// position on screen
+/// Positions on screen
 enum Position {
 	POSITION_LEFT=	1,
 	POSITION_RIGHT=	2 };
 
-// screens to draw
+/// Basic screens to draw
 enum Screen {
 	SCREEN_MAIN=	0,
 	SCREEN_EXAMINE=	1,
@@ -82,19 +83,31 @@ enum Screen {
 	SCREEN_TALK=	3,
 	SCREEN_PRESENT=	4 };
 
-// court location stand
+/// Court locations
 enum Stand {
 	COURT_PROSECUTOR_STAND=0,
 	COURT_DEFENSE_STAND,
 	COURT_WITNESS_STAND };
 
-// struct that stores the current game state
+/** Struct that stores the current game state.
+  * Everything that goes on in the game is triggered by the variables
+  * in this struct. The drawFlags variable keeps track of what elements
+  * of the user interface are drawn, and all other animations are scheduled
+  * through the use other variables.
+  * 
+  * Animation variables are initially set to "none", but through script triggers,
+  * these variables can be modified. Additionally, only one animation can be active
+  * at a time. If two or more animation variables are active, the more important one,
+  * based on order in the struct, is handled first.
+*/
 struct _GameState {
-	// flags that toggle what to draw
+	/// Flags that toggle what to draw
 	int drawFlags;
 	
-	// current evidence/profile page
+	/// Current evidence page
 	int evidencePage;
+	
+	/// Current profiles page
 	int profilesPage;
 	
 	// selections
@@ -111,23 +124,23 @@ struct _GameState {
 	ustring requestedAnswerParams;
 	ustring requestedContrParams;
 	
-	// temporary image to be displayed over location background
+	/// Temporary image to be displayed over location background
 	ustring tempImage;
 	
-	// x,y coordinates of examination cursor
+	/// Location of the examination cursor
 	Point examinePt;
 	
 	// region of contradiction in provided image of evidence
 	ustring contradictionImg;
 	Rect contradictionRegion;
 	
-	// the previous screen displayed
+	/// The previous screen (Move, Examine, etc) displayed
 	int prevScreen;
 	
-	// temporary state changes
+	/// Whether or not to hide the textbox
 	bool hideTextBox;
 	
-	// music variables
+	/// Whether or not music should continue playing
 	bool continueMusic;
 	
 	// testimony variables
@@ -150,7 +163,7 @@ struct _GameState {
 	ustring exclamation;
 	ustring addEvidence;
 	
-	// lawyer images for cross examination sequences
+	/// Character images for cross examination sequences
 	StringPair crossExamineLawyers;
 	
 	// the current evidence being shown
@@ -162,7 +175,7 @@ struct _GameState {
 	ustring crOverviewProsecutor;
 	ustring crOverviewWitness;
 	
-	// our current location
+	/// The current location
 	ustring currentLocation;
 	
 	// scheduled events
@@ -171,177 +184,255 @@ struct _GameState {
 	ustring queuedBlock;
 	ustring resetAnimations;
 	
-	std::vector<StringPair> custom; // user defined flags
+	/// User defined flags
+	std::vector<StringPair> custom;
 	
-	// vector of current talk options
+	/// Vector of current talk options
 	std::vector<StringPair> talkOptions;
 	
-	// list of visible evidence (evidence that can be seen in court record)
+	/// List of visible evidence (evidence that can be seen in Court Record)
 	std::vector<ustring> visibleEvidence;
 	
-	// list of visible profiles
+	/// List of visible profiles in the Court Record
 	std::vector<ustring> visibleProfiles;
 };
 typedef struct _GameState GameState;
 
-// class that serves as the game engine
+/** The player's game engine.
+  * The Game class is the central engine that runs the entire player. Everything 
+  * from input handling, to drawing is done from this class's render() function,
+  * which also makes sure to manage the flags in the GameState struct so everything
+  * is drawn correctly.
+  * 
+  * This class also relies on the TextParser class to run the script, and responds 
+  * to triggers and other user related commands. Every animation is registered here,
+  * and use of the UI::Manager and Renderer namespaces is handled mainly through
+  * the functions in this class.
+  * 
+  * Furthermore, all memory related management, that is, deletion of allocated memory,
+  * is done in the Game class's destructor. Specifically, the Case::Case object, along
+  * with all of the images used in the player, are freed internally through the Game
+  * class.
+  * 
+  * Any functions that need to make use of this class, can call the Game::instance()
+  * function, which will return a pointer to the only allocated Game object.
+*/
 class Game {
 	public:
-		// constructor
+		/** Constructor
+		  * \param rootPath The root path to the case file
+		  * \param pcase Pointer to a loaded Case::Case object
+		*/
 		Game(const ustring &rootPath, Case::Case *pcase);
 		
-		// destructor
+		/// Destructor
 		~Game();
 		
-		// get a pointer to an instance of this object
+		/** Get a pointer to an instance of this object
+		  * \return Pointer to an instance of this class
+		*/
 		static Game* instance();
 		
-		// load stock textures
+		/** Load stock textures
+		  * \return <b>true</b> if no errors occurred, <b>false</b> otherwise
+		*/
 		bool loadStockTextures();
 		
-		// render the current scene
+		/// Render the current scene
 		void render();
 		
-		// return the current case
+		/** Get a pointer the current case
+		  * \return Pointer to the case bound to this engine
+		*/
 		Case::Case* getCase() { return m_Case; }
 		
-		// handle keyboard event
+		/** Handle keyboard events
+		  * \param e An SDL_KeyboardEvent struct
+		*/
 		void onKeyboardEvent(SDL_KeyboardEvent *e);
 		
-		// handle mouse click event
+		/** Handle mouse click events
+		  * \param e An SDL_MouseButtonEvent struct
+		*/
 		void onMouseEvent(SDL_MouseButtonEvent *e);
 		
 	private:
-		// register default animations for ui elements
+		/// register default animations for UI elements
 		void registerAnimations();
 		
-		// check the current input device state
+		/// Check the current input device state
 		void checkInputState();
 		
-		// get the id of the selected court record evidence
+		/** Get the ID of the selected Court Record evidence
+		  * \return The ID of the selected evidence
+		*/
 		ustring getSelectedEvidence();
 		
-		// get the id of the selected court record profile
+		/** Get the ID of the selected Court Record profile
+		  * \return The ID of the selected profile
+		*/
 		ustring getSelectedProfile();
 		
-		// toggle game state flags
+		/** Toggle a game state flag
+		  * \param flags The flags to toggle
+		*/
 		void toggle(int flags);
 		
-		// see if an element is flagged to be drawn
+		/** See if an element is flagged to be drawn
+		  * \param flag The flag to test
+		  * \return <b>true</b> if flagged, <b>false</b> otherwise
+		*/
 		bool flagged(int flag);
 		
-		// see if the text box should be drawn
+		/** See if the textbox should be drawn
+		  * \return <b>true</b> if yes, <b>false</b> otherwise
+		*/
 		bool shouldDrawTextBox();
 		
-		// checks to see if area under examine cursors can be examined
+		/** Check to see if the area under examine cursors can be examined
+		  * \return <b>true</b> if the area can be examined, <b>false</b> otherwise
+		*/
 		bool canExamineRegion();
 		
-		// set the current backdrop location
+		/** Set the current location
+		  * \param location The ID of the location to set
+		*/
 		void setLocation(const ustring &location);
 		
-		// set the evidence to draw on top screen
+		/** Set the evidence to draw on top screen
+		  * \param id The ID of the evidence
+		  * \param pos Which place on the screen should the evidence be drawn at
+		*/
 		void setShownEvidence(const ustring &id, const Position &pos);
 		
-		// begin displaying a testimony
+		/** Begin displaying a witness testimony
+		  * \param id The ID of the testimony
+		  * \param crossExamine <b>true</b> if the testimony is to be cross examined, <b>false</b> otherwise
+		*/
 		void displayTestimony(const ustring &id, bool crossExamine);
 		
-		// change the selected evidence/profile
+		/** Change the selected evidence or profile
+		  * \param evidence <b>true</b> to change evidence, <b>false</b> to change profile
+		  * \param increment <b>true</b> to increment position, <b>false</b> to decrement
+		*/
 		void selectEvidence(bool evidence=true, bool increment=true);
 		
-		// see if a location is a court location
+		/** See if a location is a court location
+		  * \return <b>true</b> if the location is a court location, <b>false</b> otherwise
+		*/
 		bool isCourtLocation(const ustring &id);
 		
-		// update current flags for game state
+		/// Update the current flags for game state
 		void updateFlags();
 		
-		// render the game view (top screen)
+		/// Render the game view (top screen)
 		void renderTopView();
 		
-		// render the menu view (lower screen)
+		/// Render the menu view (lower screen)
 		void renderMenuView();
 		
-		// render special effects
+		/** Render special effects
+		  * \return <b>true</b> if all animations are done, <b>false</b> otherwise
+		*/
 		bool renderSpecialEffects();
 		
-		// render the text box
+		/// Render the textbox
 		void renderTextBox();
 		
-		// render the controls (move, talk, etc)
+		/** Render the menu controls (move, talk, etc)
+		  * \param flags Additional flags to take notice of
+		*/
 		void renderControls(int flags);
 		
-		// render the courtroom overview
+		/// Render the courtroom overview
 		void renderCourtroomOverview();
 		
-		// render the attorney's stand
+		/** Render the defense or prosecutor stand
+		  * \param stand The court stand to draw
+		*/
 		void renderStand(const Stand stand);
 		
-		// initial screen button activated handler
+		/** Handler for clicks on the initial screen
+		  * \param id The ID of the element clicked
+		*/
 		void onInitialScreenClicked(const ustring &id);
 		
-		// top right button was clicked
+		/// Handler for clicks on the top right button
 		void onTopRightButtonClicked();
 		
-		// top left button was clicked
+		/// Handler for clicks on the top left button
 		void onTopLeftButtonClicked();
 		
-		// bottom left button was clicked
+		/// Handler for clicks on the bottom left button
 		void onBottomLeftButtonClicked();
 		
-		// bottom right button was clicked
+		/// Handler for clicks on the bottom right button
 		void onBottomRightButtonClicked();
 		
-		// centered present button clicked
+		/// Handler for Present button clicks
 		void onPresentCenterClicked();
 		
-		// check evidence button clicked
+		/// Handler for clicks on the Check button for evidence with check images
 		void onCheckButtonClicked();
 		
-		// click handler for controls
-		void onControlsClicked(int x, int y);
+		/** Handler for clicks on menu controls
+		  * \param p The position of the cursor
+		*/
+		void onControlsClicked(const Point &p);
 		
-		// click handler for move scene
+		/** Handler for clicks on the Move screen
+		  * \param button The button ID
+		*/
 		void onMoveSceneClicked(const ustring &button);
 		
-		// click handler for talk scene
+		/** Handler for clicks on the Talk screen
+		  * \param button The button ID
+		*/
 		void onTalkSceneClicked(const ustring &button);
 		
-		// court record page click handler
-		void onRecPageClickEvent(int x, int y);
+		/** Handler for clicks on the Court Record
+		  * \param p The position of the cursor
+		*/
+		void onRecPageClickEvent(const Point &p);
 		
-		// court record info page click handler
-		void onRecInfoPageClickEvent(int x, int y);
+		/** Handler for clicks on the Court Record information page
+		  * \param p The position of the cursor
+		*/
+		void onRecInfoPageClickEvent(const Point &p);
 		
-		// examine button activated handler
+		/// Handler for Examine control button clicks
 		void onExamineButtonActivated();
 		
-		// move button activated handler
+		/// Handler for Move control button clicks
 		void onMoveButtonActivated();
 		
-		// talk button activated handler
+		/// Handler for Talk control button clicks
 		void onTalkButtonActivated();
 		
-		// present button activated handler
+		/// Handler for Present control button clicks
 		void onPresentButtonActivated();
 		
-		// examine the hotspot in provided coordinate range
-		void onExamineThing(int x, int y);
+		/** Handler for examining the hotspot in the provided coordinate range
+		  * \param p The point under the examination cursor
+		*/
+		void onExamineThing(const Point &p);
 		
-		// pointer to current case
+		/// Pointer to current case
 		Case::Case *m_Case;
 		
-		// text parser instance
+		/// TextParser instance
 		TextParser *m_Parser;
 		
-		// uimanager instance
+		/// UI::Manager instance
 		UI::Manager *m_UI;
 		
-		// current text block being executed
+		/// Current text block being executed
 		ustring m_CurBlock;
 		
-		// path where case file resides
+		/// Path where case file resides
 		ustring m_RootPath;
 		
-		// the current state of the game
+		/// The current state of the game
 		GameState m_State;
 		
 		// friend classes

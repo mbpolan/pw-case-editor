@@ -28,63 +28,87 @@
 
 #include "case.h"
 
+/// Namespace for audio sample output and management
 namespace Audio {
 
-// channels for sound effects
+/// Channels for sound effects
 enum EffectChannel { CHANNEL_DIALOGUE=0, CHANNEL_SCRIPT, CHANNEL_GUI };
 
-// types of samples
+/// Types of audio samples
 enum SampleType { SAMPLE_EFFECT, SAMPLE_MUSIC };
 
-// audio struct representing music or effect
+/// Audio struct representing music or sound effect
 struct _Sample {
-	ustring id; // id referenced from within the script
-	SampleType type; // the type of sample
+	ustring id; ///< ID referenced from within the script
+	SampleType type; ///< The type of sample
 	
-	Mix_Chunk *effect; // the effect to play
-	ustring music; // the music sample to play
+	Mix_Chunk *effect; ///< The effect to play
+	ustring music; ///< The music sample to play
 };
 typedef struct _Sample Sample;
 
-// flag whether or not to output sound
+/// Flag whether or not to output sound
 extern bool g_Output;
 
-// map of audio
+/// Typedef'd map for audio samples
 typedef std::map<ustring, Sample> AudioMap;
+
+/// Internal map of audio
 static AudioMap g_Audio;
 
-// map of channels
+/// Typedef'd map of sound effects
 typedef std::map<int, Mix_Chunk*> ChannelMap;
+
+/// Internal map of sound effects
 static ChannelMap Channels;
 
-// music currently playing
+/// The music currently playing
 extern Mix_Music *g_Music;
 
-// load an audio sample from file
+/** Load an audio sample from file
+  * \param path The path to the audio sample
+  * \param sample The audio sample object to load the data into
+  * \return <b>true</b> if there were no errors, <b>false</b> otherwise
+*/
 bool loadSample(const ustring &path, Sample &sample);
 
-// play an effect sample
+/** Play a sound effect sample
+  * \param id The ID of the sample
+  * \param channel The channel to play the sound effect on
+*/
 void playEffect(const ustring &id, EffectChannel channel);
 
-// play a music sample
+/** Play a music sample
+  * \param id The ID of the sample
+*/
 void playMusic(const ustring &id);
 
-// see if music is playing
+/** See if music is playing
+  * \return <b>true</b> if music is playing, <b>false</b> otherwise
+*/
 bool isMusicPlaying();
 
-// halt music playback
+/// Halt music playback
 void haltMusic();
 
-// add an audio sample
+/** Add an audio sample to the internal map
+  * \param id The ID of the audio sample
+  * \param sample The audio sample to add
+*/
 void pushAudio(const ustring &id, const Sample &sample);
 
-// remove an audio sample
+/** Remove an audio sample from the internal map
+  * \param id The ID of the sample to remove
+*/
 void popAudio(const ustring &id);
 
-// query an audio sample
+/** Get an audio sample from the internal map
+  * \param id The ID of the sample to get
+  * \return Pointer to the requested audio sample
+*/
 Sample* queryAudio(const ustring &id);
 
-// clear the audio stack
+/// Clear the audio stack
 void clearAudioStack();
 
 }; // namespace Audio

@@ -27,41 +27,53 @@
 #include "fpstimer.h"
 #include "sdlcontext.h"
 
-// class that controls toplevel functions
+/** Class that controls toplevel functions.
+  * The Application class handles many functions that relate to the
+  * functionality of the player as a whole. This includes window manager
+  * control, video and audio output, and keyboard and mouse input.
+*/
 class Application {
 	public:
-		// the version of this program
+		/// The version of this program
 		static ustring VERSION;
 		
-		// possible command line arguments
+		/// Possible command line arguments
 		enum ArgFlags { ARG_NONE=0x00, ARG_NO_SOUND=0x01, ARG_FULLSCREEN=0x02 };
 		
-		// constructor
+		/** Constructor
+		  * \param argc Amount of arguments
+		  * \param argv Array of arguments
+		*/
 		Application(int argc, char *argv[]);
 		
-		// run the application
+		/// Run the application
 		void run();
 		
 	private:
-		// process any events
+		/** Process any events
+		  * \return <b>true</b> if the event loop should continue, <b>false</b> otherwise
+		*/
 		bool processEvents();
 		
-		// calculate and display fps
+		/// Calculate and display the FPS
 		void calculateFPS();
 		
-		// keyboard event handler
+		/** Keyboard event handler
+		  * \param The SDL_KeyboardEvent object
+		  * \return <b>true</b> if the event loop should continue, <b>false</b> otherwise
+		*/
 		bool keyboardEvent(SDL_KeyboardEvent &e);
 		
-		// opengl rendering context
+		/// SDL rendering context
 		std::auto_ptr<SDLContext> m_SDLContext;
 		
-		// path to case file
+		/// Path to case file
 		ustring m_CasePath;
 		
-		// game timer
+		/// Game timer
 		FPSTimer m_Timer;
 		
-		// arguments from the command line
+		/// Arguments from the command line
 		int m_ArgFlags;
 };
 
