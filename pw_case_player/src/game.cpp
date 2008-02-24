@@ -2213,29 +2213,34 @@ void Game::onControlsClicked(const Point &p) {
 	int x=p.x();
 	int y=p.y();
 	
+	// see which buttons are activated
+	int active=CONTROLS_EXAMINE | CONTROLS_MOVE;
+	if (m_Case->getLocation(m_State.currentLocation)->character!=STR_NULL)
+		active |= CONTROLS_TALK | CONTROLS_PRESENT;
+	
 	// examine control
-	if ((x>=8 && x<=118) && (y>=dy && y<=dy+26)) {
+	if ((x>=8 && x<=118) && (y>=dy && y<=dy+26) && (active & CONTROLS_EXAMINE)) {
 		onExamineButtonActivated();
 		m_State.selectedControl=0;
 		clicked=true;
 	}
 	
 	// move control
-	else if ((x>=134 && x<=244) && (y>=dy && y<=dy+26)) {
+	else if ((x>=134 && x<=244) && (y>=dy && y<=dy+26) && (active & CONTROLS_MOVE)) {
 		onMoveButtonActivated();
 		m_State.selectedControl=1;
 		clicked=true;
 	}
 	
 	// talk control
-	else if ((x>=8 && x<=118) && (y>=dy+62 && y<=dy+88)) {
+	else if ((x>=8 && x<=118) && (y>=dy+62 && y<=dy+88) && (active & CONTROLS_TALK)) {
 		onTalkButtonActivated();
 		m_State.selectedControl=2;
 		clicked=true;
 	}
 	
 	// present control
-	else if ((x>=134 && x<=244) && (y>=dy+62 && y<=dy+88)) {
+	else if ((x>=134 && x<=244) && (y>=dy+62 && y<=dy+88)  && (active & CONTROLS_PRESENT)) {
 		onPresentButtonActivated();
 		m_State.selectedControl=3;
 		clicked=true;
