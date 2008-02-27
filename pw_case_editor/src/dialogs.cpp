@@ -642,6 +642,10 @@ void NewHotspotDialog::on_dimension_entry_changed() {
 LocationsDialog::LocationsDialog(const LocationMap &locations, const BackgroundMap &bgs, const StringVector &usedIds) {
 	set_title("Locations");
 	set_size_request(500, 400);
+	
+	// allocate background combo box
+	m_BGCB=manage(new BGComboBox(bgs));
+	
 	construct();
 	
 	// copy data
@@ -662,22 +666,33 @@ void LocationsDialog::construct() {
 	Gtk::VBox *vb=get_vbox();
 	vb->set_border_width(10);
 	
-	// allocate layout table
+	// allocate notebook
+	m_NB=manage(new Gtk::Notebook);
+	
+	// allocate layout tables
+	Gtk::Table *mainTable=manage(new Gtk::Table);
+	mainTable->set_spacings(5);
+	
 	Gtk::Table *table=Gtk::manage(new Gtk::Table);
 	table->set_spacings(5);
+	
+	Gtk::Table *hsTable=manage(new Gtk::Table);
+	hsTable->set_spacings(5);
+	
+	Gtk::Table *stTable=manage(new Gtk::Table);
+	stTable->set_spacings(5);
 	
 	// allocate labels
 	m_LocationsLabel=Gtk::manage(new Gtk::Label("Locations"));
 	m_DetailsLabel=Gtk::manage(new Gtk::Label("Details"));
 	m_IdLabel=Gtk::manage(new Gtk::Label("Internal ID"));
 	m_NameLabel=Gtk::manage(new Gtk::Label("Name"));
-	m_BGLabel=Gtk::manage(new Gtk::Label("Background Id"));
+	m_BGLabel=Gtk::manage(new Gtk::Label("Background ID"));
 	m_HotspotsLabel=Gtk::manage(new Gtk::Label("Hotspots"));
 	
 	// allocate entries
 	m_IdEntry=Gtk::manage(new Gtk::Entry);
 	m_NameEntry=Gtk::manage(new Gtk::Entry);
-	m_BGEntry=Gtk::manage(new Gtk::Entry);
 	m_IdEntry->set_sensitive(false);
 	
 	// allocate buttons
@@ -686,6 +701,8 @@ void LocationsDialog::construct() {
 	m_AddHSButton=Gtk::manage(new Gtk::Button("Add"));
 	m_DeleteHSButton=Gtk::manage(new Gtk::Button("Delete"));
 	m_AmendButton=Gtk::manage(new Gtk::Button("Amend"));
+	m_AddStateButton=Gtk::manage(new Gtk::Button("Add"));
+	m_DeleteStateButton=Gtk::manage(new Gtk::Button("Delete"));
 	
 	// connect signals
 	m_AddButton->signal_clicked().connect(sigc::mem_fun(*this, &LocationsDialog::on_add));
@@ -693,6 +710,8 @@ void LocationsDialog::construct() {
 	m_AddHSButton->signal_clicked().connect(sigc::mem_fun(*this, &LocationsDialog::on_add_hotspot));
 	m_DeleteHSButton->signal_clicked().connect(sigc::mem_fun(*this, &LocationsDialog::on_delete_hotspot));
 	m_AmendButton->signal_clicked().connect(sigc::mem_fun(*this, &LocationsDialog::on_amend_button_clicked));
+	m_AddStateButton->signal_clicked().connect(sigc::mem_fun(*this, &LocationsDialog::on_add_state));
+	m_DeleteStateButton->signal_clicked().connect(sigc::mem_fun(*this, &LocationsDialog::on_delete_state));
 	
 	// allocate list view
 	m_HotspotList=Gtk::manage(new Gtk::ListViewText(2));
@@ -705,6 +724,11 @@ void LocationsDialog::construct() {
 	
 	// append a default column
 	m_TreeView->append_column("Location ID", m_ColumnRec.m_Column);
+	
+	// allocate list view for states
+	m_StateList=manage(new Gtk::ListViewText(2));
+	m_StateList->set_column_title(0, "State");
+	m_StateList->set_column_title(1, "Background ID");
 	
 	// connect selection change signals
 	Glib::RefPtr<Gtk::TreeView::Selection> selection=m_TreeView->get_selection();
@@ -721,31 +745,48 @@ void LocationsDialog::construct() {
 	
 	// add widgets to scrolled windows
 	m_SWindow->add(*m_TreeView);
+	m_SWindow->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
 	m_HotspotSWindow->add(*m_HotspotList);
+	
+	// allocate containing scroll window for states
+	m_StateSWindow=manage(new Gtk::ScrolledWindow);
+	m_StateSWindow->set_size_request(50, 80);
+	m_StateSWindow->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
+	m_StateSWindow->add(*m_StateList);
 	
 	// attach options
 	Gtk::AttachOptions xops=Gtk::FILL | Gtk::EXPAND;
 	Gtk::AttachOptions yops=Gtk::SHRINK | Gtk::SHRINK;
 	
 	// place widgets
-	table->attach(*m_LocationsLabel, 0, 2, 0, 1, xops, yops);
-	table->attach(*m_AddButton, 0, 1, 1, 2, xops, yops);
-	table->attach(*m_DeleteButton, 1, 2, 1, 2, xops, yops);
-	table->attach(*m_SWindow, 0, 2, 2, 8);
-	table->attach(*m_DetailsLabel, 2, 4, 0, 1, xops, yops);
-	table->attach(*m_IdLabel, 2, 3, 1, 2, xops, yops);
-	table->attach(*m_IdEntry, 3, 4, 1, 2, xops, yops);
-	table->attach(*m_NameLabel, 2, 3, 2, 3, xops, yops);
-	table->attach(*m_NameEntry, 3, 4, 2, 3, xops, yops);
-	table->attach(*m_BGLabel, 2, 3, 3, 4, xops, yops);
-	table->attach(*m_BGEntry, 3, 4, 3, 4, xops, yops);
-	table->attach(*m_HotspotsLabel, 2, 4, 4, 5, xops, yops);
-	table->attach(*m_AddHSButton, 2, 3, 5, 6, yops, yops);
-	table->attach(*m_DeleteHSButton, 3, 4, 5, 6, yops, yops);
-	table->attach(*m_HotspotSWindow, 2, 4, 6, 7);
-	table->attach(*m_AmendButton, 3, 4, 7, 8, xops, yops);
+	mainTable->attach(*m_LocationsLabel, 0, 2, 0, 1, xops, yops);
+	mainTable->attach(*m_AddButton, 0, 1, 1, 2, xops, yops);
+	mainTable->attach(*m_DeleteButton, 1, 2, 1, 2, xops, yops);
+	mainTable->attach(*m_SWindow, 0, 2, 2, 8);
+	mainTable->attach(*m_DetailsLabel, 2, 4, 0, 1, xops, yops);
+	mainTable->attach(*m_NB, 2, 4, 1, 7);
+	mainTable->attach(*m_AmendButton, 3, 4, 7, 8, xops, yops);
 	
-	vb->pack_start(*table);
+	table->attach(*m_IdLabel, 0, 1, 0, 1, xops, yops);
+	table->attach(*m_IdEntry, 1, 2, 1, 2, xops, yops);
+	table->attach(*m_NameLabel, 0, 1, 2, 3, xops, yops);
+	table->attach(*m_NameEntry, 1, 2, 2, 3, xops, yops);
+	table->attach(*m_BGLabel, 0, 1, 3, 4, xops, yops);
+	table->attach(*m_BGCB, 1, 2, 3, 4, xops, yops);
+	
+	hsTable->attach(*m_AddHSButton, 0, 1, 0, 1, yops, yops);
+	hsTable->attach(*m_DeleteHSButton, 1, 2, 0, 1, yops, yops);
+	hsTable->attach(*m_HotspotSWindow, 0, 2, 1, 2);
+	
+	stTable->attach(*m_AddStateButton, 0, 1, 0, 1, yops, yops);
+	stTable->attach(*m_DeleteStateButton, 1, 2, 0, 1, yops, yops);
+	stTable->attach(*m_StateSWindow, 0, 2, 1, 2);
+	
+	m_NB->append_page(*table, "General");
+	m_NB->append_page(*hsTable, "Hotspots");
+	m_NB->append_page(*stTable, "States");
+	
+	vb->pack_start(*mainTable);
 	
 	// add buttons
 	add_button("OK", Gtk::RESPONSE_OK);
@@ -842,12 +883,20 @@ void LocationsDialog::on_delete_hotspot() {
 	m_HotspotList->set_text(selected, 1, "null");
 }
 
+// add a location state
+void LocationsDialog::on_add_state() {
+}
+
+// remove a location state
+void LocationsDialog::on_delete_state() {
+}
+
 // amend button click handler
 void LocationsDialog::on_amend_button_clicked() {
 	// get data of the current location
 	Glib::ustring id=m_IdEntry->get_text();
 	Glib::ustring name=m_NameEntry->get_text();
-	Glib::ustring bg=m_BGEntry->get_text();
+	Glib::ustring bg=m_BGCB->get_selected_internal();
 	
 	// update the location
 	m_Locations[id].name=name;
@@ -893,7 +942,7 @@ void LocationsDialog::on_selection_changed() {
 			// fill in the entries
 			m_IdEntry->set_text(id);
 			m_NameEntry->set_text(name);
-			m_BGEntry->set_text(bg);
+			m_BGCB->set_active_internal(bg);
 			
 			// clear list of hotspots
 			m_HotspotList->clear_items();

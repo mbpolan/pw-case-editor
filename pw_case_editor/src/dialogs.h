@@ -319,11 +319,20 @@ class LocationsDialog: public Gtk::Dialog {
 		// remove a hotspot
 		void on_delete_hotspot();
 		
+		// add a location state
+		void on_add_state();
+		
+		// remove a location state
+		void on_delete_state();
+		
 		// amend button click handler
 		void on_amend_button_clicked();
 		
 		// row changes handler
 		void on_selection_changed();
+		
+		// notebook for layout
+		Gtk::Notebook *m_NB;
 		
 		// buttons
 		Gtk::Button *m_AddButton;
@@ -331,6 +340,8 @@ class LocationsDialog: public Gtk::Dialog {
 		Gtk::Button *m_AddHSButton;
 		Gtk::Button *m_DeleteHSButton;
 		Gtk::Button *m_AmendButton;
+		Gtk::Button *m_AddStateButton;
+		Gtk::Button *m_DeleteStateButton;
 		
 		// labels
 		Gtk::Label *m_LocationsLabel;
@@ -343,11 +354,11 @@ class LocationsDialog: public Gtk::Dialog {
 		// entries
 		Gtk::Entry *m_IdEntry;
 		Gtk::Entry *m_NameEntry;
-		Gtk::Entry *m_BGEntry;
 		
 		// scrolled windows
 		Gtk::ScrolledWindow *m_SWindow;
 		Gtk::ScrolledWindow *m_HotspotSWindow;
+		Gtk::ScrolledWindow *m_StateSWindow;
 		
 		// tree model and view
 		Gtk::TreeView *m_TreeView;
@@ -370,6 +381,12 @@ class LocationsDialog: public Gtk::Dialog {
 		
 		// list view for hotspots
 		Gtk::ListViewText *m_HotspotList;
+		
+		// list view for states
+		Gtk::ListViewText *m_StateList;
+		
+		// combo boxes
+		BGComboBox *m_BGCB;
 		
 		// stored location data
 		LocationMap m_Locations;

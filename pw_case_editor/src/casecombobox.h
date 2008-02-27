@@ -261,4 +261,40 @@ class ImgComboBox: public Gtk::ComboBoxText {
 		ImageMap m_Images;
 };
 
+/***************************************************************************/
+
+/** Combo box to display backgrounds
+ */
+class BGComboBox: public Gtk::ComboBoxText {
+	public:
+		/** Constructor
+		  * \param map Map of backgrounds to display
+		*/
+		BGComboBox(const BackgroundMap &map);
+		
+		/** See if the combo box is empty
+		  * \return <b>true</b> if empty, <b>false</b> otherwise
+		*/
+		bool empty() const { return m_Backgrounds.empty(); }
+		
+		/** Set the active background by internal ID
+		  * \param id Internal ID of background
+		*/
+		void set_active_internal(const Glib::ustring &id);
+		
+		/** Get the selected background's internal ID
+		  * \return The selected background's internal ID
+		*/
+		Glib::ustring get_selected_internal() const;
+		
+		/** Get the selected background
+		  * \return Pointer to selected Case::Background object
+		*/
+		Case::Background* get_selected_background();
+		
+	protected:
+		/// Internal record of backgrounds
+		BackgroundMap m_Backgrounds;
+};
+
 #endif

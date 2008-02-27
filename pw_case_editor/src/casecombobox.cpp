@@ -294,3 +294,29 @@ Glib::ustring ImgComboBox::get_selected_internal() const {
 Case::Image* ImgComboBox::get_selected_image() {
 	return &(m_Images[get_selected_internal()]);
 }
+
+/***************************************************************************/
+
+// constructor
+BGComboBox::BGComboBox(const BackgroundMap &map): m_Backgrounds(map) {
+	// iterate over evidence
+	for (BackgroundMap::const_iterator it=map.begin(); it!=map.end(); ++it)
+		append_text((*it).second.id);
+	
+	set_active(0);
+}
+
+// set the active background via internal id
+void BGComboBox::set_active_internal(const Glib::ustring &id) {
+	set_active_text(id);
+}
+
+// get the selected background's internal name
+Glib::ustring BGComboBox::get_selected_internal() const {
+	return get_active_text();
+}
+
+// get the selected background
+Case::Background* BGComboBox::get_selected_background() {
+	return &(m_Backgrounds[get_selected_internal()]);
+}
