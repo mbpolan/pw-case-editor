@@ -393,8 +393,12 @@ void Game::onKeyboardEvent(SDL_KeyboardEvent *e) {
 
 // handle mouse click event
 void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
-	// button pressed down
-	if (e->type==SDL_MOUSEBUTTONDOWN && m_State.fadeOut=="none" && !m_UI->isGUIBusy()) {
+	// button pressed down; make sure it's not some wild input from the scroll wheel or whatever
+	if (e->type!=SDL_MOUSEBUTTONDOWN || e->button!=SDL_BUTTON_LEFT)
+		return;
+	
+	// see what to do next
+	if (m_State.fadeOut=="none" && !m_UI->isGUIBusy()) {
 		Point mouse=Utils::getMouseLocation();
 		
 		// initial screen clicks

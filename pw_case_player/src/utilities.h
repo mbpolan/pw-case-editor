@@ -138,6 +138,13 @@ ustring ucharToStr(uchar ch);
 */
 ustring itoa(int num);
 
+/** Convert a ustring to an array of Uint16's
+  * \warning The returned array needs to be freed afterwards
+  * \param str The string to convert
+  * \return An array of Uint16's representing the string
+*/
+Uint16* ustringToArray(const ustring &str);
+
 /** Break a string apart based on a delimiting substring
   * \param delimiter The substring to use as a separator
   * \param str The string to break apart

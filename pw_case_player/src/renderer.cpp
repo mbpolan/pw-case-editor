@@ -140,11 +140,11 @@ void Renderer::drawButton(const Point &p1, int w, const ustring &text) {
 	int fsize=Fonts::FONT_BUTTON_TEXT;
 	
 	// verify that we have enough room for the text
-	int fw=Fonts::getWidth(text, fsize);
+	int fw=Fonts::getWidthTTF(text, fsize);
 	if (fw>w-4) {
 		// step the font down a size
 		fsize=Fonts::FONT_INFO_PAGE;
-		fw=Fonts::getWidth(text, fsize);
+		fw=Fonts::getWidthTTF(text, fsize);
 	}
 	
 	// first, draw the border at the left

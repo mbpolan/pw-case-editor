@@ -175,6 +175,17 @@ void drawStringBlended(const Point &p, const ustring &str, int size, const Color
 */
 int getWidth(const ustring &str, int size);
 
+/** Calculate the width of a string drawn using the SDL_TTF library functions.
+  * This function differs from the regular Fonts::getWidth() in that strings
+  * which were drawn using functions such as TTF_RenderUNICODE_* don't follow
+  * the engine's whitespace and glyph spacings sizes, and so using the aforementioned
+  * function will cause the width to be incorrectly calculated
+  * \param str The string to test
+  * \param size The size of the source font
+  * \return The calculated pixel string width as if it were drawn on the screen
+*/
+int getWidthTTF(const ustring &str, int size);
+
 /** Calculate the width of a glyph
   * \param ch The Unicode character to test
   * \param size The size of the source font

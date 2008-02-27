@@ -365,9 +365,14 @@ int Fonts::getWidth(const ustring &str, int size) {
 		if (str[i]=='\n')
 			break;
 		
-		// spaces are 5 pixels wide
-		else if (str[i]==' ')
-			width+=SIZE_WHITESPACE;
+		// spaces have different widths according to size
+		else if (str[i]==' ') {
+			if (size==FONT_STANDARD)
+				width+=SIZE_WHITESPACE;
+			
+			else
+				width+=Fonts::getGlyphWidth(' ', size);
+		}
 		
 		else {
 			if (str[i]=='\\')
@@ -381,6 +386,20 @@ int Fonts::getWidth(const ustring &str, int size) {
 	}
 	
 	return width;
+}
+
+// get the width of a string drawn using SDL_ttf functions
+int Fonts::getWidthTTF(const ustring &str, int size) {
+	Font *font=queryFont(size);
+	if (font) {
+		int w;
+		Uint16 *text=Utils::ustringToArray(str);
+		TTF_SizeUNICODE(font, text, &w, NULL);
+		delete [] text;
+		return w;
+	}
+	
+	return -1;
 }
 
 // get the width of a glyph

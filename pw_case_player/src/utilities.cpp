@@ -289,6 +289,16 @@ ustring Utils::itoa(int num) {
 	return ss.str();
 }
 
+// convert a ustring to array of Uint16's
+Uint16* Utils::ustringToArray(const ustring &str) {
+	Uint16 *array=new Uint16[str.size()+1];
+	for (int i=0; i<str.size(); i++)
+		array[i]=str[i];
+	array[str.size()]='\0';
+	
+	return array;
+}
+
 // break a string apart based on a delimiting string
 StringVector Utils::explodeString(const ustring &delimiter, const ustring &strc) {
 	ustring str=strc;

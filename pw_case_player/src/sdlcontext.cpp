@@ -17,7 +17,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-// glcontext.cpp: implementation of SDLContext class
+// sdlcontext.cpp: implementation of SDLContext class
 
 #include <sstream>
 #include "SDL_ttf.h"
@@ -193,7 +193,7 @@ void SDLContext::onKeyboardEvent(SDL_KeyboardEvent *e) {
 	}
 	
 	// toggle audio mute
-	else if (e->keysym.sym==SDLK_F2) {
+	else if (e->keysym.sym==SDLK_F2 && Audio::g_Output) {
 		static bool once=false;
 		
 		// mute all sound effects
