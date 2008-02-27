@@ -2138,6 +2138,9 @@ void Game::onBottomRightButtonClicked() {
 			m_State.drawFlags &= ~STATE_CHECK_EVIDENCE_IMAGE;
 			
 			m_Parser->nextStep();
+			
+			// remember to reset this animation
+			m_UI->registerBGSlide("an_bg_slide");
 		}
 	}
 }
