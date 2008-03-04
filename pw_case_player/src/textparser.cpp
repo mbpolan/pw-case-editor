@@ -1167,5 +1167,24 @@ ustring TextParser::doTrigger(const ustring &trigger, const ustring &command) {
 			Utils::debugMessage("Unknown evidence: "+params[0]);
 	}
 	
+	// set the state of a location
+	else if (trigger=="set_location_state") {
+		StringVector params=Utils::explodeString(',', command);
+		
+		// check the location
+		Case::Location *location=pcase->getLocation(params[0]);
+		if (location) {
+			// verify state
+			if (location->states.find(params[1])==location->states.end())
+				Utils::debugMessage("State '"+params[1]+"' doesn't exist in location '"+params[0]+"'.");
+			
+			else
+				location->state=params[1];
+		}
+		
+		else
+			Utils::debugMessage("Unknown location: "+params[0]);
+	}
+	
 	return STR_NULL;
 }

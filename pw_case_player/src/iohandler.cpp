@@ -326,24 +326,13 @@ bool IO::loadCaseFromFile(const ustring &path, Case::Case &pcase) {
 		location.triggerBlock=STR_NULL;
 		location.character=STR_NULL;
 		location.music=STR_NULL;
+		location.state="default";
 		
 		// read id
 		location.id=readString(f);
 		
 		// read name
 		location.name=readString(f);
-		
-		// read bg id
-		location.bg=readString(f);
-		
-		// get the background image in question
-		if (pcase.getBackground(location.bg)) {
-			Case::Background *bg=pcase.getBackground(location.bg);
-			
-			// scale it
-			location.bgScaled=zoomSurface(bg->texture, 0.3125, 0.3125, SMOOTHING_ON);
-			Textures::pushTexture(STR_NULL, location.bgScaled);
-		}
 		
 		// read amount of hotspots
 		int hcount;
@@ -366,6 +355,30 @@ bool IO::loadCaseFromFile(const ustring &path, Case::Case &pcase) {
 			
 			// add this hotspot
 			location.hotspots.push_back(hspot);
+		}
+		
+		// read amount of states
+		int scount;
+		fread(&scount, sizeof(int), 1, f);
+		
+		// iterate over states
+		for (int i=0; i<scount; i++) {
+			// read the state id
+			ustring state=readString(f);
+			
+			// and then the background id
+			ustring id=readString(f);
+			
+			location.states[state]=id;
+		}
+		
+		// get the background image in question
+		if (pcase.getBackground(location.states["default"])) {
+			Case::Background *bg=pcase.getBackground(location.states["default"]);
+			
+			// scale it
+			location.bgScaled=zoomSurface(bg->texture, 0.3125, 0.3125, SMOOTHING_ON);
+			Textures::pushTexture(STR_NULL, location.bgScaled);
 		}
 		
 		// add this location
@@ -636,7 +649,8 @@ bool IO::loadStockFile(const ustring &path, Case::Case *pcase) {
 			// create location struct
 			Case::Location location;
 			location.id=sId;
-			location.bg=sFile;
+			location.state="default";
+			location.states["default"]=sFile;
 			location.triggerBlock=STR_NULL;
 			location.character=STR_NULL;
 			location.music=STR_NULL;

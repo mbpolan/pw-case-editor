@@ -127,8 +127,8 @@ struct _Location {
 	/// Music at this location
 	ustring music;
 	
-	/// ID of background to show in locations list in Move screen
-	ustring bg;
+	/// The current state of the location
+	ustring state;
 	
 	/// Scaled background image
 	SDL_Surface *bgScaled;
@@ -137,7 +137,14 @@ struct _Location {
 	std::vector<Hotspot> hotspots;
 	
 	/// IDs of locations that player can move to from here
-	std::vector<ustring> moveLocations; 
+	std::vector<ustring> moveLocations;
+	
+	/** Vector of states.
+	  * Each location can have many states, each with a different
+	  * background. However, a location will always have at least
+	  * one state with the normal background, known as "default"
+	*/
+	std::map<ustring, ustring> states;
 };
 typedef struct _Location Location;
 

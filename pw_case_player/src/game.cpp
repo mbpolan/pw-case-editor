@@ -1061,8 +1061,8 @@ void Game::renderTopView() {
 		Case::Location *location=m_Case->getLocation(m_State.currentLocation);
 		
 		// just a static background
-		if (location->bg[0]!='&') {
-			Case::Background *bg=m_Case->getBackground(location->bg);
+		if ((location->states[location->state])[0]!='&') {
+			Case::Background *bg=m_Case->getBackground(location->states[location->state]);
 			
 			// and draw it
 			if (bg)
@@ -1073,7 +1073,8 @@ void Game::renderTopView() {
 		
 		// sprite background otherwise
 		else {
-			Sprite *bg=m_Case->getCharacter(location->bg.substr(1, location->bg.size()))->getSprite();
+			Sprite *bg=m_Case->getCharacter(location->states[location->state].substr(1,
+							location->states[location->state].size()))->getSprite();
 			bg->animate(0, 0);
 		}
 		
@@ -1274,7 +1275,7 @@ void Game::renderMenuView() {
 	else if (flagged(STATE_EXAMINE)) {
 		// get the current location and its mapped background
 		Case::Location *location=m_Case->getLocation(m_State.currentLocation);
-		Case::Background *bg=m_Case->getBackground(location->bg);
+		Case::Background *bg=m_Case->getBackground(location->states[location->state]);
 		
 		Renderer::drawExamineScene(bg->texture, m_State.examinePt);
 	}
