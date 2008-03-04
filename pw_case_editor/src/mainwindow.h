@@ -170,6 +170,9 @@ class MainWindow: public Gtk::Window {
 		/// Handler to manage images assets
 		void on_assets_manage_images();
 		
+		/// Handler to set program language
+		void on_tools_set_language();
+		
 		/// Handler to display sprite editor
 		void on_tools_sprite_editor();
 		

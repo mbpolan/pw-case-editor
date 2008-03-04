@@ -25,6 +25,7 @@
 
 #include "clistview.h"
 #include "dialogs.h"
+#include "intl.h"
 #include "utilities.h"
 
 // handle highlighting text in a changed buffer
@@ -124,24 +125,24 @@ CListView::CListView() {
 	set_model(m_Model);
 	
 	// append a column
-	append_column("Text Blocks", m_ColumnRec.m_Column);
+	append_column(_("Text Blocks"), m_ColumnRec.m_Column);
 	
 	// append some default rows
-	append_toplevel_text("Script");
-	append_toplevel_text("Narration");
-	append_toplevel_text("Dates");
+	append_toplevel_text(_("Script"));
+	append_toplevel_text(_("Narration"));
+	append_toplevel_text(_("Dates"));
 	
 	// populate menu
 	Gtk::Menu::MenuList &list=m_ContextMenu.items();
 	
-	list.push_back(Gtk::Menu_Helpers::MenuElem("Add Text Block",
+	list.push_back(Gtk::Menu_Helpers::MenuElem(_("Add Text Block"),
 		       sigc::mem_fun(*this, &CListView::on_add_text_block)));
-	list.push_back(Gtk::Menu_Helpers::MenuElem("Remove Text Block",
+	list.push_back(Gtk::Menu_Helpers::MenuElem(_("Remove Text Block"),
 		       sigc::mem_fun(*this, &CListView::on_delete_text_block)));
-	list.push_back(Gtk::Menu_Helpers::MenuElem("Edit Description",
+	list.push_back(Gtk::Menu_Helpers::MenuElem(_("Edit Description"),
 		       sigc::mem_fun(*this, &CListView::on_edit_description)));
 	list.push_back(Gtk::Menu_Helpers::SeparatorElem());
-	list.push_back(Gtk::Menu_Helpers::MenuElem("Follow GOTO Trigger",
+	list.push_back(Gtk::Menu_Helpers::MenuElem(_("Follow Goto Trigger"),
 		       sigc::mem_fun(*this, &CListView::on_follow_goto)));
 	
 	// connect selection change signal
@@ -196,9 +197,9 @@ void CListView::clear() {
 	m_Buffers.clear();
 	
 	// add initial rows again
-	append_toplevel_text("Script");
-	append_toplevel_text("Narration");
-	append_toplevel_text("Dates");
+	append_toplevel_text(_("Script"));
+	append_toplevel_text(_("Narration"));
+	append_toplevel_text(_("Dates"));
 }
 
 // append toplevel text to list
@@ -416,7 +417,7 @@ void CListView::on_edit_description() {
 			Glib::ustring old=Utils::extract_block_description((*it)[m_ColumnRec.m_Column]);
 			
 			// ask for description
-			TextInputDialog tid("Description", old);
+			TextInputDialog tid(_("Description"), old);
 			if (tid.run()==Gtk::RESPONSE_OK) {
 				// get new description
 				Glib::ustring updated=tid.get_text();

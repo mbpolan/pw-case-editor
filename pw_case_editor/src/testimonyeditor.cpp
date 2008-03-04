@@ -24,6 +24,7 @@
 #include <gtkmm/table.h>
 #include <sstream>
 
+#include "intl.h"
 #include "testimonyeditor.h"
 #include "textboxdialog.h"
 #include "tooltips.h"
@@ -31,7 +32,7 @@
 // constructor
 TestimonyEditor::TestimonyEditor(const CharacterMap &chars, const LocationMap &locations, 
 				 const BufferMap &buffers, const StringVector &testimonyIds) {
-	set_title("Testimony Editor");
+	set_title(_("Testimony Editor"));
 	construct(chars, locations, buffers);
 	
 	// add a default piece
@@ -96,13 +97,13 @@ void TestimonyEditor::construct(const CharacterMap &chars, const LocationMap &lo
 	fTable->set_border_width(10);
 	
 	// allocate buttons
-	m_FormatTitleButton=Gtk::manage(new Gtk::Button("Format"));
+	m_FormatTitleButton=Gtk::manage(new Gtk::Button(_("Format")));
 	m_PrevButton=Gtk::manage(new Gtk::Button("<<"));
 	m_NextButton=Gtk::manage(new Gtk::Button(">>"));
-	m_AppendButton=Gtk::manage(new Gtk::Button("Append"));
-	m_InsertButton=Gtk::manage(new Gtk::Button("Insert"));
-	m_DeleteButton=Gtk::manage(new Gtk::Button("Delete"));
-	m_AmendButton=Gtk::manage(new Gtk::Button("Amend"));
+	m_AppendButton=Gtk::manage(new Gtk::Button(_("Append")));
+	m_InsertButton=Gtk::manage(new Gtk::Button(_("Insert")));
+	m_DeleteButton=Gtk::manage(new Gtk::Button(_("Delete")));
+	m_AmendButton=Gtk::manage(new Gtk::Button(_("Amend")));
 	
 	// connect signals
 	m_FormatTitleButton->signal_clicked().connect(sigc::mem_fun(*this, &TestimonyEditor::on_format_title_button_clicked));
@@ -114,14 +115,14 @@ void TestimonyEditor::construct(const CharacterMap &chars, const LocationMap &lo
 	m_AmendButton->signal_clicked().connect(sigc::mem_fun(*this, &TestimonyEditor::on_amend_button_clicked));
 	
 	// allocate labels
-	m_IdLabel=Gtk::manage(new Gtk::Label("Testimony ID"));
-	m_TitleLabel=Gtk::manage(new Gtk::Label("Title"));
-	m_SpeakerLabel=Gtk::manage(new Gtk::Label("Speaker"));
-	m_NextBlockLabel=Gtk::manage(new Gtk::Label("Testimony End Block"));
-	m_FollowLocLabel=Gtk::manage(new Gtk::Label("Testimony End Location"));
-	m_XExamineBlockLabel=Gtk::manage(new Gtk::Label("Cross Examination End Block"));
+	m_IdLabel=Gtk::manage(new Gtk::Label(_("Testimony ID")));
+	m_TitleLabel=Gtk::manage(new Gtk::Label(_("Title")));
+	m_SpeakerLabel=Gtk::manage(new Gtk::Label(_("Speaker")));
+	m_NextBlockLabel=Gtk::manage(new Gtk::Label(_("Testimony End Block")));
+	m_FollowLocLabel=Gtk::manage(new Gtk::Label(_("Testimony End Location")));
+	m_XExamineBlockLabel=Gtk::manage(new Gtk::Label(_("Cross Examination End Block")));
 	m_PieceLabel=Gtk::manage(new Gtk::Label("1/1"));
-	m_PressLabel=Gtk::manage(new Gtk::Label("Witness Pressed"));
+	m_PressLabel=Gtk::manage(new Gtk::Label(_("Witness Pressed")));
 	
 	// allocate entries
 	m_IdEntry=Gtk::manage(new Gtk::Entry);
@@ -144,8 +145,8 @@ void TestimonyEditor::construct(const CharacterMap &chars, const LocationMap &lo
 	m_IdEntry->signal_changed().connect(sigc::mem_fun(*this, &TestimonyEditor::on_id_entry_changed));
 	
 	// allocate check buttons
-	m_HiddenCB=Gtk::manage(new Gtk::CheckButton("Piece is Hidden"));
-	m_PresentLabelCB=Gtk::manage(new Gtk::CheckButton("Evidence Presented"));
+	m_HiddenCB=Gtk::manage(new Gtk::CheckButton(_("Piece is Hidden")));
+	m_PresentLabelCB=Gtk::manage(new Gtk::CheckButton(_("Evidence Presented")));
 	
 	// connect signals
 	m_PresentLabelCB->signal_toggled().connect(sigc::mem_fun(*this, &TestimonyEditor::on_present_toggled));
@@ -157,7 +158,7 @@ void TestimonyEditor::construct(const CharacterMap &chars, const LocationMap &lo
 	m_TextView->signal_populate_popup().connect(sigc::mem_fun(*this, &TestimonyEditor::on_text_view_populate_menu));
 	
 	// allocate containers
-	m_PieceFrame=Gtk::manage(new Gtk::Frame("Testimony Piece"));
+	m_PieceFrame=Gtk::manage(new Gtk::Frame(_("Testimony Piece")));
 	
 	m_SWindow=Gtk::manage(new Gtk::ScrolledWindow);
 	m_SWindow->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_ALWAYS);
@@ -244,8 +245,8 @@ void TestimonyEditor::construct(const CharacterMap &chars, const LocationMap &lo
 	vb->pack_start(*table);
 	
 	// add buttons
-	m_OKButton=add_button("OK", Gtk::RESPONSE_OK);
-	add_button("Cancel", Gtk::RESPONSE_CANCEL);
+	m_OKButton=add_button(_("OK"), Gtk::RESPONSE_OK);
+	add_button(_("Cancel"), Gtk::RESPONSE_CANCEL);
 	
 	m_OKButton->set_sensitive(false);
 	
@@ -377,7 +378,7 @@ void TestimonyEditor::on_insert_button_clicked() {
 void TestimonyEditor::on_delete_button_clicked() {
 	// we need at least one piece in this testimony
 	if (m_Testimony.pieces.size()==1) {
-		Gtk::MessageDialog md("A testimony must have at least one piece!", false, Gtk::MESSAGE_ERROR);
+		Gtk::MessageDialog md(_("A testimony must have at least one piece!"), false, Gtk::MESSAGE_ERROR);
 		md.run();
 		
 		return;
@@ -441,7 +442,7 @@ void TestimonyEditor::on_text_view_populate_menu(Gtk::Menu *menu) {
 	
 	// add more items to popup
 	list.push_back(Gtk::Menu_Helpers::SeparatorElem());
-	list.push_back(Gtk::Menu_Helpers::MenuElem("Insert Dialogue", 
+	list.push_back(Gtk::Menu_Helpers::MenuElem(_("Insert Dialogue"), 
 		       sigc::mem_fun(*this, &TestimonyEditor::on_list_button_pressed)));
 }
 

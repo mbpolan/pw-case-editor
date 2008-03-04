@@ -29,6 +29,7 @@
 #include <map>
 
 #include "case.h"
+#include "config.h"
 #include "iconmanager.h"
 #include "sprite.h"
 
@@ -129,6 +130,27 @@ IO::Code export_sprite_to_file(const Glib::ustring &path, const Sprite &spr);
   * \return IO::CODE_OK if successful, other codes if an error occurred.
 */
 IO::Code load_sprite_from_file(const Glib::ustring &path, Sprite &spr);
+
+/** Load a translation file
+  * \param path The path to the file
+  * \param map The translation string map to load data into
+  * \return IO::CODE_OK if successful, other codes if an error occurred
+*/
+IO::Code load_translation_file(const Glib::ustring &path, std::map<Glib::ustring, Glib::ustring> &map);
+
+/** Save the configuration file
+  * \param path The path to the file
+  * \param config A completed Config::File struct representing values to save
+  * \return IO::CODE_OK if successful, other codes if an error occurred
+*/
+IO::Code save_config_file(const Glib::ustring &path, const Config::File &file);
+
+/** Load the configuration file
+  * \param path The path to the file
+  * \param file The Config::File struct to load data into
+  * \return IO::CODE_OK if successful, other codes if an error occurred
+*/
+IO::Code load_config_file(const Glib::ustring &path, Config::File &file);
 
 /** Write a string to file
   * \param f Pointer to open FILE handle

@@ -32,11 +32,13 @@
 #include <gtkmm/toolbar.h>
 #include <sstream>
 
+#include "config.h"
 #include "customizedialog.h"
 #include "dialogs.h"
 #include "editdialogs.h"
 #include "exceptions.h"
 #include "iohandler.h"
+#include "intl.h"
 #include "mainwindow.h"
 #include "spriteeditor.h"
 #include "testimonyeditor.h"
@@ -51,7 +53,7 @@ MainWindow *g_MainWnd;
 // constructor
 MainWindow::MainWindow() {
 	// set the title and minimum window size
-	set_title("Unsaved File - Phoenix Wright Case Editor");
+	set_title(_("Unsaved File")+" - Phoenix Wright Case Editor");
 	set_size_request(640, 480);
 	
 	// register our window as the global pointer
@@ -70,6 +72,7 @@ MainWindow::MainWindow() {
 	
 	// now we can safely delete the resource temp directory
 	Utils::FS::remove_dir(Utils::FS::cwd()+".temp");
+	Utils::FS::remove_dir(Utils::FS::cwd()+"lang");
 }
 
 // build the ui
@@ -84,68 +87,70 @@ void MainWindow::construct() {
 	m_ActionGroup=Gtk::ActionGroup::create();
 	
 	// populate it
-	m_ActionGroup->add(Gtk::Action::create("FileNew", Gtk::Stock::NEW, "_New", "Create a new case"),
+	m_ActionGroup->add(Gtk::Action::create("FileNew", Gtk::Stock::NEW, _("_New"), _("Create a new case")),
 			   sigc::mem_fun(*this, &MainWindow::on_new));
-	m_ActionGroup->add(Gtk::Action::create("FileSave", Gtk::Stock::SAVE, "_Save"),
+	m_ActionGroup->add(Gtk::Action::create("FileSave", Gtk::Stock::SAVE, _("_Save")),
 			   sigc::mem_fun(*this, &MainWindow::on_save));
-	m_ActionGroup->add(Gtk::Action::create("FileSaveAs", Gtk::Stock::SAVE_AS, "_Save As"),
+	m_ActionGroup->add(Gtk::Action::create("FileSaveAs", Gtk::Stock::SAVE_AS, _("S_ave As")),
 			   Gtk::AccelKey("<control><shift>s", "<MainWindow>/FileMenu/FileSaveAs"),
 			   sigc::mem_fun(*this, &MainWindow::on_save_as));
-	m_ActionGroup->add(Gtk::Action::create("FileOpen", Gtk::Stock::OPEN, "_Open"),
+	m_ActionGroup->add(Gtk::Action::create("FileOpen", Gtk::Stock::OPEN, _("_Open")),
 			   sigc::mem_fun(*this, &MainWindow::on_open));
-	m_ActionGroup->add(Gtk::Action::create("FileExport", Gtk::Stock::CONVERT, "_Export"),
+	m_ActionGroup->add(Gtk::Action::create("FileExport", Gtk::Stock::CONVERT, _("_Export")),
 			   Gtk::AccelKey("<control>e", "<MainWindow>/FileMenu/FileExport"),
 			   sigc::mem_fun(*this, &MainWindow::on_export));
-	m_ActionGroup->add(Gtk::Action::create("FileQuit", Gtk::Stock::QUIT, "_Quit"),
+	m_ActionGroup->add(Gtk::Action::create("FileQuit", Gtk::Stock::QUIT, _("_Quit")),
 			   sigc::mem_fun(*this, &MainWindow::on_quit));
 	
-	m_ActionGroup->add(Gtk::Action::create("EditFindBlocks", Gtk::Stock::FIND, "_Find in Blocks"),
+	m_ActionGroup->add(Gtk::Action::create("EditFindBlocks", Gtk::Stock::FIND, _("_Find in Blocks")),
 			   sigc::mem_fun(*this, &MainWindow::on_edit_find_in_blocks));
 	
-	m_ActionGroup->add(Gtk::Action::create("ScriptInsertDialogue", AppStock::INSERT_DIALOGUE, "_Insert Dialogue"),
+	m_ActionGroup->add(Gtk::Action::create("ScriptInsertDialogue", AppStock::INSERT_DIALOGUE, _("_Insert Dialogue")),
 			   sigc::mem_fun(*this, &MainWindow::on_script_insert_dialogue));
-	m_ActionGroup->add(Gtk::Action::create("ScriptChangeColor", Gtk::Stock::SELECT_COLOR, "_Change Text Color"),
+	m_ActionGroup->add(Gtk::Action::create("ScriptChangeColor", Gtk::Stock::SELECT_COLOR, _("_Change Text Color")),
 			   sigc::mem_fun(*this, &MainWindow::on_script_change_text_color));
-	m_ActionGroup->add(Gtk::Action::create("ScriptChangeSpeed", Gtk::Stock::ITALIC, "_Change Text Speed"),
+	m_ActionGroup->add(Gtk::Action::create("ScriptChangeSpeed", Gtk::Stock::ITALIC, _("_Change Text Speed")),
 			   sigc::mem_fun(*this, &MainWindow::on_script_change_text_speed));
 	
-	m_ActionGroup->add(Gtk::Action::create("CaseAddChar", AppStock::ADD_CHARACTER, "_Add Character"),
+	m_ActionGroup->add(Gtk::Action::create("CaseAddChar", AppStock::ADD_CHARACTER, _("_Add Character")),
 			   sigc::mem_fun(*this, &MainWindow::on_case_add_char));
-	m_ActionGroup->add(Gtk::Action::create("CaseBrowseChar", AppStock::BROWSE_CHARS, "_Browse Characters"),
+	m_ActionGroup->add(Gtk::Action::create("CaseBrowseChar", AppStock::BROWSE_CHARS, _("_Browse Characters")),
 			   sigc::mem_fun(*this, &MainWindow::on_case_browse_chars));
-	m_ActionGroup->add(Gtk::Action::create("CaseManageTestimonies", AppStock::TESTIMONY, "_Manage Testimonies"),
+	m_ActionGroup->add(Gtk::Action::create("CaseManageTestimonies", AppStock::TESTIMONY, _("_Manage Testimonies")),
 			   sigc::mem_fun(*this, &MainWindow::on_case_manage_testimonies));
-	m_ActionGroup->add(Gtk::Action::create("CaseEditLocations", AppStock::LOCATION, "_Edit Locations"),
+	m_ActionGroup->add(Gtk::Action::create("CaseEditLocations", AppStock::LOCATION, _("_Edit Locations")),
 			   sigc::mem_fun(*this, &MainWindow::on_case_edit_locations));
-	m_ActionGroup->add(Gtk::Action::create("CaseEditOverview", Gtk::Stock::PROPERTIES, "_Edit Overview"),
+	m_ActionGroup->add(Gtk::Action::create("CaseEditOverview", Gtk::Stock::PROPERTIES, _("_Edit Overview")),
 			   sigc::mem_fun(*this, &MainWindow::on_case_edit_overview));
-	m_ActionGroup->add(Gtk::Action::create("CaseInitialBlock", AppStock::INITBLOCK, "_Initial Text Block"),
+	m_ActionGroup->add(Gtk::Action::create("CaseInitialBlock", AppStock::INITBLOCK, _("_Initial Text Block")),
 			   sigc::mem_fun(*this, &MainWindow::on_case_change_initial_block));
-	m_ActionGroup->add(Gtk::Action::create("CaseCustomize", "_Customize"),
+	m_ActionGroup->add(Gtk::Action::create("CaseCustomize", _("_Customize")),
 			   sigc::mem_fun(*this, &MainWindow::on_case_customize));
 	
-	m_ActionGroup->add(Gtk::Action::create("AssetsManageAudio", AppStock::AUDIO, "Manage _Audio"),
+	m_ActionGroup->add(Gtk::Action::create("AssetsManageAudio", AppStock::AUDIO, _("Manage _Audio")),
 			   sigc::mem_fun(*this, &MainWindow::on_assets_manage_audio));
-	m_ActionGroup->add(Gtk::Action::create("AssetsManageBG", AppStock::BACKGROUND, "Manage _Backgrounds"),
+	m_ActionGroup->add(Gtk::Action::create("AssetsManageBG", AppStock::BACKGROUND, _("Manage _Backgrounds")),
 			   sigc::mem_fun(*this, &MainWindow::on_assets_manage_bg));
-	m_ActionGroup->add(Gtk::Action::create("AssetsManageEvidence", AppStock::EVIDENCE, "Manage _Evidence"),
+	m_ActionGroup->add(Gtk::Action::create("AssetsManageEvidence", AppStock::EVIDENCE, _("Manage _Evidence")),
 			   sigc::mem_fun(*this, &MainWindow::on_assets_manage_evidence));
-	m_ActionGroup->add(Gtk::Action::create("AssetsManageImages", AppStock::IMAGE, "Manage _Images"),
+	m_ActionGroup->add(Gtk::Action::create("AssetsManageImages", AppStock::IMAGE, _("Manage _Images")),
 			   sigc::mem_fun(*this, &MainWindow::on_assets_manage_images));
 	
-	m_ActionGroup->add(Gtk::Action::create("ToolsSpriteEditor", "_Sprite Editor"),
+	m_ActionGroup->add(Gtk::Action::create("ToolsSpriteEditor", _("_Sprite Editor")),
 			   sigc::mem_fun(*this, &MainWindow::on_tools_sprite_editor));
+	m_ActionGroup->add(Gtk::Action::create("ToolsSetLanguage", _("Set _Language")),
+			   sigc::mem_fun(*this, &MainWindow::on_tools_set_language));
 	
-	m_ActionGroup->add(Gtk::Action::create("HelpAbout", Gtk::Stock::ABOUT, "_About"),
+	m_ActionGroup->add(Gtk::Action::create("HelpAbout", Gtk::Stock::ABOUT, _("_About")),
 			   sigc::mem_fun(*this, &MainWindow::on_help_about));
 	
-	m_ActionGroup->add(Gtk::Action::create("FileMenu", "_File"));
-	m_ActionGroup->add(Gtk::Action::create("EditMenu", "_Edit"));
-	m_ActionGroup->add(Gtk::Action::create("ScriptMenu", "_Script"));
-	m_ActionGroup->add(Gtk::Action::create("CaseMenu", "_Case"));
-	m_ActionGroup->add(Gtk::Action::create("AssetsMenu", "_Assets"));
-	m_ActionGroup->add(Gtk::Action::create("ToolsMenu", "_Tools"));
-	m_ActionGroup->add(Gtk::Action::create("HelpMenu", "_Help"));
+	m_ActionGroup->add(Gtk::Action::create("FileMenu", _("_File")));
+	m_ActionGroup->add(Gtk::Action::create("EditMenu", _("_Edit")));
+	m_ActionGroup->add(Gtk::Action::create("ScriptMenu", _("_Script")));
+	m_ActionGroup->add(Gtk::Action::create("CaseMenu", _("_Case")));
+	m_ActionGroup->add(Gtk::Action::create("AssetsMenu", _("_Assets")));
+	m_ActionGroup->add(Gtk::Action::create("ToolsMenu", _("_Tools")));
+	m_ActionGroup->add(Gtk::Action::create("HelpMenu", _("_Help")));
 	
 	// allocate ui manager
 	m_UIManager=Gtk::UIManager::create();
@@ -202,6 +207,8 @@ void MainWindow::construct() {
 			"	</menu>"
 			"	<menu action='ToolsMenu'>"
 			"		<menuitem action='ToolsSpriteEditor'/>"
+			"		<separator/>"
+			"		<menuitem action='ToolsSetLanguage'/>"
 			"	</menu>"
 			"	<menu action='HelpMenu'>"
 			"		<menuitem action='HelpAbout'/>"
@@ -235,7 +242,7 @@ void MainWindow::construct() {
 		// grab the list of items and add a new submenu
 		Gtk::Menu_Helpers::MenuList &list=refMenu->items();
 		Gtk::Menu_Helpers::MenuList::iterator it=list.begin(); it++;
-		list.insert(it, Gtk::Menu_Helpers::MenuElem("Insert Trigger", *Gtk::manage(tmenu)));
+		list.insert(it, Gtk::Menu_Helpers::MenuElem(_("Insert Trigger"), *Gtk::manage(tmenu)));
 		list.insert(it, Gtk::Menu_Helpers::SeparatorElem());
 		
 		// finally, create the menu
@@ -254,14 +261,14 @@ void MainWindow::construct() {
 		
 		// now insert a separator, and the actual recent files menu
 		list.insert(it, Gtk::Menu_Helpers::SeparatorElem());
-		list.insert(it, Gtk::Menu_Helpers::MenuElem("Open Recent", *m_RecentMenu));
+		list.insert(it, Gtk::Menu_Helpers::MenuElem(_("Open Recent"), *m_RecentMenu));
 		
 		// again, skip past the open recent menu
 		for (int i=0; i<4; i++)
 			it++;
 		
 		// insert the quick export menu
-		list.insert(it, Gtk::Menu_Helpers::MenuElem("Quick Export", *m_QExportMenu));
+		list.insert(it, Gtk::Menu_Helpers::MenuElem(_("Quick Export"), *m_QExportMenu));
 		list.insert(it, Gtk::Menu_Helpers::SeparatorElem());
 		
 		// read the recent files record
@@ -414,7 +421,7 @@ bool MainWindow::check_case_element(const Glib::ustring &element, int amount) {
 	// looks like we failed the check, show an error dialog
 	if (fail) {
 		ss << " in your case.";
-		Gtk::MessageDialog md(*this, ss.str(), false, Gtk::MESSAGE_ERROR);
+		Gtk::MessageDialog md(*this, _(ss.str()), false, Gtk::MESSAGE_ERROR);
 		md.run();
 	}
 	
@@ -534,7 +541,7 @@ bool MainWindow::process_load_case(const Glib::ustring &path) {
 		Gtk::MessageDialog md(*this, msg, false, Gtk::MESSAGE_ERROR);
 		md.run();
 		
-		m_Statusbar->push("Unable to open case file");
+		m_Statusbar->push(_("Unable to open case file"));
 		return false;
 	}
 	
@@ -579,7 +586,7 @@ bool MainWindow::process_load_case(const Glib::ustring &path) {
 
 // process a case and export it
 bool MainWindow::process_export(const Glib::ustring &path) {
-	m_Statusbar->push("Exporting case to file...");
+	m_Statusbar->push(_("Exporting case to file..."));
 	
 	// export this case
 	IO::Code code;
@@ -593,11 +600,11 @@ bool MainWindow::process_export(const Glib::ustring &path) {
 		Gtk::MessageDialog md(*this, msg, false, Gtk::MESSAGE_ERROR);
 		md.run();
 		
-		m_Statusbar->push("Unable to export case");
+		m_Statusbar->push(_("Unable to export case"));
 		return false;
 	}
 	
-	m_Statusbar->push("Exported case successfully");
+	m_Statusbar->push(_("Exported case successfully"));
 	
 	return true;
 }
@@ -607,7 +614,7 @@ void MainWindow::on_new() {
 	// ask to save
 	if (m_ScriptWidget->get_buffers().size()>2) {
 		// display dialog
-		Gtk::MessageDialog md(*this, "Would you like to save your current case project?", 
+		Gtk::MessageDialog md(*this, _("Would you like to save your current case project?"), 
 				       false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
 		if (md.run()==Gtk::RESPONSE_YES)
 			on_save();
@@ -621,7 +628,8 @@ void MainWindow::on_new() {
 		m_SavePath="";
 		
 		// reset title bar
-		set_title("Unsaved File - Phoenix Wright Case Editor");
+		Glib::ustring title=_("Unsaved File");
+		set_title(title+" - Phoenix Wright Case Editor");
 		
 		// get the updated case overview
 		Case::Overview overview=nd.get_overview();
@@ -639,7 +647,7 @@ void MainWindow::on_new() {
 void MainWindow::on_save() {
 	// save automatically if we have a path set
 	if (m_Saved) {
-		m_Statusbar->push("Saving to "+m_SavePath);
+		m_Statusbar->push(_("Saving to")+" "+m_SavePath);
 		
 		// save this case
 		std::map<Glib::ustring, Glib::ustring> bdescs=m_ScriptWidget->get_buffer_descriptions();
@@ -656,20 +664,20 @@ void MainWindow::on_save() {
 			return;
 		}
 		
-		m_Statusbar->push("Case saved successfully");
+		m_Statusbar->push(_("Case saved successfully"));
 		
 		return;
 	}
 	
 	// prepare file chooser dialog
-	Gtk::FileChooserDialog fcd(*this, "Save Case", Gtk::FILE_CHOOSER_ACTION_SAVE);
-	fcd.add_button("Save", Gtk::RESPONSE_OK);
-	fcd.add_button("Cancel", Gtk::RESPONSE_CANCEL);
+	Gtk::FileChooserDialog fcd(*this, _("Save Case"), Gtk::FILE_CHOOSER_ACTION_SAVE);
+	fcd.add_button(_("Save"), Gtk::RESPONSE_OK);
+	fcd.add_button(_("Cancel"), Gtk::RESPONSE_CANCEL);
 	
 	// add filter
 	Gtk::FileFilter filter;
 	filter.add_pattern("*.cprjt");
-	filter.set_name("Case project file (*.cprjt)");
+	filter.set_name(_("Case project file")+" (*.cprjt)");
 	fcd.add_filter(filter);
 	
 	// run the dialog
@@ -683,7 +691,7 @@ void MainWindow::on_save() {
 		if (ext!=".cprjt")
 			path+=".cprjt";
 		
-		m_Statusbar->push("Saving...");
+		m_Statusbar->push(_("Saving..."));
 		
 		// save this case
 		std::map<Glib::ustring, Glib::ustring> bdescs=m_ScriptWidget->get_buffer_descriptions();
@@ -697,12 +705,12 @@ void MainWindow::on_save() {
 			Gtk::MessageDialog md(*this, msg, false, Gtk::MESSAGE_ERROR);
 			md.run();
 			
-			m_Statusbar->push("Unable to save file");
+			m_Statusbar->push(_("Unable to save file"));
 			
 			return;
 		}
 		
-		m_Statusbar->push("File saved");
+		m_Statusbar->push(_("Case saved successfully"));
 		
 		// name this document
 		if (!m_Saved) {
@@ -728,14 +736,14 @@ void MainWindow::on_save_as() {
 // export case handler
 void MainWindow::on_export() {
 	// prepare file chooser dialog
-	Gtk::FileChooserDialog fcd(*this, "Export Case", Gtk::FILE_CHOOSER_ACTION_SAVE);
-	fcd.add_button("Export", Gtk::RESPONSE_OK);
-	fcd.add_button("Cancel", Gtk::RESPONSE_CANCEL);
+	Gtk::FileChooserDialog fcd(*this, _("Export Case"), Gtk::FILE_CHOOSER_ACTION_SAVE);
+	fcd.add_button(_("Export"), Gtk::RESPONSE_OK);
+	fcd.add_button(_("Cancel"), Gtk::RESPONSE_CANCEL);
 	
 	// add filter
 	Gtk::FileFilter filter;
 	filter.add_pattern("*.pwt");
-	filter.set_name("Phoenix Wright Trials (*.pwt)");
+	filter.set_name(_("Phoenix Wright Trials")+" (*.pwt)");
 	fcd.add_filter(filter);
 	
 	// run the dialog
@@ -781,21 +789,21 @@ void MainWindow::on_open() {
 	// ask to save
 	if (m_ScriptWidget->get_buffers().size()>2) {
 		// display dialog
-		Gtk::MessageDialog md(*this, "Would you like to save your current case project?", 
+		Gtk::MessageDialog md(*this, _("Would you like to save your current case project?"), 
 				       false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
 		if (md.run()==Gtk::RESPONSE_YES)
 			on_save();
 	}
 	
 	// prepare file chooser dialog
-	Gtk::FileChooserDialog fcd(*this, "Open Case", Gtk::FILE_CHOOSER_ACTION_OPEN);
-	fcd.add_button("Open", Gtk::RESPONSE_OK);
-	fcd.add_button("Cancel", Gtk::RESPONSE_CANCEL);
+	Gtk::FileChooserDialog fcd(*this, _("Open Case"), Gtk::FILE_CHOOSER_ACTION_OPEN);
+	fcd.add_button(_("Open"), Gtk::RESPONSE_OK);
+	fcd.add_button(_("Cancel"), Gtk::RESPONSE_CANCEL);
 	
 	// add filter
 	Gtk::FileFilter filter;
 	filter.add_pattern("*.cprjt");
-	filter.set_name("Case project file (*.cprjt)");
+	filter.set_name(_("Case project file")+" (*.cprjt)");
 	fcd.add_filter(filter);
 	
 	// run the dialog
@@ -806,13 +814,13 @@ void MainWindow::on_open() {
 		// clear the case out
 		m_Case.clear();
 		
-		m_Statusbar->push("Opening file...");
+		m_Statusbar->push(_("Opening file..."));
 		
 		// load the case
 		if (!process_load_case(path))
 			return;
 		
-		m_Statusbar->push("Case opened successfully");
+		m_Statusbar->push(_("Case opened successfully"));
 		
 		// extract file name
 		Glib::ustring title=path.substr(path.rfind("/")+1, path.size()-1);
@@ -847,7 +855,7 @@ void MainWindow::on_open_recent(const Glib::ustring &path) {
 // quit handler
 void MainWindow::on_quit() {
 	// ask to save
-	Gtk::MessageDialog md(*this, "Would you like to save your current case project?", 
+	Gtk::MessageDialog md(*this, _("Would you like to save your current case project?"), 
 			       false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
 	if (md.run()==Gtk::RESPONSE_YES)
 		on_save();
@@ -1645,7 +1653,7 @@ void MainWindow::on_case_customize() {
 void MainWindow::on_case_change_initial_block() {
 	// make sure there are any text blocks at all
 	if (m_ScriptWidget->get_buffers().empty()) {
-		Gtk::MessageDialog md(*this, "There are no registered text blocks in this case!", false, Gtk::MESSAGE_ERROR);
+		Gtk::MessageDialog md(*this, _("There are no registered text blocks in this case!"), false, Gtk::MESSAGE_ERROR);
 		md.run();
 		return;
 	}
@@ -1735,6 +1743,23 @@ void MainWindow::on_assets_manage_images() {
 	}
 }
 
+// handler to set program language
+void MainWindow::on_tools_set_language() {
+	// run the dialog
+	LangDialog diag;
+	if (diag.run()==Gtk::RESPONSE_OK) {
+		Glib::ustring lang=diag.get_selected();
+		
+		// update the language in the config manager
+		Config::Manager::instance()->set_language(lang);
+		
+		// display a message informing the user that a restart of the editor is needed
+		Glib::ustring msg=_("You need to restart the editor for the language to be changed.");
+		Gtk::MessageDialog md(*this, msg);
+		md.run();
+	}
+}
+
 // display sprite editor handler
 void MainWindow::on_tools_sprite_editor() {
 	// first, run the sprite chooser dialog
@@ -1750,7 +1775,7 @@ void MainWindow::on_tools_sprite_editor() {
 			if (IO::load_sprite_from_file(scd.get_path(), spr))
 				m_SprEditor.set_sprite_data(spr);
 			else {
-				Gtk::MessageDialog md(*this, "Unable to open sprite.", false, Gtk::MESSAGE_ERROR);
+				Gtk::MessageDialog md(*this, _("Unable to open sprite."), false, Gtk::MESSAGE_ERROR);
 				md.run();
 				return;
 			}
@@ -1762,7 +1787,7 @@ void MainWindow::on_tools_sprite_editor() {
 			
 			// create this sprite
 			if (!spr.create_from_gifs(scd.get_path())) {
-				Gtk::MessageDialog md(*this, "Unable to create sprite from files.", false, Gtk::MESSAGE_ERROR);
+				Gtk::MessageDialog md(*this, _("Unable to create sprite from files."), false, Gtk::MESSAGE_ERROR);
 				md.run();
 				return;
 			}
@@ -1791,7 +1816,7 @@ void MainWindow::on_help_about() {
 	ad.set_name("Phoenix Wright Case Editor");
 	ad.set_version("1.0");
 	
-	ad.set_comments("This is an editor that creates cases/trials capable of being played by the Phoenix Wright Case Player.");
+	ad.set_comments(_("This is an editor that creates cases/trials capable of being played by the Phoenix Wright Case Player."));
 	
 	ad.run();
 }

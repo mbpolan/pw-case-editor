@@ -182,9 +182,6 @@ IO::Code IO::save_case_to_file(const Glib::ustring &path, const Case::Case &pcas
 		// write name
 		write_string(f, (*it).second.name);
 		
-		// write bg id
-		write_string(f, (*it).second.bg);
-		
 		// write amount of hotspots
 		int hcount=(*it).second.hotspots.size();
 		fwrite(&hcount, sizeof(int), 1, f);
@@ -201,6 +198,18 @@ IO::Code IO::save_case_to_file(const Glib::ustring &path, const Case::Case &pcas
 			
 			// write target block
 			write_string(f, hspot.block);
+		}
+		
+		// write amount of states
+		int scount=(*it).second.states.size();
+		fwrite(&scount, sizeof(int), 1, f);
+		
+		// iterate over states
+		for (std::map<Glib::ustring, Glib::ustring>::iterator t=(*it).second.states.begin(); 
+				   t!=(*it).second.states.end(); ++t) {
+			// write the id and bg id
+			write_string(f, (*t).first);
+			write_string(f, (*t).second);
 		}
 	}
 	
@@ -456,9 +465,6 @@ IO::Code IO::export_case_to_file(const Glib::ustring &path, const Case::Case &pc
 		// write name
 		write_string(f, (*it).second.name);
 		
-		// write bg id
-		write_string(f, (*it).second.bg);
-		
 		// write amount of hotspots
 		int hcount=(*it).second.hotspots.size();
 		fwrite(&hcount, sizeof(int), 1, f);
@@ -475,6 +481,18 @@ IO::Code IO::export_case_to_file(const Glib::ustring &path, const Case::Case &pc
 			
 			// write target block
 			write_string(f, hspot.block);
+		}
+		
+		// write amount of states
+		int scount=(*it).second.states.size();
+		fwrite(&scount, sizeof(int), 1, f);
+		
+		// iterate over states
+		for (std::map<Glib::ustring, Glib::ustring>::iterator t=(*it).second.states.begin(); 
+			t!=(*it).second.states.end(); ++it) {
+			// write the id and bg id
+			write_string(f, (*t).first);
+			write_string(f, (*t).second);
 		}
 	}
 	
@@ -764,9 +782,6 @@ IO::Code IO::load_case_from_file(const Glib::ustring &path, Case::Case &pcase,
 		// read name
 		location.name=read_string(f);
 		
-		// read bg id
-		location.bg=read_string(f);
-		
 		// read amount of hotspots
 		int hcount;
 		fread(&hcount, sizeof(int), 1, f);
@@ -786,6 +801,18 @@ IO::Code IO::load_case_from_file(const Glib::ustring &path, Case::Case &pcase,
 			
 			// add this hotspot
 			location.hotspots.push_back(hspot);
+		}
+		
+		// read amount of states
+		int scount;
+		fread(&scount, sizeof(int), 1, f);
+		
+		// iterate over states
+		for (int i=0; i<scount; i++) {
+			Glib::ustring sId=read_string(f);
+			Glib::ustring bg=read_string(f);
+			
+			location.states[sId]=bg;
 		}
 		
 		// add this location
@@ -1099,6 +1126,74 @@ IO::Code IO::load_sprite_from_file(const Glib::ustring &path, Sprite &spr) {
 	pd.hide();
 	
 	// wrap up
+	fclose(f);
+	return IO::CODE_OK;
+}
+
+IO::Code IO::load_translation_file(const Glib::ustring &path, std::map<Glib::ustring, Glib::ustring> &map) {
+	// open the file
+	FILE *f=fopen(path.c_str(), "r");
+	if (!f)
+		return IO::CODE_OPEN_FAILED;
+	
+	// iterate that many times and read all translations
+	while(1) {
+		// read a line of text
+		char str[512];
+		if (fgets(str, 512, f)==NULL)
+			break;
+		
+		Glib::ustring gstr=str;
+		
+		// make sure that there is a translation on this line
+		if (gstr.find('~')==-1 || gstr[0]=='#')
+			continue;
+		
+		// extract the english key
+		gstr.erase(0, 1);
+		Glib::ustring key=gstr.substr(0, gstr.find('~')-1);
+		gstr.erase(0, gstr.find('~')+2);
+		
+		// extract the translation
+		Glib::ustring trs=gstr.substr(0, gstr.find('"'));
+		
+		// add this key
+		map[key]=trs;
+	}
+	
+	fclose(f);
+	return IO::CODE_OK;
+}
+
+// save the configuration file
+IO::Code IO::save_config_file(const Glib::ustring &path, const Config::File &file) {
+	// open the file
+	FILE *f=fopen(path.c_str(), "wb");
+	if (!f)
+		return IO::CODE_OPEN_FAILED;
+	
+	// write language
+	write_string(f, file.language);
+	
+	fclose(f);
+	return IO::CODE_OK;
+}
+
+// load the configuration file
+IO::Code IO::load_config_file(const Glib::ustring &path, Config::File &file) {
+	// open the file
+	FILE *f=fopen(path.c_str(), "rb");
+	if (!f) {
+		// since there is a potential for the config file not to exist, just assume
+		// default values
+		file.language="en";
+		
+		return IO::CODE_OK;
+	}
+	
+	// read language
+	file.language=read_string(f);
+	
 	fclose(f);
 	return IO::CODE_OK;
 }

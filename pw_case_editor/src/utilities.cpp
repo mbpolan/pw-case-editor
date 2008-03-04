@@ -25,6 +25,7 @@
 #include <gtkmm/main.h>
 #include <sstream>
 
+#include "intl.h"
 #include "utilities.h"
 
 #ifdef __WIN32__
@@ -140,13 +141,16 @@ void Utils::calculate_center(int width, int height, int &x, int &y) {
 
 // convert an I/O error code into a string error message
 Glib::ustring Utils::io_error_to_str(const IO::Code &code) {
+	Glib::ustring str=" ";
 	switch(code) {
-		case IO::CODE_OK: return ""; break; // this shouldn't be handled
-		case IO::CODE_OPEN_FAILED: return " Unable to open file."; break;
-		case IO::CODE_WRONG_MAGIC_NUM: return " File's header is incorrect or corrupt."; break;
-		case IO::CODE_WRONG_VERSION: return " This file version is not supported."; break;
-		case IO::CODE_VALIDATE_FAILED: return " The file is corrupt and cannot be opened."; break;
+		case IO::CODE_OK: str=""; break; // this shouldn't be handled
+		case IO::CODE_OPEN_FAILED: str+=_("Unable to open file."); break;
+		case IO::CODE_WRONG_MAGIC_NUM: str+=_("File's header is incorrect or corrupt."); break;
+		case IO::CODE_WRONG_VERSION: str+=_("This file version is not supported."); break;
+		case IO::CODE_VALIDATE_FAILED: str+=_("The file is corrupt and cannot be opened."); break;
 	}
+	
+	return str;
 }
 
 // format an exception string

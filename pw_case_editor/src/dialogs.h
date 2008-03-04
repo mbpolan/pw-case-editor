@@ -44,6 +44,37 @@
 #include "colorwidget.h"
 #include "hotspotwidget.h"
 
+/** Dialog used to let the user change program languages
+*/
+class LangDialog: public Gtk::Dialog {
+	public:
+		/// Constructor
+		LangDialog();
+		
+		/** Get the chosen language
+		  * \return The selected language, in ISO letter code
+		*/
+		Glib::ustring get_selected();
+		
+	private:
+		// build the ui
+		void construct();
+		
+		// containing window
+		Gtk::ScrolledWindow *m_SWindow;
+		
+		// label
+		Gtk::Label *m_LangLabel;
+		
+		// list of languages
+		Gtk::ListViewText *m_List;
+		
+		// map of languages display strings to ISO codes
+		std::map<Glib::ustring, Glib::ustring> m_Langs;
+};
+
+/***************************************************************************/
+
 /** Dialog to let the user change text speed
 */
 class ChangeSpeedDialog: public Gtk::Dialog {
@@ -364,7 +395,7 @@ class LocationsDialog: public Gtk::Dialog {
 		Gtk::TreeView *m_TreeView;
 		Glib::RefPtr<Gtk::ListStore> m_Model;
 		
-		// column record
+		// column record for location list
 		class ColumnRec: public Gtk::TreeModel::ColumnRecord {
 			public:
 				// constructor
@@ -376,7 +407,7 @@ class LocationsDialog: public Gtk::Dialog {
 				Gtk::TreeModelColumn<Glib::ustring> m_Column;
 		};
 		
-		// column record instance
+		// column record instances
 		ColumnRec m_ColumnRec;
 		
 		// list view for hotspots
@@ -447,6 +478,37 @@ class SpriteChooserDialog: public Gtk::Dialog {
 		
 		// buttons
 		Gtk::Button *m_BrowseButton;
+};
+
+/***************************************************************************/
+
+/** Dialog to gather data about a new location state
+*/
+class LocationStateDialog: public Gtk::Dialog {
+	public:
+		/** Constructor
+		  * \param bgs Map of backgrounds
+		*/
+		LocationStateDialog(const BackgroundMap &map);
+		
+		/** Get the inputted data
+		  * \return A string pair consisting of state ID and background ID
+		*/
+		StringPair get_data() const;
+		
+	private:
+		// build the ui
+		void construct();
+		
+		// labels
+		Gtk::Label *m_IDLabel;
+		Gtk::Label *m_BGLabel;
+		
+		// combo boxes
+		BGComboBox *m_BGCB;
+		
+		// entries
+		Gtk::Entry *m_IDEntry;
 };
 
 /***************************************************************************/

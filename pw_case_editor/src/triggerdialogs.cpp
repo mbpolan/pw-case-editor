@@ -24,12 +24,13 @@
 #include <gtkmm/separator.h>
 #include <gtkmm/table.h>
 
+#include "intl.h"
 #include "triggerdialogs.h"
 #include "utilities.h"
 
 // abstract dialog constructor
 AbstractDialog::AbstractDialog(const Glib::ustring &trigger) {
-	set_title("Insert Trigger");
+	set_title(_("Insert Trigger"));
 	
 	Gtk::VBox *vb=get_vbox();
 	vb->set_spacing(5);
@@ -37,15 +38,15 @@ AbstractDialog::AbstractDialog(const Glib::ustring &trigger) {
 	
 	// allocate label
 	m_TriggerLabel=Gtk::manage(new Gtk::Label);
-	m_TriggerLabel->set_markup("Trigger: <i>"+trigger+"</i>");
+	m_TriggerLabel->set_markup(_("Trigger")+": <i>"+trigger+"</i>");
 	
 	// pack the default label and separator
 	vb->pack_start(*m_TriggerLabel);
 	vb->pack_start(*Gtk::manage(new Gtk::HSeparator));
 	
 	// add buttons
-	Gtk::Button *ok=add_button("OK", Gtk::RESPONSE_OK);
-	Gtk::Button *cancel=add_button("Cancel", Gtk::RESPONSE_CANCEL);
+	Gtk::Button *ok=add_button(_("OK"), Gtk::RESPONSE_OK);
+	Gtk::Button *cancel=add_button(_("Cancel"), Gtk::RESPONSE_CANCEL);
 	
 	// connect button signals
 	ok->signal_clicked().connect(sigc::mem_fun(*this, &AbstractDialog::on_ok_button_clicked));
@@ -91,8 +92,8 @@ void AddCourtRecDialog::construct(const EvidenceMap &ev, const CharacterMap &cha
 	m_NB=Gtk::manage(new Gtk::Notebook);
 	
 	// add pages
-	m_NB->append_page(*build_evidence_page(ev), "Evidence");
-	m_NB->append_page(*build_profile_page(chars), "Profile");
+	m_NB->append_page(*build_evidence_page(ev), _("Evidence"));
+	m_NB->append_page(*build_profile_page(chars), _("Profile"));
 	
 	// pack widgets
 	vb->pack_start(*m_NB, Gtk::PACK_SHRINK);
@@ -115,8 +116,8 @@ Gtk::Table* AddCourtRecDialog::build_evidence_page(const EvidenceMap &ev) {
 	table->set_spacings(5);
 	
 	// allocate labels
-	m_EvidenceLabel=Gtk::manage(new Gtk::Label("Evidence"));
-	m_EvidencePreviewLabel=Gtk::manage(new Gtk::Label("Preview"));
+	m_EvidenceLabel=Gtk::manage(new Gtk::Label(_("Evidence")));
+	m_EvidencePreviewLabel=Gtk::manage(new Gtk::Label(_("Preview")));
 	
 	// allocate combobox
 	m_EvidenceCB=Gtk::manage(new EvidenceComboBox(ev));
@@ -130,7 +131,7 @@ Gtk::Table* AddCourtRecDialog::build_evidence_page(const EvidenceMap &ev) {
 	m_EvidenceImage->set_size_request(70, 70);
 	
 	// allocate check button
-	m_EvidenceAnimCB=manage(new Gtk::CheckButton("Show Animation with Message"));
+	m_EvidenceAnimCB=manage(new Gtk::CheckButton(_("Show Animation with Message")));
 	m_EvidenceAnimCB->set_active(false);
 	
 	// place widgets
@@ -149,8 +150,8 @@ Gtk::Table* AddCourtRecDialog::build_profile_page(const CharacterMap &chars) {
 	table->set_spacings(5);
 	
 	// allocate labels
-	m_ProfileLabel=Gtk::manage(new Gtk::Label("Profile"));
-	m_ProfilePreviewLabel=Gtk::manage(new Gtk::Label("Preview"));
+	m_ProfileLabel=Gtk::manage(new Gtk::Label(_("Profile")));
+	m_ProfilePreviewLabel=Gtk::manage(new Gtk::Label(_("Preview")));
 	
 	// allocate combobox
 	m_ProfileCB=Gtk::manage(new CharComboBox(chars));
@@ -194,7 +195,7 @@ void SpeakerDialog::construct(const CharacterMap &chars) {
 	hb->set_spacing(5);
 	
 	// allocate labels
-	m_SpeakerLabel=Gtk::manage(new Gtk::Label("Speaker"));
+	m_SpeakerLabel=Gtk::manage(new Gtk::Label(_("Speaker")));
 	
 	// allocate combo box
 	m_CharsCB=Gtk::manage(new CharComboBox(chars));
@@ -249,9 +250,9 @@ void GotoDialog::construct(const BufferMap &blocks) {
 	Gtk::HButtonBox *hbb=Gtk::manage(new Gtk::HButtonBox);
 	
 	// allocate radio buttons
-	m_NormalRB=Gtk::manage(new Gtk::RadioButton(m_RadioGroup, "Standard"));
-	m_DirectRB=Gtk::manage(new Gtk::RadioButton(m_RadioGroup, "Direct"));
-	m_TimedRB=Gtk::manage(new Gtk::RadioButton(m_RadioGroup, "Timed"));
+	m_NormalRB=Gtk::manage(new Gtk::RadioButton(m_RadioGroup, _("Standard")));
+	m_DirectRB=Gtk::manage(new Gtk::RadioButton(m_RadioGroup, _("Direct")));
+	m_TimedRB=Gtk::manage(new Gtk::RadioButton(m_RadioGroup, _("Timed")));
 	
 	// allocate entries
 	m_TimeEntry=Gtk::manage(new Gtk::Entry);
@@ -262,9 +263,9 @@ void GotoDialog::construct(const BufferMap &blocks) {
 	m_TimedRB->signal_toggled().connect(sigc::bind(sigc::mem_fun(*this, &GotoDialog::on_radio_button_toggled), "timed"));
 	
 	// allocate labels
-	m_TypeLabel=Gtk::manage(new Gtk::Label("Goto Type"));
-	m_TargetLabel=Gtk::manage(new Gtk::Label("Target Block"));
-	m_TimeLabel=Gtk::manage(new Gtk::Label("Delay Time (ms)"));
+	m_TypeLabel=Gtk::manage(new Gtk::Label(_("Goto Type")));
+	m_TargetLabel=Gtk::manage(new Gtk::Label(_("Target Block")));
+	m_TimeLabel=Gtk::manage(new Gtk::Label(_("Delay Time (ms)")));
 	
 	// allocate combo boxes
 	m_BlockCB=Gtk::manage(new BlockComboBox(blocks));
@@ -328,13 +329,13 @@ void ShowEvidenceDialog::construct(const EvidenceMap &ev) {
 	table->set_spacings(5);
 	
 	// allocate labels
-	m_PositionLabel=Gtk::manage(new Gtk::Label("Position"));
-	m_EvidenceLabel=Gtk::manage(new Gtk::Label("Evidence"));
-	m_PreviewLabel=Gtk::manage(new Gtk::Label("Preview"));
+	m_PositionLabel=Gtk::manage(new Gtk::Label(_("Position")));
+	m_EvidenceLabel=Gtk::manage(new Gtk::Label(_("Evidence")));
+	m_PreviewLabel=Gtk::manage(new Gtk::Label(_("Preview")));
 	
 	// allocate radio buttons
-	m_LeftRB=Gtk::manage(new Gtk::RadioButton(m_Group, "Left"));
-	m_RightRB=Gtk::manage(new Gtk::RadioButton(m_Group, "Right"));
+	m_LeftRB=Gtk::manage(new Gtk::RadioButton(m_Group, _("Left")));
+	m_RightRB=Gtk::manage(new Gtk::RadioButton(m_Group, _("Right")));
 	
 	// allocate combo box
 	m_EvidenceCB=Gtk::manage(new EvidenceComboBox(ev));
@@ -388,11 +389,11 @@ void HideEvidenceDialog::construct() {
 	Gtk::VBox *vb=get_vbox();
 	
 	// allocat radio buttons
-	m_LeftRB=Gtk::manage(new Gtk::RadioButton(m_Group, "Left"));
-	m_RightRB=Gtk::manage(new Gtk::RadioButton(m_Group, "Right"));
+	m_LeftRB=Gtk::manage(new Gtk::RadioButton(m_Group, _("Left")));
+	m_RightRB=Gtk::manage(new Gtk::RadioButton(m_Group, _("Right")));
 	
 	// allocate labels
-	m_PositionLabel=Gtk::manage(new Gtk::Label("Position"));
+	m_PositionLabel=Gtk::manage(new Gtk::Label(_("Position")));
 	
 	// hbox for widgets
 	Gtk::HBox *hb=Gtk::manage(new Gtk::HBox);
@@ -456,8 +457,8 @@ void AddLocationDialog::construct(const LocationMap &locations) {
 	table->set_spacings(5);
 	
 	// allocate labels
-	m_TargetLabel=Gtk::manage(new Gtk::Label("Add"));
-	m_LocationLabel=Gtk::manage(new Gtk::Label("To"));
+	m_TargetLabel=Gtk::manage(new Gtk::Label(_("Add")));
+	m_LocationLabel=Gtk::manage(new Gtk::Label(_("To")));
 	
 	// allocate combo boxes
 	m_LocationCB=Gtk::manage(new LocationComboBox(locations));
@@ -478,7 +479,7 @@ void AddLocationDialog::construct(const LocationMap &locations) {
 void AddLocationDialog::on_ok_button_clicked() {
 	// make sure the user didn't select two of the same locations
 	if (m_LocationCB->get_active_text()==m_TargetCB->get_active_text()) {
-		Gtk::MessageDialog md(*this, "You must select two different locations.", false, Gtk::MESSAGE_ERROR);
+		Gtk::MessageDialog md(*this, _("You must select two different locations."), false, Gtk::MESSAGE_ERROR);
 		md.run();
 	}
 }
@@ -506,8 +507,8 @@ void LocationTriggerDialog::construct(const LocationMap &locations, const Buffer
 	table->set_spacings(5);
 	
 	// allocate labels
-	m_LocLabel=Gtk::manage(new Gtk::Label("Location"));
-	m_BlockLabel=Gtk::manage(new Gtk::Label("Block Trigger"));
+	m_LocLabel=Gtk::manage(new Gtk::Label(_("Location")));
+	m_BlockLabel=Gtk::manage(new Gtk::Label(_("Block Trigger")));
 	
 	// allocate combo boxes
 	m_LocationCB=Gtk::manage(new LocationComboBox(locations));
@@ -567,8 +568,8 @@ void SetAnimationDialog::construct(const CharacterMap &chars) {
 	table->set_spacings(5);
 	
 	// allocate labels
-	m_CharLabel=Gtk::manage(new Gtk::Label("Character"));
-	m_AnimLabel=Gtk::manage(new Gtk::Label("Animation"));
+	m_CharLabel=Gtk::manage(new Gtk::Label(_("Character")));
+	m_AnimLabel=Gtk::manage(new Gtk::Label(_("Animation")));
 	
 	// allocate entries
 	m_AnimEntry=Gtk::manage(new Gtk::Entry);
@@ -614,7 +615,7 @@ void PutCharDialog::construct(const CharacterMap &chars, const LocationMap &loca
 	m_LocWidget=Gtk::manage(new LocationWidget(locations));
 	
 	// allocate labels
-	m_CharLabel=Gtk::manage(new Gtk::Label("Character"));
+	m_CharLabel=Gtk::manage(new Gtk::Label(_("Character")));
 	
 	// allocat combo boxes
 	m_CharCB=Gtk::manage(new CharComboBox(chars));
@@ -658,9 +659,9 @@ void AddTalkDialog::construct(const CharacterMap &chars, const BufferMap &buffer
 	m_BlockCB=Gtk::manage(new BlockComboBox(buffers));
 	
 	// allocate labels
-	m_CharLabel=Gtk::manage(new Gtk::Label("Character"));
-	m_ViewLabel=Gtk::manage(new Gtk::Label("Display String"));
-	m_BlockLabel=Gtk::manage(new Gtk::Label("Block"));
+	m_CharLabel=Gtk::manage(new Gtk::Label(_("Character")));
+	m_ViewLabel=Gtk::manage(new Gtk::Label(_("Display String")));
+	m_BlockLabel=Gtk::manage(new Gtk::Label(_("Block")));
 	
 	// allocate entries
 	m_ViewEntry=Gtk::manage(new Gtk::Entry);
@@ -700,8 +701,8 @@ void RemoveTalkDialog::construct(const CharacterMap &chars) {
 	table->set_spacings(5);
 	
 	// allocate labels
-	m_CharLabel=Gtk::manage(new Gtk::Label("Character"));
-	m_ViewLabel=Gtk::manage(new Gtk::Label("Display String"));
+	m_CharLabel=Gtk::manage(new Gtk::Label(_("Character")));
+	m_ViewLabel=Gtk::manage(new Gtk::Label(_("Display String")));
 	
 	// combo boxes
 	m_CharCB=Gtk::manage(new CharComboBox(chars));
@@ -743,7 +744,7 @@ void ClearCharDialog::construct(const CharacterMap &chars) {
 	hb->set_spacing(5);
 	
 	// allocate label
-	m_CharLabel=Gtk::manage(new Gtk::Label("Character"));
+	m_CharLabel=Gtk::manage(new Gtk::Label(_("Character")));
 	
 	// allocate combo box
 	m_CharCB=Gtk::manage(new CharComboBox(chars));
@@ -782,9 +783,9 @@ void AddPresentDialog::construct(const CharacterMap &chars, const BufferMap &buf
 	table->set_spacings(5);
 	
 	// allocate labels
-	m_CharLabel=Gtk::manage(new Gtk::Label("Character"));
-	m_ItemLabel=Gtk::manage(new Gtk::Label("Court Record Item ID"));
-	m_BlockLabel=Gtk::manage(new Gtk::Label("Target Block"));
+	m_CharLabel=Gtk::manage(new Gtk::Label(_("Character")));
+	m_ItemLabel=Gtk::manage(new Gtk::Label(_("Court Record Item ID")));
+	m_BlockLabel=Gtk::manage(new Gtk::Label(_("Target Block")));
 	
 	// allocate combo boxes
 	m_CharCB=Gtk::manage(new CharComboBox(chars));
@@ -830,8 +831,8 @@ void RemovePresentDialog::construct(const CharacterMap &chars) {
 	table->set_spacings(5);
 	
 	// allocate labels
-	m_CharLabel=Gtk::manage(new Gtk::Label("Character"));
-	m_ItemLabel=Gtk::manage(new Gtk::Label("Court Record Item ID"));
+	m_CharLabel=Gtk::manage(new Gtk::Label(_("Character")));
+	m_ItemLabel=Gtk::manage(new Gtk::Label(_("Court Record Item ID")));
 	
 	// allocate combo boxes
 	m_CharCB=Gtk::manage(new CharComboBox(chars));
@@ -874,8 +875,8 @@ void BadPresentDialog::construct(const CharacterMap &chars, const BufferMap &buf
 	table->set_spacings(5);
 	
 	// allocate labels
-	m_CharLabel=Gtk::manage(new Gtk::Label("Character"));
-	m_BlockLabel=Gtk::manage(new Gtk::Label("Target Block"));
+	m_CharLabel=Gtk::manage(new Gtk::Label(_("Character")));
+	m_BlockLabel=Gtk::manage(new Gtk::Label(_("Target Block")));
 	
 	// allocate combo boxes
 	m_CharCB=Gtk::manage(new CharComboBox(chars));
@@ -918,7 +919,7 @@ void LocMusicDialog::construct(const LocationMap &locations, const AudioMap &aud
 	table->set_spacings(5);
 	
 	// allocate labels
-	Gtk::Label *m_MusicLabel=Gtk::manage(new Gtk::Label("Music"));
+	Gtk::Label *m_MusicLabel=Gtk::manage(new Gtk::Label(_("Music")));
 	
 	// allocate location widget
 	m_LocWidget=Gtk::manage(new LocationWidget(locations));
@@ -960,7 +961,7 @@ void MusicDialog::construct(const AudioMap &audio) {
 	table->set_spacings(5);
 	
 	// allocate labels
-	Gtk::Label *m_MusicLabel=Gtk::manage(new Gtk::Label("Audio"));
+	Gtk::Label *m_MusicLabel=Gtk::manage(new Gtk::Label(_("Audio")));
 	
 	// allocate combo boxes
 	m_AudioCB=Gtk::manage(new AudioComboBox(audio, AudioComboBox::FILTER_MUSIC));
@@ -1003,9 +1004,9 @@ void ReqEvidenceDialog::construct(const BufferMap &buffers) {
 	m_WrongCB=Gtk::manage(new BlockComboBox(buffers));
 	
 	// allocate labels
-	m_EvidenceLabel=Gtk::manage(new Gtk::Label("Court Record Item ID"));
-	m_CorrectLabel=Gtk::manage(new Gtk::Label("Target Correct Block"));
-	m_WrongLabel=Gtk::manage(new Gtk::Label("Target Incorrect Block"));
+	m_EvidenceLabel=Gtk::manage(new Gtk::Label(_("Court Record Item ID")));
+	m_CorrectLabel=Gtk::manage(new Gtk::Label(_("Target Correct Block")));
+	m_WrongLabel=Gtk::manage(new Gtk::Label(_("Target Incorrect Block")));
 	
 	// allocate entries
 	m_EvidenceEntry=Gtk::manage(new Gtk::Entry);
@@ -1054,8 +1055,8 @@ void ReqAnswerDialog::construct() {
 	table->set_spacings(5);
 	
 	// allocate buttons
-	m_AddButton=Gtk::manage(new Gtk::Button("Add"));
-	m_RemoveButton=Gtk::manage(new Gtk::Button("Remove"));
+	m_AddButton=Gtk::manage(new Gtk::Button(_("Add")));
+	m_RemoveButton=Gtk::manage(new Gtk::Button(_("Remove")));
 	
 	// connect signals
 	m_AddButton->signal_clicked().connect(sigc::mem_fun(*this, &ReqAnswerDialog::on_add_button_clicked));
@@ -1071,8 +1072,8 @@ void ReqAnswerDialog::construct() {
 	m_SWindow->add(*m_TalkList);
 	
 	// configure list
-	m_TalkList->set_column_title(0, "Display String");
-	m_TalkList->set_column_title(1, "Target Block");
+	m_TalkList->set_column_title(0, _("Display String"));
+	m_TalkList->set_column_title(1, _("Target Block"));
 	
 	// button box for buttons
 	Gtk::HButtonBox *hbb=Gtk::manage(new Gtk::HButtonBox);
@@ -1092,7 +1093,7 @@ void ReqAnswerDialog::construct() {
 // add button handler
 void ReqAnswerDialog::on_add_button_clicked() {
 	// insert a new row
-	int i=m_TalkList->append_text("New Talk Option");
+	int i=m_TalkList->append_text(_("New Talk Option"));
 	
 	// we need to generate a unique id
 	int c=1;
@@ -1150,14 +1151,14 @@ CourtCamDialog::CourtCamDialog(): AbstractDialog("move_court_camera") {
 StringPair CourtCamDialog::get_data() const {
 	// convert to actual location id
 	Glib::ustring a=m_FromCB->get_active_text();
-	if (a=="Prosecution Stand") a="prosecutor_stand";
-	else if (a=="Witness Stand") a="witness_stand";
+	if (a==_("Prosecution Stand")) a="prosecutor_stand";
+	else if (a==_("Witness Stand")) a="witness_stand";
 	else a="defense_stand";
 	
 	// likewise as above
 	Glib::ustring b=m_ToCB->get_active_text();
-	if (b=="Prosecution Stand") b="prosecutor_stand";
-	else if (b=="Witness Stand") b="witness_stand";
+	if (b==_("Prosecution Stand")) b="prosecutor_stand";
+	else if (b==_("Witness Stand")) b="witness_stand";
 	else b="defense_stand";
 	
 	return std::make_pair<Glib::ustring, Glib::ustring> (a, b);
@@ -1173,8 +1174,8 @@ void CourtCamDialog::construct() {
 	table->set_spacings(5);
 	
 	// allocate labels
-	m_FromLabel=Gtk::manage(new Gtk::Label("From"));
-	m_ToLabel=Gtk::manage(new Gtk::Label("To"));
+	m_FromLabel=Gtk::manage(new Gtk::Label(_("From")));
+	m_ToLabel=Gtk::manage(new Gtk::Label(_("To")));
 	
 	// allocate arrow
 	m_Arrow=Gtk::manage(new Gtk::Arrow(Gtk::ARROW_RIGHT, Gtk::SHADOW_NONE));
@@ -1187,9 +1188,9 @@ void CourtCamDialog::construct() {
 	for (int i=0; i<3; i++) {
 		Glib::ustring str;
 		switch(i) {
-			case 0: str="Prosecution Stand"; break;
-			case 1: str="Witness Stand"; break;
-			case 2: str="Defense Stand"; break;
+			case 0: str=_("Prosecution Stand"); break;
+			case 1: str=_("Witness Stand"); break;
+			case 2: str=_("Defense Stand"); break;
 		}
 		
 		m_FromCB->append_text(str);
@@ -1239,9 +1240,9 @@ void FadeDialog::construct() {
 	vbb->set_spacing(5);
 	
 	// allocate radio button
-	m_TopRB=Gtk::manage(new Gtk::RadioButton(m_Group, "Top Screen"));
-	m_BottomRB=Gtk::manage(new Gtk::RadioButton(m_Group, "Lower Screen"));
-	m_BothRB=Gtk::manage(new Gtk::RadioButton(m_Group, "Both Screens"));
+	m_TopRB=Gtk::manage(new Gtk::RadioButton(m_Group, _("Upper Screen")));
+	m_BottomRB=Gtk::manage(new Gtk::RadioButton(m_Group, _("Lower Screen")));
+	m_BothRB=Gtk::manage(new Gtk::RadioButton(m_Group, _("Both Screens")));
 	
 	// pack widgets
 	vbb->pack_start(*m_TopRB);
@@ -1280,9 +1281,9 @@ void OverImageDialog::construct(const ImageMap &images) {
 	table->set_spacings(5);
 	
 	// allocate labels
-	m_ImageLabel=Gtk::manage(new Gtk::Label("Image"));
-	m_PreviewLabel=Gtk::manage(new Gtk::Label("Preview"));
-	m_LocLabel=Gtk::manage(new Gtk::Label("Set Image for Court Location"));
+	m_ImageLabel=Gtk::manage(new Gtk::Label(_("Image")));
+	m_PreviewLabel=Gtk::manage(new Gtk::Label(_("Preview")));
+	m_LocLabel=Gtk::manage(new Gtk::Label(_("Set Image for Court Location")));
 	
 	// allocate image combo box
 	m_ImgCB=Gtk::manage(new ImgComboBox(images));
@@ -1301,10 +1302,10 @@ void OverImageDialog::construct(const ImageMap &images) {
 	on_combo_box_changed(); // call initially to set image
 	
 	// allocate radio buttons
-	m_ProsecutorRB=Gtk::manage(new Gtk::RadioButton(m_Group, "Prosecutor Stand"));
-	m_DefenseRB=Gtk::manage(new Gtk::RadioButton(m_Group, "Defense Stand"));
-	m_WitnessRB=Gtk::manage(new Gtk::RadioButton(m_Group, "Witness Stand"));
-	m_JudgeRB=Gtk::manage(new Gtk::RadioButton(m_Group, "Judge's Stand"));
+	m_ProsecutorRB=Gtk::manage(new Gtk::RadioButton(m_Group, _("Prosecutor Stand")));
+	m_DefenseRB=Gtk::manage(new Gtk::RadioButton(m_Group, _("Defense Stand")));
+	m_WitnessRB=Gtk::manage(new Gtk::RadioButton(m_Group, _("Witness Stand")));
+	m_JudgeRB=Gtk::manage(new Gtk::RadioButton(m_Group, _("Judge's Stand")));
 	
 	// place widgets
 	table->attach(*m_ImageLabel, 0, 1, 0, 1);
@@ -1347,8 +1348,8 @@ void TempImgDialog::construct(const ImageMap &map) {
 	table->set_spacings(5);
 	
 	// allocate labels
-	m_ImgLabel=Gtk::manage(new Gtk::Label("Image"));
-	m_PreviewLabel=Gtk::manage(new Gtk::Label("Preview"));
+	m_ImgLabel=Gtk::manage(new Gtk::Label(_("Image")));
+	m_PreviewLabel=Gtk::manage(new Gtk::Label(_("Preview")));
 	
 	// allocate image combo box
 	m_ImgCB=Gtk::manage(new ImgComboBox(map));
@@ -1401,7 +1402,7 @@ void DisplayTestimonyDialog::construct(const TestimonyMap &map) {
 	hb->set_spacing(5);
 	
 	// allocate labels
-	m_TestimonyLabel=Gtk::manage(new Gtk::Label("Testimony to Display"));
+	m_TestimonyLabel=Gtk::manage(new Gtk::Label(_("Testimony to Display")));
 	
 	// allocate combo box
 	m_TestimonyCB=Gtk::manage(new Gtk::ComboBoxText);
@@ -1464,19 +1465,19 @@ EditRecItemDialog::Data EditRecItemDialog::get_data() const {
 // build the dialog
 void EditRecItemDialog::construct(const CharacterMap &chars) {
 	// allocate labels
-	m_ItemLabel=manage(new Gtk::Label("Character"));
+	m_ItemLabel=manage(new Gtk::Label(_("Character")));
 	
 	// allocate combo boxes
 	m_CharCB=manage(new CharComboBox(chars));
 	m_GenderCB=manage(new Gtk::ComboBoxText);
 	
 	// allocate gender check button
-	m_CGenderCB=manage(new Gtk::CheckButton("Gender"));
+	m_CGenderCB=manage(new Gtk::CheckButton(_("Gender")));
 	
 	// append text to the combo box
-	m_GenderCB->append_text("Male");
-	m_GenderCB->append_text("Female");
-	m_GenderCB->append_text("Unknown");
+	m_GenderCB->append_text(_("Male"));
+	m_GenderCB->append_text(_("Female"));
+	m_GenderCB->append_text(_("Unknown"));
 	m_GenderCB->set_active(0);
 	
 	construct_internal();
@@ -1485,7 +1486,7 @@ void EditRecItemDialog::construct(const CharacterMap &chars) {
 // build the dialog with evidence map
 void EditRecItemDialog::construct(const EvidenceMap &evidence) {
 	// allocate labels
-	m_ItemLabel=manage(new Gtk::Label("Evidence"));
+	m_ItemLabel=manage(new Gtk::Label(_("Evidence")));
 	
 	// allocate combo boxes
 	m_EvidenceCB=manage(new EvidenceComboBox(evidence));
@@ -1505,9 +1506,9 @@ void EditRecItemDialog::construct_internal() {
 	m_DescEntry=manage(new Gtk::Entry);
 	
 	// allocate check buttons
-	m_NameCB=manage(new Gtk::CheckButton("Name"));
-	m_CaptionCB=manage(new Gtk::CheckButton("Caption"));
-	m_DescCB=manage(new Gtk::CheckButton("Description"));
+	m_NameCB=manage(new Gtk::CheckButton(_("Name")));
+	m_CaptionCB=manage(new Gtk::CheckButton(_("Caption")));
+	m_DescCB=manage(new Gtk::CheckButton(_("Description")));
 	
 	// keep proper alignment in case of missing widgets
 	int spacer=(m_Mode==MODE_EVIDENCE ? 1 : 0);

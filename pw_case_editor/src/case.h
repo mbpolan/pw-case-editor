@@ -132,11 +132,15 @@ struct _Location {
 	/// The display name of this location
 	Glib::ustring name;
 	
-	/// ID of background to show in locations list in Move screen
-	Glib::ustring bg;
-	
 	/// Vector of examinable hotspots
 	std::vector<Hotspot> hotspots;
+	
+	/** Vector of states.
+	  * Each location can have many states, each with a different
+	  * background. However, a location will always have at least
+	  * one state with the normal background, known as "default"
+	*/
+	std::map<Glib::ustring, Glib::ustring> states;
 };
 typedef struct _Location Location;
 

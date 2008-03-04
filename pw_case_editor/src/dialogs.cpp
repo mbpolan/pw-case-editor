@@ -29,12 +29,62 @@
 #include <sstream>
 
 #include "dialogs.h"
+#include "intl.h"
 #include "mainwindow.h"
 #include "testimonyeditor.h"
 
 // constructor
+LangDialog::LangDialog() {
+	set_title(_("Set Language"));
+	construct();
+}
+
+// get the chosen language
+Glib::ustring LangDialog::get_selected() {
+	return m_Langs[m_List->get_text(m_List->get_selected()[0], 0)];
+}
+
+// build the ui
+void LangDialog::construct() {
+	Gtk::VBox *vb=get_vbox();
+	
+	// allocate scrolled window
+	m_SWindow=manage(new Gtk::ScrolledWindow);
+	m_SWindow->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
+	m_SWindow->set_size_request(50, 100);
+	
+	// allocate the list
+	m_List=manage(new Gtk::ListViewText(1));
+	m_List->set_column_title(0, _("Language"));
+	m_SWindow->add(*m_List);
+	
+	// add default languages
+	m_List->append_text(_("English"));
+	m_List->append_text(_("Polish"));
+	
+	m_Langs[_("English")]="en";
+	m_Langs[_("Polish")]="pl";
+	
+	// allocate labels
+	m_LangLabel=manage(new Gtk::Label(_("Available Languages")));
+	
+	// pack the widgets
+	vb->set_spacing(5);
+	vb->set_border_width(10);
+	vb->pack_start(*m_LangLabel, Gtk::PACK_SHRINK);
+	vb->pack_start(*m_SWindow);
+	
+	add_button(_("OK"), Gtk::RESPONSE_OK);
+	add_button(_("Cancel"), Gtk::RESPONSE_CANCEL);
+	
+	show_all_children();
+}
+
+/***************************************************************************/
+
+// constructor
 ChangeSpeedDialog::ChangeSpeedDialog() {
-	set_title("Change Text Speed");
+	set_title(_("Change Text Speed"));
 	construct();
 }
 
@@ -59,8 +109,8 @@ void ChangeSpeedDialog::construct() {
 	Gtk::Table *table=manage(new Gtk::Table);
 	
 	// allocate labels
-	m_SlowerLabel=manage(new Gtk::Label("Slower"));
-	m_FasterLabel=manage(new Gtk::Label("Faster"));
+	m_SlowerLabel=manage(new Gtk::Label(_("Slower")));
+	m_FasterLabel=manage(new Gtk::Label(_("Faster")));
 	
 	// allocate slider
 	Gtk::Adjustment *adj=manage(new Gtk::Adjustment(0, -9, 9, 1, 1, 1));
@@ -73,8 +123,8 @@ void ChangeSpeedDialog::construct() {
 	
 	get_vbox()->pack_start(*table, Gtk::PACK_SHRINK);
 	
-	m_OKButton=add_button("OK", Gtk::RESPONSE_OK);
-	add_button("Cancel", Gtk::RESPONSE_CANCEL);
+	m_OKButton=add_button(_("OK"), Gtk::RESPONSE_OK);
+	add_button(_("Cancel"), Gtk::RESPONSE_CANCEL);
 	
 	m_OKButton->set_sensitive(false);
 	
@@ -93,7 +143,7 @@ void ChangeSpeedDialog::on_value_changed() {
 
 // constructor
 ChangeColorDialog::ChangeColorDialog() {
-	set_title("Change Text Color");
+	set_title(_("Change Text Color"));
 	construct();
 }
 
@@ -138,8 +188,8 @@ void ChangeColorDialog::construct() {
 	
 	get_vbox()->pack_start(*vb, Gtk::PACK_SHRINK);
 	
-	add_button("OK", Gtk::RESPONSE_OK);
-	add_button("Cancel", Gtk::RESPONSE_CANCEL);
+	add_button(_("OK"), Gtk::RESPONSE_OK);
+	add_button(_("Cancel"), Gtk::RESPONSE_CANCEL);
 	
 	show_all_children();
 }
@@ -148,7 +198,7 @@ void ChangeColorDialog::construct() {
 
 // constructor
 ProgressDialog::ProgressDialog(const Glib::ustring &label) {
-	set_title("Progress");
+	set_title(_("Progress"));
 	construct();
 	
 	m_Label->set_text(label);
@@ -188,7 +238,7 @@ void ProgressDialog::construct() {
 
 // constructor
 TestimonyManager::TestimonyManager(const TestimonyMap &tmap, const StringVector &testimonyIds) {
-	set_title("Manage Testimonies");
+	set_title(_("Manage Testimonies"));
 	construct();
 	
 	// store record of testimonies
@@ -213,14 +263,14 @@ void TestimonyManager::construct() {
 	table->set_spacings(5);
 	
 	// allocate labels
-	m_TitleLabel=Gtk::manage(new Gtk::Label("Testimonies in this Case"));
+	m_TitleLabel=Gtk::manage(new Gtk::Label(_("Testimonies in this Case")));
 	m_PreviewLabel=Gtk::manage(new Gtk::Label);
-	m_PreviewLabel->set_markup("<b>Preview</b>");
+	m_PreviewLabel->set_markup("<b>"+_("Preview")+"</b>");
 	
 	// allocate buttons
-	m_AddButton=Gtk::manage(new Gtk::Button("Add"));
-	m_EditButton=Gtk::manage(new Gtk::Button("Edit"));
-	m_DeleteButton=Gtk::manage(new Gtk::Button("Delete"));
+	m_AddButton=Gtk::manage(new Gtk::Button(_("Add")));
+	m_EditButton=Gtk::manage(new Gtk::Button(_("[verb]Edit")));
+	m_DeleteButton=Gtk::manage(new Gtk::Button(_("Delete")));
 	
 	// connect signals
 	m_AddButton->signal_clicked().connect(sigc::mem_fun(*this, &TestimonyManager::on_add_button_clicked));
@@ -240,8 +290,8 @@ void TestimonyManager::construct() {
 	m_ListView->get_selection()->signal_changed().connect(sigc::mem_fun(*this, &TestimonyManager::on_selection_changed));
 	
 	// set titles for columns
-	m_ListView->set_column_title(0, "ID");
-	m_ListView->set_column_title(1, "Title");
+	m_ListView->set_column_title(0, _("ID"));
+	m_ListView->set_column_title(1, _("Title"));
 	
 	// allocate button box
 	Gtk::VButtonBox *buttons=Gtk::manage(new Gtk::VButtonBox(Gtk::BUTTONBOX_SPREAD));
@@ -264,8 +314,8 @@ void TestimonyManager::construct() {
 	vb->pack_start(*table);
 	
 	// add buttons
-	add_button("OK", Gtk::RESPONSE_OK);
-	add_button("Cancel", Gtk::RESPONSE_CANCEL);
+	add_button(_("OK"), Gtk::RESPONSE_OK);
+	add_button(_("Cancel"), Gtk::RESPONSE_CANCEL);
 	
 	show_all_children();
 }
@@ -356,7 +406,7 @@ void TestimonyManager::on_selection_changed() {
 	for (TestimonyMap::iterator it=m_Testimonies.begin(); it!=m_Testimonies.end(); ++it) {
 		if (id==(*it).first) {
 			// update the preview label
-			Glib::ustring str="<b>Preview</b>\n";
+			Glib::ustring str="<b>"+_("Preview")+"</b>\n";
 			str+=(*it).second.pieces[0].text;
 			
 			m_PreviewLabel->set_markup(str);
@@ -369,7 +419,7 @@ void TestimonyManager::on_selection_changed() {
 
 // constructor
 ImageDialog::ImageDialog(const ImageMap &imap, const StringVector &imgIds) {
-	set_title("Image Assets");
+	set_title(_("Image Assets"));
 	construct();
 	
 	// copy ids and map
@@ -392,12 +442,12 @@ void ImageDialog::construct() {
 	table->set_spacings(5);
 	
 	// allocate labels
-	m_ImageLabel=Gtk::manage(new Gtk::Label("Image Assets"));
-	m_PreviewLabel=Gtk::manage(new Gtk::Label("Preview"));
+	m_ImageLabel=Gtk::manage(new Gtk::Label(_("Image Assets")));
+	m_PreviewLabel=Gtk::manage(new Gtk::Label(_("Preview")));
 	
 	// allocate buttons
-	m_AddButton=Gtk::manage(new Gtk::Button("Add"));
-	m_DeleteButton=Gtk::manage(new Gtk::Button("Delete"));
+	m_AddButton=Gtk::manage(new Gtk::Button(_("Add")));
+	m_DeleteButton=Gtk::manage(new Gtk::Button(_("Delete")));
 	
 	// connect signals
 	m_AddButton->signal_clicked().connect(sigc::mem_fun(*this, &ImageDialog::on_add_clicked));
@@ -409,7 +459,7 @@ void ImageDialog::construct() {
 	m_SWindow->set_size_request(100, 150);
 	
 	m_ImageList=Gtk::manage(new Gtk::ListViewText(1));
-	m_ImageList->set_column_title(0, "Internal ID");
+	m_ImageList->set_column_title(0, _("Internal ID"));
 	m_SWindow->add(*m_ImageList);
 	
 	// connect signals
@@ -433,8 +483,8 @@ void ImageDialog::construct() {
 	vb->pack_start(*table);
 	
 	// add buttons
-	add_button("OK", Gtk::RESPONSE_OK);
-	add_button("Cancel", Gtk::RESPONSE_CANCEL);
+	add_button(_("OK"), Gtk::RESPONSE_OK);
+	add_button(_("Cancel"), Gtk::RESPONSE_CANCEL);
 	
 	show_all_children();
 }
@@ -442,9 +492,9 @@ void ImageDialog::construct() {
 // add an image
 void ImageDialog::on_add_clicked() {
 	// prepare file chooser dialog
-	Gtk::FileChooserDialog fcd(*this, "Open Image", Gtk::FILE_CHOOSER_ACTION_OPEN);
-	fcd.add_button("Open", Gtk::RESPONSE_OK);
-	fcd.add_button("Cancel", Gtk::RESPONSE_CANCEL);
+	Gtk::FileChooserDialog fcd(*this, _("Open Image"), Gtk::FILE_CHOOSER_ACTION_OPEN);
+	fcd.add_button(_("Open"), Gtk::RESPONSE_OK);
+	fcd.add_button(_("Cancel"), Gtk::RESPONSE_CANCEL);
 	
 	// run it
 	if (fcd.run()==Gtk::RESPONSE_OK) {
@@ -455,7 +505,7 @@ void ImageDialog::on_add_clicked() {
 		Glib::RefPtr<Gdk::Pixbuf> pixbuf=Gdk::Pixbuf::create_from_file(path);
 		if (pixbuf) {
 			// ask for id
-			TextInputDialog td("Internal ID");
+			TextInputDialog td(_("Internal ID"));
 			if (td.run()==Gtk::RESPONSE_OK) {
 				Glib::ustring id=td.get_text();
 				
@@ -512,7 +562,7 @@ void ImageDialog::on_selection_changed() {
 
 // constructor
 NewHotspotDialog::NewHotspotDialog() {
-	set_title("Location Hotspot");
+	set_title(_("Location Hotspot"));
 	construct();
 }
 
@@ -538,11 +588,11 @@ void NewHotspotDialog::construct() {
 	table->set_spacings(5);
 	
 	// allocate labels
-	m_XLabel=Gtk::manage(new Gtk::Label("X"));
-	m_YLabel=Gtk::manage(new Gtk::Label("Y"));
-	m_WLabel=Gtk::manage(new Gtk::Label("Width"));
-	m_HLabel=Gtk::manage(new Gtk::Label("Height"));
-	m_BlockLabel=Gtk::manage(new Gtk::Label("Target Block ID"));
+	m_XLabel=Gtk::manage(new Gtk::Label(_("X")));
+	m_YLabel=Gtk::manage(new Gtk::Label(_("Y")));
+	m_WLabel=Gtk::manage(new Gtk::Label(_("Width")));
+	m_HLabel=Gtk::manage(new Gtk::Label(_("Height")));
+	m_BlockLabel=Gtk::manage(new Gtk::Label(_("Target Block ID")));
 	
 	// allocate entries
 	m_XEntry=Gtk::manage(new Gtk::Entry);
@@ -584,8 +634,8 @@ void NewHotspotDialog::construct() {
 	vb->pack_start(*table, Gtk::PACK_SHRINK);
 	
 	// add buttons
-	add_button("OK", Gtk::RESPONSE_OK);
-	add_button("Cancel", Gtk::RESPONSE_CANCEL);
+	add_button(_("OK"), Gtk::RESPONSE_OK);
+	add_button(_("Cancel"), Gtk::RESPONSE_CANCEL);
 	
 	show_all_children();
 }
@@ -640,7 +690,7 @@ void NewHotspotDialog::on_dimension_entry_changed() {
 
 // constructor
 LocationsDialog::LocationsDialog(const LocationMap &locations, const BackgroundMap &bgs, const StringVector &usedIds) {
-	set_title("Locations");
+	set_title(_("Locations"));
 	set_size_request(500, 400);
 	
 	// allocate background combo box
@@ -683,12 +733,12 @@ void LocationsDialog::construct() {
 	stTable->set_spacings(5);
 	
 	// allocate labels
-	m_LocationsLabel=Gtk::manage(new Gtk::Label("Locations"));
-	m_DetailsLabel=Gtk::manage(new Gtk::Label("Details"));
-	m_IdLabel=Gtk::manage(new Gtk::Label("Internal ID"));
-	m_NameLabel=Gtk::manage(new Gtk::Label("Name"));
-	m_BGLabel=Gtk::manage(new Gtk::Label("Background ID"));
-	m_HotspotsLabel=Gtk::manage(new Gtk::Label("Hotspots"));
+	m_LocationsLabel=Gtk::manage(new Gtk::Label(_("Locations")));
+	m_DetailsLabel=Gtk::manage(new Gtk::Label(_("Details")));
+	m_IdLabel=Gtk::manage(new Gtk::Label(_("Internal ID")));
+	m_NameLabel=Gtk::manage(new Gtk::Label(_("Name")));
+	m_BGLabel=Gtk::manage(new Gtk::Label(_("Background ID")));
+	m_HotspotsLabel=Gtk::manage(new Gtk::Label(_("Hotspots")));
 	
 	// allocate entries
 	m_IdEntry=Gtk::manage(new Gtk::Entry);
@@ -696,13 +746,13 @@ void LocationsDialog::construct() {
 	m_IdEntry->set_sensitive(false);
 	
 	// allocate buttons
-	m_AddButton=Gtk::manage(new Gtk::Button("Add"));
-	m_DeleteButton=Gtk::manage(new Gtk::Button("Delete"));
-	m_AddHSButton=Gtk::manage(new Gtk::Button("Add"));
-	m_DeleteHSButton=Gtk::manage(new Gtk::Button("Delete"));
-	m_AmendButton=Gtk::manage(new Gtk::Button("Amend"));
-	m_AddStateButton=Gtk::manage(new Gtk::Button("Add"));
-	m_DeleteStateButton=Gtk::manage(new Gtk::Button("Delete"));
+	m_AddButton=Gtk::manage(new Gtk::Button(_("Add")));
+	m_DeleteButton=Gtk::manage(new Gtk::Button(_("Delete")));
+	m_AddHSButton=Gtk::manage(new Gtk::Button(_("Add")));
+	m_DeleteHSButton=Gtk::manage(new Gtk::Button(_("Delete")));
+	m_AmendButton=Gtk::manage(new Gtk::Button(_("Amend")));
+	m_AddStateButton=Gtk::manage(new Gtk::Button(_("Add")));
+	m_DeleteStateButton=Gtk::manage(new Gtk::Button(_("Delete")));
 	
 	// connect signals
 	m_AddButton->signal_clicked().connect(sigc::mem_fun(*this, &LocationsDialog::on_add));
@@ -715,20 +765,20 @@ void LocationsDialog::construct() {
 	
 	// allocate list view
 	m_HotspotList=Gtk::manage(new Gtk::ListViewText(2));
-	m_HotspotList->set_column_title(0, "Area");
-	m_HotspotList->set_column_title(1, "Target Block");
+	m_HotspotList->set_column_title(0, _("Area"));
+	m_HotspotList->set_column_title(1, _("Target Block"));
 	
 	// allocate tree view for location ids
 	m_Model=Gtk::ListStore::create(m_ColumnRec);
 	m_TreeView=Gtk::manage(new Gtk::TreeView(m_Model));
 	
 	// append a default column
-	m_TreeView->append_column("Location ID", m_ColumnRec.m_Column);
+	m_TreeView->append_column(_("Location ID"), m_ColumnRec.m_Column);
 	
 	// allocate list view for states
 	m_StateList=manage(new Gtk::ListViewText(2));
-	m_StateList->set_column_title(0, "State");
-	m_StateList->set_column_title(1, "Background ID");
+	m_StateList->set_column_title(0, _("State"));
+	m_StateList->set_column_title(1, _("Background ID"));
 	
 	// connect selection change signals
 	Glib::RefPtr<Gtk::TreeView::Selection> selection=m_TreeView->get_selection();
@@ -768,11 +818,11 @@ void LocationsDialog::construct() {
 	mainTable->attach(*m_AmendButton, 3, 4, 7, 8, xops, yops);
 	
 	table->attach(*m_IdLabel, 0, 1, 0, 1, xops, yops);
-	table->attach(*m_IdEntry, 1, 2, 1, 2, xops, yops);
-	table->attach(*m_NameLabel, 0, 1, 2, 3, xops, yops);
-	table->attach(*m_NameEntry, 1, 2, 2, 3, xops, yops);
-	table->attach(*m_BGLabel, 0, 1, 3, 4, xops, yops);
-	table->attach(*m_BGCB, 1, 2, 3, 4, xops, yops);
+	table->attach(*m_IdEntry, 1, 2, 0, 1, xops, yops);
+	table->attach(*m_NameLabel, 0, 1, 1, 2, xops, yops);
+	table->attach(*m_NameEntry, 1, 2, 1, 2, xops, yops);
+	table->attach(*m_BGLabel, 0, 1, 2, 3, xops, yops);
+	table->attach(*m_BGCB, 1, 2, 2, 3, xops, yops);
 	
 	hsTable->attach(*m_AddHSButton, 0, 1, 0, 1, yops, yops);
 	hsTable->attach(*m_DeleteHSButton, 1, 2, 0, 1, yops, yops);
@@ -782,15 +832,15 @@ void LocationsDialog::construct() {
 	stTable->attach(*m_DeleteStateButton, 1, 2, 0, 1, yops, yops);
 	stTable->attach(*m_StateSWindow, 0, 2, 1, 2);
 	
-	m_NB->append_page(*table, "General");
-	m_NB->append_page(*hsTable, "Hotspots");
-	m_NB->append_page(*stTable, "States");
+	m_NB->append_page(*table, _("General"));
+	m_NB->append_page(*hsTable, _("Hotspots"));
+	m_NB->append_page(*stTable, _("States"));
 	
 	vb->pack_start(*mainTable);
 	
 	// add buttons
-	add_button("OK", Gtk::RESPONSE_OK);
-	add_button("Cancel", Gtk::RESPONSE_CANCEL);
+	add_button(_("OK"), Gtk::RESPONSE_OK);
+	add_button(_("Cancel"), Gtk::RESPONSE_CANCEL);
 	
 	show_all_children();
 }
@@ -798,7 +848,7 @@ void LocationsDialog::construct() {
 // add a location
 void LocationsDialog::on_add() {
 	// ask for an id
-	TextInputDialog td("Location ID");
+	TextInputDialog td(_("Location ID"));
 	if (td.run()==Gtk::RESPONSE_OK) {
 		// check the id
 		Glib::ustring id=td.get_text();
@@ -806,7 +856,7 @@ void LocationsDialog::on_add() {
 		// see if it's already been used
 		for (int i=0; i<m_UsedIds.size(); i++) {
 			if (id==m_UsedIds[i]) {
-				Gtk::MessageDialog md(*this, "You must choose a unique ID.", false, Gtk::MESSAGE_WARNING);
+				Gtk::MessageDialog md(*this, _("You must choose a unique ID."), false, Gtk::MESSAGE_WARNING);
 				md.run();
 				return;
 			}
@@ -846,8 +896,8 @@ void LocationsDialog::on_add_hotspot() {
 	
 	// set current location's pixbuf
 	Case::Location location=m_Locations[m_IdEntry->get_text()];
-	if (m_Backgrounds.find(location.bg)==m_Backgrounds.end()) {
-		Gtk::MessageDialog md(*this, "The background was not found.", false, Gtk::MESSAGE_ERROR);
+	if (m_Backgrounds.find(location.states["default"])==m_Backgrounds.end()) {
+		Gtk::MessageDialog md(*this, _("The background was not found."), false, Gtk::MESSAGE_ERROR);
 		md.run();
 		return;
 	}
@@ -856,7 +906,7 @@ void LocationsDialog::on_add_hotspot() {
 	NewHotspotDialog nhd;
 	
 	// set the background
-	nhd.set_pixbuf(m_Backgrounds[location.bg].pixbuf);
+	nhd.set_pixbuf(m_Backgrounds[location.states["default"]].pixbuf);
 	
 	// run it
 	if (nhd.run()==Gtk::RESPONSE_OK) {
@@ -885,10 +935,22 @@ void LocationsDialog::on_delete_hotspot() {
 
 // add a location state
 void LocationsDialog::on_add_state() {
+	// run the dialog
+	LocationStateDialog diag(m_Backgrounds);
+	if (diag.run()==Gtk::RESPONSE_OK) {
+		int row=m_StateList->append_text(diag.get_data().first);
+		m_StateList->set_text(row, 1, diag.get_data().second);
+	}
 }
 
 // remove a location state
 void LocationsDialog::on_delete_state() {
+	// get the selection
+	int selected=m_StateList->get_selected()[0];
+	
+	// clear this row out
+	m_StateList->set_text(selected, 0, "null");
+	m_StateList->set_text(selected, 1, "null");
 }
 
 // amend button click handler
@@ -897,10 +959,6 @@ void LocationsDialog::on_amend_button_clicked() {
 	Glib::ustring id=m_IdEntry->get_text();
 	Glib::ustring name=m_NameEntry->get_text();
 	Glib::ustring bg=m_BGCB->get_selected_internal();
-	
-	// update the location
-	m_Locations[id].name=name;
-	m_Locations[id].bg=bg;
 	
 	// clear hotspots and add new ones in
 	m_Locations[id].hotspots.clear();
@@ -923,6 +981,23 @@ void LocationsDialog::on_amend_button_clicked() {
 		// add this hotspot
 		m_Locations[id].hotspots.push_back(hspot);
 	}
+	
+	// clear states and add new ones
+	m_Locations[id].states.clear();
+	for (int i=0; i<m_StateList->size(); i++) {
+		Glib::ustring id=m_StateList->get_text(i, 0);
+		
+		// ignore deleted rows
+		if (id=="null")
+			continue;
+		
+		// add this state
+		m_Locations[id].states[id]=m_StateList->get_text(i, 1);
+	}
+	
+	// update the location
+	m_Locations[id].name=name;
+	m_Locations[id].states["default"]=bg;
 }
 
 // row changes handler
@@ -937,7 +1012,7 @@ void LocationsDialog::on_selection_changed() {
 			
 			// get name and bg id
 			Glib::ustring name=m_Locations[id].name;
-			Glib::ustring bg=m_Locations[id].bg;
+			Glib::ustring bg=m_Locations[id].states["default"];
 			
 			// fill in the entries
 			m_IdEntry->set_text(id);
@@ -958,6 +1033,20 @@ void LocationsDialog::on_selection_changed() {
 				int row=m_HotspotList->append_text(ss.str());
 				m_HotspotList->set_text(row, 1, hspot.block);
 			}
+			
+			// clear list of states
+			m_StateList->clear_items();
+			
+			for (std::map<Glib::ustring, Glib::ustring>::iterator it=m_Locations[id].states.begin(); 
+						  it!=m_Locations[id].states.end(); ++it) {
+				// ignore the default state
+				if ((*it).first=="default")
+					continue;
+				
+				// append a new row
+				int row=m_StateList->append_text((*it).first);
+				m_StateList->set_text(row, 1, (*it).second);
+			}
 		}
 	}
 }
@@ -966,7 +1055,7 @@ void LocationsDialog::on_selection_changed() {
 
 // constructor
 SpriteChooserDialog::SpriteChooserDialog() {
-	set_title("Sprite Editor");
+	set_title(_("Sprite Editor"));
 	construct();
 }
 
@@ -993,9 +1082,9 @@ void SpriteChooserDialog::construct() {
 	table->set_spacings(5);
 	
 	// allocate radio buttons
-	m_NewSpriteRB=Gtk::manage(new Gtk::RadioButton(m_Group, "Blank Sprite"));
-	m_OpenSpriteRB=Gtk::manage(new Gtk::RadioButton(m_Group, "Open Existing"));
-	m_CreateFromGifsRB=Gtk::manage(new Gtk::RadioButton(m_Group, "Create from GIFs"));
+	m_NewSpriteRB=Gtk::manage(new Gtk::RadioButton(m_Group, _("Blank Sprite")));
+	m_OpenSpriteRB=Gtk::manage(new Gtk::RadioButton(m_Group, _("Open Existing")));
+	m_CreateFromGifsRB=Gtk::manage(new Gtk::RadioButton(m_Group, _("Create from GIFs")));
 	
 	// connect signals
 	m_NewSpriteRB->signal_toggled().connect(sigc::mem_fun(*this, &SpriteChooserDialog::on_new_sprite_toggled));
@@ -1006,8 +1095,8 @@ void SpriteChooserDialog::construct() {
 	m_NewSpriteRB->set_active(true);
 	
 	// allocate labels
-	m_SpriteLabel=Gtk::manage(new Gtk::Label("Sprite"));
-	m_PathLabel=Gtk::manage(new Gtk::Label("Path"));
+	m_SpriteLabel=Gtk::manage(new Gtk::Label(_("Sprite")));
+	m_PathLabel=Gtk::manage(new Gtk::Label(_("Path")));
 	
 	// allocate buttons
 	m_BrowseButton=Gtk::manage(new Gtk::Button("..."));
@@ -1034,8 +1123,8 @@ void SpriteChooserDialog::construct() {
 	vb->pack_start(*table, Gtk::PACK_SHRINK);
 	
 	// add buttons
-	add_button("OK", Gtk::RESPONSE_OK);
-	add_button("Cancel", Gtk::RESPONSE_CANCEL);
+	add_button(_("OK"), Gtk::RESPONSE_OK);
+	add_button(_("Cancel"), Gtk::RESPONSE_CANCEL);
 	
 	// set defaults
 	m_PathEntry->set_sensitive(false);
@@ -1049,14 +1138,14 @@ void SpriteChooserDialog::on_browse_button_clicked() {
 	// open an existing sprite
 	if (get_sprite_mode()==SPRITE_EXISTING) {
 		// prepare file chooser
-		Gtk::FileChooserDialog fcd(*this, "Open Sprite", Gtk::FILE_CHOOSER_ACTION_OPEN);
-		fcd.add_button("Open", Gtk::RESPONSE_OK);
-		fcd.add_button("Cancel", Gtk::RESPONSE_CANCEL);
+		Gtk::FileChooserDialog fcd(*this, _("Open Sprite"), Gtk::FILE_CHOOSER_ACTION_OPEN);
+		fcd.add_button(_("Open"), Gtk::RESPONSE_OK);
+		fcd.add_button(_("Cancel"), Gtk::RESPONSE_CANCEL);
 		
 		// add a filter
 		Gtk::FileFilter filter;
 		filter.add_pattern("*.spr");
-		filter.set_name("Sprites (*.spr)");
+		filter.set_name(_("Sprites")+" (*.spr)");
 		fcd.add_filter(filter);
 		
 		// run the dialog
@@ -1072,9 +1161,9 @@ void SpriteChooserDialog::on_browse_button_clicked() {
 	// otherwise, we're opening a folder
 	else {
 		// prepare file chooser
-		Gtk::FileChooserDialog fcd(*this, "Open Folder", Gtk::FILE_CHOOSER_ACTION_SELECT_FOLDER);
-		fcd.add_button("Open", Gtk::RESPONSE_OK);
-		fcd.add_button("Cancel", Gtk::RESPONSE_CANCEL);
+		Gtk::FileChooserDialog fcd(*this, _("Open Folder"), Gtk::FILE_CHOOSER_ACTION_SELECT_FOLDER);
+		fcd.add_button(_("Open"), Gtk::RESPONSE_OK);
+		fcd.add_button(_("Cancel"), Gtk::RESPONSE_CANCEL);
 		
 		// run the dialog
 		if (fcd.run()==Gtk::RESPONSE_OK) {
@@ -1110,8 +1199,60 @@ void SpriteChooserDialog::on_from_gifs_toggled() {
 /***************************************************************************/
 
 // constructor
+LocationStateDialog::LocationStateDialog(const BackgroundMap &map) {
+	set_title(_("New Location State"));
+	
+	m_BGCB=manage(new BGComboBox(map));
+	
+	construct();
+}
+
+// get inputted data
+StringPair LocationStateDialog::get_data() const {
+	StringPair p;
+	p.first=m_IDEntry->get_text();
+	p.second=m_BGCB->get_selected_internal();
+	
+	return p;
+}
+
+// build the ui
+void LocationStateDialog::construct() {
+	// allocate layout table
+	Gtk::Table *table=manage(new Gtk::Table);
+	table->set_spacings(5);
+	
+	// allocate labels
+	m_IDLabel=manage(new Gtk::Label(_("State ID")));
+	m_BGLabel=manage(new Gtk::Label(_("Background")));
+	
+	// allocate entries
+	m_IDEntry=manage(new Gtk::Entry);
+	
+	// attach options
+	Gtk::AttachOptions xops=Gtk::FILL | Gtk::EXPAND;
+	Gtk::AttachOptions yops=Gtk::SHRINK | Gtk::SHRINK;
+	
+	// place widgets
+	table->attach(*m_IDLabel, 0, 1, 0, 1, xops, yops);
+	table->attach(*m_IDEntry, 1, 2, 0, 1, xops, yops);
+	table->attach(*m_BGLabel, 0, 1, 1, 2, xops, yops);
+	table->attach(*m_BGCB, 1, 2, 1, 2, xops, yops);
+	
+	get_vbox()->pack_start(*table, Gtk::PACK_SHRINK);
+	
+	add_button(_("OK"), Gtk::RESPONSE_OK);
+	add_button(_("Cancel"), Gtk::RESPONSE_CANCEL);
+	
+	show_all_children();
+	
+}
+
+/***************************************************************************/
+
+// constructor
 TextInputDialog::TextInputDialog(const Glib::ustring &label, const Glib::ustring &defaultValue) {
-	set_title("Input Text");
+	set_title(_("Input Text"));
 	construct(label, defaultValue);
 }
 
@@ -1138,8 +1279,8 @@ void TextInputDialog::construct(const Glib::ustring &label, const Glib::ustring 
 	vb->pack_start(*hb);
 	
 	// add buttons
-	add_button("OK", Gtk::RESPONSE_OK);
-	add_button("Cancel", Gtk::RESPONSE_CANCEL);
+	add_button(_("OK"), Gtk::RESPONSE_OK);
+	add_button(_("Cancel"), Gtk::RESPONSE_CANCEL);
 	
 	show_all_children();
 }
@@ -1148,7 +1289,7 @@ void TextInputDialog::construct(const Glib::ustring &label, const Glib::ustring 
 
 // constructor
 AudioDialog::AudioDialog() {
-	set_title("Audio Assets");
+	set_title(_("Audio Assets"));
 	set_size_request(250, 300);
 	
 	construct();
@@ -1205,11 +1346,11 @@ void AudioDialog::construct() {
 	m_SWindow->set_size_request(80, 100);
 	
 	// allocate labels
-	m_AudioLabel=Gtk::manage(new Gtk::Label("Audio Assets"));
+	m_AudioLabel=Gtk::manage(new Gtk::Label(_("Audio Assets")));
 	
 	// allocate buttons
-	m_AddButton=Gtk::manage(new Gtk::Button("Add"));
-	m_DeleteButton=Gtk::manage(new Gtk::Button("Remove"));
+	m_AddButton=Gtk::manage(new Gtk::Button(_("Add")));
+	m_DeleteButton=Gtk::manage(new Gtk::Button(_("Remove")));
 	
 	// connect signals
 	m_AddButton->signal_clicked().connect(sigc::mem_fun(*this, &AudioDialog::on_add_audio));
@@ -1221,8 +1362,8 @@ void AudioDialog::construct() {
 	m_SWindow->add(*m_AudioList);
 	
 	// append columns
-	m_AudioList->append_column_editable("File Name", m_ColRec.m_NameCol);
-	m_AudioList->append_column("ID", m_ColRec.m_IdCol);
+	m_AudioList->append_column_editable(_("File Name"), m_ColRec.m_NameCol);
+	m_AudioList->append_column(_("ID"), m_ColRec.m_IdCol);
 	
 	// attach options
 	Gtk::AttachOptions xops=Gtk::FILL | Gtk::EXPAND;
@@ -1237,8 +1378,8 @@ void AudioDialog::construct() {
 	vb->pack_start(*table);
 	
 	// add buttons
-	add_button("OK", Gtk::RESPONSE_OK);
-	add_button("Cancel", Gtk::RESPONSE_CANCEL);
+	add_button(_("OK"), Gtk::RESPONSE_OK);
+	add_button(_("Cancel"), Gtk::RESPONSE_CANCEL);
 	
 	show_all_children();
 }
@@ -1246,7 +1387,7 @@ void AudioDialog::construct() {
 // add button handler
 void AudioDialog::on_add_audio() {
 	// ask for internal id
-	TextInputDialog td("Internal ID");
+	TextInputDialog td(_("Internal ID"));
 	if (td.run()==Gtk::RESPONSE_OK) {
 		std::string id=td.get_text();
 		
@@ -1273,7 +1414,7 @@ void AudioDialog::on_remove_audio() {
 
 // constructor
 NewEvidenceDialog::NewEvidenceDialog(const StringVector &ids) {
-	set_title("Add Evidence");
+	set_title(_("Add Evidence"));
 	construct();
 	
 	m_UsedIds=ids;
@@ -1300,8 +1441,8 @@ void NewEvidenceDialog::construct() {
 	table->set_spacings(5);
 	
 	// allocate labels
-	m_PathLabel=Gtk::manage(new Gtk::Label("Path to Image"));
-	m_IdLabel=Gtk::manage(new Gtk::Label("Internal ID"));
+	m_PathLabel=Gtk::manage(new Gtk::Label(_("Path to Image")));
+	m_IdLabel=Gtk::manage(new Gtk::Label(_("Internal ID")));
 	
 	// allocate entries
 	m_PathEntry=Gtk::manage(new Gtk::Entry);
@@ -1330,8 +1471,8 @@ void NewEvidenceDialog::construct() {
 	vb->pack_start(*table, Gtk::PACK_SHRINK);
 	
 	// add buttons
-	m_OKButton=add_button("OK", Gtk::RESPONSE_OK);
-	add_button("Cancel", Gtk::RESPONSE_CANCEL);
+	m_OKButton=add_button(_("OK"), Gtk::RESPONSE_OK);
+	add_button(_("Cancel"), Gtk::RESPONSE_CANCEL);
 	
 	m_OKButton->set_sensitive(false);
 	
@@ -1357,9 +1498,9 @@ void NewEvidenceDialog::on_id_changed() {
 // browse button clicks
 void NewEvidenceDialog::on_browse_button_clicked() {
 	// prepare file chooser
-	Gtk::FileChooserDialog fcd(*this, "Open Image", Gtk::FILE_CHOOSER_ACTION_OPEN);
-	fcd.add_button("Open", Gtk::RESPONSE_OK);
-	fcd.add_button("Cancel", Gtk::RESPONSE_CANCEL);
+	Gtk::FileChooserDialog fcd(*this, _("Open Image"), Gtk::FILE_CHOOSER_ACTION_OPEN);
+	fcd.add_button(_("Open"), Gtk::RESPONSE_OK);
+	fcd.add_button(_("Cancel"), Gtk::RESPONSE_CANCEL);
 	
 	// run the dialog
 	if (fcd.run()==Gtk::RESPONSE_OK) {
@@ -1377,7 +1518,7 @@ void NewEvidenceDialog::on_browse_button_clicked() {
 EvidenceDialog::EvidenceDialog(const EvidenceMap &evidence,
 			       const ImageMap &images,
 			       const StringVector &evidenceIds) {
-	set_title("Evidence Assets");
+	set_title(_("Evidence Assets"));
 	construct(images);
 	
 	// copy data
@@ -1398,19 +1539,19 @@ void EvidenceDialog::construct(const ImageMap &images) {
 	vb->set_border_width(10);
 	
 	// allocate labels
-	m_EvidenceLabel=Gtk::manage(new Gtk::Label("Evidence Assets"));
-	m_PreviewLabel=Gtk::manage(new Gtk::Label("Preview"));
-	m_InternalLabel=Gtk::manage(new Gtk::Label("Internal ID"));
-	m_NameLabel=Gtk::manage(new Gtk::Label("Name"));
-	m_CaptionLabel=Gtk::manage(new Gtk::Label("Caption"));
-	m_DescLabel=Gtk::manage(new Gtk::Label("Description"));
+	m_EvidenceLabel=Gtk::manage(new Gtk::Label(_("Evidence Assets")));
+	m_PreviewLabel=Gtk::manage(new Gtk::Label(_("Preview")));
+	m_InternalLabel=Gtk::manage(new Gtk::Label(_("Internal ID")));
+	m_NameLabel=Gtk::manage(new Gtk::Label(_("Name")));
+	m_CaptionLabel=Gtk::manage(new Gtk::Label(_("Caption")));
+	m_DescLabel=Gtk::manage(new Gtk::Label(_("Description")));
 	
 	// allocate image
 	m_Image=Gtk::manage(new Gtk::Image);
 	m_Image->set_size_request(70, 70);
 	
 	// allocate check buttons
-	m_HasImgCB=Gtk::manage(new Gtk::CheckButton("Check Image"));
+	m_HasImgCB=Gtk::manage(new Gtk::CheckButton(_("Check Image")));
 	m_HasImgCB->signal_toggled().connect(sigc::mem_fun(*this, &EvidenceDialog::on_check_img_toggled));
 	
 	// allocate combo boxes
@@ -1421,7 +1562,7 @@ void EvidenceDialog::construct(const ImageMap &images) {
 	m_TreeView=Gtk::manage(new Gtk::TreeView(m_Model));
 	
 	// append column
-	m_TreeView->append_column("Evidence ID", m_ColumnRec.m_Column);
+	m_TreeView->append_column(_("Evidence ID"), m_ColumnRec.m_Column);
 	
 	// connect signals
 	Glib::RefPtr<Gtk::TreeView::Selection> selection=m_TreeView->get_selection();
@@ -1441,9 +1582,9 @@ void EvidenceDialog::construct(const ImageMap &images) {
 	m_DescEntry=Gtk::manage(new Gtk::Entry);
 	
 	// allocate buttons
-	m_AddButton=Gtk::manage(new Gtk::Button("Add"));
-	m_DeleteButton=Gtk::manage(new Gtk::Button("Delete"));
-	m_AmendButton=Gtk::manage(new Gtk::Button("Amend"));
+	m_AddButton=Gtk::manage(new Gtk::Button(_("Add")));
+	m_DeleteButton=Gtk::manage(new Gtk::Button(_("Delete")));
+	m_AmendButton=Gtk::manage(new Gtk::Button(_("Amend")));
 	
 	// connect signals
 	m_AddButton->signal_clicked().connect(sigc::mem_fun(*this, &EvidenceDialog::on_add));
@@ -1484,8 +1625,8 @@ void EvidenceDialog::construct(const ImageMap &images) {
 	on_check_img_toggled();
 	
 	// add buttons
-	add_button("OK", Gtk::RESPONSE_OK);
-	add_button("Cancel", Gtk::RESPONSE_CANCEL);
+	add_button(_("OK"), Gtk::RESPONSE_OK);
+	add_button(_("Cancel"), Gtk::RESPONSE_CANCEL);
 	
 	show_all_children();
 }
@@ -1533,7 +1674,7 @@ void EvidenceDialog::on_add() {
 		}
 		
 		else {
-			Gtk::MessageDialog md(*this, "Unable to load selected image.", false, Gtk::MESSAGE_ERROR);
+			Gtk::MessageDialog md(*this, _("Unable to load selected image."), false, Gtk::MESSAGE_ERROR);
 			md.run();
 		}
 	}
@@ -1606,7 +1747,7 @@ void EvidenceDialog::on_selection_changed() {
 // constructor
 BackgroundsDialog::BackgroundsDialog(const BackgroundMap &bgs,
 				     const StringVector &bgIds) {
-	set_title("Background Assets");
+	set_title(_("Background Assets"));
 	construct();
 	
 	// copy data
@@ -1627,12 +1768,12 @@ void BackgroundsDialog::construct() {
 	vb->set_border_width(10);
 	
 	// allocate labels
-	m_BGLabel=Gtk::manage(new Gtk::Label("Background Assets"));
-	m_PreviewLabel=Gtk::manage(new Gtk::Label("Preview"));
+	m_BGLabel=Gtk::manage(new Gtk::Label(_("Background Assets")));
+	m_PreviewLabel=Gtk::manage(new Gtk::Label(_("Preview")));
 	
 	// allocate buttons
-	m_AddButton=Gtk::manage(new Gtk::Button("Add"));
-	m_DeleteButton=Gtk::manage(new Gtk::Button("Delete"));
+	m_AddButton=Gtk::manage(new Gtk::Button(_("Add")));
+	m_DeleteButton=Gtk::manage(new Gtk::Button(_("Delete")));
 	
 	// connect signals
 	m_AddButton->signal_clicked().connect(sigc::mem_fun(*this, &BackgroundsDialog::on_add));
@@ -1647,7 +1788,7 @@ void BackgroundsDialog::construct() {
 	m_ListView=Gtk::manage(new Gtk::TreeView(m_ListModel));
 	
 	// configure list view
-	m_ListView->append_column("Background ID", m_ColumnRec.m_Column);
+	m_ListView->append_column(_("Background ID"), m_ColumnRec.m_Column);
 	
 	// connect selection signals
 	Glib::RefPtr<Gtk::TreeView::Selection> selection=m_ListView->get_selection();
@@ -1679,8 +1820,8 @@ void BackgroundsDialog::construct() {
 	vb->pack_start(*table);
 	
 	// add buttons
-	add_button("OK", Gtk::RESPONSE_OK);
-	add_button("Cancel", Gtk::RESPONSE_CANCEL);
+	add_button(_("OK"), Gtk::RESPONSE_OK);
+	add_button(_("Cancel"), Gtk::RESPONSE_CANCEL);
 	
 	show_all_children();
 }
@@ -1747,7 +1888,7 @@ void BackgroundsDialog::on_selection_changed() {
 
 // constructor
 NewBackgroundDialog::NewBackgroundDialog(const StringVector &bgIds) {
-	set_title("Add Background");
+	set_title(_("Add Background"));
 	construct();
 	m_UsedBGs=bgIds;
 }
@@ -1770,9 +1911,9 @@ void NewBackgroundDialog::construct() {
 	vb->set_border_width(10);
 	
 	// allocate labels
-	m_PathLabel=Gtk::manage(new Gtk::Label("Path to Image"));
-	m_IdLabel=Gtk::manage(new Gtk::Label("Internal ID"));
-	m_TypeLabel=Gtk::manage(new Gtk::Label("Type"));
+	m_PathLabel=Gtk::manage(new Gtk::Label(_("Path to Image")));
+	m_IdLabel=Gtk::manage(new Gtk::Label(_("Internal ID")));
+	m_TypeLabel=Gtk::manage(new Gtk::Label(_("Type")));
 	
 	// allocate buttons
 	m_BrowseButton=Gtk::manage(new Gtk::Button("..."));
@@ -1788,8 +1929,8 @@ void NewBackgroundDialog::construct() {
 	m_IdEntry->signal_changed().connect(sigc::mem_fun(*this, &NewBackgroundDialog::on_id_changed));
 	
 	// allocate radio buttons
-	m_SingleScreenRB=Gtk::manage(new Gtk::RadioButton(m_RBGroup, "Single Screen"));
-	m_DoubleScreenRB=Gtk::manage(new Gtk::RadioButton(m_RBGroup, "Double Screen"));
+	m_SingleScreenRB=Gtk::manage(new Gtk::RadioButton(m_RBGroup, _("Single Screen")));
+	m_DoubleScreenRB=Gtk::manage(new Gtk::RadioButton(m_RBGroup, _("Double Screen")));
 	
 	// allocate layout table
 	Gtk::Table *table=Gtk::manage(new Gtk::Table);
@@ -1810,8 +1951,8 @@ void NewBackgroundDialog::construct() {
 	table->attach(*m_DoubleScreenRB, 2, 3, 2, 3, xops, yops);
 	
 	// add buttons
-	m_OKButton=add_button("OK", Gtk::RESPONSE_OK);
-	add_button("Cancel", Gtk::RESPONSE_CANCEL);
+	m_OKButton=add_button(_("OK"), Gtk::RESPONSE_OK);
+	add_button(_("Cancel"), Gtk::RESPONSE_CANCEL);
 	
 	// disable ok button initially
 	m_OKButton->set_sensitive(false);
@@ -1825,9 +1966,9 @@ void NewBackgroundDialog::construct() {
 // browse button click handler
 void NewBackgroundDialog::on_browse_button_clicked() {
 	// create file chooser dialog
-	Gtk::FileChooserDialog fcd(*this, "Open Background Image", Gtk::FILE_CHOOSER_ACTION_OPEN);
-	fcd.add_button("Open", Gtk::RESPONSE_OK);
-	fcd.add_button("Cancel", Gtk::RESPONSE_CANCEL);
+	Gtk::FileChooserDialog fcd(*this, _("Open Background Image"), Gtk::FILE_CHOOSER_ACTION_OPEN);
+	fcd.add_button(_("Open"), Gtk::RESPONSE_OK);
+	fcd.add_button(_("Cancel"), Gtk::RESPONSE_CANCEL);
 	
 	// run the dialog
 	if (fcd.run()==Gtk::RESPONSE_OK) {
@@ -1861,7 +2002,7 @@ void NewBackgroundDialog::on_id_changed() {
 
 // constructor
 NewDialog::NewDialog() {
-	set_title("New Case");
+	set_title(_("New Case"));
 	construct();
 }
 
@@ -1909,9 +2050,9 @@ void NewDialog::construct() {
 	vb->set_border_width(10);
 	
 	// allocate labels
-	m_CaseNameLabel=Gtk::manage(new Gtk::Label("Case Name"));
-	m_CaseAuthorLabel=Gtk::manage(new Gtk::Label("Author"));
-	m_LawSysLabel=Gtk::manage(new Gtk::Label("Law System"));
+	m_CaseNameLabel=Gtk::manage(new Gtk::Label(_("Case Name")));
+	m_CaseAuthorLabel=Gtk::manage(new Gtk::Label(_("Author")));
+	m_LawSysLabel=Gtk::manage(new Gtk::Label(_("Law System")));
 	
 	// allocate entries
 	m_CaseNameEntry=Gtk::manage(new Gtk::Entry);
@@ -1939,7 +2080,7 @@ void NewDialog::construct() {
 	vb->pack_start(*table);
 	
 	// add buttons
-	add_button("OK", Gtk::RESPONSE_OK);
+	add_button(_("OK"), Gtk::RESPONSE_OK);
 	
 	show_all_children();
 }
@@ -1948,7 +2089,7 @@ void NewDialog::construct() {
 
 // constructor
 CharBrowser::CharBrowser(const CharacterMap &cmap) {
-	set_title("Browse Characters");
+	set_title(_("Browse Characters"));
 	construct();
 	
 	// set values
@@ -1974,10 +2115,10 @@ void CharBrowser::construct() {
 	table->set_spacings(5);
 	
 	// allocate labels
-	m_CharacterLabel=Gtk::manage(new Gtk::Label("Character"));
-	m_InternalLabel=Gtk::manage(new Gtk::Label("Internal ID"));
-	m_NameLabel=Gtk::manage(new Gtk::Label("Name"));
-	m_DescLabel=Gtk::manage(new Gtk::Label("Description"));
+	m_CharacterLabel=Gtk::manage(new Gtk::Label(_("Character")));
+	m_InternalLabel=Gtk::manage(new Gtk::Label(_("Internal ID")));
+	m_NameLabel=Gtk::manage(new Gtk::Label(_("Name")));
+	m_DescLabel=Gtk::manage(new Gtk::Label(_("Description")));
 	
 	// allocate entries
 	m_InternalEntry=Gtk::manage(new Gtk::Entry); m_InternalEntry->set_sensitive(false);
@@ -1985,7 +2126,7 @@ void CharBrowser::construct() {
 	m_DescEntry=Gtk::manage(new Gtk::Entry); m_DescEntry->set_sensitive(false);
 	
 	// allocate buttons
-	m_EditButton=Gtk::manage(new Gtk::Button("Edit"));
+	m_EditButton=Gtk::manage(new Gtk::Button(_("[verb]Edit")));
 	
 	// connect signals
 	m_EditButton->signal_clicked().connect(sigc::mem_fun(*this, &CharBrowser::on_edit_button_clicked));
@@ -2014,8 +2155,8 @@ void CharBrowser::construct() {
 	vb->pack_start(*table, Gtk::PACK_SHRINK);
 	
 	// add buttons
-	add_button("OK", Gtk::RESPONSE_OK);
-	add_button("Cancel", Gtk::RESPONSE_CANCEL);
+	add_button(_("OK"), Gtk::RESPONSE_OK);
+	add_button(_("Cancel"), Gtk::RESPONSE_CANCEL);
 	
 	show_all_children();
 }
@@ -2063,7 +2204,7 @@ void CharBrowser::on_combo_box_changed() {
 
 // constructor
 NewCharDialog::NewCharDialog(const StringVector &names) {
-	set_title("Character Manager");
+	set_title(_("Character Manager"));
 	m_UsedNames=names;
 	m_CheckInternals=true;
 	construct();
@@ -2141,15 +2282,15 @@ void NewCharDialog::construct() {
 	m_NB=Gtk::manage(new Gtk::Notebook);
 	
 	// attach pages
-	m_NB->append_page(*build_general_page(), "General");
-	m_NB->append_page(*build_graphics_page(), "Graphics");
+	m_NB->append_page(*build_general_page(), _("General"));
+	m_NB->append_page(*build_graphics_page(), _("Graphics"));
 	
 	// pack widgets
 	vb->pack_start(*m_NB);
 	
 	// add buttons
-	m_OKButton=add_button("OK", Gtk::RESPONSE_OK);
-	add_button("Cancel", Gtk::RESPONSE_CANCEL);
+	m_OKButton=add_button(_("OK"), Gtk::RESPONSE_OK);
+	add_button(_("Cancel"), Gtk::RESPONSE_CANCEL);
 	
 	// initially set the ok button to be insensitive
 	m_OKButton->set_sensitive(false);
@@ -2204,9 +2345,9 @@ void NewCharDialog::on_check_button_clicked(const Glib::ustring &buttonId) {
 // signal handler for browse button clicks
 void NewCharDialog::on_browse_button_clicked(const Glib::ustring &buttonId) {
 	// create file chooser dialog
-	Gtk::FileChooserDialog fcd(*this, "Open Image", Gtk::FILE_CHOOSER_ACTION_OPEN);
-	fcd.add_button("Open", Gtk::RESPONSE_OK);
-	fcd.add_button("Cancel", Gtk::RESPONSE_CANCEL);
+	Gtk::FileChooserDialog fcd(*this, _("Open Image"), Gtk::FILE_CHOOSER_ACTION_OPEN);
+	fcd.add_button(_("Open"), Gtk::RESPONSE_OK);
+	fcd.add_button(_("Cancel"), Gtk::RESPONSE_CANCEL);
 	
 	// this is where we will store our resulting pixbuf
 	Glib::RefPtr<Gdk::Pixbuf> pixbuf;
@@ -2244,17 +2385,17 @@ Gtk::Container* NewCharDialog::build_general_page() {
 	Gtk::AttachOptions yops=Gtk::SHRINK | Gtk::SHRINK;
 	
 	// allocate labels
-	m_CodeNameLabel=Gtk::manage(new Gtk::Label("Internal ID"));
-	m_NameLabel=Gtk::manage(new Gtk::Label("Name"));
-	m_GenderLabel=Gtk::manage(new Gtk::Label("Gender"));
-	m_CapLabel=Gtk::manage(new Gtk::Label("Caption"));
-	m_DescLabel=Gtk::manage(new Gtk::Label("Description"));
-	m_SpriteLabel=Gtk::manage(new Gtk::Label("Sprite Name"));
+	m_CodeNameLabel=Gtk::manage(new Gtk::Label(_("Internal ID")));
+	m_NameLabel=Gtk::manage(new Gtk::Label(_("Name")));
+	m_GenderLabel=Gtk::manage(new Gtk::Label(_("Gender")));
+	m_CapLabel=Gtk::manage(new Gtk::Label(_("Caption")));
+	m_DescLabel=Gtk::manage(new Gtk::Label(_("Description")));
+	m_SpriteLabel=Gtk::manage(new Gtk::Label(_("Sprite Name")));
 	
 	// allocate radio buttons
-	m_MaleRB=Gtk::manage(new Gtk::RadioButton(m_Group, "Male"));
-	m_FemaleRB=Gtk::manage(new Gtk::RadioButton(m_Group, "Female"));
-	m_UnknownRB=Gtk::manage(new Gtk::RadioButton(m_Group, "Unknown"));
+	m_MaleRB=Gtk::manage(new Gtk::RadioButton(m_Group, _("Male")));
+	m_FemaleRB=Gtk::manage(new Gtk::RadioButton(m_Group, _("Female")));
+	m_UnknownRB=Gtk::manage(new Gtk::RadioButton(m_Group, _("Unknown")));
 	m_MaleRB->set_active(true);
 	
 	// allocate entries
@@ -2303,10 +2444,10 @@ Gtk::Container* NewCharDialog::build_graphics_page() {
 	tagTable->set_border_width(5);
 	
 	// allocate frames
-	Gtk::Frame *tagFrame=Gtk::manage(new Gtk::Frame("Text Box"));
+	Gtk::Frame *tagFrame=Gtk::manage(new Gtk::Frame(_("Text Box")));
 	
 	// allocate check buttons
-	m_HasTagCB=Gtk::manage(new Gtk::CheckButton("Has Text Box Tag"));
+	m_HasTagCB=Gtk::manage(new Gtk::CheckButton(_("Has Text Box Tag")));
 	m_HasTagCB->set_active(false);
 	
 	// connect signals
@@ -2314,7 +2455,7 @@ Gtk::Container* NewCharDialog::build_graphics_page() {
 					     &NewCharDialog::on_check_button_clicked), "m_HasTagCB"));
 	
 	// allocate labels
-	m_TextBoxLabel=Gtk::manage(new Gtk::Label("Text Box Tag"));
+	m_TextBoxLabel=Gtk::manage(new Gtk::Label(_("Text Box Tag")));
 	
 	// allocate buttons
 	m_TagBrowseButton=Gtk::manage(new Gtk::Button("..."));
@@ -2340,10 +2481,10 @@ Gtk::Container* NewCharDialog::build_graphics_page() {
 	hshotTable->set_border_width(5);
 	
 	// allocate frames
-	Gtk::Frame *hshotFrame=Gtk::manage(new Gtk::Frame("Headshot"));
+	Gtk::Frame *hshotFrame=Gtk::manage(new Gtk::Frame(_("Headshot")));
 	
 	// allocate check buttons
-	m_HasHeadshotCB=Gtk::manage(new Gtk::CheckButton("Has Headshot"));
+	m_HasHeadshotCB=Gtk::manage(new Gtk::CheckButton(_("Has Headshot")));
 	m_HasHeadshotCB->set_active(false);
 	
 	// connect signals
@@ -2389,7 +2530,7 @@ Gtk::Container* NewCharDialog::build_graphics_page() {
 
 // constructor
 InitialBlockDialog::InitialBlockDialog(const Glib::ustring &id, BufferMap blocks) {
-	set_title("Initial Text Block");
+	set_title(_("Initial Text Block"));
 	
 	// iterate over blocks and remove the list ids
 	for (BufferMap::iterator it=blocks.begin(); it!=blocks.end(); ++it) {
@@ -2419,8 +2560,8 @@ void InitialBlockDialog::construct() {
 	table->set_spacings(5);
 	
 	// allocate labels
-	m_BlockLabel=Gtk::manage(new Gtk::Label("Initial block to execute"));
-	m_PreviewLabel=Gtk::manage(new Gtk::Label("Text Block Preview"));
+	m_BlockLabel=Gtk::manage(new Gtk::Label(_("Initial block to execute")));
+	m_PreviewLabel=Gtk::manage(new Gtk::Label(_("Text Block Preview")));
 	
 	// allocate combo box
 	m_BlocksCB=Gtk::manage(new Gtk::ComboBoxText);
@@ -2455,8 +2596,8 @@ void InitialBlockDialog::construct() {
 	table->attach(*m_SWindow, 0, 1, 3, 4, xops);
 	
 	// add buttons
-	add_button("OK", Gtk::RESPONSE_OK);
-	add_button("Cancel", Gtk::RESPONSE_CANCEL);
+	add_button(_("OK"), Gtk::RESPONSE_OK);
+	add_button(_("Cancel"), Gtk::RESPONSE_CANCEL);
 	
 	// wrap up
 	vb->pack_start(*table);

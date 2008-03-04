@@ -21,11 +21,12 @@
 
 #include <gtkmm/table.h>
 
+#include "intl.h"
 #include "textboxdialog.h"
 
 // constructor
 TextBoxDialog::TextBoxDialog() {
-	set_title("Format Dialogue");
+	set_title(_("Format Dialogue"));
 	set_resizable(false);
 	
 	construct();
@@ -75,13 +76,13 @@ void TextBoxDialog::construct() {
 	vb->set_border_width(10);
 	
 	// allocate check button
-	m_BreakCB=Gtk::manage(new Gtk::CheckButton("Insert break (\\b) after this dialogue"));
+	m_BreakCB=Gtk::manage(new Gtk::CheckButton(_("Insert break (\\b) after this dialogue")));
 	
 	// allocate labels
-	m_IntroLabel=Gtk::manage(new Gtk::Label("Format character dialogue by entering\ntext into the following entries."));
-	m_Line1Label=Gtk::manage(new Gtk::Label("Line 1"));
-	m_Line2Label=Gtk::manage(new Gtk::Label("Line 2"));
-	m_Line3Label=Gtk::manage(new Gtk::Label("Line 3"));
+	m_IntroLabel=Gtk::manage(new Gtk::Label(_("Format dialogue by entering text into the following entries.")));
+	m_Line1Label=Gtk::manage(new Gtk::Label(_("Line 1")));
+	m_Line2Label=Gtk::manage(new Gtk::Label(_("Line 2")));
+	m_Line3Label=Gtk::manage(new Gtk::Label(_("Line 3")));
 	
 	// allocate entries
 	m_Line1Entry=Gtk::manage(new Gtk::Entry);
@@ -117,8 +118,8 @@ void TextBoxDialog::construct() {
 	vb->pack_start(*table, Gtk::PACK_SHRINK);
 	
 	// add buttons
-	add_button("OK", Gtk::RESPONSE_OK);
-	add_button("Cancel", Gtk::RESPONSE_CANCEL);
+	add_button(_("OK"), Gtk::RESPONSE_OK);
+	add_button(_("Cancel"), Gtk::RESPONSE_CANCEL);
 	
 	show_all_children();
 }

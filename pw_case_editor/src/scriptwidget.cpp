@@ -21,6 +21,7 @@
 
 #include <sstream>
 
+#include "intl.h"
 #include "scriptwidget.h"
 
 // constructor
@@ -114,7 +115,7 @@ CListView* ScriptWidget::find_block(const Glib::ustring &id, int &index) {
 
 // set a list in a notebook tab
 void ScriptWidget::set_trial_notebook_list(int index) {
-	Glib::ustring str="Day ";
+	Glib::ustring str=_("Day")+" ";
 	if (index>=2 && index<4)
 		str+="2";
 	else if (index>=4 && index<6)
@@ -209,7 +210,7 @@ std::map<Glib::ustring, Glib::ustring> ScriptWidget::get_buffer_descriptions() {
 // build the ui
 void ScriptWidget::construct() {
 	// allocate label
-	m_CurBlockLabel=Gtk::manage(new Gtk::Label("Current Text Block: "));
+	m_CurBlockLabel=Gtk::manage(new Gtk::Label(_("Current Text Block")+": "));
 	
 	// allocate the text view widget
 	m_TextView=Gtk::manage(new Gtk::TextView);
@@ -268,8 +269,8 @@ void ScriptWidget::construct() {
 	sw2->add(*m_TreeViews[1]);
 	
 	// append default pages
-	m_StageNB->append_page(*sw1, "Investigation");
-	m_StageNB->append_page(*sw2, "Trial");
+	m_StageNB->append_page(*sw1, _("Investigation"));
+	m_StageNB->append_page(*sw2, _("Trial"));
 	
 	// allocate parent pane
 	m_HPane=Gtk::manage(new Gtk::HPaned);
@@ -352,7 +353,7 @@ void ScriptWidget::reset_combo_box() {
 	for (int i=0; i<amount; i++) {
 		// format and append text
 		std::stringstream ss;
-		ss << "Day " << i+1;
+		ss << _("Day")+" " << i+1;
 		m_DayCB->append_text(ss.str());
 		
 		// set default
@@ -396,7 +397,7 @@ void ScriptWidget::on_display_buffer(Glib::ustring id, Glib::RefPtr<Gtk::TextBuf
 	m_TextView->set_buffer(buffer);
 	
 	// update label
-	Glib::ustring str="Current Text Block: ";
+	Glib::ustring str=_("Current Text Block")+": ";
 	str+=id;
 	m_CurBlockLabel->set_text(str);
 	

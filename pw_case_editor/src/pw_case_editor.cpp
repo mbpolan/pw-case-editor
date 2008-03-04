@@ -22,7 +22,9 @@
 #include <glibmm/thread.h>
 #include <gtkmm/main.h>
 
+#include "config.h"
 #include "iohandler.h"
+#include "intl.h"
 #include "mainwindow.h"
 #include "splashscreen.h"
 #include "tooltips.h"
@@ -39,6 +41,7 @@ void on_thread(SplashScreen *sp) {
 }
 
 // the "famous" entry point for the program
+// FIXME: use of stdafx on Windows is not needed for GTK programs; get rid of this later
 #ifdef __WIN32__
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
 	int argc=1;
@@ -53,6 +56,17 @@ int main(int argc, char *argv[]) {
 		g_message("Unable to unpack resource file!");
 		return 0;
 	}
+	
+	// now load the configuration file
+	Config::File cfile;
+	IO::load_config_file("editor.cfg", cfile);
+	
+	// create a new instance of the configuration manager
+	Config::Manager::create(cfile);
+	
+	// load the language file, if it's not english
+	if (!Intl::set_language(Config::Manager::instance()->get_language()))
+		Intl::set_language("en");
 	
 	// initialize threads and gtkmm
 	Glib::thread_init();
@@ -80,6 +94,13 @@ int main(int argc, char *argv[]) {
 	const Glib::Thread *sthread=Glib::Thread::create(sigc::bind(sigc::ptr_fun(on_thread), &sp), false);
 	
 	app.run(mw);
+	
+	// get the new values for the configuration file and save it
+	cfile=Config::Manager::instance()->serialize();
+	IO::save_config_file("editor.cfg", cfile);
+	
+	// delete the instance of the config manager
+	delete Config::Manager::instance();
 	
 	return 0;
 }

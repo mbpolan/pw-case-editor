@@ -25,10 +25,11 @@
 #include <sstream>
 
 #include "editdialogs.h"
+#include "intl.h"
 
 // constructor
 FindDialog::FindDialog(const BufferMap &buffers): m_Buffers(buffers) {
-	set_title("Find in Blocks");
+	set_title(_("Find in Blocks"));
 	construct();
 	m_CurBlock="null";
 }
@@ -44,11 +45,11 @@ void FindDialog::construct() {
 	table->set_spacings(5);
 	
 	// allocate labels
-	m_QueryLabel=Gtk::manage(new Gtk::Label("Query"));
+	m_QueryLabel=Gtk::manage(new Gtk::Label(_("Query")));
 	m_ResultsLabel=Gtk::manage(new Gtk::Label);
 	
 	// allocate buttons
-	m_SearchButton=Gtk::manage(new Gtk::Button("Search"));
+	m_SearchButton=Gtk::manage(new Gtk::Button(_("Search")));
 	m_SearchButton->set_sensitive(false);
 	m_SearchButton->signal_clicked().connect(sigc::mem_fun(*this, &FindDialog::on_search_clicked));
 	
@@ -58,8 +59,8 @@ void FindDialog::construct() {
 	
 	// allocate list view
 	m_ResultsList=Gtk::manage(new Gtk::ListViewText(2));
-	m_ResultsList->set_column_title(0, "Block ID");
-	m_ResultsList->set_column_title(1, "Context");
+	m_ResultsList->set_column_title(0, _("Block ID"));
+	m_ResultsList->set_column_title(1, _("Context"));
 	
 	// connect selection change signal
 	m_ResultsList->get_selection()->signal_changed().connect(
@@ -86,10 +87,10 @@ void FindDialog::construct() {
 	vb->pack_start(*table);
 	
 	// disable go button by default
-	m_GoButton=add_button("Go to Block", Gtk::RESPONSE_OK);
+	m_GoButton=add_button(_("Go to Block"), Gtk::RESPONSE_OK);
 	m_GoButton->set_sensitive(false);
 	
-	add_button("Close", Gtk::RESPONSE_CLOSE);
+	add_button(_("Close"), Gtk::RESPONSE_CLOSE);
 	
 	show_all_children();
 }
@@ -99,7 +100,7 @@ void FindDialog::on_search_clicked() {
 	Glib::ustring txt=m_QueryEntry->get_text();
 	
 	// set the label text to inform that user
-	m_ResultsLabel->set_markup("<i>Searching...</i>");
+	m_ResultsLabel->set_markup("<i>"+_("Searching")+"...</i>");
 	
 	// disable go button
 	m_GoButton->set_sensitive(false);
