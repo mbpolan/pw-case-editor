@@ -985,14 +985,14 @@ void LocationsDialog::on_amend_button_clicked() {
 	// clear states and add new ones
 	m_Locations[id].states.clear();
 	for (int i=0; i<m_StateList->size(); i++) {
-		Glib::ustring id=m_StateList->get_text(i, 0);
+		Glib::ustring sID=m_StateList->get_text(i, 0);
 		
 		// ignore deleted rows
-		if (id=="null")
+		if (sID=="null")
 			continue;
 		
 		// add this state
-		m_Locations[id].states[id]=m_StateList->get_text(i, 1);
+		m_Locations[id].states[sID]=m_StateList->get_text(i, 1);
 	}
 	
 	// update the location
