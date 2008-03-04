@@ -489,7 +489,7 @@ IO::Code IO::export_case_to_file(const Glib::ustring &path, const Case::Case &pc
 		
 		// iterate over states
 		for (std::map<Glib::ustring, Glib::ustring>::iterator t=(*it).second.states.begin(); 
-			t!=(*it).second.states.end(); ++it) {
+			t!=(*it).second.states.end(); ++t) {
 			// write the id and bg id
 			write_string(f, (*t).first);
 			write_string(f, (*t).second);

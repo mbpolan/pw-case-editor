@@ -586,7 +586,7 @@ bool MainWindow::process_load_case(const Glib::ustring &path) {
 
 // process a case and export it
 bool MainWindow::process_export(const Glib::ustring &path) {
-	m_Statusbar->push(_("Exporting case to file..."));
+	m_Statusbar->push(_("Exporting case to file")+"...");
 	
 	// export this case
 	IO::Code code;
@@ -691,7 +691,7 @@ void MainWindow::on_save() {
 		if (ext!=".cprjt")
 			path+=".cprjt";
 		
-		m_Statusbar->push(_("Saving..."));
+		m_Statusbar->push(_("Saving")+"...");
 		
 		// save this case
 		std::map<Glib::ustring, Glib::ustring> bdescs=m_ScriptWidget->get_buffer_descriptions();
@@ -814,7 +814,7 @@ void MainWindow::on_open() {
 		// clear the case out
 		m_Case.clear();
 		
-		m_Statusbar->push(_("Opening file..."));
+		m_Statusbar->push(_("Opening file")+"...");
 		
 		// load the case
 		if (!process_load_case(path))

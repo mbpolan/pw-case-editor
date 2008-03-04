@@ -2492,7 +2492,7 @@ Gtk::Container* NewCharDialog::build_graphics_page() {
 						  &NewCharDialog::on_check_button_clicked), "m_HasHeadshotCB"));
 	
 	// allocate labels
-	m_HeadshotLabel=Gtk::manage(new Gtk::Label("Headshot (Profile) Image"));
+	m_HeadshotLabel=Gtk::manage(new Gtk::Label(_("Headshot (Profile) Image")));
 	
 	// allocate buttons
 	m_HeadshotBrowseButton=Gtk::manage(new Gtk::Button("..."));
