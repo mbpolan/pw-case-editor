@@ -84,6 +84,9 @@ Game::Game(const ustring &rootPath, Case::Case *pcase): m_RootPath(rootPath), m_
 	// reset temporary image
 	m_State.tempImage=STR_NULL;
 	
+	// reset background alpha
+	m_State.bgFade=255;
+	
 	// reset queued events
 	m_State.queuedFlags=0;
 	m_State.queuedLocation=STR_NULL;
@@ -92,6 +95,7 @@ Game::Game(const ustring &rootPath, Case::Case *pcase): m_RootPath(rootPath), m_
 	
 	// reset special effects
 	m_State.shake=0;
+	m_State.alphaDecay="none";
 	m_State.fadeOut="none";
 	m_State.flash="none";
 	m_State.blink="none";
@@ -626,6 +630,9 @@ void Game::registerAnimations() {
 	// register background slide
 	m_UI->registerBGSlide("an_bg_slide");
 	
+	// register alpha decays
+	m_UI->registerAlphaDecay("an_bg_alpha", m_State.bgFade);
+	
 	// register evidence animations
 	m_UI->registerAddEvidenceSequence("an_add_evidence");
 	
@@ -1069,6 +1076,15 @@ void Game::renderTopView() {
 				Renderer::drawImage(Point(0, 0), bg->texture);
 			else
 				Utils::debugMessage("Background for location '"+m_State.currentLocation+"' not found");
+			
+			// if a bgFade effect is applied, draw over the background with indicated alpha
+			if (m_State.bgFade!=255) {
+				SDL_Surface *opaque=Textures::queryTexture("opaque_black");
+				SDL_SetAlpha(opaque, SDL_SRCALPHA, 255-m_State.bgFade);
+				
+				// draw the opaque surface over the background
+				Renderer::drawImage(Point(0, 0), opaque);
+			}
 		}
 		
 		// sprite background otherwise
@@ -1487,6 +1503,17 @@ bool Game::renderSpecialEffects() {
 		// effect was completed
 		else if (ret==1)
 			m_State.fadeOut="none";
+		
+		return false;
+	}
+	
+	// do an alpha decay animation
+	else if (m_State.alphaDecay!="none") {
+		bool ret=m_UI->decayAlpha(m_State.alphaDecay, m_State.bgFade);
+		if (ret) {
+			m_State.alphaDecay="none";
+			m_UI->registerAlphaDecay(m_State.alphaDecay, 255);
+		}
 		
 		return false;
 	}

@@ -373,6 +373,21 @@ void UI::Manager::registerAddEvidenceSequence(const ustring &id) {
 	m_Animations[id]=anim;
 }
 
+// register an alpha fade animation
+void UI::Manager::registerAlphaDecay(const ustring &id, int alpha) {
+	Animation anim;
+	
+	// fill in values
+	anim.type=ANIM_ALPHA_DECAY;
+	anim.lastDraw=0;
+	anim.speed=5;
+	anim.multiplier=2;
+	anim.alpha=alpha;
+	
+	// add the animation
+	m_Animations[id]=anim;
+}
+
 // draw an animation
 void UI::Manager::drawAnimation(const ustring &id) {
 	// get the requested animation
@@ -587,6 +602,35 @@ bool UI::Manager::blink(const ustring &id) {
 		Renderer::drawImage(anim.current, tex);
 	
 	// blinking animations never end
+	return false;
+}
+
+// decay an alpha value
+bool UI::Manager::decayAlpha(const ustring &id, int &alpha) {
+	// make sure this animation is valid
+	if (!getAnimation(id)) {
+		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");
+		return true;
+	}
+	Animation &anim=*getAnimation(id);
+	
+	// decrement the alpha value
+	int now=SDL_GetTicks();
+	if (now-anim.lastDraw>anim.speed) {
+		if (anim.alpha-anim.multiplier<=0) {
+			anim.alpha=0;
+			return true;
+		}
+		
+		else
+			anim.alpha-=anim.multiplier;
+		
+		anim.lastDraw=now;
+	}
+	
+	// update the parameter
+	alpha=anim.alpha;
+	
 	return false;
 }
 

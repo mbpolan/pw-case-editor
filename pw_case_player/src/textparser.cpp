@@ -1186,5 +1186,13 @@ ustring TextParser::doTrigger(const ustring &trigger, const ustring &command) {
 			Utils::debugMessage("Unknown location: "+params[0]);
 	}
 	
+	// fade out the background to black
+	else if (trigger=="fade_bg")
+		m_Game->m_State.alphaDecay="an_bg_alpha";
+	
+	// restore a faded out background
+	else if (trigger=="restore_bg")
+		m_Game->m_State.bgFade=255;
+	
 	return STR_NULL;
 }

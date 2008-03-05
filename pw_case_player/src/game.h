@@ -143,6 +143,9 @@ struct _GameState {
 	/// Whether or not music should continue playing
 	bool continueMusic;
 	
+	/// The alpha value of the current background
+	int bgFade;
+	
 	// testimony variables
 	ustring curTestimony;
 	int curTestimonyPiece;
@@ -152,6 +155,7 @@ struct _GameState {
 	
 	// special effects
 	int shake;
+	ustring alphaDecay;
 	ustring fadeOut;
 	ustring fadeIn;
 	ustring flash;

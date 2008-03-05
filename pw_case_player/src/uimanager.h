@@ -62,7 +62,8 @@ enum AnimType { ANIM_SIDE_HBOUNCE=0,
 		ANIM_EXCLAMATION,
 		ANIM_GUI_BUTTON,
 		ANIM_BG_SLIDE,
-		ANIM_ADD_EVIDENCE };
+		ANIM_ADD_EVIDENCE,
+		ANIM_ALPHA_DECAY };
 
 /** A struct containing animation data.
   * This is a general purpose struct that holds any pertinent data about 
@@ -368,6 +369,12 @@ class Manager {
 		*/
 		void registerAddEvidenceSequence(const ustring &id);
 		
+		/** Register an animation to decrease an alpha value over time
+		  * \param id The ID of the animation
+		  * \param alpha The variable to associate with this animation, set to initial value
+		*/
+		void registerAlphaDecay(const ustring &id, int alpha);
+		
 		/** Draw an arbitrary animation
 		  * \param id The ID of the animation
 		*/
@@ -397,6 +404,13 @@ class Manager {
 		  * \return <b>true</b> if the animation is done, <b>false</b> otherwise
 		*/
 		bool blink(const ustring &id);
+		
+		/** Decay an alph value
+		  * \param id The ID of the animation
+		  * \param alpha Variable to update with current alpha
+		  * \return <b>true</b> if the animation is done, <b>false</b> otherwise
+		*/
+		bool decayAlpha(const ustring &id, int &alpha);
 		
 		/** Perform an exclamation animation
 		  * \param id The ID of the animation
