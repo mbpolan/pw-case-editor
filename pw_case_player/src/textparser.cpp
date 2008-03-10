@@ -1194,5 +1194,15 @@ ustring TextParser::doTrigger(const ustring &trigger, const ustring &command) {
 	else if (trigger=="restore_bg")
 		m_Game->m_State.bgFade=255;
 	
+	// perform a flash back to image
+	else if (trigger=="flashback_image") {
+		// verify that this image exists
+		if (!pcase->getImage(command))
+			Utils::debugMessage("Image '"+command+"' for trigger flashback_image doesn't exist.");
+		
+		else
+			m_Game->m_State.whiteFlash=command;
+	}
+	
 	return STR_NULL;
 }

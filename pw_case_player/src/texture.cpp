@@ -75,7 +75,7 @@ SDL_Surface* Textures::createTexture(const ustring &id, const ustring &str) {
 	// load the image
 	SDL_Surface *surface=IMG_Load(file.c_str());
 	if (surface) {
-		// set transparent pixel
+		// set the transparent pixel
 		SDL_SetColorKey(surface, SDL_SRCCOLORKEY, SDL_MapRGB(SDL_GetVideoSurface()->format, 0, 255, 0));
 		
 		// add this texture to the map

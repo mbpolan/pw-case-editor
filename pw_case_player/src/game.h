@@ -155,6 +155,7 @@ struct _GameState {
 	
 	// special effects
 	int shake;
+	ustring whiteFlash;
 	ustring alphaDecay;
 	ustring fadeOut;
 	ustring fadeIn;

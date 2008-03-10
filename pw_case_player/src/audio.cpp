@@ -41,18 +41,29 @@ bool Audio::loadSample(const ustring &path, Audio::Sample &sample) {
 	ustring ext=path.substr(path.size()-3, path.size()-1);
 	bool success=true;
 	
-	// music is considered when mp3 or ogg is loaded
-	if (ext=="mp3" || ext=="ogg") {
-		sample.type=SAMPLE_MUSIC;
-		sample.music=path;
-	}
+	// differentiate between separating characters
+	char sep;
+#ifdef __WIN32__
+	sep='\\';
+#else
+	sep='/';
+#endif
 	
-	// otherwise, it's an effect
-	else {
+	// find the basename
+	ustring base=path.substr(path.rfind(sep)+1);
+	
+	// any file prefixed with an s_ is an effect
+	if (base[0]=='s' && base[1]=='_') {
 		sample.type=SAMPLE_EFFECT;
 		sample.effect=Mix_LoadWAV(path.c_str());
 		if (!sample.effect)
 			success=false;
+	}
+	
+	// otherwise, it's a music sample
+	else {
+		sample.type=SAMPLE_MUSIC;
+		sample.music=path;
 	}
 	
 	// check to see if we loaded it

@@ -42,6 +42,12 @@ enum Limit { LIMIT_NONE=0,
              LIMIT_PROSECUTOR_STAND,
              LIMIT_WITNESS_STAND };
 
+/// Animation stages
+enum AnimStage { STAGE_ANIM_INITIAL=-1,		/// The animation is progressing from the start point to the mid point
+		 STAGE_ANIM_MID,		/// The animation has reached the mid point
+		 STAGE_ANIM_END 		/// The animation has completed
+};
+
 /// Types of animations
 enum AnimType { ANIM_SIDE_HBOUNCE=0,
 		ANIM_SIDE_VBOUNCE,
@@ -63,7 +69,8 @@ enum AnimType { ANIM_SIDE_HBOUNCE=0,
 		ANIM_GUI_BUTTON,
 		ANIM_BG_SLIDE,
 		ANIM_ADD_EVIDENCE,
-		ANIM_ALPHA_DECAY };
+		ANIM_ALPHA_DECAY,
+		ANIM_WHITE_FLASH };
 
 /** A struct containing animation data.
   * This is a general purpose struct that holds any pertinent data about 
@@ -198,11 +205,11 @@ class Button {
   * which will return the pointer to the instance of the allocated class itself.
   *
   * Most of the rendering functions return a bool, which signifies whether or not the animation 
-  * in question has completed. If an animation returns an int, then the value returned will 
-  * represent the current state of the animation; that is, these types of animations are done in two parts:
-	- -1: animation is still progressing towards midpoint or towards the end
-	- 0: animation has reached the midpoint
-	- 1: animation is progressing to the end
+  * in question has completed. If an animation returns an AnimStage value, then the value returned will 
+  * represent the current stage of the animation; that is, these types of animations are done in two parts:
+	- STAGE_ANIM_INITIAL: animation is still progressing towards midpoint or towards the end
+	- STAGE_ANIM_MID: animation has reached the midpoint
+	- STAGE_ANIM_END: animation is done
 */
 class Manager {
 	public:
@@ -375,6 +382,11 @@ class Manager {
 		*/
 		void registerAlphaDecay(const ustring &id, int alpha);
 		
+		/** Register an animation that fades to white, then slowly fades in to a new image
+		  * \param id The ID of the animation
+		*/
+		void registerWhiteFlash(const ustring &id);
+		
 		/** Draw an arbitrary animation
 		  * \param id The ID of the animation
 		*/
@@ -384,14 +396,20 @@ class Manager {
 		  * \param id The ID of the animation
 		  * \return An animation return code (see the description of these functions)
 		*/
-		int fadeOut(const ustring &id);
+		AnimStage fadeOut(const ustring &id);
 		
 		/** animate the add evidence animation
 		  * \param id The ID of the animation
 		  * \param evidence Pointer to evidence to include in the animation
 		  * \return An animation return code (see the description of these functions)
 		*/
-		int animateAddEvidence(const ustring &id, const Case::Evidence *evidence);
+		AnimStage animateAddEvidence(const ustring &id, const Case::Evidence *evidence);
+		
+		/** Quickly fade out to white, then slowly fade back in
+		  * \param id The ID of the animation
+		  * \return An animation return code (see the description of these functions)
+		*/
+		AnimStage whiteFlash(const ustring &id);
 		
 		/** Perform a flash effect
 		  * \param id The ID of the animation

@@ -38,8 +38,9 @@ int main(int argc, char *argv[]) {
 		std::cout << "Usage: pw_case_player [OPTION]... [PATH TO CASE FILE]\n";
 		std::cout << "Plays the provided case.\n";
 		std::cout << "\nAvailable options:\n";
-		std::cout << "  -ns,  --no-sound\tDisables audio output\n";
-		std::cout << "  -d,   --debug   \tEnables debug messages\n";
+		std::cout << "  -ns,  --no-sound  \tDisables audio output\n";
+		std::cout << "  -d,   --debug     \tEnables debug messages\n";
+		std::cout << "  -fs,  --fullscreen\tStarts the player in fullscreen mode\n";
 		std::cout << "\n";
 		std::cout << "Official website: http://pw-case-editor.sourceforge.net\n";
 		return 0;

@@ -380,9 +380,25 @@ void UI::Manager::registerAlphaDecay(const ustring &id, int alpha) {
 	// fill in values
 	anim.type=ANIM_ALPHA_DECAY;
 	anim.lastDraw=0;
-	anim.speed=5;
+	anim.speed=2;
 	anim.multiplier=2;
 	anim.alpha=alpha;
+	
+	// add the animation
+	m_Animations[id]=anim;
+}
+
+// register a white flash animation
+void UI::Manager::registerWhiteFlash(const ustring &id) {
+	Animation anim;
+	
+	// fill in values
+	anim.type=ANIM_WHITE_FLASH;
+	anim.lastDraw=0;
+	anim.speed=10;
+	anim.multiplier=2;
+	anim.velocity=1;
+	anim.alpha=0;
 	
 	// add the animation
 	m_Animations[id]=anim;
@@ -424,10 +440,10 @@ void UI::Manager::drawAnimation(const ustring &id) {
 }
 
 // fade out the current scene to black
-int UI::Manager::fadeOut(const ustring &id) {
+UI::AnimStage UI::Manager::fadeOut(const ustring &id) {
 	if (!getAnimation(id)) {
 		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");
-		return 1;
+		return UI::STAGE_ANIM_END;
 	}
 	
 	// get the animation
@@ -481,11 +497,11 @@ int UI::Manager::fadeOut(const ustring &id) {
 		    anim.type==UI::ANIM_FADE_OUT_BOTTOM_HALF ||
 		    anim.type==UI::ANIM_FADE_OUT_BOTH_HALF) {
 			UI::Manager::registerFadeOut(id, anim.speed, anim.type);
-			return 1;
+			return UI::STAGE_ANIM_END;
 		}
 		
 		else
-			return 0;
+			return UI::STAGE_ANIM_MID;
 	}
 	
 	// we're done with this special effect
@@ -493,18 +509,18 @@ int UI::Manager::fadeOut(const ustring &id) {
 		// reset for next time
 		UI::Manager::registerFadeOut(id, anim.speed, anim.type);
 		
-		return 1;
+		return UI::STAGE_ANIM_END;
 	}
 	
-	return -1;
+	return UI::STAGE_ANIM_INITIAL;
 }
 
 // animate the add evidence animation
-int UI::Manager::animateAddEvidence(const ustring &id, const Case::Evidence *evidence) {
+UI::AnimStage UI::Manager::animateAddEvidence(const ustring &id, const Case::Evidence *evidence) {
 	// get the animation
 	if (!getAnimation(id)) {
 		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");
-		return 1;
+		return UI::STAGE_ANIM_END;
 	}
 	
 	Animation &anim=*getAnimation(id);
@@ -522,10 +538,10 @@ int UI::Manager::animateAddEvidence(const ustring &id, const Case::Evidence *evi
 			// midpoint at x=0
 			if (x<0) {
 				anim.current.setX(0);
-				return 0;
+				return UI::STAGE_ANIM_MID;
 			}
 			
-			return -1;
+			return UI::STAGE_ANIM_INITIAL;
 		}
 		
 		// moving left after midpoint
@@ -533,15 +549,75 @@ int UI::Manager::animateAddEvidence(const ustring &id, const Case::Evidence *evi
 			// we're done if we hit -256
 			if (x<-256) {
 				anim.current.setX(-256);
-				return 1;
+				return UI::STAGE_ANIM_END;
 			}
 			
-			return -1;
+			return UI::STAGE_ANIM_INITIAL;
 		}
 	}
 	
 	else
-		return 0;
+		return UI::STAGE_ANIM_MID;
+}
+
+// fade out to white, then slowly fade back in
+UI::AnimStage UI::Manager::whiteFlash(const ustring &id) {
+	// get the animation
+	if (!getAnimation(id)) {
+		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");
+		return UI::STAGE_ANIM_END;
+	}
+	
+	Animation &anim=*getAnimation(id);
+	
+	// get an opaque surface
+	SDL_Surface *opaque=Textures::queryTexture("opaque_white");
+	
+	// first, fade out into white
+	int now=SDL_GetTicks();
+	if (anim.velocity==1) {
+		// play the initial wooshing sound effect
+		if (anim.sfx=="0") {
+			Audio::playEffect("sfx_flashback", Audio::CHANNEL_SCRIPT);
+			anim.sfx="1";
+		}
+		
+		// increase the alpha
+		if (now-anim.lastDraw>=anim.speed) {
+			anim.lastDraw=now;
+			anim.alpha+=anim.velocity*anim.multiplier;
+		}
+		
+		// we've reached the mid point
+		if (anim.alpha>255) {
+			anim.velocity=-1;
+			anim.alpha=255;
+			
+			// in order to avoid flicker, draw the surface before returning the code
+			SDL_SetAlpha(opaque, SDL_SRCALPHA, anim.alpha);
+			Renderer::drawImage(Point(0, 0), opaque);
+			
+			return UI::STAGE_ANIM_MID;
+		}
+	}
+	
+	else {
+		// decrease the alpha at a much faster pace
+		if (now-anim.lastDraw>=anim.speed) {
+			anim.lastDraw=now;
+			anim.alpha+=anim.velocity;
+		}
+		
+		// we're done if the alpha is less than or equal to zero
+		if (anim.alpha<=0)
+			return UI::STAGE_ANIM_END;
+	}
+	
+	// draw the opaque surface with alpha
+	SDL_SetAlpha(opaque, SDL_SRCALPHA, anim.alpha);
+	Renderer::drawImage(Point(0, 0), opaque);
+	
+	return UI::STAGE_ANIM_INITIAL;
 }
 
 // perform a flash effect
@@ -549,7 +625,7 @@ bool UI::Manager::flash(const ustring &id) {
 	// get the animation
 	if (!getAnimation(id)) {
 		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");
-		return false;
+		return true;
 	}
 	Animation &anim=*getAnimation(id);
 	bool ret;

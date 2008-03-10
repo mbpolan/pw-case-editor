@@ -95,6 +95,7 @@ Game::Game(const ustring &rootPath, Case::Case *pcase): m_RootPath(rootPath), m_
 	
 	// reset special effects
 	m_State.shake=0;
+	m_State.whiteFlash="none";
 	m_State.alphaDecay="none";
 	m_State.fadeOut="none";
 	m_State.flash="none";
@@ -173,19 +174,20 @@ bool Game::loadStockTextures() {
 	SDL_SetAlpha(Textures::queryTexture("tc_select_bl"), SDL_SRCALPHA, 225);
 	
 	// map of opaque surfaces
-	std::map<ustring, std::pair<int, int> > surfaces;
-	surfaces["opaque_black"]=std::make_pair<int, int>(256, 192);
-	surfaces["transparent"]=std::make_pair<int, int>(256, 192);
+	std::map<ustring, std::pair<char, std::pair<int, int> > > surfaces;
+	surfaces["opaque_black"]=std::make_pair<char, std::pair<int , int> >(0, std::make_pair<int, int>(256, 192));
+	surfaces["opaque_white"]=std::make_pair<char, std::pair<int , int> >(255, std::make_pair<int, int>(256, 192));
+	surfaces["transparent"]=std::make_pair<char, std::pair<int , int> >(0, std::make_pair<int, int>(256, 192));
 	
 	// create these surfaces and add them as textures
-	for (std::map<ustring, std::pair<int, int> >::iterator it=surfaces.begin(); it!=surfaces.end(); ++it) {
-		SDL_Surface *opaque=SDL_CreateRGBSurface(SDL_SWSURFACE, (*it).second.first, (*it).second.second, 32, 0, 0, 0, 0);
+	for (std::map<ustring, std::pair<char, std::pair<int, int> > >::iterator it=surfaces.begin(); it!=surfaces.end(); ++it) {
+		SDL_Surface *opaque=SDL_CreateRGBSurface(SDL_SWSURFACE, (*it).second.second.first, (*it).second.second.second, 32, 0, 0, 0, 0);
 		SDL_LockSurface(opaque);
 		
 		// set all pixels to black
 		char *pixels=(char*) opaque->pixels;
-		for (int i=0; i<(*it).second.first*(*it).second.second*4; i++)
-			pixels[i]=(char) 0;
+		for (int i=0; i<(*it).second.second.first*(*it).second.second.second*4; i++)
+			pixels[i]=(char) (*it).second.first;
 		opaque->pixels=(void*) pixels;
 		
 		SDL_UnlockSurface(opaque);
@@ -650,6 +652,7 @@ void Game::registerAnimations() {
 	
 	// register flash effects
 	m_UI->registerFlash("an_flash", 5);
+	m_UI->registerWhiteFlash("an_white_flash");
 	
 	// register gui animations
 	m_UI->registerGUIButton("an_new_game_btn", 150, UI::Button("New Game", Point(53, 240), &Game::onInitialScreenClicked, "sfx_gavel"));
@@ -739,7 +742,11 @@ bool Game::flagged(int flag) {
 // see if the text box should be drawn
 bool Game::shouldDrawTextBox() {
 	// first of all, fade out effects (other than gui ones) need to be text-box free
-	if (m_State.fadeOut!="gui" && m_State.fadeOut!="none")
+	if ((m_State.fadeOut!="gui" && m_State.fadeOut!="none") || m_State.alphaDecay!="none")
+		return false;
+	
+	// flash animations as well
+	if (m_State.whiteFlash!="none")
 		return false;
 	
 	// same applies to the court camera
@@ -1435,7 +1442,7 @@ bool Game::renderSpecialEffects() {
 		bool half=(m_State.fadeOut.rfind("_half")!=-1);
 		
 		// see if we are done fading
-		int ret;
+		UI::AnimStage ret;
 		
 		// half fade out
 		if (half)
@@ -1450,7 +1457,7 @@ bool Game::renderSpecialEffects() {
 			ret=m_UI->fadeOut("an_gui_fade_bottom");
 		
 		// midpoint of fade out reached, or done if half fade
-		if (ret==0 || (ret==1 && half)) {
+		if (ret==UI::STAGE_ANIM_MID || (ret==UI::STAGE_ANIM_END && half)) {
 			// if there are any queued flags, toggle them now
 			if ((m_State.queuedFlags & STATE_QUEUED)) {
 				toggle(m_State.queuedFlags);
@@ -1501,8 +1508,22 @@ bool Game::renderSpecialEffects() {
 		}
 		
 		// effect was completed
-		else if (ret==1)
+		else if (ret==UI::STAGE_ANIM_END)
 			m_State.fadeOut="none";
+		
+		return false;
+	}
+	
+	// perform a white flash into an image
+	else if (m_State.whiteFlash!="none") {
+		UI::AnimStage ret=m_UI->whiteFlash("an_white_flash");
+		
+		// we reached the midpoint, toggle the temp image
+		if (ret==UI::STAGE_ANIM_MID)
+			m_State.tempImage=m_State.whiteFlash;
+		
+		else if (ret==UI::STAGE_ANIM_END)
+			m_State.whiteFlash="none";
 		
 		return false;
 	}
@@ -1534,14 +1555,14 @@ bool Game::renderSpecialEffects() {
 	// draw add evidence animation
 	else if (m_State.addEvidence!="none") {
 		// progress the animation
-		int ret=m_UI->animateAddEvidence("an_add_evidence", m_Case->getEvidence(m_State.addEvidence));
+		UI::AnimStage ret=m_UI->animateAddEvidence("an_add_evidence", m_Case->getEvidence(m_State.addEvidence));
 		
 		// if the midpoint is reached, open the court record
-		if (ret==0)
+		if (ret==UI::STAGE_ANIM_MID)
 			m_State.drawFlags=STATE_EVIDENCE_PAGE;
 		
 		// the animation is done, so remove it from the game state and progress the script
-		else if (ret==1) {
+		else if (ret==UI::STAGE_ANIM_END) {
 			m_State.addEvidence="none";
 			m_Parser->nextStep();
 		}
