@@ -462,29 +462,21 @@ UI::AnimStage UI::Manager::fadeOut(const ustring &id) {
 		else if (anim.alpha<0) anim.alpha=0;
 	}
 	
-	// get the opaque surface
-	SDL_Surface *opaque=Textures::queryTexture("opaque_black");
-	SDL_SetAlpha(opaque, SDL_SRCALPHA, anim.alpha);
+	// set the color
+	Color color(0, 0, 0, anim.alpha);
 	
 	// draw this surface, depending on screen
 	switch(anim.type) {
 		case UI::ANIM_FADE_OUT_TOP_HALF:
-		case UI::ANIM_FADE_OUT_TOP: Renderer::drawImage(Point(0, 0), opaque); break;
+		case UI::ANIM_FADE_OUT_TOP: Renderer::drawRect(Rect(Point(0, 0, Z_FADE), 256, 192), color); break;
 		
 		case UI::ANIM_FADE_OUT_BOTTOM_HALF:
-		case UI::ANIM_FADE_OUT_BOTTOM: Renderer::drawImage(Point(0, 197), opaque); break;
+		case UI::ANIM_FADE_OUT_BOTTOM: Renderer::drawRect(Rect(Point(0, 197, Z_FADE), 256, 192), color); break;
 		
 		case UI::ANIM_FADE_OUT_BOTH_HALF:
-		case UI::ANIM_FADE_OUT_BOTH: {
-			Renderer::drawImage(Point(0, 0), opaque);
-			Renderer::drawImage(Point(0, 197), opaque);
-		} break;
+		case UI::ANIM_FADE_OUT_BOTH: Renderer::drawRect(Rect(Point(0, 0, Z_FADE), 256, 389), color); break;
 		
-		case UI::ANIM_FADE_OUT_BOTTOM_GUI: {
-			SDL_Rect srect={ 0, 0, 256, 156 };
-			SDL_Rect drect={ 0, 215 };
-			SDL_BlitSurface(opaque, &srect, SDL_GetVideoSurface(), &drect);
-		} break;
+		case UI::ANIM_FADE_OUT_BOTTOM_GUI: Renderer::drawRect(Rect(Point(0, 215, Z_FADE), 256, 156), color); break;
 	}
 	
 	// if the alpha is 255, then begin fading in
@@ -526,7 +518,8 @@ UI::AnimStage UI::Manager::animateAddEvidence(const ustring &id, const Case::Evi
 	Animation &anim=*getAnimation(id);
 	
 	// draw the info strip across the top of the screen
-	Renderer::drawInfoStrip(anim.current, evidence->texture, evidence->name, evidence->caption, evidence->description, false);
+	Renderer::drawInfoStrip(anim.current, Textures::queryTexture(evidence->texture), 
+				evidence->name, evidence->caption, evidence->description, false);
 	
 	// moving the info strip to the left
 	int x=anim.current.x();
@@ -570,9 +563,6 @@ UI::AnimStage UI::Manager::whiteFlash(const ustring &id) {
 	
 	Animation &anim=*getAnimation(id);
 	
-	// get an opaque surface
-	SDL_Surface *opaque=Textures::queryTexture("opaque_white");
-	
 	// first, fade out into white
 	int now=SDL_GetTicks();
 	if (anim.velocity==1) {
@@ -594,8 +584,7 @@ UI::AnimStage UI::Manager::whiteFlash(const ustring &id) {
 			anim.alpha=255;
 			
 			// in order to avoid flicker, draw the surface before returning the code
-			SDL_SetAlpha(opaque, SDL_SRCALPHA, anim.alpha);
-			Renderer::drawImage(Point(0, 0), opaque);
+			Renderer::drawRect(Rect(Point(0, 0), 256, 192), Color(255, 255, 255, anim.alpha));
 			
 			return UI::STAGE_ANIM_MID;
 		}
@@ -614,8 +603,7 @@ UI::AnimStage UI::Manager::whiteFlash(const ustring &id) {
 	}
 	
 	// draw the opaque surface with alpha
-	SDL_SetAlpha(opaque, SDL_SRCALPHA, anim.alpha);
-	Renderer::drawImage(Point(0, 0), opaque);
+	Renderer::drawRect(Rect(Point(0, 0), 256, 192), Color(255, 255, 255, anim.alpha));
 	
 	return UI::STAGE_ANIM_INITIAL;
 }
@@ -662,9 +650,7 @@ bool UI::Manager::blink(const ustring &id) {
 	Animation &anim=*getAnimation(id);
 	
 	// get the texture
-	SDL_Surface *tex=Textures::queryTexture(anim.texture);
-	if (!tex)
-		return true;
+	Textures::Texture tex=Textures::queryTexture(anim.texture);
 	
 	// see if it's time to display the image
 	int now=SDL_GetTicks();
@@ -712,6 +698,8 @@ bool UI::Manager::decayAlpha(const ustring &id, int &alpha) {
 
 // perform a court camera movement
 bool UI::Manager::moveCourtCamera(const ustring &id, SDL_Surface *panorama, UI::Limit start, UI::Limit end) {
+	// FIXME
+	/*
 	// make sure the animation is valid
 	if (!getAnimation(id)) {
 		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");
@@ -811,6 +799,8 @@ bool UI::Manager::moveCourtCamera(const ustring &id, SDL_Surface *panorama, UI::
 	Renderer::drawImage(Rect(Point(cur.x(), 0), 256, 192), panorama, SDL_GetVideoSurface());
 	
 	return false;
+	*/
+	return true;
 }
 
 // animate the testimony sprite sequence
@@ -839,13 +829,17 @@ bool UI::Manager::animateTestimonySequence(const ustring &id) {
 	stt->toggleLoop(false);
 	stb->toggleLoop(false);
 	
+	// cache current frames
+	Textures::Texture topFr=Textures::queryTexture(stt->getCurrentFrame()->image);
+	Textures::Texture btmFr=Textures::queryTexture(stb->getCurrentFrame()->image);
+	
 	// calculate center points for both
-	static int centerxTop=128-(stt->getCurrentFrame()->image->w/2);
-	static int centerxBottom=128-(stb->getCurrentFrame()->image->w/2);
+	static int centerxTop=128-(topFr.w/2);
+	static int centerxBottom=128-(btmFr.w/2);
 	
 	// calculate y values
 	static int yTop=5;
-	static int yBottom=stt->getCurrentFrame()->image->h+10;
+	static int yBottom=topFr.h+10;
 	
 	// we are not animating the sprites
 	if (anim.topLimit!=centerxTop || anim.bottomLimit!=centerxBottom) {
@@ -888,12 +882,12 @@ bool UI::Manager::animateTestimonySequence(const ustring &id) {
 				anim.topLimit=256;
 			
 			// clamp the bottom limit
-			if (anim.bottomLimit<=-stb->getCurrentFrame()->image->w)
-				anim.bottomLimit=-stb->getCurrentFrame()->image->w;
+			if (anim.bottomLimit<=-btmFr.w)
+				anim.bottomLimit=-btmFr.w;
 			
 			// only if both sprites have been removed from the screen, can the
 			// animation end
-			if (anim.topLimit==256 && anim.bottomLimit==-stb->getCurrentFrame()->image->w)
+			if (anim.topLimit==256 && anim.bottomLimit==-btmFr.w)
 				return true;
 		}
 		
@@ -909,17 +903,15 @@ bool UI::Manager::animateTestimonySequence(const ustring &id) {
 		// just as soon as the sprites have reached their center positions,
 		// draw a white rectangle to simulate a flash effect
 		if (ticks<5) {
-			SDL_Surface *screen=SDL_GetVideoSurface();
-			
 			// draw the rectangle
-			Renderer::drawRect(screen, Rect(Point(0, 0), 256, 192), Color(255, 255, 255));
+			Renderer::drawRect(Rect(Point(0, 0), 256, 192), Color(255, 255, 255));
 			ticks++;
 		}
 		
 		// once that's done, proceed to animate the sprites
 		else {
-			stt->animate(centerxTop, yTop);
-			stb->animate(centerxBottom, yBottom);
+			stt->animate(Point(centerxTop, yTop));
+			stb->animate(Point(centerxBottom, yBottom));
 			
 			if (stt->done() && stt->done()) {
 				//stt->reset();
@@ -941,8 +933,7 @@ bool UI::Manager::animateTestimonySequence(const ustring &id) {
 // FIXME: the following function is annoyingly similar to the above testimony one
 //        maybe find a way to merge them together in the future
 // animate the cross examination sprite sequence
-bool UI::Manager::animateCrossExamineSequence(const ustring &id, 
-					      SDL_Surface *leftImg, SDL_Surface *rightImg) {
+bool UI::Manager::animateCrossExamineSequence(const ustring &id, const Textures::Texture &leftImg, const Textures::Texture &rightImg) {
 	// make sure the animation is valid
 	if (!getAnimation(id)) {
 		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");
@@ -967,34 +958,35 @@ bool UI::Manager::animateCrossExamineSequence(const ustring &id,
 	xtt->toggleLoop(false);
 	xtb->toggleLoop(false);
 	
-	// cache the current frame of lower sprite
-	SDL_Surface *lFrame=xtb->getCurrentFrame()->image;
+	// cache bottom and top frames
+	Textures::Texture topFr=Textures::queryTexture(xtt->getCurrentFrame()->image);
+	Textures::Texture btmFr=Textures::queryTexture(xtb->getCurrentFrame()->image);
 	
 	// calculate center points for both
-	static int centerxTop=128-(xtt->getCurrentFrame()->image->w/2);
-	static int centerxBottom=128-(lFrame->w/2);
+	static int centerxTop=128-(topFr.w/2);
+	static int centerxBottom=128-(btmFr.w/2);
 	
 	// calculate y values
 	static int yTop=5;
-	static int yBottom=xtt->getCurrentFrame()->image->h+10;
+	static int yBottom=topFr.h+10;
 	
 	// for the lower screen, always draw the colorized court overview
-	Renderer::drawImage(Point(0, 197), "court_overview_c");
+	Renderer::drawImage(Point(0, 197, 1.0f), "court_overview_c");
 	
 	// now draw bounding rectangles for containment of lawyer images
-	Renderer::drawRect(SDL_GetVideoSurface(), Rect(Point(0, 227), 256, 2), Color(0, 0, 0));
-	Renderer::drawRect(SDL_GetVideoSurface(), Rect(Point(0, 277), 256, 2), Color(0, 0, 0));
+	Renderer::drawRect(Rect(Point(0, 227, 1.1f), 256, 2), Color(0, 0, 0));
+	Renderer::drawRect(Rect(Point(0, 277, 1.1f), 256, 2), Color(0, 0, 0));
 	
-	Renderer::drawRect(SDL_GetVideoSurface(), Rect(Point(0, 307), 256, 2), Color(0, 0, 0));
-	Renderer::drawRect(SDL_GetVideoSurface(), Rect(Point(0, 357), 256, 2), Color(0, 0, 0));
+	Renderer::drawRect(Rect(Point(0, 307, 1.1f), 256, 2), Color(0, 0, 0));
+	Renderer::drawRect(Rect(Point(0, 357, 1.1f), 256, 2), Color(0, 0, 0));
 	
 	// then draw the blue line images
-	Renderer::drawImage(Point(0, 229), "blueline");
-	Renderer::drawImage(Point(0, 309), "blueline");
+	Renderer::drawImage(Point(0, 229, 1.2f), "blueline");
+	Renderer::drawImage(Point(0, 309, 1.2f), "blueline");
 	
 	// and finally, draw the two lawyers' images
-	Renderer::drawImage(Point(anim.leftLimit, 229), leftImg);
-	Renderer::drawImage(Point(anim.rightLimit, 309), rightImg);
+	Renderer::drawImage(Point(anim.leftLimit, 229, 1.3f), leftImg);
+	Renderer::drawImage(Point(anim.rightLimit, 309, 1.3f), rightImg);
 	
 	// we are not animating the sprites
 	if (anim.topLimit!=centerxTop || anim.bottomLimit!=centerxBottom) {
@@ -1007,7 +999,7 @@ bool UI::Manager::animateCrossExamineSequence(const ustring &id,
 				Audio::playEffect("sfx_fly_in", Audio::CHANNEL_SCRIPT);
 				
 				// also preset the starting positions for right lawyer's image
-				anim.rightLimit=256-rightImg->w;
+				anim.rightLimit=256-rightImg.w;
 				
 				once=!once;
 			}
@@ -1044,17 +1036,20 @@ bool UI::Manager::animateCrossExamineSequence(const ustring &id,
 		}
 		
 		// draw top sprite frame
-		xtt->renderFrame(anim.topLimit, yTop-anim.delta.y());
+		xtt->renderFrame(Point(anim.topLimit, yTop-anim.delta.y(), Z_ANIM_SPRITE));
+		Textures::Texture lFrame=Textures::queryTexture(xtb->getCurrentFrame()->image);
 		
 		// the important part about the bottom sprite, is that it has the possibility
 		// of moving below into the lower screen when the animation is in its final stages
 		// we first need to test if that has already occurred...
-		if ((yBottom+anim.delta.y())+lFrame->h<=192)
+		if ((yBottom+anim.delta.y())+lFrame.h<=192)
 			// simply draw the frame in its entirety
-			xtb->renderFrame(anim.bottomLimit, yBottom+anim.delta.y());
+			xtb->renderFrame(Point(anim.bottomLimit, yBottom+anim.delta.y(), Z_ANIM_SPRITE));
 		
 		// well, this sucks; we need to draw only the visible portion
 		else {
+			// FIXME
+			/*
 			// fill in the source rectangle, with the cutoff region noted
 			SDL_Rect src;
 			src.x=0;
@@ -1070,6 +1065,7 @@ bool UI::Manager::animateCrossExamineSequence(const ustring &id,
 			
 			// now manually blit the frame
 			SDL_BlitSurface(lFrame, &src, SDL_GetVideoSurface(), &dest);
+			*/
 		}
 	}
 	
@@ -1080,17 +1076,15 @@ bool UI::Manager::animateCrossExamineSequence(const ustring &id,
 		// just as soon as the sprites have reached their center positions,
 		// draw a white rectangle to simulate a flash effect
 		if (ticks<8) {
-			SDL_Surface *screen=SDL_GetVideoSurface();
-			
 			// draw the rectangle
-			Renderer::drawRect(screen, Rect(Point(0, 0), 256, 192), Color(255, 255, 255));
+			Renderer::drawRect(Rect(Point(0, 0, Z_FADE), 256, 192), Color(255, 255, 255));
 			ticks++;
 		}
 		
 		// once that's done, proceed to animate the sprites
 		else {
-			xtt->animate(centerxTop, yTop);
-			xtb->animate(centerxBottom, yBottom);
+			xtt->animate(Point(centerxTop, yTop, Z_ANIM_SPRITE));
+			xtb->animate(Point(centerxBottom, yBottom, Z_ANIM_SPRITE));
 			
 			if (xtt->done() && xtt->done()) {
 				//stt->reset();
@@ -1171,9 +1165,7 @@ bool UI::Manager::animateGreenBar(const ustring &id) {
 	Animation &anim=*getAnimation(id);
 	
 	// get the texture
-	SDL_Surface *texture=Textures::queryTexture(anim.texture);
-	if (!texture)
-		return true;
+	Textures::Texture texture=Textures::queryTexture(anim.texture);
 	
 	// see if we need to progress the animation
 	int now=SDL_GetTicks();
@@ -1192,14 +1184,16 @@ bool UI::Manager::animateGreenBar(const ustring &id) {
 	}
 	
 	// draw the correct percentage of the bar
-	int fill=texture->w*(anim.rightLimit/100);
+	int fill=texture.w*(anim.rightLimit/100);
 	
+	// FIXME
+	/*
 	// prepare source rectangle
 	SDL_Rect src;
 	src.x=0;
 	src.y=0;
 	src.w=fill;
-	src.h=texture->h;
+	src.h=texture.h;
 	
 	// prepare destination rectangle
 	SDL_Rect dest;
@@ -1208,12 +1202,13 @@ bool UI::Manager::animateGreenBar(const ustring &id) {
 	
 	// blit the image
 	SDL_BlitSurface(texture, &src, SDL_GetVideoSurface(), &dest);
+	*/
 	
 	return false;
 }
 
 // perform an exclamation animation
-bool UI::Manager::exclamation(const ustring &id, const Character *source) {
+bool UI::Manager::exclamation(const ustring &id, const Audio::Sample *effect, const Character *source) {
 	// get the animation
 	if (!getAnimation(id)) {
 		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");
@@ -1223,23 +1218,21 @@ bool UI::Manager::exclamation(const ustring &id, const Character *source) {
 	Animation &anim=*getAnimation(id);
 	
 	// get the texture
-	SDL_Surface *texture=Textures::queryTexture(anim.texture);
-	if (!texture)
-		return true;
+	Textures::Texture texture=Textures::queryTexture(anim.texture);
 	
 	// play the sound effect, once only
-	if (anim.ticks==0) {
-		// FIXME: remove this bit of debug code
-		Audio::playEffect("phoenix_holdit", Audio::CHANNEL_SCRIPT);
-	}
+	if (anim.ticks==0 && effect)
+		Audio::playEffect(effect->id, Audio::CHANNEL_SCRIPT);
 	
 	// see if we should keep drawing
 	if (anim.ticks<anim.speed) {
-		Point shake(0, 0);
+		Point shake(0, 0, Z_ANIM_SPRITE);
 		
 		// shake only for the first two thirds of the animation
-		if (anim.speed-anim.ticks>=(anim.speed/3))
+		if (anim.speed-anim.ticks>=(anim.speed/3)) {
 			shake=Utils::calculateShakePoint(5);
+			shake.setZ(Z_ANIM_SPRITE);
+		}
 		
 		// draw the texture
 		Renderer::drawImage(anim.current+shake, texture);
@@ -1258,7 +1251,7 @@ bool UI::Manager::exclamation(const ustring &id, const Character *source) {
 }
 
 // slide a background down
-bool UI::Manager::slideBG(const ustring &id, SDL_Surface *bg) {
+bool UI::Manager::slideBG(const ustring &id, const GLuint &bg) {
 	// get the animation
 	if (!getAnimation(id)) {
 		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");
@@ -1267,13 +1260,14 @@ bool UI::Manager::slideBG(const ustring &id, SDL_Surface *bg) {
 	
 	Animation &anim=*getAnimation(id);
 	
+	// get the background texture
+	Textures::Texture tex=Textures::queryTexture(bg);
+	
+	// still sliding down
 	int y=anim.current.y();
 	if (y!=192) {
-		SDL_Rect srect= { 0, 192-y, 256, y };
-		SDL_Rect drect= { 0, 197 };
-		
-		SDL_BlitSurface(bg, &srect, SDL_GetVideoSurface(), &drect);
-		
+		// draw the texture at this current point
+		Renderer::drawImage(Point(0, y+5, 1.5f), tex);
 		y+=anim.speed;
 		if (y>192)
 			y=192;
@@ -1284,9 +1278,11 @@ bool UI::Manager::slideBG(const ustring &id, SDL_Surface *bg) {
 	}
 	
 	else {
-		Renderer::drawImage(Point(0, 197), bg);
+		Renderer::drawImage(Point(0, 197, 1.5f), tex);
 		return true;
 	}
+	
+	return true;
 }
 
 // animate a gui button

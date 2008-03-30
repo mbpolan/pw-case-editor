@@ -202,11 +202,7 @@ bool IO::loadCaseFromFile(const ustring &path, Case::Case &pcase) {
 		
 		// if the tag exists, read the image
 		if (tag) {
-			SDL_Surface *texTag=Textures::createTexture(STR_NULL, readImage(f));
-			
-			// set alpha to match that of the text box
-			SDL_SetAlpha(texTag, SDL_SRCALPHA, 165);
-			
+			GLuint texTag=Textures::createTexture(STR_NULL, readImage(f), 225);
 			character.setTextBoxTag(texTag);
 		}
 		
@@ -218,10 +214,10 @@ bool IO::loadCaseFromFile(const ustring &path, Case::Case &pcase) {
 		// if the headshot exists, read the image
 		if (headshot) {
 			// read full image
-			SDL_Surface *headshot=Textures::createTexture(STR_NULL, readImage(f));
+			GLuint headshot=Textures::createTexture(STR_NULL, readImage(f));
 			
 			// read scaled thumbnail
-			SDL_Surface *thumb=Textures::createTexture(STR_NULL, readImage(f));
+			GLuint thumb=Textures::createTexture(STR_NULL, readImage(f));
 			
 			character.setHeadshot(headshot, thumb);
 		}
@@ -376,9 +372,9 @@ bool IO::loadCaseFromFile(const ustring &path, Case::Case &pcase) {
 		if (pcase.getBackground(location.states["default"])) {
 			Case::Background *bg=pcase.getBackground(location.states["default"]);
 			
+			// FIXME
 			// scale it
-			location.bgScaled=zoomSurface(bg->texture, 0.3125, 0.3125, SMOOTHING_ON);
-			Textures::pushTexture(STR_NULL, location.bgScaled);
+			//location.bgScaled=Textures::createTexture(zoomSurface(bg->texture, 0.3125, 0.3125, SMOOTHING_ON));
 		}
 		
 		// add this location
@@ -623,18 +619,12 @@ bool IO::loadStockFile(const ustring &path, Case::Case *pcase) {
 			
 			// see if a text box tag is present
 			if (vec[4]!=STR_NULL) {
-				SDL_Surface *tag=Textures::createTexture(STR_NULL, ".temp/data/stock/"+vec[4]);
-				if (tag) {
-					// set this tag
-					character.setHasTextBoxTag(true);
-					character.setTextBoxTag(tag);
-					
-					// along with its alpha
-					SDL_SetAlpha(tag, SDL_SRCALPHA, 165);
-				}
+				// load the tag
+				GLuint tag=Textures::createTexture(STR_NULL, ".temp/data/stock/"+vec[4], 165);
 				
-				else
-					Utils::alert("Unable to load textbox tag for character '"+vec[0]+"': '"+vec[4]+"'");
+				// set this tag
+				character.setHasTextBoxTag(true);
+				character.setTextBoxTag(tag);
 			}
 			
 			// add this sprite
@@ -670,10 +660,20 @@ bool IO::loadStockFile(const ustring &path, Case::Case *pcase) {
 				sId.erase(0, 1);
 			}
 			
+			// see if there is a specified alpha
+			int npos;
+			int alpha=255;
+			ustring rFile=sFile;
+			if ((npos=sFile.find(','))!=-1) {
+				rFile=sFile.substr(0, npos);
+				ustring a=sFile.substr(npos+1, sFile.size());
+				alpha=atoi(a.c_str());
+			}
+			
 			// create a surface
-			SDL_Surface *surface=Textures::createTexture(sId, ustring(".temp/")+file);
-			if (!surface)
-				return false;
+			GLuint tex=Textures::createTexture(sId, ustring(".temp/")+rFile, alpha);
+			if (Textures::isNull(tex))
+				Utils::alert("Unable to create stock texture: "+sId);
 			
 			// add a background if needed
 			if (bg) {
@@ -682,7 +682,7 @@ bool IO::loadStockFile(const ustring &path, Case::Case *pcase) {
 				// fill in data
 				background.id=sId;
 				background.type=Case::BG_SINGLE_SCREEN;
-				background.texture=surface;
+				background.texture=tex;
 				
 				// and add it
 				pcase->addBackground(background);
@@ -744,9 +744,7 @@ bool IO::loadThemeXML(const ustring &path, Theme::ColorMap &map) {
 }
 
 // read image data from file
-Textures::Texture IO::readImage(FILE *f) {
-	Textures::Texture tex;
-	
+SDL_Surface* IO::readImage(FILE *f) {
 	// read buffer size
 	int size;
 	fread(&size, sizeof(int), 1, f);
@@ -757,27 +755,23 @@ Textures::Texture IO::readImage(FILE *f) {
 	
 	// read in the jpeg from memory
 	SDL_RWops *rw=SDL_RWFromMem(buffer, size);
-	if (!rw)
+	if (!rw) {
 		Utils::alert("Error reading internal image: '"+ustring(SDL_GetError())+"'");
+		return NULL;
+	}
 	
 	// load our image from raw data (no need to free RWops structure)
 	SDL_Surface *srf=IMG_Load_RW(rw, 1);
 	if (!srf) {
 		Utils::alert("Error loading internal image: '"+ustring(SDL_GetError())+"'");
-		return tex;
+		return NULL;
 	}
 	
 	// we're done with the buffer itself; now SDL_RWops will handle
 	// our data so we can forget about our originally read buffer
 	delete [] buffer;
 	
-	// convert this temporary surface into an optimized one
-	tex.surface=SDL_DisplayFormat(srf);
-	
-	// and free the temp
-	SDL_FreeSurface(srf);
-	
-	return tex;
+	return srf;
 }
 
 // read a string from file

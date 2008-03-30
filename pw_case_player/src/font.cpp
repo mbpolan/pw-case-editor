@@ -26,12 +26,13 @@
 
 #include "iohandler.h"
 #include "font.h"
+#include "renderer.h"
 #include "texture.h"
 #include "utilities.h"
 
 namespace Fonts {
 
-std::map<int, Font*> g_Fonts;
+std::map<int, Font> g_Fonts;
 
 const Color COLOR_BLACK(0, 0, 0);
 const Color COLOR_WHITE(255, 255, 255);
@@ -44,25 +45,35 @@ const Color COLOR_YELLOW(229, 204, 148);
 
 // load a font
 bool Fonts::loadFont(const ustring &str, int size) {
-	Font *font=TTF_OpenFontRW(SDL_RWFromFile(str.c_str(), "rb"), 1, size);
+	TTF_Font *font=TTF_OpenFontRW(SDL_RWFromFile(str.c_str(), "rb"), 1, size);
 	if (font) {
-		g_Fonts[size]=font;
+		Font f;
+		f.font=font;
+		
+		// once the font is opened, generate 256 characters for the cache
+		for (uchar i=20; i<(uchar) 128; ++i)
+			f.glyphs[i]=renderGlyph(&f, i, (size==FONT_STANDARD ? QUALITY_SOLID : QUALITY_BLEND));
+		
+		g_Fonts[size]=f;
+		
 		return true;
 	}
 	
 	return false;
 }
 
-// get a surface with a rendered glyph
-SDL_Surface* Fonts::renderGlyph(Uint16 ch, int size, const Color &color, const Quality &quality) {
-	Font *f=queryFont(size);
-	if (!f)
-		return NULL;
+// get a texture with a rendered glyph
+Textures::Texture Fonts::renderGlyph(const Font *f, Uint16 ch, const Quality &quality) {
+	Textures::Texture tex;
 	
+	SDL_Surface *surface;
 	switch(quality) {
-		case QUALITY_SOLID: return TTF_RenderGlyph_Solid(f, ch, color.toSDLColor());
-		case QUALITY_BLEND: return TTF_RenderGlyph_Blended(f, ch, color.toSDLColor());
+		//case QUALITY_SOLID: surface=TTF_RenderGlyph_Solid(f->font, ch, COLOR_WHITE.toSDLColor()); break;
+		default:
+		case QUALITY_BLEND: surface=TTF_RenderGlyph_Blended(f->font, ch, COLOR_WHITE.toSDLColor()); break;
 	}
+	
+	return Textures::queryTexture(Textures::createTexture("null", surface));
 }
 
 // calculate the y coordinate for a glyph to render correctly on baseline
@@ -72,10 +83,10 @@ int Fonts::glyphBase(int y, Uint16 ch, int size) {
 		return 0;
 	
 	int maxy;
-	TTF_GlyphMetrics(f, ch, NULL, NULL, NULL, &maxy, NULL);
+	TTF_GlyphMetrics(f->font, ch, NULL, NULL, NULL, &maxy, NULL);
 	
 	// calculate where to begin drawing this rectangle
-	return y+TTF_FontAscent(f)-maxy;
+	return y+TTF_FontAscent(f->font)-maxy;
 }
 
 // see if a character should not be drawn
@@ -286,9 +297,13 @@ int Fonts::drawStringMulticolor(const Point &p, int limit, int rightClamp, const
 			}
 		}
 		
-		SDL_Surface *glyph=renderGlyph(ch, size, color, QUALITY_SOLID);
-		SDL_BlitSurface(glyph, NULL, screen, &r);
-		SDL_FreeSurface(glyph);
+		glColor3ub(color.r(), color.g(), color.b());
+		
+		// draw this glyph
+		Textures::Texture g=font->glyphs[ch];
+		Renderer::drawImage(Point(r.x, r.y, Z_TEXT), g);
+		
+		glColor3ub(255, 255, 255);
 		
 		// move over to the next glyph
 		drect.x+=getGlyphWidth(ch, size)+SIZE_CHAR_SPACE;
@@ -309,19 +324,19 @@ int Fonts::drawStringCentered(int y, int delimiter, const ustring &str, int size
 	
 	// draw first string, since there's always at least one
 	int x=128-(Fonts::getWidth(vec[0], size)/2);
-	drawString(Point(x, y), delimiter, clamp, vec[0], size, color);
+	drawString(Point(x, y, Z_TEXT), delimiter, clamp, vec[0], size, color);
 	
 	// second line
 	if (vec.size()>1 && delimiter>=vec[0].size()) {
 		// calculate another new x and draw the string
 		x=128-(Fonts::getWidth(vec[1], size)/2);
-		drawString(Point(x, y+Fonts::SIZE_LINE_BREAK), delimiter-vec[0].size(), clamp, vec[1], size, color);
+		drawString(Point(x, y+Fonts::SIZE_LINE_BREAK, Z_TEXT), delimiter-vec[0].size(), clamp, vec[1], size, color);
 		
 		// third line
 		if (vec.size()>2 && delimiter>=(vec[0].size()+vec[1].size())) {
 			// calculate last new x, and draw string
 			x=128-(Fonts::getWidth(vec[2], size)/2);
-			drawString(Point(x, y+Fonts::SIZE_LINE_BREAK*2), delimiter-(vec[0].size()+vec[1].size()), clamp, vec[2], size, color);
+			drawString(Point(x, y+Fonts::SIZE_LINE_BREAK*2, Z_TEXT), delimiter-(vec[0].size()+vec[1].size()), clamp, vec[2], size, color);
 		}
 	}
 }
@@ -329,8 +344,8 @@ int Fonts::drawStringCentered(int y, int delimiter, const ustring &str, int size
 // draw a ttf font string
 void Fonts::drawStringBlended(const Point &p, const ustring &str, int size, const Color &color) {
 	// get the font
-	TTF_Font *font=queryFont(size);
-	if (!font) {
+	Font *f=queryFont(size);
+	if (!f) {
 		Utils::debugMessage("Fonts: font size '"+Utils::itoa(size)+"' not found.");
 		return;
 	}
@@ -340,13 +355,8 @@ void Fonts::drawStringBlended(const Point &p, const ustring &str, int size, cons
 	StringVector lines=Utils::explodeString("\\n", str);
 	
 	// draw the lines
-	for (int i=0; i<lines.size(); i++) {
-		// render a solid text line, calculate its position, and blit it
-		SDL_Surface *rendered=TTF_RenderText_Blended(font, lines[i].c_str(), color.toSDLColor());
-		SDL_Rect drect={ p.x(), p.y()+TTF_FontLineSkip(font)*i+3 };
-		SDL_BlitSurface(rendered, NULL, SDL_GetVideoSurface(), &drect);
-		SDL_FreeSurface(rendered);
-	}
+	for (int i=0; i<lines.size(); i++)
+		drawString(Point(p.x(), p.y()+TTF_FontLineSkip(f->font)*i+3, Z_TEXT), lines[i], size, color);
 }
 
 // get the width of a string
@@ -394,7 +404,7 @@ int Fonts::getWidthTTF(const ustring &str, int size) {
 	if (font) {
 		int w;
 		Uint16 *text=Utils::ustringToArray(str);
-		TTF_SizeUNICODE(font, text, &w, NULL);
+		TTF_SizeUNICODE(font->font, text, &w, NULL);
 		delete [] text;
 		return w;
 	}
@@ -407,7 +417,7 @@ int Fonts::getGlyphWidth(Uint16 ch, int size) {
 	Font *font=queryFont(size);
 	if (font) {
 		int min, max;
-		TTF_GlyphMetrics(font, ch, &min, &max, NULL, NULL, NULL);
+		TTF_GlyphMetrics(font->font, ch, &min, &max, NULL, NULL, NULL);
 		return max-min;
 	}
 	
@@ -422,23 +432,23 @@ int Fonts::getHeight(int size) {
 		return 0;
 	}
 	
-	return TTF_FontHeight(font);
+	return TTF_FontHeight(font->font);
 }
 
 // return a ttf font from the map
 Fonts::Font* Fonts::queryFont(int size) {
-	return g_Fonts[size];
+	return &g_Fonts[size];
 }
 
 // add a font to the map
-void Fonts::pushFont(int size,Font *font) {
-	g_Fonts[size]=font;
+void Fonts::pushFont(int size, Font *font) {
+	g_Fonts[size]=*font;
 }
 
 // clear the font map
 void Fonts::clearFontStack() {
-	for (std::map<int, Font*>::iterator it=g_Fonts.begin(); it!=g_Fonts.end(); ++it) {
-		if ((*it).second)
-			TTF_CloseFont((*it).second);
+	for (std::map<int, Font>::iterator it=g_Fonts.begin(); it!=g_Fonts.end(); ++it) {
+		if ((*it).second.font)
+			TTF_CloseFont((*it).second.font);
 	}
 }

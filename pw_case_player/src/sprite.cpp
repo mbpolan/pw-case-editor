@@ -72,7 +72,7 @@ void Sprite::setAnimation(const ustring &animation) {
 }
 
 // animate the sprite
-void Sprite::animate(int x, int y, SDL_Surface *dest) {
+void Sprite::animate(const Point &p) {
 	// get the animation
 	Animation *anim=getAnimation(m_CurAnim);
 	if (!anim) {
@@ -108,7 +108,7 @@ void Sprite::animate(int x, int y, SDL_Surface *dest) {
 	}
 	
 	// draw the current frame
-	Renderer::drawImage(Point(x, y), dest, frame->image);
+	Renderer::drawImage(p, Textures::queryTexture(frame->image));
 }
 
 // render a single frame of current animation
@@ -154,7 +154,7 @@ Frame* Sprite::getCurrentFrame() {
 }
 
 // add a frame to an animation sequence
-void Sprite::addFrame(const ustring &id, int time, SDL_Surface *frame) {
+void Sprite::addFrame(const ustring &id, int time, const GLuint &frame) {
 	// get the target animation
 	Animation *anim=getAnimation(id);
 	if (anim) {

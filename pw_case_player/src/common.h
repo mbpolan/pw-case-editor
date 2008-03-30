@@ -46,6 +46,31 @@ typedef std::pair<ustring, ustring> StringPair;
 /// Vector used for mapping a range of characters to a color
 typedef std::vector<std::pair<ValueRange, Color> > ColorRangeVector;
 
+//@{
+/** Constants to simplify layering on Z axis.
+  * Since everything in the game is basically layered, it's easier 
+  * to define some global constants which will be used to draw
+  * the elements accordingly. This way, if something needs to be
+  * changed, there's no need to go hunting for the values in the
+  * entire code. Also, floats are used since they're more versatile
+  * than just regular ints, and they allow for miniscule elements to be
+  * layered, such as in many Renderer namespace functions, where a rectangle
+  * needs to be drawn over another.
+*/
+const float Z_FADE=		20.0f;
+const float Z_ANIM_SPRITE=	14.0f;
+const float Z_TEXT=		14.0f;
+const float Z_TEXT_BOX_TAG=	13.0f;
+const float Z_IFC_BTN=		13.0f;
+const float Z_TEXT_BOX=		12.0f;
+const float Z_SCREEN_BARS=	12.0f;
+const float Z_SPRITE=		11.0f;
+const float Z_BARS=		11.0f;
+const float Z_SCANLINES=	10.0f;
+const float Z_GUI_BTN=		5.0f;
+const float Z_BTN_ARROWS=	6.0f;
+//@}
+
 // function prototypes
 static void onSigSegv(int sig) { };
 
@@ -145,9 +170,9 @@ static std::ostream& operator<<(std::ostream &s, const ValueRange &range) {
 	return s;
 }
 
-/** A point in 2D space.
-  * Since many functions in the player require a coordinate or two, 
-  * this class simplifies passing two different parameters as one,
+/** A point in 3D space.
+  * Since many functions in the player require a coordinate, 
+  * this class simplifies passing the different parameters as one,
   * unified class object
 */
 class Point {
@@ -155,10 +180,12 @@ class Point {
 		/** Constructor
 		  * \param x The x-coordinate
 		  * \param y The y-coordinate
+		  * \param z The z-coordinate
 		*/
-		Point(int x=0, int y=0) {
+		Point(int x=0, int y=0, float z=0.0f) {
 			m_X=x;
 			m_Y=y;
+			m_Z=z;
 		}
 		
 		/** Add two points together
@@ -166,13 +193,14 @@ class Point {
 		  * \return New Point representing the sum of the two
 		*/
 		Point operator+(const Point &p) {
-			return Point(m_X+p.x(), m_Y+p.y());
+			return Point(m_X+p.x(), m_Y+p.y(), m_Z+p.z());
 		}
 		
 		/// Reverse the signs on the coordinates
 		void invert() {
 			m_X=-m_X;
 			m_Y=-m_Y;
+			m_Z=-m_Z;
 		}
 		
 		/** Set the x-coordinate in this point
@@ -185,21 +213,28 @@ class Point {
 		*/
 		void setY(int y) { m_Y=y; }
 		
+		/** Set the z-coordinate in this point
+		  * \param z The coordinate
+		*/
+		void setZ(float z) { m_Z=z; }
+		
 		//@{
 		/** Get a coordinate in this point */
 		int x() const { return m_X; }
 		int y() const { return m_Y; }
+		float z() const { return m_Z; }
 		//@}
 		
 	private:
-		// x,y pair
+		// coordinates
 		int m_X;
 		int m_Y;
+		float m_Z;
 };
 
 // overloaded stream operator for point value output
 static std::ostream& operator<<(std::ostream &s, const Point &p) {
-	s << "(" << p.x() << "," << p.y() << ")\n";
+	s << "(" << p.x() << "," << p.y() << "," << p.z() << ")\n";
 	return s;
 }
 

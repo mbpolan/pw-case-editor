@@ -22,10 +22,13 @@
 #ifndef SPRITE_H
 #define SPRITE_H
 
+#include <GL/gl.h>
 #include <iostream>
 #include <map>
 #include <vector>
 #include "SDL.h"
+
+#include "common.h"
 
 /** Struct representing a frame of animation.
   * Each sprite frame is stored in this struct. Multiple 
@@ -38,8 +41,8 @@ struct _Frame {
 	/// Sound effect to play, if any
 	ustring sfx;
 	
-	/// The image in this frame
-	SDL_Surface *image;
+	/// The texture for this frame
+	GLuint image;
 };
 typedef struct _Frame Frame;
 
@@ -95,11 +98,9 @@ class Sprite {
 		void setAnimation(const ustring &anim);
 		
 		/** Animate the sprite
-		  * \param x The x-coordinate where to draw the sprite
-		  * \param y The y-coordinate where to draw the sprite
-		  * \param dest The destination surface
+		  * \param p The coordinates at which to draw the sprite
 		*/
-		void animate(int x, int y, SDL_Surface *dest=SDL_GetVideoSurface());
+		void animate(const Point &p);
 		
 		/** Render a single frame of current animation
 		  * \param p The point where to draw
@@ -141,9 +142,9 @@ class Sprite {
 		/** Add a frame to an animation sequence
 		  * \param id The ID of the target animation
 		  * \param time The time duration of the frame
-		  * \param frame The frame image
+		  * \param frame The frame image ID
 		*/
-		void addFrame(const ustring &id, int time, SDL_Surface *frame);
+		void addFrame(const ustring &id, int time, const GLuint &frame);
 		
 		/// Reset the sprite
 		void reset();

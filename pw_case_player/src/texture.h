@@ -23,6 +23,8 @@
 #define TEXTURE_H
 
 #include <iostream>
+#include <GL/gl.h>
+#include <GL/glu.h>
 #include <map>
 #include "SDL.h"
 
@@ -31,30 +33,45 @@
 /// Namespace for management of individual images used in the player
 namespace Textures {
 
-/// Intermediate struct used for loading an image
+/// Struct used to represent a texture
 struct _Texture {
 	int w;		///< The width
 	int h;		///< The height
-	short bpp;	///< The bits per pixel
-	char *pixels;	///< Pixel data
-	SDL_Surface *surface;
+	float u;
+	float v;
+	GLuint id;	///< The ID of the GL texture
 };
 typedef struct _Texture Texture;
 
-/// Map of all allocated images
-extern std::map<ustring, SDL_Surface*> g_TextureMap;
+/// The null texture to use if a texture is not found but still requested
+extern Texture g_NullTexture;
 
-/** Get an image from the map
-  * \param id The ID of the image
-  * \return Pointer to a surface of the image
+/// Map of all allocated images
+extern std::map<ustring, Texture> g_TextureMap;
+
+/** Test if a texture does not exist
+  * \param id The OpenGL texture ID to test
+  * \return <b>true</b> if it does not exist, <b>false</b> otherwise
 */
-SDL_Surface* queryTexture(const ustring &id);
+bool isNull(const GLuint &id);
+
+/** Get a texture from the map
+  * \param id The ID of the image
+  * \return The requested texture
+*/
+Texture queryTexture(const ustring &id);
+
+/** Get a texture based on GL ID from the map
+  * \param id The GL texture ID
+  * \return The requested texture
+*/
+Texture queryTexture(const GLuint &id);
 
 /** Add a new image to the internal map
   * \param id The ID of the image to use
-  * \param texture Pointer to allocated surface of the image
+  * \param texture A completed Texture struct
 */
-void pushTexture(const ustring &id, SDL_Surface *texture);
+void pushTexture(const ustring &id, const Texture &tex);
 
 /** Remove an image from the stack and free allocated memory
   * \param id The ID of the image
@@ -67,16 +84,18 @@ void clearStack();
 /** Create a usable surface after loading an image from file
   * \param id The ID of the image
   * \param file The path to the image
-  * \return Pointer to a new image surface
+  * \param alpha The requested alpha value to apply
+  * \return ID of this texture
 */
-SDL_Surface* createTexture(const ustring &id, const ustring &file);
+GLuint createTexture(const ustring &id, const ustring &file, int alpha=255);
 
 /** Create a usable surface after loading a texture from memory
   * \param id The ID of the image
-  * \param tex Texture struct prepared from memory
-  * \return Pointer to a new image surface
+  * \param tex Pointer to an SDL_Surface
+  * \param alpha The requested alpha value to apply
+  * \return ID of this texture
 */
-SDL_Surface* createTexture(const ustring &id, const Texture &tex);
+GLuint createTexture(const ustring &id, SDL_Surface *surface, int alpha=255);
 
 }; // namespace Textures
 

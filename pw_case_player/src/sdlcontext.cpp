@@ -71,7 +71,7 @@ bool SDLContext::init() {
 // initialize video output
 bool SDLContext::initVideo(int width, int height, bool fullscreen) {
 	m_VFlags=SDL_HWPALETTE;
-	m_VFlags |= SDL_DOUBLEBUF;
+	m_VFlags |= SDL_OPENGL;
 	
 	if (fullscreen)
 		m_VFlags |= SDL_FULLSCREEN;
@@ -92,6 +92,9 @@ bool SDLContext::initVideo(int width, int height, bool fullscreen) {
 			m_VFlags |= SDL_SWSURFACE;
 	}
 	
+	// we want double buffering
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+	
 	// try to initialize video
 	m_Screen=SDL_SetVideoMode(width, height, 32, m_VFlags);
 	if (!m_Screen) {
@@ -102,6 +105,26 @@ bool SDLContext::initVideo(int width, int height, bool fullscreen) {
 	// copy values to static variables
 	SDLContext::m_Width=width;
 	SDLContext::m_Height=height;
+	
+	// set up opengl rendering
+	glClearColor(0.0, 0.0, 0.0, 0.0);
+	glClearDepth(1.0f);
+	
+	// enable textures and depth testing
+	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_DEPTH_TEST);
+	
+	glViewport(0, 0, m_Screen->w, m_Screen->h);
+	
+	// set up our projection matrix
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	
+	// make it a 2d orthographic projection
+	glOrtho(0, m_Screen->w, m_Screen->h, 0, -25.0f, 25.0f);
+	
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
 	
 	// set tentative window manager title
 	SDL_WM_SetCaption("Loading case...", 0);
@@ -171,11 +194,17 @@ bool SDLContext::initGame(const ustring &pathToCase) {
 
 // render the scene
 void SDLContext::render() {
+	// reset the modelview matrix
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glLoadIdentity();
+	
+	glTranslatef(0.0f, 0.0f, -1.0f);
+	
 	// render the current scene
 	m_Game->render();
 	
 	// swap buffers and draw our scene
-	SDL_Flip(m_Screen);
+	SDL_GL_SwapBuffers();
 }
 
 // handle keyboard event

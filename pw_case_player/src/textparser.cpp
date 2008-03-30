@@ -389,7 +389,7 @@ ustring TextParser::parse(bool drawDialogue) {
 			
 			// draw the string
 			if (drawDialogue)
-				Fonts::drawStringMulticolor(Point(8, 134+shift), m_StrPos, SDL_GetVideoSurface()->w-8, 
+				Fonts::drawStringMulticolor(Point(8, 134+shift, Z_TEXT), m_StrPos, SDL_GetVideoSurface()->w-8, 
 						  m_Dialogue, Fonts::FONT_STANDARD, m_FontStyle.colors);
 			
 			// since the dialog is done, execute queued events
@@ -1202,6 +1202,15 @@ ustring TextParser::doTrigger(const ustring &trigger, const ustring &command) {
 		
 		else
 			m_Game->m_State.whiteFlash=command;
+	}
+	
+	// yell an exclamation
+	else if (trigger=="hold_it" || trigger=="objection" || trigger=="take_that") {
+		// check for existance of sound effect
+		if (command=="none" || (command!="none" && Audio::queryAudio(command)))
+			m_Game->m_State.exclamation="an_"+trigger+","+(command=="none" ? "null" : command);
+		else
+			Utils::debugMessage("Sound effect '"+command+"' for exclamation trigger "+trigger+" doesn't exist.");
 	}
 	
 	return STR_NULL;

@@ -163,6 +163,7 @@ bool Game::loadStockTextures() {
 	int tbAlpha=(ov.textboxAlpha!=-1 ? ov.textboxAlpha : 165);
 	
 	// modify certain textures
+	/*
 	SDL_SetAlpha(Textures::queryTexture("scanlines_overlay"), SDL_SRCALPHA, 30);
 	SDL_SetAlpha(Textures::queryTexture("tc_next_btn"), SDL_SRCALPHA, 225);
 	SDL_SetAlpha(Textures::queryTexture("tc_text_box"), SDL_SRCALPHA, tbAlpha);
@@ -172,6 +173,7 @@ bool Game::loadStockTextures() {
 	SDL_SetAlpha(Textures::queryTexture("tc_select_tr"), SDL_SRCALPHA, 225);
 	SDL_SetAlpha(Textures::queryTexture("tc_select_br"), SDL_SRCALPHA, 225);
 	SDL_SetAlpha(Textures::queryTexture("tc_select_bl"), SDL_SRCALPHA, 225);
+	
 	
 	// map of opaque surfaces
 	std::map<ustring, std::pair<char, std::pair<int, int> > > surfaces;
@@ -201,6 +203,7 @@ bool Game::loadStockTextures() {
 	
 	// add other surfaces
 	Textures::pushTexture("court_panorama_filled", Utils::createSurface(1296, 192));
+	*/
 	
 	// register stock texture animations
 	registerAnimations();
@@ -226,7 +229,7 @@ void Game::render() {
 	
 	// that annoying black bar separating the top and bottom screens? yeah,
 	// we need to redraw it as well
-	Renderer::drawRect(SDL_GetVideoSurface(), Rect(Point(0, 192), 256, 5), Color(0, 0, 0));
+	Renderer::drawRect(Rect(Point(0, 192, 20.0f), 256, 5), Color(0, 0, 0));
 	
 	// once everything static is drawn, parse the block
 	ustring status=m_Parser->parse(shouldDrawTextBox());
@@ -250,7 +253,6 @@ void Game::render() {
 	
 	// check input state at this point
 	checkInputState();
-	
 }
 
 // handle keyboard event
@@ -614,9 +616,12 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 // register default animations for ui elements
 void Game::registerAnimations() {
 	// register some default animations
-	m_UI->registerSideBounceAnimation("an_button_arrow_next", "tc_button_arrow_right", true, Point(110, 284), -2, 2, 25);
-	m_UI->registerSideBounceAnimation("an_info_page_button_left", "tc_button_arrow_small_left", true, Point(3, 267), -2, 2, 25);
-	m_UI->registerSideBounceAnimation("an_info_page_button_right", "tc_button_arrow_small_right", true, Point(247, 267), -2, 2, 25);
+	m_UI->registerSideBounceAnimation("an_button_arrow_next", "tc_button_arrow_right", 
+					  true, Point(110, 284, Z_BTN_ARROWS), -2, 2, 25);
+	m_UI->registerSideBounceAnimation("an_info_page_button_left", "tc_button_arrow_small_left", 
+					  true, Point(3, 267, Z_BTN_ARROWS), -2, 2, 25);
+	m_UI->registerSideBounceAnimation("an_info_page_button_right", "tc_button_arrow_small_right", 
+					  true, Point(247, 267, Z_BTN_ARROWS), -2, 2, 25);
 	m_UI->registerSyncBounce("an_x_examine_arrows", "tc_button_arrow_left", "tc_button_arrow_right",
 				 Point(51, 285), Point(169, 285), -2, 2, 25);
 	
@@ -643,6 +648,8 @@ void Game::registerAnimations() {
 	
 	// register exclamations
 	m_UI->registerExclamation("an_hold_it", "tc_hold_it", Point(0, 0));
+	m_UI->registerExclamation("an_objection", "tc_objection", Point(0, 0));
+	m_UI->registerExclamation("an_take_that", "tc_take_that", Point(0, 0));
 	
 	// register green bars
 	m_UI->registerGreenBarControl("an_court_green_bar", "tc_court_green_bar", Point(172, 10));
@@ -655,16 +662,17 @@ void Game::registerAnimations() {
 	m_UI->registerWhiteFlash("an_white_flash");
 	
 	// register gui animations
-	m_UI->registerGUIButton("an_new_game_btn", 150, UI::Button("New Game", Point(53, 240), &Game::onInitialScreenClicked, "sfx_gavel"));
-	m_UI->registerGUIButton("an_talk_op1_btn", 200, UI::Button("", Point(28, 236), &Game::onTalkSceneClicked));
-	m_UI->registerGUIButton("an_talk_op2_btn", 200, UI::Button("", Point(28, 267), &Game::onTalkSceneClicked));
-	m_UI->registerGUIButton("an_talk_op3_btn", 200, UI::Button("", Point(28, 298), &Game::onTalkSceneClicked));
-	m_UI->registerGUIButton("an_talk_op4_btn", 200, UI::Button("", Point(28, 329), &Game::onTalkSceneClicked));
+	m_UI->registerGUIButton("an_new_game_btn", 150, UI::Button("New Game", Point(53, 240, Z_GUI_BTN), 
+				&Game::onInitialScreenClicked, "sfx_gavel"));
+	m_UI->registerGUIButton("an_talk_op1_btn", 200, UI::Button("", Point(28, 236, Z_GUI_BTN), &Game::onTalkSceneClicked));
+	m_UI->registerGUIButton("an_talk_op2_btn", 200, UI::Button("", Point(28, 267, Z_GUI_BTN), &Game::onTalkSceneClicked));
+	m_UI->registerGUIButton("an_talk_op3_btn", 200, UI::Button("", Point(28, 298, Z_GUI_BTN), &Game::onTalkSceneClicked));
+	m_UI->registerGUIButton("an_talk_op4_btn", 200, UI::Button("", Point(28, 329, Z_GUI_BTN), &Game::onTalkSceneClicked));
 	
-	m_UI->registerGUIButton("an_move_loc1_btn", 150, UI::Button("", Point(85, 236), &Game::onMoveSceneClicked));
-	m_UI->registerGUIButton("an_move_loc2_btn", 150, UI::Button("", Point(85, 267), &Game::onMoveSceneClicked));
-	m_UI->registerGUIButton("an_move_loc3_btn", 150, UI::Button("", Point(85, 298), &Game::onMoveSceneClicked));
-	m_UI->registerGUIButton("an_move_loc4_btn", 150, UI::Button("", Point(85, 329), &Game::onMoveSceneClicked));
+	m_UI->registerGUIButton("an_move_loc1_btn", 150, UI::Button("", Point(85, 236, Z_GUI_BTN), &Game::onMoveSceneClicked));
+	m_UI->registerGUIButton("an_move_loc2_btn", 150, UI::Button("", Point(85, 267, Z_GUI_BTN), &Game::onMoveSceneClicked));
+	m_UI->registerGUIButton("an_move_loc3_btn", 150, UI::Button("", Point(85, 298, Z_GUI_BTN), &Game::onMoveSceneClicked));
+	m_UI->registerGUIButton("an_move_loc4_btn", 150, UI::Button("", Point(85, 329, Z_GUI_BTN), &Game::onMoveSceneClicked));
 	
 	// register sprite sequences
 	m_UI->registerTestimonySequence("an_testimony_sequence");
@@ -1080,25 +1088,20 @@ void Game::renderTopView() {
 			
 			// and draw it
 			if (bg)
-				Renderer::drawImage(Point(0, 0), bg->texture);
+				Renderer::drawImage(Point(0, 0), Textures::queryTexture(bg->texture));
 			else
 				Utils::debugMessage("Background for location '"+m_State.currentLocation+"' not found");
 			
 			// if a bgFade effect is applied, draw over the background with indicated alpha
-			if (m_State.bgFade!=255) {
-				SDL_Surface *opaque=Textures::queryTexture("opaque_black");
-				SDL_SetAlpha(opaque, SDL_SRCALPHA, 255-m_State.bgFade);
-				
-				// draw the opaque surface over the background
-				Renderer::drawImage(Point(0, 0), opaque);
-			}
+			if (m_State.bgFade!=255)
+				Renderer::drawRect(Rect(Point(0, 0), 256, 192), Color(0, 0, 0, 255-m_State.bgFade));
 		}
 		
 		// sprite background otherwise
 		else {
 			Sprite *bg=m_Case->getCharacter(location->states[location->state].substr(1,
 							location->states[location->state].size()))->getSprite();
-			bg->animate(0, 0);
+			bg->animate(Point(0, 0));
 		}
 		
 		// if there is a character set here, draw him now
@@ -1130,11 +1133,12 @@ void Game::renderTopView() {
 			// draw the sprite
 			// if the sprite's general size is not 256x192, try to center it
 			Frame *fr=sprite->getCurrentFrame();
-			if (fr && (fr->image->w!=256 || fr->image->h!=192))
-				sprite->animate(256-(fr->image->w/2), 192-(fr->image->h));
+			Textures::Texture ftex=Textures::queryTexture(fr->image);
+			if (fr && (ftex.w!=256 || ftex.h!=192))
+				sprite->animate(Point(256-(ftex.w/2), 192-(ftex.h), Z_SPRITE));
 			
 			else
-				sprite->animate(0, 0);
+				sprite->animate(Point(0, 0, Z_SPRITE));
 		}
 		
 		// handle special locations
@@ -1153,22 +1157,14 @@ void Game::renderTopView() {
 		// if the examination scene is up, dim the upper screen
 		if (flagged(STATE_EXAMINE) || (m_State.prevScreen==SCREEN_EXAMINE && !flagged(STATE_TEXT_BOX)) ||
 		    m_State.requestingEvidence || m_State.requestingAnswer) {
-			// get an opaque black surface
-			SDL_Surface *opaque=Textures::queryTexture("opaque_black");
-			SDL_SetAlpha(opaque, SDL_SRCALPHA, 128);
-			
-			// draw it over the location
-			Renderer::drawImage(Point(0, 0), opaque);
+			// draw a translucent rectangle
+			Renderer::drawRect(Rect(Point(0, 0, Z_FADE), 256, 192), Color(0, 0, 0, 128));
 		}
 	}
 	
 	else {
-		// get an opaque black surface
-		SDL_Surface *opaque=Textures::queryTexture("opaque_black");
-		SDL_SetAlpha(opaque, SDL_SRCALPHA, 255);
-		
-		// draw it as the background
-		Renderer::drawImage(Point(0, 0), opaque);
+		// draw a black rectangle over the background
+		Renderer::drawRect(Rect(Point(0, 0), 256, 192), Color(0, 0, 0, 255));
 	}
 	
 	// if we are to shake the screen, do so now, since the following elements can't
@@ -1267,7 +1263,7 @@ void Game::renderMenuView() {
 			Case::Image *img=m_Case->getImage(m_State.contradictionImg);
 			if (img) {
 				// we can reuse the renderer for this purpose
-				Renderer::drawExamineScene(img->texture, m_State.examinePt, false);
+				Renderer::drawExamineScene(Textures::queryTexture(img->texture), m_State.examinePt, false);
 			}
 		}
 	}
@@ -1300,7 +1296,7 @@ void Game::renderMenuView() {
 		Case::Location *location=m_Case->getLocation(m_State.currentLocation);
 		Case::Background *bg=m_Case->getBackground(location->states[location->state]);
 		
-		Renderer::drawExamineScene(bg->texture, m_State.examinePt);
+		Renderer::drawExamineScene(Textures::queryTexture(bg->texture), m_State.examinePt);
 	}
 	
 	// draw the move scene
@@ -1330,7 +1326,7 @@ void Game::renderMenuView() {
 	
 	// draw next button in case of dialog
 	else if (flagged(STATE_NEXT_BTN)) {
-		Renderer::drawImage(Point(16, 242), "tc_next_btn");
+		Renderer::drawImage(Point(16, 242, Z_GUI_BTN), "tc_next_btn");
 		
 		// only animate the arrow if the dialogue is done, or if the dialogue
 		// can be skipped
@@ -1364,8 +1360,8 @@ void Game::renderMenuView() {
 	// draw testimony movement buttons
 	else if (flagged(STATE_CROSS_EXAMINE_BTNS)) {
 		// first, draw the two testimony movement buttons
-		Renderer::drawImage(Point(16, 261), "tc_x_examine_btn");
-		Renderer::drawImage(Point(134, 261), "tc_x_examine_btn");
+		Renderer::drawImage(Point(16, 261, Z_GUI_BTN), "tc_x_examine_btn");
+		Renderer::drawImage(Point(134, 261, Z_GUI_BTN), "tc_x_examine_btn");
 		
 		// don't draw the left arrow if there is not testimony piece
 		// that precedes this one
@@ -1380,46 +1376,46 @@ void Game::renderMenuView() {
 	
 	// top everything off with scanlines, except when presenting an image contradiction
 	if (!flagged(STATE_CHECK_EVIDENCE_IMAGE) || (flagged(STATE_CHECK_EVIDENCE_IMAGE) && m_State.contradictionImg==STR_NULL))
-		Renderer::drawImage(Point(0, 197), "scanlines_overlay");
+		Renderer::drawImage(Point(0, 197, Z_SCANLINES), "scanlines_overlay");
 	
 	// draw the top and lower border bar
-	Renderer::drawImage(Point(0, 197), "tc_top_bar"+append);
-	Renderer::drawImage(Point(0, 389-(Textures::queryTexture("tc_lower_bar"+append)->h)), "tc_lower_bar"+append);
+	Renderer::drawImage(Point(0, 197, Z_BARS), "tc_top_bar"+append);
+	Renderer::drawImage(Point(0, 389-(Textures::queryTexture("tc_lower_bar"+append).h), Z_BARS), "tc_lower_bar"+append);
 	
 	// any elements other than the top/bottom bars are only drawn if there is no gui fade out in effect
 	if (m_State.fadeOut!="gui") {
 		// draw titles bars, if needed
 		if (flagged(STATE_EVIDENCE_PAGE) || flagged(STATE_EVIDENCE_INFO_PAGE))
-			Renderer::drawImage(Point(0, 206), "tc_evidence_bar");
+			Renderer::drawImage(Point(0, 206, Z_SCREEN_BARS), "tc_evidence_bar");
 		if (flagged(STATE_PROFILES_PAGE) || flagged(STATE_PROFILE_INFO_PAGE))
-			Renderer::drawImage(Point(0, 206), "tc_profiles_bar");
+			Renderer::drawImage(Point(0, 206, Z_SCREEN_BARS), "tc_profiles_bar");
 		
 		// draw activated buttons
 		if (flagged(STATE_COURT_REC_BTN))
-			Renderer::drawImage(Point(176, 197), "tc_court_rec_btn"+append);
+			Renderer::drawImage(Point(176, 197, Z_IFC_BTN), "tc_court_rec_btn"+append);
 		else if (flagged(STATE_PRESENT_BTN))
-			Renderer::drawImage(Point(176, 197), "tc_present_item_btn");
+			Renderer::drawImage(Point(176, 197, Z_IFC_BTN), "tc_present_item_btn");
 		else if (flagged(STATE_EVIDENCE_BTN))
-			Renderer::drawImage(Point(177, 197), "tc_evidence_btn");
+			Renderer::drawImage(Point(177, 197, Z_IFC_BTN), "tc_evidence_btn");
 		else if (flagged(STATE_PROFILES_BTN))
-			Renderer::drawImage(Point(177, 197), "tc_profiles_btn");
+			Renderer::drawImage(Point(177, 197, Z_IFC_BTN), "tc_profiles_btn");
 		
 		if (flagged(STATE_PRESS_BTN))
-			Renderer::drawImage(Point(0, 197), "tc_press_btn");
+			Renderer::drawImage(Point(0, 197, Z_IFC_BTN), "tc_press_btn");
 		
 		// check evidence or confirm button, if needed
 		if (flagged(STATE_CHECK_BTN))
-			Renderer::drawImage(Point(177, 359), "tc_check_btn");
+			Renderer::drawImage(Point(177, 359, Z_IFC_BTN), "tc_check_btn");
 		else if (flagged(STATE_CONFIRM_BTN))
-			Renderer::drawImage(Point(177, 359), "tc_confirm_btn");
+			Renderer::drawImage(Point(177, 359, Z_IFC_BTN), "tc_confirm_btn");
 	
 		// draw the present evidence button, centered on the upper portion of the lower screen
 		if (flagged(STATE_PRESENT_TOP_BTN))
-			Renderer::drawImage(Point(89, 197), "tc_present_top_btn");
+			Renderer::drawImage(Point(89, 197, Z_IFC_BTN), "tc_present_top_btn");
 		
 		// draw examine button if needed
 		if (flagged(STATE_EXAMINE) && canExamineRegion())
-			Renderer::drawImage(Point(256-79, 369), "tc_examine_btn_thin");
+			Renderer::drawImage(Point(256-79, 369, Z_IFC_BTN), "tc_examine_btn_thin");
 		
 		// draw the back button
 		if (flagged(STATE_BACK_BTN)) {
@@ -1429,7 +1425,7 @@ void Game::renderMenuView() {
 				y+=10;
 			
 			// draw the button
-			Renderer::drawImage(Point(0, y), "tc_back_btn"+append);
+			Renderer::drawImage(Point(0, y, Z_IFC_BTN), "tc_back_btn"+append);
 		}
 	}
 }
@@ -1543,7 +1539,7 @@ bool Game::renderSpecialEffects() {
 	else if (m_State.gavel!="none") {
 		// animate the gavel
 		Sprite *spr=m_Case->getCharacter("gavel")->getSprite();
-		spr->animate(0, 0);
+		spr->animate(Point(0, 0));
 		
 		// if we're done, reset the special effect
 		if (spr->done())
@@ -1588,6 +1584,8 @@ bool Game::renderSpecialEffects() {
 		// get a new panorama
 		SDL_Surface *panorama=Renderer::generateCourtPanorama(m_Case, pStand->character, dStand->character, wStand->character);
 		
+		// FIXME
+		/*
 		// animate the camera
 		if (m_UI->moveCourtCamera("an_court_camera", Textures::queryTexture("court_panorama_filled"), start, end)) {
 			// flag that we're done
@@ -1617,6 +1615,7 @@ bool Game::renderSpecialEffects() {
 		
 		else
 			return false;
+		*/
 	}
 	
 	// render flash now, if requested
@@ -1658,6 +1657,8 @@ bool Game::renderSpecialEffects() {
 	
 	// render cross examination sprite sequence
 	else if (m_State.crossExamineSequence!="none") {
+		// FIXME
+		/*
 		Audio::haltMusic();
 		
 		// make sure lawyer images exist
@@ -1686,14 +1687,19 @@ bool Game::renderSpecialEffects() {
 			return true;
 		}
 		
+		
 		return false;
+		*/
 	}
 	
 	// render exclamations
 	else if (m_State.exclamation!="none") {
-		bool ret=m_UI->exclamation(m_State.exclamation, NULL);
+		// format is: animation,sound_effect
+		StringVector p=Utils::explodeString(',', m_State.exclamation);
+		
+		bool ret=m_UI->exclamation(p[0], Audio::queryAudio(p[1]), NULL);
 		if (ret) {
-			m_State.courtCamera="witness_stand,defense_stand";
+			//m_State.courtCamera="witness_stand,defense_stand";
 			m_State.exclamation="none";
 		}
 	}
@@ -1712,20 +1718,20 @@ void Game::renderTextBox() {
 		shift=-24;
 	
 	// draw the actual text box body
-	Renderer::drawImage(Point(0, 128+shift), "tc_text_box");
+	Renderer::drawImage(Point(0, 128+shift, Z_TEXT_BOX), "tc_text_box");
 	
 	// character speaking (ignore speaker during "add evidence" animations)
 	if (speaker!="none" && speaker!="" && m_Case->getCharacter(speaker) && m_State.addEvidence=="none") {
 		// get the tag
-		SDL_Surface *tag=m_Case->getCharacter(speaker)->getTextBoxTag();
+		Textures::Texture tex=Textures::queryTexture(m_Case->getCharacter(speaker)->getTextBoxTag());
 		
 		// and draw it
-		Renderer::drawImage(Point(0, 118+shift), tag);
+		Renderer::drawImage(Point(0, 118+shift, Z_TEXT_BOX_TAG), tex);
 	}
 	
 	// narration or no one speaking
 	else
-		Renderer::drawImage(Point(0, 128+shift), Textures::queryTexture("tc_text_box_border"));
+		Renderer::drawImage(Point(0, 128+shift, Z_TEXT_BOX_TAG), Textures::queryTexture("tc_text_box_border"));
 	
 	// see if the two speakers vary
 	if (m_Parser->getSpeaker()!=speaker)
@@ -1762,7 +1768,7 @@ void Game::renderControls(int flags) {
 	int sy1=y, sy2=y+14;
 	
 	if ((flags & CONTROLS_EXAMINE) || (flags & CONTROLS_ALL)) {
-		Renderer::drawImage(Point(8, y), "tc_examine_btn");
+		Renderer::drawImage(Point(8, y, Z_GUI_BTN), "tc_examine_btn");
 		
 		// set high light coordinates if this is selected
 		if (m_State.selectedControl==0) {
@@ -1774,7 +1780,7 @@ void Game::renderControls(int flags) {
 	}
 	
 	if ((flags & CONTROLS_MOVE) || (flags & CONTROLS_ALL)) {
-		Renderer::drawImage(Point(134, y), "tc_move_btn");
+		Renderer::drawImage(Point(134, y, Z_GUI_BTN), "tc_move_btn");
 		
 		// set high light coordinates if this is selected
 		if (m_State.selectedControl==1) {
@@ -1847,8 +1853,8 @@ void Game::renderCourtroomOverview() {
 	Renderer::drawImage(Point(121, 68), "overview_judge");
 	
 	// draw jury
-	m_Case->getCharacter("jury_left")->getSprite()->animate(0, 59);
-	m_Case->getCharacter("jury_right")->getSprite()->animate(215, 59);
+	m_Case->getCharacter("jury_left")->getSprite()->animate(Point(0, 59));
+	m_Case->getCharacter("jury_right")->getSprite()->animate(Point(215, 59));
 }
 
 // render the attorney's stand
@@ -2071,7 +2077,8 @@ void Game::onTopLeftButtonClicked() {
 			m_State.queuedBlock=pBlock;
 			
 			// and schedule said animation
-			m_State.exclamation="an_hold_it";
+			// TODO: sound effects for exclamations
+			m_State.exclamation="an_hold_it,NULL";
 			m_State.curExaminationPaused=true;
 		}
 	}

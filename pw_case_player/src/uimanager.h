@@ -23,10 +23,13 @@
 #define UIMANAGER_H
 
 #include <iostream>
+#include <GL/gl.h>
 #include <map>
 #include "SDL.h"
 
+#include "audio.h"
 #include "common.h"
+#include "texture.h"
 
 class Case::Case;
 class Game;
@@ -89,8 +92,8 @@ struct _Animation {
 	/// Flag that enables drawing the second texture
 	bool texture2Active;
 	
-	/// A direct pointer to texture
-	SDL_Surface *surface;
+	/// The texture ID
+	GLuint textureID;
 	
 	/// Text for GUI elements
 	ustring txt;
@@ -432,17 +435,18 @@ class Manager {
 		
 		/** Perform an exclamation animation
 		  * \param id The ID of the animation
+		  * \param effect The sound effect to play in accordance, or NULL for no sound effect
 		  * \param source The character who is the source of this exclamation
 		  * \return <b>true</b> if the animation is done, <b>false</b> otherwise
 		*/
-		bool exclamation(const ustring &id, const Character *source);
+		bool exclamation(const ustring &id, const Audio::Sample *effect, const Character *source);
 		
 		/** Slide a background image
 		  * \param id The ID of the animation
-		  * \param bg The background image
+		  * \param bg The background texture ID
 		  * \return <b>true</b> if the animation is done, <b>false</b> otherwise
 		*/
-		bool slideBG(const ustring &id, SDL_Surface *bg);
+		bool slideBG(const ustring &id, const GLuint &bg);
 		
 		/** Perform a court camera movement
 		  * \param id The ID of the animation
@@ -465,7 +469,7 @@ class Manager {
 		  * \param rightLawyer Image of the character to appear in the lower image strip
 		  * \return <b>true</b> if the animation is done, <b>false</b> otherwise
 		*/
-		bool animateCrossExamineSequence(const ustring &id, SDL_Surface *leftLawyer, SDL_Surface *rightLawyer);
+		bool animateCrossExamineSequence(const ustring &id, const Textures::Texture &leftImg, const Textures::Texture &rightImg);
 		
 		/** Animate a synchronized bounce animation
 		  * \param id The ID of the animation

@@ -156,6 +156,14 @@ void Utils::alert(const ustring &text, const MessageType &type) {
 #endif
 }
 
+// calculate the nearest power of two
+int Utils::nearestPower2(int val) {
+	int power=1;
+	while(power<val)
+		power<<=1;
+	return power;
+}
+
 // convert a court camera script string to animation limits
 void Utils::scriptToLimits(const ustring &str, UI::Limit &start, UI::Limit &end) {
 	// first split the string
@@ -241,6 +249,21 @@ Point Utils::calculateShakePoint(int highestRadius) {
 	
 	// form a movement point
 	return Point(sx, sy);
+}
+
+// set color masks
+void Utils::setRGBAMasks(Uint32 &r, Uint32 &g, Uint32 &b, Uint32 &a) {
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+	r=0x000000FF;
+	g=0x0000FF00;
+	b=0x00FF0000;
+	a=0xFF000000;
+#else
+	r=0xFF000000;
+	g=0x00FF0000;
+	b=0x0000FF00;
+	a=0x000000FF;
+#endif
 }
 
 // get a random number in the provided range

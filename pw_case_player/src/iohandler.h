@@ -99,9 +99,9 @@ bool loadThemeXML(const ustring &path, Theme::ColorMap &map);
 
 /** Read image data from the file
   * \param f FILE handle with read pointer set to image
-  * \return A Textures::Texture object with data
+  * \return An allocated SDL_Surface on success, NULL otherwise
 */
-Textures::Texture readImage(FILE *f);
+SDL_Surface* readImage(FILE *f);
 
 /** Read a string from the file
   * \param f FILE handle with read pointer set to string

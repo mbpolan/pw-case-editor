@@ -20,6 +20,7 @@
 // renderer.cpp: implementations of Renderer namespace
 
 #include <cmath>
+#include <GL/gl.h>
 #include <sstream>
 #include "SDL_gfxPrimitives.h"
 
@@ -29,110 +30,80 @@
 #include "theme.h"
 #include "utilities.h"
 
-// draw a colored rectangle to the video surface
-void Renderer::drawRect(const Rect &rect, const Color &color) {
-	drawRect(SDL_GetVideoSurface(), rect, color);
-}
-
 // draw a colored rectangle
-void Renderer::drawRect(SDL_Surface *surface, const Rect &irect, const Color &color) {
-	SDL_Rect rect;
-	rect.x=irect.getPoint().x();
-	rect.y=irect.getPoint().y();
-	rect.w=irect.getWidth();
-	rect.h=irect.getHeight();
+void Renderer::drawRect(const Rect &rect, const Color &color) {
+	glDisable(GL_TEXTURE_2D);
 	
-	SDL_FillRect(surface, &rect, SDL_MapRGB(SDL_GetVideoSurface()->format, color.r(), color.g(), color.b()));
+	// save our current color and whatnot
+	glPushAttrib(GL_CURRENT_BIT | GL_COLOR_BUFFER_BIT);
+	
+	// we need to enable blending in this case
+	if (color.a()<255) {
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	}
+	
+	// translate according to z
+	glTranslatef(0.0f, 0.0f, rect.getPoint().z());
+	
+	// draw the rectangle with the specified color
+	glColor4ub(color.r(), color.g(), color.b(), color.a());
+	
+	Point p=rect.getPoint();
+	glRecti(p.x(), p.y(), p.x()+rect.getWidth(), p.y()+rect.getHeight());
+	
+	// return to previous z
+	glTranslatef(0.0f, 0.0f, -rect.getPoint().z());
+	
+	glPopAttrib();
+	
+	glEnable(GL_TEXTURE_2D);
 }
 
 // draw a full image at a point
 void Renderer::drawImage(const Point &p, const ustring &texId) {
 	// get the texture in question
-	SDL_Surface *tex=Textures::queryTexture(texId);
-	if (!tex) {
-		Utils::debugMessage("Renderer: texture '"+texId+"' not found in stack.");
-		return;
-	}
+	Textures::Texture tex=Textures::queryTexture(texId);
 	
 	// draw this image
 	drawImage(p, tex);
 }
 
 // draw a full image at a point
-void Renderer::drawImage(const Point &p, SDL_Surface *dest, const ustring &texId) {
-	// get the texture in question
-	SDL_Surface *tex=Textures::queryTexture(texId);
-	if (!tex) {
-		Utils::debugMessage("Renderer: texture '"+texId+"' not found in stack.");
-		return;
-	}
+void Renderer::drawImage(const Point &p, const GLuint &id) {
+	// perform a query based on the GL ID instead of string id
+	Textures::Texture tex=Textures::queryTexture(id);
 	
-	// draw this image
-	drawImage(p, dest, tex);
+	// draw the image
+	drawImage(p, tex);
 }
 
 // draw a full image at a point
-void Renderer::drawImage(const Point &p, SDL_Surface *texture) {
-	// get pointer to screen surface
-	SDL_Surface *screen=SDL_GetVideoSurface();
-	if (!screen)
-		return;
+void Renderer::drawImage(const Point &p, const Textures::Texture &tex) {
+	glEnable(GL_TEXTURE_2D);
 	
-	// prepare destination
-	SDL_Rect destRect;
-	destRect.x=p.x();
-	destRect.y=p.y();
+	glBindTexture(GL_TEXTURE_2D, tex.id);
 	
-	// blit the surfaces
-	SDL_BlitSurface(texture, NULL, screen, &destRect);
-}
-
-// draw a full image at a point onto another surface
-void Renderer::drawImage(const Point &p, SDL_Surface *dest, SDL_Surface *texture) {
-	SDL_Rect destRect={ p.x(), p.y() };
-	SDL_BlitSurface(texture, NULL, dest, &destRect);
-}
-
-// draw a part of an image onto another
-void Renderer::drawImage(const Rect &irect, SDL_Surface *src, SDL_Surface *dest) {
-	// define our region
-	SDL_Rect rect;
-	rect.x=irect.getPoint().x();
-	rect.y=irect.getPoint().y();
-	rect.w=irect.getWidth();
-	rect.h=irect.getHeight();
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
-	SDL_BlitSurface(src, &rect, dest, NULL);
+	// draw the textured quad
+	glBegin(GL_QUADS); {
+		glTexCoord2f(0, 0); glVertex3f(p.x(), p.y(), p.z());
+		glTexCoord2f(tex.u, 0); glVertex3f(p.x()+tex.w, p.y(), p.z());
+		glTexCoord2f(tex.u, tex.v); glVertex3f(p.x()+tex.w, p.y()+tex.h, p.z());
+		glTexCoord2f(0, tex.v); glVertex3f(p.x(), p.y()+tex.h, p.z());
+	}
+	glEnd();
 }
 
 // draw a textured quad
 void Renderer::drawImage(const Rect &rect, const Point &p2, const ustring &texId) {
-	// get pointer to screen surface
-	SDL_Surface *screen=SDL_GetVideoSurface();
-	if (!screen)
-		return;
-	
 	// get the texture in question
-	SDL_Surface *tex=Textures::queryTexture(texId);
-	if (!tex) {
-		Utils::debugMessage("Renderer: texture '"+texId+"' not found in stack.");
-		return;
-	}
+	Textures::Texture tex=Textures::queryTexture(texId);
 	
-	// rectangle blitting data
-	SDL_Rect srcRect, destRect;
-	
-	// fill in data
-	srcRect.x=rect.getPoint().x();
-	srcRect.y=rect.getPoint().y();
-	srcRect.w=rect.getWidth();
-	srcRect.h=rect.getHeight();
-	
-	destRect.x=p2.x();
-	destRect.y=p2.y();
-	
-	// blit the image
-	SDL_BlitSurface(tex, &srcRect, screen, &destRect);
+	// FIXME
+	std::cout << "TODO\n";
 }
 
 // draw a button with text
@@ -149,12 +120,22 @@ void Renderer::drawButton(const Point &p1, int w, const ustring &text) {
 	
 	// first, draw the border at the left
 	Renderer::drawImage(p1, "tc_choice_btn_left");
-	Renderer::drawImage(Point(p1.x()+w-2, p1.y()), "tc_choice_btn_right");
+	Renderer::drawImage(Point(p1.x()+w-2, p1.y(), p1.z()), "tc_choice_btn_right");
 	
 	// draw only as much of the button body as we need
-	SDL_Rect srect={ 0, 0, w-4, 26 };
-	SDL_Rect drect={ p1.x()+2, p1.y() };
-	SDL_BlitSurface(Textures::queryTexture("tc_choice_btn_body"), &srect, SDL_GetVideoSurface(), &drect);
+	Textures::Texture tex=Textures::queryTexture("tc_choice_btn_body");
+	
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, tex.id);
+	glBegin(GL_QUADS); {
+		glTexCoord2f(0, 0); glVertex3f(p1.x()+2, p1.y(), p1.z());
+		glTexCoord2f(1, 0); glVertex3f(p1.x()+w, p1.y(), p1.z());
+		glTexCoord2f(1, 1); glVertex3f(p1.x()+w, p1.y()+tex.h, p1.z());
+		glTexCoord2f(0, 1); glVertex3f(p1.x()+2, p1.y()+tex.h, p1.z());
+	}
+	glEnd();
+	
+	glDisable(GL_TEXTURE_2D);
 	
 	// now draw the text
 	int centerX=(p1.x()+(w/2)-(fw/2));
@@ -165,6 +146,7 @@ void Renderer::drawButton(const Point &p1, int w, const ustring &text) {
 // generate a correctly rendered court panorama based on shown sprites
 SDL_Surface* Renderer::generateCourtPanorama(Case::Case *pcase, const ustring &prosecutor, 
 					     const ustring &defense, const ustring &witness) {
+	/*
 	// get the base panorama
 	SDL_Surface *bg=Textures::queryTexture("court_panorama");
 	if (!bg)
@@ -220,6 +202,7 @@ SDL_Surface* Renderer::generateCourtPanorama(Case::Case *pcase, const ustring &p
 	Renderer::drawImage(Rect(Point(472, 0), wb->w, wb->h), wb, panorama);
 	
 	return panorama;
+	*/
 }
 
 // draw the initial game screen
@@ -228,9 +211,8 @@ void Renderer::drawInitialScreen() {
 	Renderer::drawImage(Point(0, 197), "court_overview_g");
 	
 	// draw two buttons, one for New Game, and one for Continue
-	//Renderer::drawButton(Point(53, 240), 150, "New Game");
 	UI::Manager::instance()->animateGUIButton("an_new_game_btn");
-	Renderer::drawButton(Point(53, 280), 150, "Continue");
+	Renderer::drawButton(Point(53, 280, 2), 150, "Continue");
 	
 	// draw scanlines to top it off
 	Renderer::drawImage(Point(0, 197), "scanlines_overlay");
@@ -238,43 +220,38 @@ void Renderer::drawInitialScreen() {
 
 // draw the evidence page
 void Renderer::drawEvidencePage(const std::vector<Case::Evidence*> &evidence, int page, int selected) {
-	// get pointer to screen surface
-	SDL_Surface *screen=SDL_GetVideoSurface();
-	if (!screen)
-		return;
-	
 	// draw the background
-	drawRect(screen, Rect(Point(24, 233), 208, 124), Theme::lookup("court_record_bg"));
+	drawRect(Rect(Point(24, 233, 1.0f), 208, 124), Theme::lookup("court_record_bg"));
 	
 	// draw top info bar borders
-	drawRect(screen, Rect(Point(24, 233), 208, 20), Theme::lookup("court_record_info_bar_top"));
-	drawRect(screen, Rect(Point(25, 234), 207, 19), Theme::lookup("court_record_info_bar_bottom"));
+	drawRect(Rect(Point(24, 233, 1.1f), 208, 20), Theme::lookup("court_record_info_bar_top"));
+	drawRect(Rect(Point(25, 234, 1.2f), 207, 19), Theme::lookup("court_record_info_bar_bottom"));
 	
 	// draw the top info bar
-	drawRect(screen, Rect(Point(26, 235), 204, 16), Theme::lookup("info_bar_bg"));
+	drawRect(Rect(Point(26, 235, 1.3f), 204, 16), Theme::lookup("info_bar_bg"));
 	
 	// draw buttons
-	drawImage(Point(1, 253), "tc_large_btn_left");
-	drawImage(Point(256-16-1, 253), "tc_large_btn_right");
+	drawImage(Point(1, 253, 2.0f), "tc_large_btn_left");
+	drawImage(Point(256-16-1, 253, 2.0f), "tc_large_btn_right");
 	
 	// draw arrows on buttons if there is more than one page
 	if (evidence.size()>8) {
-		drawImage(Point(4, 297), "tc_button_arrow_left");
-		drawImage(Point(256-12, 297), "tc_button_arrow_right");
+		drawImage(Point(4, 297, 2.1f), "tc_button_arrow_left");
+		drawImage(Point(256-12, 297, 2.1f), "tc_button_arrow_right");
 	}
 	
 	// get the starting index for the vector
 	int index=8*page;
 	
 	// draw 1st row of evidence slots
-	int x=24+12;
+	int x=36;
 	int y=259;
 	for (int i=0; i<8; i++) {
 		// draw the border
-		drawRect(screen, Rect(Point(x, y), 39, 39), Theme::lookup("court_record_item_border"));
+		drawRect(Rect(Point(x, y, 1.4f), 39, 39), Theme::lookup("court_record_item_border"));
 		
 		// draw filled center
-		drawRect(screen, Rect(Point(x+2, y+2), 35, 35), Theme::lookup("court_record_bg"));
+		drawRect(Rect(Point(x+2, y+2, 1.5f), 35, 35), Theme::lookup("court_record_bg"));
 		
 		// see if there is a piece of evidence at this slot
 		if (index<=evidence.size()-1 && !evidence.empty()) {
@@ -293,17 +270,14 @@ void Renderer::drawEvidencePage(const std::vector<Case::Evidence*> &evidence, in
 				int centerx=(int) floor((204-width)/2);
 				
 				// draw the string at this position
-				Fonts::drawString(Point(24+centerx, 238), name, Fonts::FONT_INFO_PAGE, Fonts::COLOR_YELLOW);
+				Fonts::drawString(Point(24+centerx, 238, Z_TEXT), name, Fonts::FONT_INFO_PAGE, Fonts::COLOR_YELLOW);
 				
 				// draw selection box
-				drawRect(screen, Rect(Point(x-1, y-1), 42, 42), Theme::lookup("selection_box"));
+				drawRect(Rect(Point(x-1, y-1, 1.6f), 42, 42), Theme::lookup("selection_box"));
 			}
 			
 			// draw evidence thumbnail over the empty slot borders
-			SDL_Rect drect;
-			drect.x=x;
-			drect.y=y;
-			SDL_BlitSurface(e->thumb, NULL, screen, &drect);
+			drawImage(Point(x, y, 1.7f), Textures::queryTexture(e->thumb));
 			
 			index++;
 		}
@@ -321,49 +295,39 @@ void Renderer::drawEvidencePage(const std::vector<Case::Evidence*> &evidence, in
 
 // draw evidence information page
 void Renderer::drawEvidenceInfoPage(const Case::Evidence *e) {
-	// get pointer to screen surface
-	SDL_Surface *screen=SDL_GetVideoSurface();
-	if (!screen)
-		return;
-	
 	// draw the info strip
-	Point p(0, 206);
-	Point n=drawInfoStrip(p, e->texture, e->name, e->caption, e->description, true);
+	Point p(0, 206, 1.0f);
+	Point n=drawInfoStrip(p, Textures::queryTexture(e->texture), e->name, e->caption, e->description, true);
 	
 	// draw button on left
-	drawImage(Point(0, n.y()+4), "tc_small_btn_left");
+	drawImage(Point(0, n.y()+4, 1.2f), "tc_small_btn_left");
 	UI::Manager::instance()->drawAnimation("an_info_page_button_left");
 	
 	// draw button with arrow on right
-	drawImage(Point(n.x()+3, n.y()+4), "tc_small_btn_right");
+	drawImage(Point(n.x()+3, n.y()+4, 1.2f), "tc_small_btn_right");
 	UI::Manager::instance()->drawAnimation("an_info_page_button_right");
 }
 
 // draw the profiles page
 void Renderer::drawProfilesPage(const std::vector<Character*> &uchars, int page, int selected) {
-	// get pointer to screen surface
-	SDL_Surface *screen=SDL_GetVideoSurface();
-	if (!screen)
-		return;
-	
 	// draw the background
-	drawRect(screen, Rect(Point(24, 233), 208, 124), Theme::lookup("court_record_bg"));
+	drawRect(Rect(Point(24, 233, 1.0f), 208, 124), Theme::lookup("court_record_bg"));
 	
 	// draw top info bar borders
-	drawRect(screen, Rect(Point(24, 233), 208, 20), Theme::lookup("court_record_info_bar_top"));
-	drawRect(screen, Rect(Point(25, 234), 207, 19), Theme::lookup("court_record_info_bar_bottom"));
+	drawRect(Rect(Point(24, 233, 1.1f), 208, 20), Theme::lookup("court_record_info_bar_top"));
+	drawRect(Rect(Point(25, 234, 1.2f), 207, 19), Theme::lookup("court_record_info_bar_bottom"));
 	
 	// draw the top info bar
-	drawRect(screen, Rect(Point(26, 235), 204, 16), Theme::lookup("info_bar_bg"));
+	drawRect(Rect(Point(26, 235, 1.3f), 204, 16), Theme::lookup("info_bar_bg"));
 	
 	// draw buttons
-	drawImage(Point(1, 253), "tc_large_btn_left");
-	drawImage(Point(239, 253), "tc_large_btn_right");
+	drawImage(Point(1, 253, 2.0f), "tc_large_btn_left");
+	drawImage(Point(239, 253, 2.0f), "tc_large_btn_right");
 	
 	// draw arrows on buttons if there is more than one page
 	if (uchars.size()>8) {
-		drawImage(Point(4, 297), "tc_button_arrow_left");
-		drawImage(Point(244, 297), "tc_button_arrow_right");
+		drawImage(Point(4, 297, 2.1f), "tc_button_arrow_left");
+		drawImage(Point(244, 297, 2.1f), "tc_button_arrow_right");
 	}
 	
 	// get the starting index for the vector
@@ -374,10 +338,10 @@ void Renderer::drawProfilesPage(const std::vector<Character*> &uchars, int page,
 	int y=259;
 	for (int i=0; i<8; i++) {
 		// draw the border
-		drawRect(screen, Rect(Point(x, y), 39, 39), Theme::lookup("court_record_item_border"));
+		drawRect(Rect(Point(x, y, 1.4f), 39, 39), Theme::lookup("court_record_item_border"));
 		
 		// draw filled center
-		drawRect(screen, Rect(Point(x+2, y+2), 35, 35), Theme::lookup("court_record_bg"));
+		drawRect(Rect(Point(x+2, y+2, 1.5f), 35, 35), Theme::lookup("court_record_bg"));
 		
 		// see if there is a profile at this slot
 		if (index<=uchars.size()-1 && !uchars.empty()) {
@@ -396,17 +360,14 @@ void Renderer::drawProfilesPage(const std::vector<Character*> &uchars, int page,
 				int centerx=(int) floor((204-width)/2);
 				
 				// draw the string at this position
-				Fonts::drawString(Point(24+centerx, 238), name, Fonts::FONT_INFO_PAGE, Fonts::COLOR_YELLOW);
+				Fonts::drawString(Point(24+centerx, 238, Z_TEXT), name, Fonts::FONT_INFO_PAGE, Fonts::COLOR_YELLOW);
 				
 				// draw selection box
-				drawRect(screen, Rect(Point(x-1, y-1), 42, 42), Theme::lookup("selection_box"));
+				drawRect(Rect(Point(x-1, y-1, 1.6f), 42, 42), Theme::lookup("selection_box"));
 			}
 			
 			// draw profile thumbnail over the empty slot borders
-			SDL_Rect drect;
-			drect.x=x;
-			drect.y=y;
-			SDL_BlitSurface(c->getHeadshotThumb(), NULL, screen, &drect);
+			Renderer::drawImage(Point(x, y, 1.7f), Textures::queryTexture(c->getHeadshotThumb()));
 			
 			index++;
 		}
@@ -424,107 +385,90 @@ void Renderer::drawProfilesPage(const std::vector<Character*> &uchars, int page,
 
 // draw the profile info page
 void Renderer::drawProfileInfoPage(const Character *c) {
-	// get pointer to screen surface
-	SDL_Surface *screen=SDL_GetVideoSurface();
-	if (!screen)
-		return;
-	
 	// draw the info strip
-	Point p(0, 206);
-	Point n=drawInfoStrip(p, const_cast<Character*> (c)->getHeadshot(), c->getName(), c->getCaption(), c->getDescription(), true);
+	Point p(0, 206, 1.0f);
+	Point n=drawInfoStrip(p, Textures::queryTexture(const_cast<Character*> (c)->getHeadshot()), 
+			      c->getName(), c->getCaption(), c->getDescription(), true);
 	
 	// draw button on left
-	drawImage(Point(0, n.y()+4), "tc_small_btn_left");
+	drawImage(Point(0, n.y()+4, 1.2f), "tc_small_btn_left");
 	UI::Manager::instance()->drawAnimation("an_info_page_button_left");
 	
 	// draw button with arrow on right
-	drawImage(Point(n.x()+3, n.y()+4), "tc_small_btn_right");
+	drawImage(Point(n.x()+3, n.y()+4, 1.2f), "tc_small_btn_right");
 	UI::Manager::instance()->drawAnimation("an_info_page_button_right");
 }
 
 // draw the strip containing evidence or profile
-Point Renderer::drawInfoStrip(const Point &p, SDL_Surface *image, const ustring &name,
+Point Renderer::drawInfoStrip(const Point &p, const Textures::Texture &image, const ustring &name,
 			      const ustring &caption, const ustring &desc, bool description) {
 	int x=p.x();
 	int y=p.y();
 	
 	// draw info strip background
-	drawRect(Rect(Point(x+0, y+25), 256, 77), Theme::lookup("court_record_bg"));
+	drawRect(Rect(Point(x+0, y+25, 1.0f), 256, 77), Theme::lookup("court_record_bg"));
 	
 	// if descriptions are to be drawn, lengthen the background
 	if (description)
-		drawRect(Rect(Point(x+8, y+101), 240, 52), Theme::lookup("court_record_bg"));
+		drawRect(Rect(Point(x+8, y+101, 1.1f), 240, 52), Theme::lookup("court_record_bg"));
 	
 	// draw upper border
-	drawRect(Rect(Point(x+0, y+25), 256, 6), Theme::lookup("info_box_border"));
+	drawRect(Rect(Point(x+0, y+25, 1.2f), 256, 6), Theme::lookup("info_box_border"));
 	y+=31;
 	
 	// draw the item
-	drawImage(Point(x+19, y), image);
+	drawImage(Point(x+19, y, 1.3f), image);
 	x+=92;
 	
 	// draw info box's border
-	drawRect(Rect(Point(x, y), 148, 70), Theme::lookup("info_box_outline"));
+	drawRect(Rect(Point(x, y, 1.4f), 148, 70), Theme::lookup("info_box_outline"));
 	
 	// draw info box title bar
-	drawRect(Rect(Point(x+2, y+2), 144, 15), Theme::lookup("info_bar_bg"));
+	drawRect(Rect(Point(x+2, y+2, 1.5f), 144, 15), Theme::lookup("info_bar_bg"));
 	
 	// calculate center position for name
 	int centerx=(x+72)-(Fonts::getWidth(name, Fonts::FONT_INFO_PAGE)/2);
 	
 	// draw name in title bar
-	Fonts::drawString(Point(centerx, y+4), name, Fonts::FONT_INFO_PAGE, Fonts::COLOR_YELLOW);
+	Fonts::drawString(Point(centerx, y+4, 1.6f), name, Fonts::FONT_INFO_PAGE, Fonts::COLOR_YELLOW);
 	
 	// draw info box body
-	drawRect(Rect(Point(x+2, y+17), 144, 51), Theme::lookup("info_box_bg"));
+	drawRect(Rect(Point(x+2, y+17, 1.7f), 144, 51), Theme::lookup("info_box_bg"));
 	
 	// draw caption in this area
-	Fonts::drawStringBlended(Point(x+5, y+18), caption, Fonts::FONT_INFO_PAGE, Fonts::COLOR_BLACK);
+	Fonts::drawStringBlended(Point(x+5, y+18, 1.8f), caption, Fonts::FONT_INFO_PAGE, Fonts::COLOR_BLACK);
 	
 	// moving right along...
 	x+=148;
 	
 	// draw lower border
-	drawRect(Rect(Point(p.x(), y+70), 256, 6), Theme::lookup("info_box_border"));
+	drawRect(Rect(Point(p.x(), y+70, 1.9f), 256, 6), Theme::lookup("info_box_border"));
 	
 	// draw description in bottom area
 	if (description)
-		Fonts::drawString(Point(p.x()+16, y+81), desc, Fonts::FONT_INFO_PAGE, Fonts::COLOR_WHITE);
+		Fonts::drawString(Point(p.x()+16, y+81, 2.0f), desc, Fonts::FONT_INFO_PAGE, Fonts::COLOR_WHITE);
 	
 	// return the modified coordinates
-	return Point(x, y);
+	return Point(x, y, 2.0f);
 }
 
 // draw the examination scene
-void Renderer::drawExamineScene(SDL_Surface *bg, const Point &cursor, bool slideBG) {
-	// get pointer to screen surface
-	SDL_Surface *screen=SDL_GetVideoSurface();
-	if (!screen)
-		return;
+void Renderer::drawExamineScene(const Textures::Texture &bg, const Point &cursor, bool slideBG) {
+	// slide the background
+	UI::Manager::instance()->slideBG("an_bg_slide", bg.id);
 	
-	if (bg)
-		UI::Manager::instance()->slideBG("an_bg_slide", bg);
-	
-	// get opaque screen and make it completely transparent
-	SDL_Surface *overlay=Textures::queryTexture("transparent");
-	SDL_FillRect(overlay, NULL, 0);
-	
+	/*
 	// draw crosshairs
 	vlineRGBA(overlay, cursor.x(), 0, 192, 0, 0, 255, 200);
 	hlineRGBA(overlay, 0, 256, cursor.y(), 0, 0, 255, 200);
 	
 	// draw center rectangle
 	rectangleRGBA(overlay, cursor.x()-6, cursor.y()-6, cursor.x()+6, cursor.y()+6, 0, 0, 255, 200);
-	
-	// draw overlay
-	Renderer::drawImage(Point(0, 197), overlay);
+	*/
 }
 
 // draw the movement scene
 void Renderer::drawMoveScene(const std::vector<ustring> &locations, LocationMap lmap, int selected) {
-	// get pointer to screen surface
-	SDL_Surface *screen=SDL_GetVideoSurface();
-	
 	// go over locations
 	for (int i=0; i<locations.size(); i++) {
 		Case::Location location=lmap[locations[i]];
@@ -546,11 +490,6 @@ void Renderer::drawMoveScene(const std::vector<ustring> &locations, LocationMap 
 
 // draw talk scene
 void Renderer::drawTalkScene(const std::vector<StringPair> &options, int selected, bool centered) {
-	// get pointer to screen surface
-	SDL_Surface *screen=SDL_GetVideoSurface();
-	if (!screen)
-		return;
-	
 	// iterate over options, and draw each one
 	for (int i=0; i<options.size(); i++) {
 		std::stringstream ss;

@@ -72,6 +72,12 @@ void removeDir(const ustring &path);
 */
 void alert(const ustring &text, const MessageType &type=MESSAGE_CRITICAL);
 
+/** Calculate the nearest power of two of a given number
+  * \param val The number
+  * \return The nearest power of two
+*/
+int nearestPower2(int val);
+
 /** Convert a court camera script string to animation limits.
   * The provided string should be in the form of: "location1,location2" or the
   * returned limits won't be correct
@@ -105,6 +111,14 @@ bool pointInRect(const Point &p, const Rect &rect);
   * \return The computed point
 */
 Point calculateShakePoint(int highestRadius);
+
+/** Set the RGBA masks based on system endianess
+  * \param r The red color mask
+  * \param g The green color mask
+  * \param b The blue color mask
+  * \param a The alpha color mask
+*/
+void setRGBAMasks(Uint32 &r, Uint32 &g, Uint32 &b, Uint32 &a);
 
 /** Get a random number in the provided range
   * \param min The lower value in the range

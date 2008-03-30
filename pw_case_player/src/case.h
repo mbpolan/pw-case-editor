@@ -22,6 +22,7 @@
 #ifndef CASE_H
 #define CASE_H
 
+#include <GL/gl.h>
 #include <map>
 #include <vector>
 #include "SDL.h"
@@ -71,7 +72,7 @@ struct _Background {
 	BackgroundType type;
 	
 	/// The actual background image
-	SDL_Surface *texture;
+	GLuint texture;
 };
 typedef struct _Background Background;
 
@@ -93,10 +94,10 @@ struct _Evidence {
 	ustring checkID;
 	
 	/// The actual image of the evidence
-	SDL_Surface *texture;
+	GLuint texture;
 	
 	/// Scaled image of the evidence
-	SDL_Surface *thumb;
+	GLuint thumb;
 };
 typedef struct _Evidence Evidence;
 
@@ -131,7 +132,7 @@ struct _Location {
 	ustring state;
 	
 	/// Scaled background image
-	SDL_Surface *bgScaled;
+	GLuint bgScaled;
 	
 	/// Vector of examinable hotspots
 	std::vector<Hotspot> hotspots;
@@ -154,7 +155,7 @@ struct _Image {
 	ustring id;
 	
 	/// The image data
-	SDL_Surface *texture;
+	GLuint texture;
 };
 typedef struct _Image Image;
 

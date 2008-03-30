@@ -28,6 +28,7 @@
 #include <map>
 
 #include "case.h"
+#include "texture.h"
 
 /// Namespace for all font and string drawing related API
 namespace Fonts {
@@ -71,25 +72,29 @@ extern const Color COLOR_YELLOW;
 /// Quality of font glyph rendering
 enum Quality { QUALITY_SOLID=0, QUALITY_BLEND };
 
+struct _Font {
+	TTF_Font *font;
+	std::map<uchar, Textures::Texture> glyphs;
+};
+typedef struct _Font Font;
+
 // ttf fonts
-typedef TTF_Font Font;
-extern std::map<int, Font*> g_Fonts;
+extern std::map<int, Font> g_Fonts;
 
 /** Load a TrueType font
   * \param path Path to font file
-  * \param size Size of the font
+  * \param size The size of the font
   * \return <b>true</b> if successful, <b>false</b> otherwise
 */
 bool loadFont(const ustring &path, int size);
 
-/** Draw a single glyph onto a new surface ready for further blitting
+/** Draw a single glyph onto a new texture
+  * \param font The font to use
   * \param ch The Unicode character to render
-  * \param size The size of the source font
-  * \param color The glyph color
   * \param quality The quality of the rendering
-  * \return A new SDL_Surface with the glyph drawn
+  * \return A new OpenGL texture ID
 */
-SDL_Surface* renderGlyph(Uint16 ch, int size, const Color &color, const Quality &quality);
+Textures::Texture renderGlyph(const Font *font, Uint16 ch, const Quality &quality);
 
 /** Calculates the y-coordinate for a glyph to render correctly on the baseline.
   * Since certain glyphs are bigger than others, this function computes the correct 

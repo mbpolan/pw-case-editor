@@ -23,10 +23,12 @@
 #define RENDERER_H
 
 #include <iostream>
+#include <GL/gl.h>
 #include "SDL.h"
 
 #include "case.h"
 #include "common.h"
+#include "texture.h"
 #include "uimanager.h"
 
 /// Namespace for all higher level drawing functions
@@ -38,45 +40,23 @@ namespace Renderer {
 */
 void drawRect(const Rect &rect, const Color &color);
 
-/** Draw a colored rectangle to another surface
-  * \param surface The surface to draw to
-  * \param rect The rectangle to draw
-  * \param color The color for the rectangle
-*/
-void drawRect(SDL_Surface *surface, const Rect &rect, const Color &color);
-
 /** Draw a full image from the stack at a point
   * \param p The point to draw the image at
   * \param texId The ID of the image to draw
 */
 void drawImage(const Point &p, const ustring &texId);
 
-/** Draw a full image at a point onto another surface
-  * \param p The point to draw the image at
-  * \param dest The destination surface to draw the image on
-  * \param texId The ID of the image to draw
+/** Draw a full image from the stack at a point
+  * \param p THe point to draw the image at
+  * \param id The GL ID of the texture
 */
-void drawImage(const Point &p, SDL_Surface *dest, const ustring &texId);
+void drawImage(const Point &p, const GLuint &id);
 
 /** Draw a full image at a point
   * \param p The point to draw the image at
-  * \param texture The image to draw
+  * \param texture The texture to draw
 */
-void drawImage(const Point &p, SDL_Surface *texture);
-
-/** Draw a full image at a point onto another surface
-  * \param p The point to draw the image at
-  * \param dest The destination surface to draw on
-  * \param texture The image to draw
-*/
-void drawImage(const Point &p, SDL_Surface *dest, SDL_Surface *texture);
-
-/** Draw a part of an image onto another surface
-  * \param rect The region of the image to draw
-  * \param src The source image
-  * \param dest The destination surface
-*/
-void drawImage(const Rect &rect, SDL_Surface *src, SDL_Surface *dest);
+void drawImage(const Point &p, const Textures::Texture &texture);
 
 /** Draw part of an image to a specific point onto the screen
   * \param rect The part of the region to draw
@@ -138,14 +118,14 @@ void drawProfileInfoPage(const Character *character);
   * \param description Whether or not to include the description
   * \return Point with the current, updated drawing coordinates relative to <i>p</i>
 */
-Point drawInfoStrip(const Point &p, SDL_Surface *image, const ustring &name, const ustring &caption, const ustring &desc, bool description);
+Point drawInfoStrip(const Point &p, const Textures::Texture &image, const ustring &name, const ustring &caption, const ustring &desc, bool description);
 
 /** Draw the examination scene
   * \param bg The background for the location
   * \param cursor Position of the examine cursor
   * \param slideBG Flag whether or not to show the animation of the background sliding down
 */
-void drawExamineScene(SDL_Surface *bg, const Point &cursor, bool slideBG=true);
+void drawExamineScene(const Textures::Texture &bg, const Point &cursor, bool slideBG=true);
 
 /** Draw the movement scene
   * \param locations Vector of location IDs to draw

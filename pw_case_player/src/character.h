@@ -22,6 +22,7 @@
 #ifndef CHARACTER_H
 #define CHARACTER_H
 
+#include <GL/gl.h>
 #include <iostream>
 #include "SDL.h"
 
@@ -184,15 +185,15 @@ class Character {
 		*/
 		bool hasTextBoxTag() const { return m_HasTextBoxTag; }
 		
-		/** Set the textbox tag image
-		  * \param surface The textbox tag image
+		/** Set the text box tag image
+		  * \param texture The textbox tag texture ID
 		*/
-		void setTextBoxTag(SDL_Surface *surface) { m_TextBoxTag=surface; }
+		void setTextBoxTag(const GLuint &texture) { m_TextBoxTag=texture; }
 		
 		/** Get the textbox tag image
 		  * \return The textbox tag image, if it exists
 		*/
-		SDL_Surface* getTextBoxTag() { return m_TextBoxTag; }
+		GLuint getTextBoxTag() { return m_TextBoxTag; }
 		
 		/** Set if this character has a headshot image
 		  * \param b <b>true</b> if yes, <b>false</b> otherwise
@@ -205,21 +206,22 @@ class Character {
 		bool hasHeadshot() const { return m_HasHeadshot; }
 		
 		/** Set the headshot (profile) image
-		  * \param pixbuf The image for the profile headshot
+		  * \param full The texture ID of the full image
+		  * \param thumb The texture ID of the thumbnail image
 		*/
-		void setHeadshot(SDL_Surface *full, SDL_Surface *thumb) { m_Headshot=full; m_HeadshotThumb=thumb; }
+		void setHeadshot(const GLuint &full, const GLuint &thumb) { m_Headshot=full; m_HeadshotThumb=thumb; }
 		
 		/** Get the headshot (profile) image
 		  * \return The headshot image, if it exists
 		*/
-		SDL_Surface* getHeadshot() { return m_Headshot; }
+		GLuint getHeadshot() { return m_Headshot; }
 		
 		/** Get the scaled headshot image.
 		  * The scaled image is used in certain animations, and it automatically generated when ever
 		  * the headshot image gets updated or changed
 		  * \return The scaled headshot iamge, if it exists
 		*/
-		SDL_Surface* getHeadshotThumb() { return m_HeadshotThumb; }
+		GLuint getHeadshotThumb() { return m_HeadshotThumb; }
 	
 	private:
 		/// The internal name
@@ -244,7 +246,7 @@ class Character {
 		bool m_HasTextBoxTag;
 		
 		/// The textbox tag image
-		SDL_Surface *m_TextBoxTag;
+		GLuint m_TextBoxTag;
 		
 		/// Sprite associated with this character
 		Sprite m_Sprite;
@@ -265,10 +267,10 @@ class Character {
 		bool m_HasHeadshot;
 		
 		/// The headshot image
-		SDL_Surface *m_Headshot;
+		GLuint m_Headshot;
 		
 		/// The scaled headshot image
-		SDL_Surface *m_HeadshotThumb;
+		GLuint m_HeadshotThumb;
 };
 
 #endif
