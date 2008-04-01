@@ -672,7 +672,7 @@ bool IO::loadStockFile(const ustring &path, Case::Case *pcase) {
 			
 			// create a surface
 			GLuint tex=Textures::createTexture(sId, ustring(".temp/")+rFile, alpha);
-			if (Textures::isNull(tex))
+			if (Textures::isNull(tex) && sId!="no_texture")
 				Utils::alert("Unable to create stock texture: "+sId);
 			
 			// add a background if needed

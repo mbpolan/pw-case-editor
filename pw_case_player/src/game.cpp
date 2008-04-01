@@ -1094,7 +1094,7 @@ void Game::renderTopView() {
 			
 			// if a bgFade effect is applied, draw over the background with indicated alpha
 			if (m_State.bgFade!=255)
-				Renderer::drawRect(Rect(Point(0, 0), 256, 192), Color(0, 0, 0, 255-m_State.bgFade));
+				Renderer::drawRect(Rect(Point(0, 0, 1.0f), 256, 192), Color(0, 0, 0, 255-m_State.bgFade));
 		}
 		
 		// sprite background otherwise

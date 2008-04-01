@@ -381,7 +381,7 @@ int Fonts::getWidth(const ustring &str, int size) {
 				width+=SIZE_WHITESPACE;
 			
 			else
-				width+=Fonts::getGlyphWidth(' ', size);
+				width+=getGlyphWidth(' ', size);
 		}
 		
 		else {

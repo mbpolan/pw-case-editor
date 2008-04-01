@@ -367,7 +367,7 @@ void UI::Manager::registerAddEvidenceSequence(const ustring &id) {
 	anim.lastDraw=0;
 	anim.velocity=1;
 	anim.speed=5;
-	anim.current=Point(256, 0);
+	anim.current=Point(256, 0, Z_ANIM_SPRITE);
 	
 	// add the animation
 	m_Animations[id]=anim;
@@ -583,8 +583,8 @@ UI::AnimStage UI::Manager::whiteFlash(const ustring &id) {
 			anim.velocity=-1;
 			anim.alpha=255;
 			
-			// in order to avoid flicker, draw the surface before returning the code
-			Renderer::drawRect(Rect(Point(0, 0), 256, 192), Color(255, 255, 255, anim.alpha));
+			// in order to avoid flicker, draw the rectangle
+			Renderer::drawRect(Rect(Point(0, 0, Z_FADE), 256, 192), Color(255, 255, 255, anim.alpha));
 			
 			return UI::STAGE_ANIM_MID;
 		}
@@ -603,7 +603,7 @@ UI::AnimStage UI::Manager::whiteFlash(const ustring &id) {
 	}
 	
 	// draw the opaque surface with alpha
-	Renderer::drawRect(Rect(Point(0, 0), 256, 192), Color(255, 255, 255, anim.alpha));
+	Renderer::drawRect(Rect(Point(0, 0, Z_FADE), 256, 192), Color(255, 255, 255, anim.alpha));
 	
 	return UI::STAGE_ANIM_INITIAL;
 }
@@ -634,7 +634,7 @@ bool UI::Manager::flash(const ustring &id) {
 	
 	// only draw the filled in rectangle if this animation isn't complete
 	if (anim.alpha!=0)
-		boxRGBA(SDL_GetVideoSurface(), 0, 0, 256, 192, 255, 255, 255, anim.alpha);
+		Renderer::drawRect(Rect(Point(0, 0, Z_FADE), 256, 192), Color(255, 255, 255, anim.alpha));
 	
 	return ret;
 }
