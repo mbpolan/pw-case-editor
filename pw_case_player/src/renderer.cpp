@@ -129,9 +129,9 @@ void Renderer::drawButton(const Point &p1, int w, const ustring &text) {
 	glBindTexture(GL_TEXTURE_2D, tex.id);
 	glBegin(GL_QUADS); {
 		glTexCoord2f(0, 0); glVertex3f(p1.x()+2, p1.y(), p1.z());
-		glTexCoord2f(1, 0); glVertex3f(p1.x()+w, p1.y(), p1.z());
-		glTexCoord2f(1, 1); glVertex3f(p1.x()+w, p1.y()+tex.h, p1.z());
-		glTexCoord2f(0, 1); glVertex3f(p1.x()+2, p1.y()+tex.h, p1.z());
+		glTexCoord2f(tex.u, 0); glVertex3f(p1.x()+w, p1.y(), p1.z());
+		glTexCoord2f(tex.u, tex.v); glVertex3f(p1.x()+w, p1.y()+tex.h, p1.z());
+		glTexCoord2f(0, tex.v); glVertex3f(p1.x()+2, p1.y()+tex.h, p1.z());
 	}
 	glEnd();
 	
