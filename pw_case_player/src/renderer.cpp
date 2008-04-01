@@ -38,7 +38,7 @@ void Renderer::drawRect(const Rect &rect, const Color &color) {
 	glPushAttrib(GL_CURRENT_BIT | GL_COLOR_BUFFER_BIT);
 	
 	// we need to enable blending in this case
-	if (color.a()<255) {
+	if (color.a()<(char) 255) {
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
@@ -457,14 +457,54 @@ void Renderer::drawExamineScene(const Textures::Texture &bg, const Point &cursor
 	// slide the background
 	UI::Manager::instance()->slideBG("an_bg_slide", bg.id);
 	
-	/*
-	// draw crosshairs
-	vlineRGBA(overlay, cursor.x(), 0, 192, 0, 0, 255, 200);
-	hlineRGBA(overlay, 0, 256, cursor.y(), 0, 0, 255, 200);
+	// save our current state attributes
+	glPushAttrib(GL_CURRENT_BIT | GL_ENABLE_BIT);
 	
-	// draw center rectangle
-	rectangleRGBA(overlay, cursor.x()-6, cursor.y()-6, cursor.x()+6, cursor.y()+6, 0, 0, 255, 200);
-	*/
+	// disable textures
+	glDisable(GL_TEXTURE_2D);
+	
+	// and set a pulsing blue color
+	static int red=255, green=255, v=-1;
+	
+	// red and green are our only variables
+	red+=v*3;
+	green+=v*3;
+	
+	// max of 255, min of 110
+	if (red>=255)
+		v=-1;
+	else if (red<=110)
+		v=1;
+	
+	glColor3ub(256-red, 256-green, 255);
+	
+	// y coordinate is not relative to lower screen, so cache the real point
+	Point p(cursor.x(), cursor.y()+197);
+	
+	// draw the two crosshair lines
+	glBegin(GL_LINES); {
+		// draw the vertical crosshair first
+		glVertex3f(p.x(), 197, 1.6f);
+		glVertex3f(p.x(), 389, 1.6f);
+		
+		// then the horizontal
+		glVertex3f(0, p.y(), 1.7f);
+		glVertex3f(256, p.y(), 1.7);
+	}
+	glEnd();
+	
+	// now draw the rectangle in the center
+	glBegin(GL_LINE_STRIP); {
+		// the rectangle has dimensions of 12x12 pixels
+		glVertex3f(p.x()-6, p.y()-6, 1.8f);
+		glVertex3f(p.x()-6, p.y()+6, 1.8f);
+		glVertex3f(p.x()+6, p.y()+6, 1.8f);
+		glVertex3f(p.x()+6, p.y()-6, 1.8f);
+		glVertex3f(p.x()-6, p.y()-6, 1.9f);
+	}
+	glEnd();
+	
+	glPopAttrib();
 }
 
 // draw the movement scene
