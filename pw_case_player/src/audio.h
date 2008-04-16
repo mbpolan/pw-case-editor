@@ -44,6 +44,11 @@ struct _Sample {
 	
 	Mix_Chunk *effect; ///< The effect to play
 	ustring music; ///< The music sample to play
+	
+	Mix_Music *mBuffer; ///< Music buffer
+	
+	/// The initial position to play from excluding first iteration
+	double initialPos;
 };
 typedef struct _Sample Sample;
 
@@ -63,7 +68,7 @@ typedef std::map<int, Mix_Chunk*> ChannelMap;
 static ChannelMap Channels;
 
 /// The music currently playing
-extern Mix_Music *g_Music;
+extern Sample g_Music;
 
 /** Load an audio sample from file
   * \param path The path to the audio sample

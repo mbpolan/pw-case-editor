@@ -46,6 +46,7 @@ TextParser::TextParser(Game *game): m_Game(game) {
 	m_BlockDiag=false;
 	m_Speed=50;
 	m_TimedGoto=0;
+	m_PauseDiag=0;
 }
 
 // set the text block
@@ -220,7 +221,7 @@ ustring TextParser::parse(bool drawDialogue) {
 						int multiplier=atoi(Utils::ucharToStr(m_Block[2]).c_str());
 						
 						for (int i=0; i<multiplier; i++)
-							m_Dialogue+=TEXT_SPEED_INCR_CHAR;
+							m_Dialogue+=(uchar) CHAR_TEXT_SPEED_INCR;
 						
 						m_Block.erase(0, 3);
 						erase=false;
@@ -231,7 +232,7 @@ ustring TextParser::parse(bool drawDialogue) {
 						int multiplier=atoi(Utils::ucharToStr(m_Block[2]).c_str());
 						
 						for (int i=0; i<multiplier; i++)
-							m_Dialogue+=TEXT_SPEED_DECR_CHAR;
+							m_Dialogue+=(uchar) CHAR_TEXT_SPEED_DECR;
 						
 						m_Block.erase(0, 3);
 						erase=false;
@@ -239,12 +240,24 @@ ustring TextParser::parse(bool drawDialogue) {
 					
 					// normalized speed
 					case '=': {
-						m_Dialogue+=TEXT_SPEED_NORM_CHAR;
+						m_Dialogue+=(uchar) CHAR_TEXT_SPEED_NORM;
 					}; break;
 					
 					// shake the screen
 					case '*': {
-						m_Dialogue+=SHAKE_SCREEN_CHAR;
+						m_Dialogue+=(uchar) CHAR_SHAKE_SCREEN;
+					}; break;
+					
+					// pause the dialogue
+					case 'p': {
+						// set a pause control char along with time (2 bytes)
+						m_Dialogue+=(uchar) CHAR_PAUSE_DIALOGUE;
+						m_Dialogue+=m_Block[2];
+						m_Dialogue+=m_Block[3];
+						
+						m_Block.erase(0, 4);
+						
+						erase=false;
 					}; break;
 				}
 				
@@ -300,9 +313,18 @@ ustring TextParser::parse(bool drawDialogue) {
 		if (m_Game->m_State.requestingEvidence || m_Game->m_State.requestingAnswer)
 			shift=-24;
 		
+		// if a pause has occurred, wait it out
+		if (m_PauseDiag!=0) {
+			m_PauseDiag-=1;
+			
+			// shouldn't happen, but just in case
+			if (m_PauseDiag<0)
+				m_PauseDiag=0;
+		}
+		
 		// see if we should draw the next character in the string
 		int now=SDL_GetTicks();
-		if (now-m_LastChar>m_FontStyle.speed && m_StrPos<m_Dialogue.size()) {
+		if (now-m_LastChar>m_FontStyle.speed && m_StrPos<m_Dialogue.size() && m_PauseDiag==0) {
 			// set the last draw time, and increment string position
 			m_LastChar=now;
 			
@@ -330,7 +352,7 @@ ustring TextParser::parse(bool drawDialogue) {
 			ustring sfx="";
 			
 			// increase speed
-			if (curChar==TEXT_SPEED_INCR_CHAR) {
+			if (curChar==(uchar) CHAR_TEXT_SPEED_INCR) {
 				m_FontStyle.speed-=10;
 				
 				// make sure to clamp the value to [0,100]
@@ -339,7 +361,7 @@ ustring TextParser::parse(bool drawDialogue) {
 			}
 			
 			// decrease speed
-			else if (curChar==TEXT_SPEED_DECR_CHAR) {
+			else if (curChar==(uchar) CHAR_TEXT_SPEED_DECR) {
 				m_FontStyle.speed+=10;
 				
 				// make sure to clamp the value to [0,100]
@@ -348,12 +370,24 @@ ustring TextParser::parse(bool drawDialogue) {
 			}
 			
 			// reset speed
-			else if (curChar==TEXT_SPEED_NORM_CHAR)
+			else if (curChar==(uchar) CHAR_TEXT_SPEED_NORM)
 				m_FontStyle.speed=NORMAL_FONT_SPEED;
 			
 			// shake the screen
-			else if (curChar==SHAKE_SCREEN_CHAR)
+			else if (curChar==(uchar) CHAR_SHAKE_SCREEN)
 				m_Game->m_State.shake=10;
+			
+			// pause the dialogue
+			else if (curChar==(uchar) CHAR_PAUSE_DIALOGUE) {
+				ustring t="";
+				t+=nextChar;
+				t+=m_Dialogue[m_StrPos+1];
+				
+				m_PauseDiag=atoi(t.c_str());
+				
+				// replace the next two bytes with null characters
+				m_Dialogue.replace(m_StrPos, 2, "\0\0");
+			}
 			
 			// date string
 			if (m_FontStyle.type=="date")

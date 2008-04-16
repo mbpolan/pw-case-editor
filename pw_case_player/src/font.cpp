@@ -415,7 +415,7 @@ int Fonts::getWidthTTF(const ustring &str, int size) {
 // get the width of a glyph
 int Fonts::getGlyphWidth(Uint16 ch, int size) {
 	Font *font=queryFont(size);
-	if (font) {
+	if (font && !(ch>=0x01 && ch<=0x05) && ch!=0x00) {
 		int min, max;
 		TTF_GlyphMetrics(font->font, ch, &min, &max, NULL, NULL, NULL);
 		return max-min;

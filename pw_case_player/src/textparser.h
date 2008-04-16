@@ -50,14 +50,19 @@ class TextParser {
 		/// Filters for trigger classification
 		enum Filter { FILTER_NONE=0,		///< Don't filter anything
 			      FILTER_CROSS_EXAMINE	///< Remove any trigger that shouldn't show up in cross examination
-			    };
+		};
+		
+		/// Control character definitions
+		enum ControlChar {
+			CHAR_TEXT_SPEED_INCR=	0x01,	///< Increase text speed
+			CHAR_TEXT_SPEED_DECR=	0x02,	///< Decrease text speed
+			CHAR_TEXT_SPEED_NORM=	0x03,	///< Normalize text speed
+			CHAR_SHAKE_SCREEN=	0x04,	///< Shake the screen
+			CHAR_PAUSE_DIALOGUE=	0x05	///< Pause the dialogue for some time
+		};
 		
 		// constants
 		static const int NORMAL_FONT_SPEED=50;		///< Regular text speed
-		static const uchar TEXT_SPEED_INCR_CHAR='[';	///< Character to increase text speed
-		static const uchar TEXT_SPEED_DECR_CHAR=']';	///< Character to decrease text speed
-		static const uchar TEXT_SPEED_NORM_CHAR='|';	///< Character to normalize text speed
-		static const uchar SHAKE_SCREEN_CHAR='#';	///< Character to shake the screen
 		
 		/** Constructor
 		  * \param game Pointer to the Game engine object
@@ -203,6 +208,9 @@ class TextParser {
 		
 		/// Speed of font drawing
 		int m_Speed;
+		
+		/// Pause time before going to next character in dialogue
+		int m_PauseDiag;
 		
 		/// Flag whether or not the a styling tag is open
 		bool m_TagOpen;

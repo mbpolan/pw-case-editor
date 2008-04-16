@@ -29,7 +29,11 @@ namespace Audio {
 	bool g_Output;
 	
 	// music currently playing
-	Mix_Music *g_Music=NULL;
+	Sample g_Music;
+}
+
+// handler for music completion
+void onMusicFinished() {
 }
 
 // load an audio sample from file
@@ -109,22 +113,19 @@ void Audio::playMusic(const ustring &id) {
 	
 	// and play it, if it's a music file
 	if (audio->type==SAMPLE_MUSIC) {
-		if (Audio::g_Music!=NULL) {
+		if (Audio::g_Music.mBuffer!=NULL) {
 			Mix_HaltMusic();
-			Mix_FreeMusic(Audio::g_Music);
-			
-			// always null out the pointer
-			Audio::g_Music=NULL;
+			Mix_FreeMusic(Audio::g_Music.mBuffer);
 		}
 		
 		// load our new music sample
-		Audio::g_Music=Mix_LoadMUS(audio->music.c_str());
-		if (!Audio::g_Music) {
+		Audio::g_Music.mBuffer=Mix_LoadMUS(audio->music.c_str());
+		if (!Audio::g_Music.mBuffer) {
 			Utils::debugMessage("Audio: unable to load music: '"+audio->music+"'");
 			return;
 		}
 		
-		Mix_PlayMusic(Audio::g_Music, -1);
+		Mix_PlayMusic(Audio::g_Music.mBuffer, -1);
 	}
 }
 
@@ -145,10 +146,8 @@ void Audio::haltMusic() {
 	Mix_HaltMusic();
 	
 	// then free any previous music
-	if (Audio::g_Music) {
-		Mix_FreeMusic(Audio::g_Music);
-		Audio::g_Music=NULL;
-	}
+	if (Audio::g_Music.mBuffer)
+		Mix_FreeMusic(Audio::g_Music.mBuffer);
 }
 
 // add an audio sample
@@ -201,9 +200,9 @@ void Audio::clearAudioStack() {
 		}
 	}
 	
-	if (Audio::g_Music) {
+	if (Audio::g_Music.mBuffer) {
 		Mix_HaltMusic();
-		Mix_FreeMusic(Audio::g_Music);
+		Mix_FreeMusic(Audio::g_Music.mBuffer);
 	}
 	
 	g_Audio.clear();

@@ -217,8 +217,34 @@ bool Game::loadStockTextures() {
 
 // render the current scene
 void Game::render() {
-	// render top screen
-	renderTopView();
+	// if we are to shake the screen, do so now, since the elements depend
+	// on the current matrix
+	if (m_State.shake>0) {
+		Point p=Utils::calculateShakePoint(3);
+		
+		// we need to save our current matrix
+		glPushMatrix();
+		
+		// reset and translate above all z elements
+		glLoadIdentity();
+		glTranslatef(0.0f, 0.0f, Z_FADE+1.0f);
+		
+		// now translate to our shake point
+		glTranslatef(p.x(), p.y(), 0.0f);
+		
+		renderTopView();
+		
+		// we don't need this matrix anymore
+		glPopMatrix();
+		
+		// decrement counter
+		m_State.shake--;
+		if (m_State.shake<=0)
+			m_State.shake=0;
+	}
+	
+	else
+		renderTopView();
 	
 	// render lower screen
 	renderMenuView();
@@ -1165,35 +1191,6 @@ void Game::renderTopView() {
 	else {
 		// draw a black rectangle over the background
 		Renderer::drawRect(Rect(Point(0, 0), 256, 192), Color(0, 0, 0, 255));
-	}
-	
-	// if we are to shake the screen, do so now, since the following elements can't
-	// be shaken, otherwise it will be a detriment to the interface...
-	// lol -- "detriment to the interface" :P
-	if (m_State.shake>0) {
-		Point p=Utils::calculateShakePoint(3);
-		
-		// first, define the top of the screen
-		SDL_Rect drect={ p.x(), p.y() };
-		SDL_Rect srect={ 0, 0, 256, 192 };
-		
-		// create a new surface
-		SDL_Surface *top=SDL_CreateRGBSurface(SDL_SWSURFACE, 256, 192, 32, 255U << 16, 255 << 8, 255 << 0, 0);
-		
-		// and copy the top portion of the screen into temporary surface, offset
-		SDL_BlitSurface(SDL_GetVideoSurface(), &srect, top, &drect);
-		
-		// now just blit the modified top surface back onto the screen
-		SDL_Rect rsrect={ 0, 0 };
-		SDL_BlitSurface(top, NULL, SDL_GetVideoSurface(), &rsrect);
-		
-		// we no longer need this surface
-		SDL_FreeSurface(top);
-		
-		// decrement counter
-		m_State.shake--;
-		if (m_State.shake<=0)
-			m_State.shake=0;
 	}
 	
 	// draw text box, if needed
