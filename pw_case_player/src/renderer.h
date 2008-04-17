@@ -34,6 +34,12 @@
 /// Namespace for all higher level drawing functions
 namespace Renderer {
 
+/** Resets an OpenGL matrix back to its identity, 
+  * then returns to modelview matrix
+  * \param matrix Enum for the matrix to reset
+*/
+void resetGLMatrix(GLenum matrix);
+
 /** Draw a colored rectangle
   * \param rect The rectangle to draw
   * \param color The color for the rectangle
@@ -71,16 +77,6 @@ void drawImage(const Rect &rect, const Point &p2, const ustring &texId);
   * \param text The text for the button
 */
 void drawButton(const Point &p1, int w, const ustring &text);
-
-/** Generate a correctly rendered court panorama based on shown sprites
-  * \param pcase Pointer to current Case::Case object
-  * \param prosecutor ID of prosecutor character, or STR_NULL if none
-  * \param attorney ID of defense character, or STR_NULL if none
-  * \param witness ID of witness character, or STR_NULL if none
-  * \return Surface containing panorama
-*/
-SDL_Surface* generateCourtPanorama(Case::Case *pcase, const ustring &prosecutor, 
-				   const ustring &attorney, const ustring &witness);
 
 /// Draw the initial game screen
 void drawInitialScreen();

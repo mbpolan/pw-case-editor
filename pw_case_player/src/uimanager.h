@@ -450,12 +450,11 @@ class Manager {
 		
 		/** Perform a court camera movement
 		  * \param id The ID of the animation
-		  * \param panorama Pointer to an image of a panorama of the court
 		  * \param start The starting location
 		  * \param end The ending location
 		  * \return <b>true</b> if the animation is done, <b>false</b> otherwise
 		*/
-		bool moveCourtCamera(const ustring &id, SDL_Surface *panorama, Limit start, Limit end);
+		bool moveCourtCamera(const ustring &id, Limit start, Limit end);
 		
 		/** Animate the testimony sprite sequence
 		  * \param id The ID of the animation

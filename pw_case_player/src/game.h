@@ -60,7 +60,7 @@ enum GameFlags {
 	STATE_INITIAL_SCREEN=		1 << 23, ///< Draw the title screen
 	STATE_EPISODE_SELECTION=	1 << 24, ///< Draw the episode selection screen
 	STATE_CONTINUE_SCREEN=		1 << 25  ///< Draw the continue game screen
-						};
+};
 
 /// Menu controls to draw
 enum Controls {

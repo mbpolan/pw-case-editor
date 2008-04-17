@@ -30,6 +30,13 @@
 #include "theme.h"
 #include "utilities.h"
 
+// reset an opengl matrix
+void Renderer::resetGLMatrix(GLenum matrix) {
+	glMatrixMode(matrix);
+	glLoadIdentity();
+	glMatrixMode(GL_MODELVIEW);
+}
+
 // draw a colored rectangle
 void Renderer::drawRect(const Rect &rect, const Color &color) {
 	glDisable(GL_TEXTURE_2D);
@@ -141,68 +148,6 @@ void Renderer::drawButton(const Point &p1, int w, const ustring &text) {
 	int centerX=(p1.x()+(w/2)-(fw/2));
 	int centerY=p1.y()+((26-Fonts::getHeight(fsize))/2)-2;
 	Fonts::drawStringBlended(Point(centerX, centerY), text, fsize, Theme::lookup("button_text"));
-}
-
-// generate a correctly rendered court panorama based on shown sprites
-SDL_Surface* Renderer::generateCourtPanorama(Case::Case *pcase, const ustring &prosecutor, 
-					     const ustring &defense, const ustring &witness) {
-	/*
-	// get the base panorama
-	SDL_Surface *bg=Textures::queryTexture("court_panorama");
-	if (!bg)
-		return NULL;
-	
-	// first, create a new surface
-	SDL_Surface *panorama=Textures::queryTexture("court_panorama_filled");
-	
-	// clear the image
-	SDL_FillRect(panorama, NULL, 0);
-	
-	// draw the panorama onto the blank
-	Renderer::drawImage(Rect(Point(0, 0), bg->w, bg->h), bg, panorama);
-	
-	// now draw the sprites themselves, if they are requested
-	if (prosecutor!=STR_NULL && pcase->getCharacter(prosecutor)) {
-		// get the character's sprite
-		Sprite *sProsecutor=pcase->getCharacter(prosecutor)->getSprite();
-		
-		// draw the prosecutor on the right
-		SDL_Surface *image=sProsecutor->getCurrentFrame()->image;
-		Renderer::drawImage(Rect(Point(bg->w-256, 0), image->w, image->h), image, panorama);
-	}
-	
-	if (defense!=STR_NULL && pcase->getCharacter(defense)) {
-		// get the character's sprite
-		Sprite *sDefense=pcase->getCharacter(defense)->getSprite();
-		
-		// draw the defense attorney on the left
-		SDL_Surface *image=sDefense->getCurrentFrame()->image;
-		Renderer::drawImage(Rect(Point(0, 0), image->w, image->h), image, panorama);
-	}
-	
-	if (witness!=STR_NULL && pcase->getCharacter(witness)) {
-		// get the character's sprite
-		Sprite *sDefense=pcase->getCharacter(witness)->getSprite();
-		
-		// draw the witness in the center
-		SDL_Surface *image=sDefense->getCurrentFrame()->image;
-		Renderer::drawImage(Rect(Point(472, 0), image->w, image->h), image, panorama);
-	}
-	
-	// draw prosecuter side bench
-	SDL_Surface *pb=Textures::queryTexture("prosecutor_bench");
-	Renderer::drawImage(Rect(Point(bg->w-256, 0), pb->w, pb->h), pb, panorama);
-	
-	// draw defense side bench
-	SDL_Surface *db=Textures::queryTexture("defense_bench");
-	Renderer::drawImage(Rect(Point(0, 0), db->w, db->h), db, panorama);
-	
-	// draw witness bench
-	SDL_Surface *wb=Textures::queryTexture("witness_bench");
-	Renderer::drawImage(Rect(Point(472, 0), wb->w, wb->h), wb, panorama);
-	
-	return panorama;
-	*/
 }
 
 // draw the initial game screen

@@ -1104,7 +1104,7 @@ void Game::renderTopView() {
 	}
 	
 	// draw the background for this location
-	else if (m_State.currentLocation!=STR_NULL && m_Case->getLocation(m_State.currentLocation)) {
+	else if (m_State.currentLocation!=STR_NULL && m_Case->getLocation(m_State.currentLocation) && m_State.courtCamera=="none") {
 		// get the background surface
 		Case::Location *location=m_Case->getLocation(m_State.currentLocation);
 		
@@ -1578,13 +1578,9 @@ bool Game::renderSpecialEffects() {
 			return true;
 		}
 		
-		// get a new panorama
-		SDL_Surface *panorama=Renderer::generateCourtPanorama(m_Case, pStand->character, dStand->character, wStand->character);
-		
 		// FIXME
-		/*
 		// animate the camera
-		if (m_UI->moveCourtCamera("an_court_camera", Textures::queryTexture("court_panorama_filled"), start, end)) {
+		if (m_UI->moveCourtCamera("an_court_camera", start, end)) {
 			// flag that we're done
 			m_State.courtCamera="none";
 			
@@ -1597,6 +1593,9 @@ bool Game::renderSpecialEffects() {
 			
 			// also, reset the animation for future use
 			m_UI->registerCourtCameraMovement("an_court_camera");
+			
+			// to avoid flickering, redraw our current location
+			
 			
 			// execute any queued cross examination blocks
 			if (m_State.curExamination && m_State.queuedBlock!=STR_NULL) {
@@ -1612,7 +1611,6 @@ bool Game::renderSpecialEffects() {
 		
 		else
 			return false;
-		*/
 	}
 	
 	// render flash now, if requested
@@ -1831,7 +1829,7 @@ void Game::renderCourtroomOverview() {
 		// get the image
 		Case::Image *image=m_Case->getImage(m_State.crOverviewDefense);
 		if (image)
-			Renderer::drawImage(Point(179, 90), image->texture);
+			Renderer::drawImage(Point(179, 90, 0.1f), image->texture);
 		else
 			Utils::debugMessage("Courtroom overview image '"+m_State.crOverviewDefense+"' not found");
 	}
@@ -1841,17 +1839,17 @@ void Game::renderCourtroomOverview() {
 		// get the image
 		Case::Image *image=m_Case->getImage(m_State.crOverviewProsecutor);
 		if (image)
-			Renderer::drawImage(Point(48, 91), image->texture);
+			Renderer::drawImage(Point(48, 91, 0.1f), image->texture);
 		else
 			Utils::debugMessage("Courtroom overview image '"+m_State.crOverviewDefense+"' not found");
 	}
 	
 	// draw the judge
-	Renderer::drawImage(Point(121, 68), "overview_judge");
+	Renderer::drawImage(Point(121, 68, 0.1f), "overview_judge");
 	
 	// draw jury
-	m_Case->getCharacter("jury_left")->getSprite()->animate(Point(0, 59));
-	m_Case->getCharacter("jury_right")->getSprite()->animate(Point(215, 59));
+	m_Case->getCharacter("jury_left")->getSprite()->animate(Point(0, 59, 0.1f));
+	m_Case->getCharacter("jury_right")->getSprite()->animate(Point(215, 59, 0.1f));
 }
 
 // render the attorney's stand
@@ -1868,7 +1866,7 @@ void Game::renderStand(const Stand stand) {
 	}
 	
 	// draw the image
-	Renderer::drawImage(Point(0, 0), sId);
+	Renderer::drawImage(Point(0, 0, Z_SPRITE+0.1f), sId);
 }
 
 // initial screen button activated handler

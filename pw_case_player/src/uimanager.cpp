@@ -697,31 +697,29 @@ bool UI::Manager::decayAlpha(const ustring &id, int &alpha) {
 }
 
 // perform a court camera movement
-bool UI::Manager::moveCourtCamera(const ustring &id, SDL_Surface *panorama, UI::Limit start, UI::Limit end) {
-	// FIXME
-	/*
+bool UI::Manager::moveCourtCamera(const ustring &id, UI::Limit start, UI::Limit end) {
 	// make sure the animation is valid
 	if (!getAnimation(id)) {
 		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");
 		return true;
 	}
 	
-	// make sure the panorama is valid
-	if (!panorama) {
-		Utils::debugMessage("UIMananger: supplied court overview panorama is invalid!");
-		return true;
-	}
+	// store our return value
+	bool ret=false;
 	
 	// get the animation
 	Animation &anim=*getAnimation(id);
 	Point &cur=anim.current;
+	
+	// get the panorama texture
+	Textures::Texture panorama=Textures::queryTexture("court_panorama");
 	
 	// modify velocity based on direction once
 	if (anim.velocity==0) {
 		// we're starting from the prosecutor stand
 		if (start==UI::LIMIT_PROSECUTOR_STAND) {
 			anim.velocity=-1;
-			anim.current.setX(panorama->w-256);
+			anim.current.setX(panorama.w-256);
 		}
 		
 		// starting from defense stand
@@ -744,7 +742,7 @@ bool UI::Manager::moveCourtCamera(const ustring &id, SDL_Surface *panorama, UI::
 	
 	// move the panorama
 	int now=SDL_GetTicks();
-	if (now-anim.lastDraw>1) {
+	if (now-anim.lastDraw>7) {
 		anim.lastDraw=now;
 		
 		// calculate real velocity based on multiplier value
@@ -755,7 +753,7 @@ bool UI::Manager::moveCourtCamera(const ustring &id, SDL_Surface *panorama, UI::
 		if (end==UI::LIMIT_DEFENSE_STAND)
 			endPt=0;
 		else if (end==UI::LIMIT_PROSECUTOR_STAND)
-			endPt=panorama->w-256;
+			endPt=panorama.w-256;
 		else if (end==UI::LIMIT_WITNESS_STAND)
 			endPt=472;
 		
@@ -775,7 +773,7 @@ bool UI::Manager::moveCourtCamera(const ustring &id, SDL_Surface *panorama, UI::
 			
 			// we're reached the end point
 			else
-				return true;
+				ret=true;
 		}
 		
 		// moving camera to the right
@@ -791,16 +789,46 @@ bool UI::Manager::moveCourtCamera(const ustring &id, SDL_Surface *panorama, UI::
 			
 			// we're done
 			else
-				return true;
+				ret=true;
 		}
 	}
 	
-	// draw the panorama
-	Renderer::drawImage(Rect(Point(cur.x(), 0), 256, 192), panorama, SDL_GetVideoSurface());
+	// now use the panorama texture
+	glBindTexture(GL_TEXTURE_2D, panorama.id);
 	
-	return false;
-	*/
-	return true;
+	// save our current matrix
+	glPushMatrix();
+	glLoadIdentity();
+	
+	// and translate our texture by however much pixels the current point is at
+	glTranslatef(-cur.x(), 0, 0);
+	
+	Case::Case *pCase=Game::instance()->getCase();
+	
+	// finally, draw the panorama as the background
+	Renderer::drawImage(Point(0, 0, 0.1f), panorama);
+	
+	// draw all three characters: prosecutor, defense, and witness
+	Case::Location *pStand=pCase->getLocation("prosecutor_stand");
+	Case::Location *dStand=pCase->getLocation("defense_stand");
+	Case::Location *wStand=pCase->getLocation("witness_stand");
+	
+	Character *prosecutor=pCase->getCharacter(pStand->character);
+	Character *defense=pCase->getCharacter(dStand->character);
+	Character *witness=pCase->getCharacter(wStand->character);
+	
+	// draw the benches for each character
+	Renderer::drawImage(Point(0, 0, Z_SPRITE+0.1f), "defense_bench");
+	Renderer::drawImage(Point(520, 0, Z_SPRITE+0.1f), "witness_bench");
+	Renderer::drawImage(Point(panorama.w-256, 0, Z_SPRITE+0.1f), "prosecutor_bench");
+	
+	if (defense) defense->getSprite()->renderFrame(Point(0, 0, Z_SPRITE));
+	if (witness) witness->getSprite()->renderFrame(Point(520, 0, Z_SPRITE));
+	if (prosecutor) prosecutor->getSprite()->renderFrame(Point(panorama.w-256, 0, Z_SPRITE));
+	
+	glPopMatrix();
+	
+	return ret;
 }
 
 // animate the testimony sprite sequence
@@ -892,8 +920,8 @@ bool UI::Manager::animateTestimonySequence(const ustring &id) {
 		}
 		
 		// draw a single frame of the sprites
-		stt->renderFrame(anim.topLimit, yTop);
-		stb->renderFrame(anim.bottomLimit, yBottom);
+		stt->renderFrame(Point(anim.topLimit, yTop, Z_ANIM_SPRITE));
+		stb->renderFrame(Point(anim.bottomLimit, yBottom, Z_ANIM_SPRITE));
 	}
 	
 	// the two sprites have reached their center x points
@@ -904,14 +932,14 @@ bool UI::Manager::animateTestimonySequence(const ustring &id) {
 		// draw a white rectangle to simulate a flash effect
 		if (ticks<5) {
 			// draw the rectangle
-			Renderer::drawRect(Rect(Point(0, 0), 256, 192), Color(255, 255, 255));
+			Renderer::drawRect(Rect(Point(0, 0, Z_FADE), 256, 192), Color(255, 255, 255));
 			ticks++;
 		}
 		
 		// once that's done, proceed to animate the sprites
 		else {
-			stt->animate(Point(centerxTop, yTop));
-			stb->animate(Point(centerxBottom, yBottom));
+			stt->animate(Point(centerxTop, yTop, Z_ANIM_SPRITE));
+			stb->animate(Point(centerxBottom, yBottom, Z_ANIM_SPRITE));
 			
 			if (stt->done() && stt->done()) {
 				//stt->reset();
