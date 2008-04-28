@@ -148,7 +148,7 @@ class Character {
 		/** Set the sprite for this character
 		  * \param spr The sprite to set
 		*/
-		void setSprite(const Sprite &spr) { m_Sprite=spr; }
+		void setSprite(const Sprite &spr);
 		
 		/** Get the sprite for this character
 		  * \return Pointer to the sprite, or NULL if there is none

@@ -63,3 +63,8 @@ void Character::removePresentable(const ustring &id) {
 		}
 	}
 }
+
+// set the sprite for this character
+void Character::setSprite(const Sprite &spr) {
+	m_Sprite=spr;
+}

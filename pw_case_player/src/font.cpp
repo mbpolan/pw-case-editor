@@ -299,6 +299,10 @@ int Fonts::drawStringMulticolor(const Point &p, int limit, int rightClamp, const
 		
 		glColor3ub(color.r(), color.g(), color.b());
 		
+		// if this glyph doesn't exist, create it and cache it for future use
+		if (font->glyphs.find(ch)==font->glyphs.end())
+			font->glyphs[ch]=renderGlyph(font, ch, (size==FONT_STANDARD ? QUALITY_SOLID : QUALITY_BLEND));
+		
 		// draw this glyph
 		Textures::Texture g=font->glyphs[ch];
 		Renderer::drawImage(Point(r.x, r.y, Z_TEXT), g);

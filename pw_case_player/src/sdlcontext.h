@@ -39,6 +39,11 @@ class SDLContext {
 		/// Create a rendering context
 		static std::auto_ptr<SDLContext> create();
 		
+		/** Return an instance of this class
+		  * \return Instance of the context
+		*/
+		static std::auto_ptr<SDLContext> instance();
+		
 		/// Destructor
 		~SDLContext();
 		

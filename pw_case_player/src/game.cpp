@@ -704,7 +704,6 @@ void Game::registerAnimations() {
 	m_UI->registerTestimonySequence("an_testimony_sequence");
 	m_UI->registerCrossExamineSequence("an_cross_examine_sequence");
 	
-	
 	// flip velocities on certain animations to reverse them
 	m_UI->reverseVelocity("an_info_page_button_left");
 }
@@ -1190,7 +1189,7 @@ void Game::renderTopView() {
 	
 	else {
 		// draw a black rectangle over the background
-		Renderer::drawRect(Rect(Point(0, 0), 256, 192), Color(0, 0, 0, 255));
+		Renderer::drawRect(Rect(Point(0, 0, 0.1f), 256, 192), Color(0, 0, 0, 255));
 	}
 	
 	// draw text box, if needed
@@ -1594,9 +1593,6 @@ bool Game::renderSpecialEffects() {
 			// also, reset the animation for future use
 			m_UI->registerCourtCameraMovement("an_court_camera");
 			
-			// to avoid flickering, redraw our current location
-			
-			
 			// execute any queued cross examination blocks
 			if (m_State.curExamination && m_State.queuedBlock!=STR_NULL) {
 				m_State.curExaminationPaused=true;
@@ -1652,8 +1648,6 @@ bool Game::renderSpecialEffects() {
 	
 	// render cross examination sprite sequence
 	else if (m_State.crossExamineSequence!="none") {
-		// FIXME
-		/*
 		Audio::haltMusic();
 		
 		// make sure lawyer images exist
@@ -1666,7 +1660,8 @@ bool Game::renderSpecialEffects() {
 		}
 		
 		// animate the sequence
-		bool ret=m_UI->animateCrossExamineSequence("an_cross_examine_sequence", leftImg->texture, rightImg->texture);
+		bool ret=m_UI->animateCrossExamineSequence("an_cross_examine_sequence", 
+				Textures::queryTexture(leftImg->texture), Textures::queryTexture(rightImg->texture));
 		if (ret) {
 			// reset the animation
 			m_UI->registerCrossExamineSequence("an_cross_examine_sequence");
@@ -1684,7 +1679,6 @@ bool Game::renderSpecialEffects() {
 		
 		
 		return false;
-		*/
 	}
 	
 	// render exclamations

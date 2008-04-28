@@ -31,13 +31,20 @@
 #include "theme.h"
 #include "utilities.h"
 
+std::auto_ptr<SDLContext> g_Context;
+
 int SDLContext::m_Width=640;
 int SDLContext::m_Height=480;
 
 // create a rendering context
 std::auto_ptr<SDLContext> SDLContext::create() {
-	std::auto_ptr<SDLContext> glc(new SDLContext);
-	return glc;
+	g_Context=std::auto_ptr<SDLContext> (new SDLContext);
+	return g_Context;
+}
+
+// return an instance of the context
+std::auto_ptr<SDLContext> SDLContext::instance() {
+	return g_Context;
 }
 
 // destructor
