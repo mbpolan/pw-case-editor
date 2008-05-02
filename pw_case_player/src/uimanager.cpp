@@ -32,6 +32,70 @@
 
 UI::Manager *g_Manager;
 
+// constructor for text button
+UI::Button::Button(const ustring &text, int width, const Point &p, Callback slot, const ustring &sfx) {
+	initAnim(p, text, width, STR_NULL, STR_NULL, slot, sfx);
+}
+
+// constructor for image button
+UI::Button::Button(const ustring &idle, const ustring &active, int blinkTime, const Point &p, Callback slot, const ustring &sfx) {
+	Textures::Texture idleTex=Textures::queryTexture(idle);
+	initAnim(p, STR_NULL, idleTex.w, idle, active, NULL, sfx);
+}
+
+// prepare the button's internal animation data
+void UI::Button::initAnim(const Point &p, const ustring &text, int width, const ustring &idle, const ustring &active, 
+			  Callback slot, const ustring &sfx) {
+	m_Anim.lastDraw=0;
+	m_Anim.w=width;
+	m_Anim.txt=text;
+	m_Anim.type=ANIM_GUI_BUTTON;
+	m_Anim.current=p;
+	m_Anim.callback=slot;
+	m_Anim.texture1Active=true;
+	m_Anim.speed=100;
+	m_Anim.ticks=50;
+	m_Anim.sfx=sfx;
+	m_Anim.velocity=0; // 0 for idle, 1 for clicked
+}
+
+// draw the button
+void UI::Button::draw() {
+	// draw the correct type: text or image
+	if (m_Anim.txt!=STR_NULL) {
+		// if velocity is 1, then the button was clicked
+		if (m_Anim.velocity==1) {
+			int now=SDL_GetTicks();
+			if (now-m_Anim.lastDraw>m_Anim.speed) {
+				m_Anim.lastDraw=now;
+				m_Anim.texture1Active=!m_Anim.texture1Active;
+			}
+		
+			m_Anim.ticks-=1;
+			if (m_Anim.ticks<=0) {
+				initAnim(m_Anim.current, m_Anim.txt, m_Anim.w, m_IdleID, m_ActiveID, m_Anim.callback, m_Anim.sfx);
+			
+				// if a callback is registered, call it now
+				if (m_Anim.callback!=NULL)
+					(Game::instance()->*m_Anim.callback)(m_ID);
+			}
+		}
+	
+		// draw the button
+		if (m_Anim.texture1Active)
+			Renderer::drawButton(m_Anim.current, m_Anim.w, m_Anim.txt);
+	}
+}
+
+// activate the button
+void UI::Button::click() {
+	m_Anim.velocity=1;
+	if (m_Anim.sfx!=STR_NULL)
+		Audio::playEffect(m_Anim.sfx, Audio::CHANNEL_GUI);
+}
+
+/**************************************************************************************************/
+
 // constructor
 UI::Manager::Manager(Case::Case *pcase): m_Case(pcase) {
 	g_Manager=this;
@@ -64,7 +128,8 @@ void UI::Manager::handleGUIClick(const Point &p, const StringVector &ids) {
 	for (int i=0; i<ids.size(); i++) {
 		// see if this button was clicked, and if it was, flag it
 		if (mouseOverButton(ids[i], p)) {
-			clickGUIButton(ids[i]);
+			UI::Button *button=&m_Buttons[ids[i]];
+			button->click();
 			
 			// don't check anything afterwards if this was clicked
 			return;
@@ -101,54 +166,27 @@ void UI::Manager::resyncBounceTexture(const ustring &id, bool left) {
 
 // see if any gui animations are still occurring
 bool UI::Manager::isGUIBusy() {
-	for (std::map<ustring, Animation>::iterator it=m_Animations.begin(); it!=m_Animations.end(); ++it) {
-		if ((*it).second.type==ANIM_GUI_BUTTON && (*it).second.velocity==1)
+	for (std::map<ustring, UI::Button>::iterator it=m_Buttons.begin(); it!=m_Buttons.end(); ++it) {
+		if ((*it).second.isAnimating())
 			return true;
 	}
 	
 	return false;
 }
 
-// set button text for a gui button
-void UI::Manager::setGUIButtonText(const ustring &id, const ustring &text) {
-	m_Animations[id].txt=text;
-}
-
 // check to see if the mouse is over a button
 bool UI::Manager::mouseOverButton(const ustring &id, const Point &p) {
-	UI::Animation &anim=m_Animations[id];
+	UI::Button &button=m_Buttons[id];
 	
-	Rect rect(anim.current, anim.w, 26);
+	Rect rect(button.getOrigin(), button.getWidth(), 26);
 	return Utils::pointInRect(p, rect);
 }
 
-// set a gui button's state to clicked
-void UI::Manager::clickGUIButton(const ustring &id) {
-	UI::Animation &anim=m_Animations[id];
-	anim.velocity=1;
-	
-	// play the sound effect
-	if (anim.sfx!=STR_NULL)
-		Audio::playEffect(anim.sfx, Audio::CHANNEL_GUI);
-}
-
 // register a gui button
-void UI::Manager::registerGUIButton(const ustring &id, int w, const Button &b) {
-	UI::Animation anim;
-	
-	anim.lastDraw=0;
-	anim.type=ANIM_GUI_BUTTON;
-	anim.current=b.getPoint();
-	anim.callback=b.getSlot();
-	anim.w=w;
-	anim.texture1Active=true;
-	anim.speed=100;
-	anim.txt=b.getText();
-	anim.ticks=50;
-	anim.sfx=b.getSFX();
-	anim.velocity=0; // 0 for idle, 1 for clicked
-	
-	m_Animations[id]=anim;
+void UI::Manager::registerGUIButton(const ustring &id, const Button &b) {
+	m_Buttons[id]=b;
+	UI::Button *button=&m_Buttons[id];
+	button->setID(id);
 }
 
 // register a ui animation that bounces the image from side to side
@@ -437,6 +475,12 @@ void UI::Manager::drawAnimation(const ustring &id) {
 	
 	// draw the texture
 	Renderer::drawImage(anim.current, anim.texture);
+}
+
+// draw a button
+void UI::Manager::drawButton(const ustring &id) {
+	UI::Button *button=&m_Buttons[id];
+	button->draw();
 }
 
 // fade out the current scene to black
@@ -1311,41 +1355,4 @@ bool UI::Manager::slideBG(const ustring &id, const GLuint &bg) {
 	}
 	
 	return true;
-}
-
-// animate a gui button
-bool UI::Manager::animateGUIButton(const ustring &id) {
-	// get the animation
-	if (!getAnimation(id)) {
-		Utils::debugMessage("UIManager: animation '"+id+"' not registered.");
-		return true;
-	}
-	
-	Animation &anim=*getAnimation(id);
-	
-	// if velocity is 1, then the button was clicked
-	if (anim.velocity==1) {
-		int now=SDL_GetTicks();
-		if (now-anim.lastDraw>anim.speed) {
-			anim.lastDraw=now;
-			anim.texture1Active=!anim.texture1Active;
-		}
-		
-		anim.ticks-=1;
-		if (anim.ticks<=0) {
-			registerGUIButton(id, anim.w, Button(anim.txt, anim.current, anim.callback, anim.sfx));
-			
-			// if a callback is registered, call it now
-			if (anim.callback!=NULL)
-				(Game::instance()->*anim.callback)(id);
-			
-			return true;
-		}
-	}
-	
-	// draw the button
-	if (anim.texture1Active)
-		Renderer::drawButton(anim.current, anim.w, anim.txt);
-	
-	return false;
 }

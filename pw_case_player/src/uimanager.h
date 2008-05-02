@@ -160,44 +160,70 @@ typedef struct _Animation Animation;
 */
 class Button {
 	public:
-		/** Constructor
+		/// Default constructor
+		Button() { }
+		
+		/** Constructor for a text button
 		  * \param text The text of the button
+		  * \param width The maximum width for this button
 		  * \param p The top-left corner where this button should be drawn
 		  * \param slot The function to call when clicked, or NULL to take no action
 		  * \param sfx Optional sound effect to play on click
 		*/
-		Button(const ustring &text, const Point &p, Callback slot, const ustring &sfx=STR_NULL) {
-			m_Text=text;
-			m_Point=p;
-			m_Slot=slot;
-			m_SFX=sfx;
-		}
+		Button(const ustring &text, int width, const Point &p, Callback slot, const ustring &sfx=STR_NULL);
 		
-		/** Get the text in the button
-		  * \return The button label text
+		/** Constructor for an image button
+		  * \param idle The ID of texture to display when idle
+		  * \param active The ID of texture to display when clicked on
+		  * \param blinkTime Amount of milliseconds to display the active texture
+		  * \param p The top-left corner where this button should be drawn
+		  * \param slot The function to call when clicked, or NULL to take no action
+		  * \param sfx Optional sound effect to play on click
 		*/
-		ustring getText() const { return m_Text; }
+		Button(const ustring &idle, const ustring &active, int blinkTime, const Point &p, Callback slot, const ustring &sfx=STR_NULL);
 		
-		/** Get the sound effect associated with this button
-		  * \return The associated sound effect, or "null" if none
+		/** Set the ID for this button
+		  * \param id The ID
 		*/
-		ustring getSFX() const { return m_SFX; }
+		void setID(const ustring &id) { m_ID=id; }
 		
-		/** Get the top-left corner where this button is drawn
-		  * \return The top-left point
+		/** Set the button's text
+		  * \param text The text to set
 		*/
-		Point getPoint() const { return m_Point; }
+		void setText(const ustring &text) { m_Anim.txt=text; }
 		
-		/** Get the function callback for this button
-		  * \return The callback function
+		/** Get the button's width
+		  * \return The allocated width
 		*/
-		Callback getSlot() const { return m_Slot; }
+		int getWidth() const { return m_Anim.w; }
+		
+		/** Get the button's origin in world coordinates
+		  * \return The button's top-left corner coordinates
+		*/
+		Point getOrigin() const { return m_Anim.current; }
+		
+		/// Draw the button
+		void draw();
+		
+		/// Activate the button
+		void click();
+		
+		/** Check if a button is still animating
+		  * \return <b>true</b> if animating, <b>false</b> otherwise
+		*/
+		bool isAnimating() const { return m_Anim.velocity; }
 		
 	private:
-		ustring m_Text;
-		ustring m_SFX;
-		Point m_Point;
-		Callback m_Slot;
+		/// Prepare the button's internal animation data
+		void initAnim(const Point &p, const ustring &text, int width, const ustring &idle, 
+			      const ustring &active, Callback slot, const ustring &sfx);
+		
+		ustring m_ID;
+		
+		ustring m_IdleID;
+		ustring m_ActiveID;
+		
+		Animation m_Anim;
 };
 
 /** The core class that manages all user interface animations and GUI effects.
@@ -265,11 +291,11 @@ class Manager {
 		*/
 		bool isGUIBusy();
 		
-		/** Set button text for a GUI button
-		  * \param id The ID of the button
-		  * \param text The text to set
+		/** Get a button from the internal stack
+		  * \param id The button's ID
+		  * \return A pointer to the requested button
 		*/
-		void setGUIButtonText(const ustring &id, const ustring &text);
+		Button* getButton(const ustring &id) { return &m_Buttons[id]; }
 		
 		/** Check to see if the mouse is over a button
 		  * \param id The ID of the button to check
@@ -285,10 +311,9 @@ class Manager {
 		
 		/** Register a GUI button
 		  * \param id The ID of the button
-		  * \param w The maximum width this button can occupy
 		  * \param button The Button object to register
 		*/
-		void registerGUIButton(const ustring &id, int w, const Button &button);
+		void registerGUIButton(const ustring &id, const Button &button);
 		
 		/** Register an animation that bounces an image from side to side.
 		  * Limits are relative to origin; that is, if origin is (100, 100), and if the animation
@@ -395,6 +420,11 @@ class Manager {
 		*/
 		void drawAnimation(const ustring &id);
 		
+		/** Draw a button
+		  * \param id The button's ID
+		*/
+		void drawButton(const ustring &id);
+		
 		/** Fade out the current scene to black
 		  * \param id The ID of the animation
 		  * \return An animation return code (see the description of these functions)
@@ -482,18 +512,15 @@ class Manager {
 		*/
 		bool animateGreenBar(const ustring &id);
 		
-		/** Animate a GUI button
-		  * \param id The ID of the button
-		  * \return <b>true</b> if the animation is done, <b>false</b> otherwise
-		*/
-		bool animateGUIButton(const ustring &id);
-		
 	private:
 		/// Pointer to current case
 		Case::Case *m_Case;
 		
 		/// Map of registered animations
 		std::map<ustring, Animation> m_Animations;
+		
+		/// Map of registered GUI buttons
+		std::map<ustring, Button> m_Buttons;
 };
 
 }; // namespace UI

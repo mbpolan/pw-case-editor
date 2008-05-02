@@ -157,7 +157,7 @@ void Renderer::drawInitialScreen() {
 	Renderer::drawImage(Point(0, 197), "court_overview_g");
 	
 	// draw two buttons, one for New Game, and one for Continue
-	UI::Manager::instance()->animateGUIButton("an_new_game_btn");
+	UI::Manager::instance()->drawButton("an_new_game_btn");
 	Renderer::drawButton(Point(53, 280, 2), 150, "Continue");
 	
 	// draw scanlines to top it off
@@ -485,10 +485,10 @@ void Renderer::drawMoveScene(const std::vector<ustring> &locations, LocationMap 
 			Renderer::drawImage(Point(0, 263), location.bgScaled);
 		
 		// update text in button
-		UI::Manager::instance()->setGUIButtonText(ss.str(), location.name);
+		UI::Manager::instance()->getButton(ss.str())->setText(location.name);
 		
 		// and draw the button
-		UI::Manager::instance()->animateGUIButton(ss.str());
+		UI::Manager::instance()->drawButton(ss.str());
 	}
 }
 
@@ -500,9 +500,9 @@ void Renderer::drawTalkScene(const std::vector<StringPair> &options, int selecte
 		ss << "an_talk_op" << i+1 << "_btn";
 		
 		// update the text
-		UI::Manager::instance()->setGUIButtonText(ss.str(), options[i].first);
+		UI::Manager::instance()->getButton(ss.str())->setText(options[i].first);
 		
 		// and draw the button itself
-		UI::Manager::instance()->animateGUIButton(ss.str());
+		UI::Manager::instance()->drawButton(ss.str());
 	}
 }

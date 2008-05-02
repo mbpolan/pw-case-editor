@@ -688,17 +688,17 @@ void Game::registerAnimations() {
 	m_UI->registerWhiteFlash("an_white_flash");
 	
 	// register gui animations
-	m_UI->registerGUIButton("an_new_game_btn", 150, UI::Button("New Game", Point(53, 240, Z_GUI_BTN), 
+	m_UI->registerGUIButton("an_new_game_btn", UI::Button("New Game", 150, Point(53, 240, Z_GUI_BTN), 
 				&Game::onInitialScreenClicked, "sfx_gavel"));
-	m_UI->registerGUIButton("an_talk_op1_btn", 200, UI::Button("", Point(28, 236, Z_GUI_BTN), &Game::onTalkSceneClicked));
-	m_UI->registerGUIButton("an_talk_op2_btn", 200, UI::Button("", Point(28, 267, Z_GUI_BTN), &Game::onTalkSceneClicked));
-	m_UI->registerGUIButton("an_talk_op3_btn", 200, UI::Button("", Point(28, 298, Z_GUI_BTN), &Game::onTalkSceneClicked));
-	m_UI->registerGUIButton("an_talk_op4_btn", 200, UI::Button("", Point(28, 329, Z_GUI_BTN), &Game::onTalkSceneClicked));
+	m_UI->registerGUIButton("an_talk_op1_btn", UI::Button("", 200, Point(28, 236, Z_GUI_BTN), &Game::onTalkSceneClicked));
+	m_UI->registerGUIButton("an_talk_op2_btn", UI::Button("", 200, Point(28, 267, Z_GUI_BTN), &Game::onTalkSceneClicked));
+	m_UI->registerGUIButton("an_talk_op3_btn", UI::Button("", 200, Point(28, 298, Z_GUI_BTN), &Game::onTalkSceneClicked));
+	m_UI->registerGUIButton("an_talk_op4_btn", UI::Button("", 200, Point(28, 329, Z_GUI_BTN), &Game::onTalkSceneClicked));
 	
-	m_UI->registerGUIButton("an_move_loc1_btn", 150, UI::Button("", Point(85, 236, Z_GUI_BTN), &Game::onMoveSceneClicked));
-	m_UI->registerGUIButton("an_move_loc2_btn", 150, UI::Button("", Point(85, 267, Z_GUI_BTN), &Game::onMoveSceneClicked));
-	m_UI->registerGUIButton("an_move_loc3_btn", 150, UI::Button("", Point(85, 298, Z_GUI_BTN), &Game::onMoveSceneClicked));
-	m_UI->registerGUIButton("an_move_loc4_btn", 150, UI::Button("", Point(85, 329, Z_GUI_BTN), &Game::onMoveSceneClicked));
+	m_UI->registerGUIButton("an_move_loc1_btn", UI::Button("", 150, Point(85, 236, Z_GUI_BTN), &Game::onMoveSceneClicked));
+	m_UI->registerGUIButton("an_move_loc2_btn", UI::Button("", 150, Point(85, 267, Z_GUI_BTN), &Game::onMoveSceneClicked));
+	m_UI->registerGUIButton("an_move_loc3_btn", UI::Button("", 150, Point(85, 298, Z_GUI_BTN), &Game::onMoveSceneClicked));
+	m_UI->registerGUIButton("an_move_loc4_btn", UI::Button("", 150, Point(85, 329, Z_GUI_BTN), &Game::onMoveSceneClicked));
 	
 	// register sprite sequences
 	m_UI->registerTestimonySequence("an_testimony_sequence");
@@ -1235,7 +1235,7 @@ void Game::renderMenuView() {
 	
 	// if the cross examination sequence is being animated, don't draw anything;
 	// graphics are handled by the UIManager function
-	if (m_State.crossExamineSequence!="none")
+	if (m_State.crossExamineSequence!="none" && m_State.fadeOut=="none")
 		return;
 	
 	// when dealing with drawing elements, some need to be drawn "thin"
