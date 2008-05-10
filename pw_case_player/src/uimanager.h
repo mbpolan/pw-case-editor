@@ -28,6 +28,7 @@
 #include "SDL.h"
 
 #include "audio.h"
+#include "callback.h"
 #include "common.h"
 #include "texture.h"
 
@@ -37,7 +38,8 @@ class Game;
 /// Namespace for animations and other interface components
 namespace UI {
 
-typedef void (Game::*Callback) (const ustring &);
+/// Typedef'd callback for button clicks
+typedef Callback<Game, void, const ustring &> ButtonSlot;
 
 /// Limits for animations involving movement of court camera
 enum Limit { LIMIT_NONE=0,
@@ -102,7 +104,7 @@ struct _Animation {
 	ustring sfx;
 	
 	/// Callback for GUI clicks
-	Callback callback;
+	ButtonSlot *callback;
 	
 	/// Arbitrary width
 	int w;
@@ -170,7 +172,7 @@ class Button {
 		  * \param slot The function to call when clicked, or NULL to take no action
 		  * \param sfx Optional sound effect to play on click
 		*/
-		Button(const ustring &text, int width, const Point &p, Callback slot, const ustring &sfx=STR_NULL);
+		Button(const ustring &text, int width, const Point &p, ButtonSlot *slot, const ustring &sfx=STR_NULL);
 		
 		/** Constructor for an image button
 		  * \param idle The ID of texture to display when idle
@@ -180,7 +182,7 @@ class Button {
 		  * \param slot The function to call when clicked, or NULL to take no action
 		  * \param sfx Optional sound effect to play on click
 		*/
-		Button(const ustring &idle, const ustring &active, int blinkTime, const Point &p, Callback slot, const ustring &sfx=STR_NULL);
+		Button(const ustring &idle, const ustring &active, int blinkTime, const Point &p, ButtonSlot *slot, const ustring &sfx=STR_NULL);
 		
 		/** Set the ID for this button
 		  * \param id The ID
@@ -216,7 +218,7 @@ class Button {
 	private:
 		/// Prepare the button's internal animation data
 		void initAnim(const Point &p, const ustring &text, int width, const ustring &idle, 
-			      const ustring &active, Callback slot, const ustring &sfx);
+			      const ustring &active, ButtonSlot *slot, const ustring &sfx);
 		
 		ustring m_ID;
 		

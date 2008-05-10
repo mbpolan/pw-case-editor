@@ -33,19 +33,19 @@
 UI::Manager *g_Manager;
 
 // constructor for text button
-UI::Button::Button(const ustring &text, int width, const Point &p, Callback slot, const ustring &sfx) {
+UI::Button::Button(const ustring &text, int width, const Point &p, UI::ButtonSlot *slot, const ustring &sfx) {
 	initAnim(p, text, width, STR_NULL, STR_NULL, slot, sfx);
 }
 
 // constructor for image button
-UI::Button::Button(const ustring &idle, const ustring &active, int blinkTime, const Point &p, Callback slot, const ustring &sfx) {
+UI::Button::Button(const ustring &idle, const ustring &active, int blinkTime, const Point &p, UI::ButtonSlot *slot, const ustring &sfx) {
 	Textures::Texture idleTex=Textures::queryTexture(idle);
-	initAnim(p, STR_NULL, idleTex.w, idle, active, NULL, sfx);
+	initAnim(p, STR_NULL, idleTex.w, idle, active, slot, sfx);
 }
 
 // prepare the button's internal animation data
 void UI::Button::initAnim(const Point &p, const ustring &text, int width, const ustring &idle, const ustring &active, 
-			  Callback slot, const ustring &sfx) {
+			  UI::ButtonSlot *slot, const ustring &sfx) {
 	m_Anim.lastDraw=0;
 	m_Anim.w=width;
 	m_Anim.txt=text;
@@ -53,10 +53,13 @@ void UI::Button::initAnim(const Point &p, const ustring &text, int width, const 
 	m_Anim.current=p;
 	m_Anim.callback=slot;
 	m_Anim.texture1Active=true;
-	m_Anim.speed=100;
+	m_Anim.speed=(text!=STR_NULL ? 100 : 1000);
 	m_Anim.ticks=50;
 	m_Anim.sfx=sfx;
 	m_Anim.velocity=0; // 0 for idle, 1 for clicked
+	
+	m_IdleID=idle;
+	m_ActiveID=active;
 }
 
 // draw the button
@@ -77,13 +80,30 @@ void UI::Button::draw() {
 			
 				// if a callback is registered, call it now
 				if (m_Anim.callback!=NULL)
-					(Game::instance()->*m_Anim.callback)(m_ID);
+					m_Anim.callback->emit(m_ID);
 			}
 		}
 	
 		// draw the button
 		if (m_Anim.texture1Active)
 			Renderer::drawButton(m_Anim.current, m_Anim.w, m_Anim.txt);
+	}
+	
+	else {
+		// velocity is 1 if clicked, like above
+		if (m_Anim.velocity==1) {
+			// time expired, switch to previous texture
+			int now=SDL_GetTicks();
+			if (now-m_Anim.lastDraw>m_Anim.speed) {
+				m_Anim.lastDraw=now;
+				m_Anim.velocity=0;
+			}
+			
+			Renderer::drawImage(m_Anim.current, m_ActiveID);
+		}
+		
+		else
+			Renderer::drawImage(m_Anim.current, m_IdleID);
 	}
 }
 
@@ -92,6 +112,10 @@ void UI::Button::click() {
 	m_Anim.velocity=1;
 	if (m_Anim.sfx!=STR_NULL)
 		Audio::playEffect(m_Anim.sfx, Audio::CHANNEL_GUI);
+	
+	// emit callback at this point for image buttons
+	if (m_Anim.txt==STR_NULL && m_Anim.callback)
+		m_Anim.callback->emit(STR_NULL);
 }
 
 /**************************************************************************************************/

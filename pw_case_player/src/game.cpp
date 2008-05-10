@@ -466,7 +466,7 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 		if (flagged(STATE_EXAMINE)) {
 			// this will always be the court record button in this case
 			if ((e->x>=176 && e->x<=176+79) && (e->y>=197 && e->y<=197+21))
-				onTopRightButtonClicked();
+				onTopRightButtonClicked(STR_NULL);
 			
 			// likewise, this will always be the back button
 			else if ((e->x>=0 && e->x<=79) && (e->y>=369 && e->y<=369+21))
@@ -492,7 +492,8 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 		else if (!flagged(STATE_EXAMINE)) {
 			// see if the click hit the top right button, if any
 			if ((e->x>=176 && e->x<=176+80) && (e->y>=197 && e->y<=197+33))
-				onTopRightButtonClicked();
+				//onTopRightButtonClicked();
+				m_UI->handleGUIClick(mouse, "an_court_rec_btn");
 			
 			// see if the click hit the top left button
 			else if ((e->x>=0 && e->x<=80) && (e->y>=197 && e->y<197+33))
@@ -689,16 +690,29 @@ void Game::registerAnimations() {
 	
 	// register gui animations
 	m_UI->registerGUIButton("an_new_game_btn", UI::Button("New Game", 150, Point(53, 240, Z_GUI_BTN), 
-				&Game::onInitialScreenClicked, "sfx_gavel"));
-	m_UI->registerGUIButton("an_talk_op1_btn", UI::Button("", 200, Point(28, 236, Z_GUI_BTN), &Game::onTalkSceneClicked));
-	m_UI->registerGUIButton("an_talk_op2_btn", UI::Button("", 200, Point(28, 267, Z_GUI_BTN), &Game::onTalkSceneClicked));
-	m_UI->registerGUIButton("an_talk_op3_btn", UI::Button("", 200, Point(28, 298, Z_GUI_BTN), &Game::onTalkSceneClicked));
-	m_UI->registerGUIButton("an_talk_op4_btn", UI::Button("", 200, Point(28, 329, Z_GUI_BTN), &Game::onTalkSceneClicked));
+				new UI::ButtonSlot(this, &Game::onInitialScreenClicked), "sfx_gavel"));
 	
-	m_UI->registerGUIButton("an_move_loc1_btn", UI::Button("", 150, Point(85, 236, Z_GUI_BTN), &Game::onMoveSceneClicked));
-	m_UI->registerGUIButton("an_move_loc2_btn", UI::Button("", 150, Point(85, 267, Z_GUI_BTN), &Game::onMoveSceneClicked));
-	m_UI->registerGUIButton("an_move_loc3_btn", UI::Button("", 150, Point(85, 298, Z_GUI_BTN), &Game::onMoveSceneClicked));
-	m_UI->registerGUIButton("an_move_loc4_btn", UI::Button("", 150, Point(85, 329, Z_GUI_BTN), &Game::onMoveSceneClicked));
+	m_UI->registerGUIButton("an_talk_op1_btn", UI::Button("", 200, Point(28, 236, Z_GUI_BTN), 
+				new UI::ButtonSlot(this, &Game::onTalkSceneClicked)));
+	m_UI->registerGUIButton("an_talk_op2_btn", UI::Button("", 200, Point(28, 267, Z_GUI_BTN), 
+				new UI::ButtonSlot(this, &Game::onTalkSceneClicked)));
+	m_UI->registerGUIButton("an_talk_op3_btn", UI::Button("", 200, Point(28, 298, Z_GUI_BTN), 
+				new UI::ButtonSlot(this, &Game::onTalkSceneClicked)));
+	m_UI->registerGUIButton("an_talk_op4_btn", UI::Button("", 200, Point(28, 329, Z_GUI_BTN), 
+				new UI::ButtonSlot(this, &Game::onTalkSceneClicked)));
+	
+	m_UI->registerGUIButton("an_move_loc1_btn", UI::Button("", 150, Point(85, 236, Z_GUI_BTN), 
+				new UI::ButtonSlot(this, &Game::onMoveSceneClicked)));
+	m_UI->registerGUIButton("an_move_loc2_btn", UI::Button("", 150, Point(85, 267, Z_GUI_BTN), 
+				new UI::ButtonSlot(this, &Game::onMoveSceneClicked)));
+	m_UI->registerGUIButton("an_move_loc3_btn", UI::Button("", 150, Point(85, 298, Z_GUI_BTN), 
+				new UI::ButtonSlot(this, &Game::onMoveSceneClicked)));
+	m_UI->registerGUIButton("an_move_loc4_btn", UI::Button("", 150, Point(85, 329, Z_GUI_BTN), 
+				new UI::ButtonSlot(this, &Game::onMoveSceneClicked)));
+	
+	// register image buttons
+	m_UI->registerGUIButton("an_court_rec_btn", UI::Button("tc_court_rec_btn", "tc_court_rec_btn_on", 200, Point(176, 197, Z_IFC_BTN),
+							      new UI::ButtonSlot(this, &Game::onTopRightButtonClicked)));
 	
 	// register sprite sequences
 	m_UI->registerTestimonySequence("an_testimony_sequence");
@@ -1388,7 +1402,7 @@ void Game::renderMenuView() {
 		
 		// draw activated buttons
 		if (flagged(STATE_COURT_REC_BTN))
-			Renderer::drawImage(Point(176, 197, Z_IFC_BTN), "tc_court_rec_btn"+append);
+			m_UI->drawButton("an_court_rec_btn"+append);
 		else if (flagged(STATE_PRESENT_BTN))
 			Renderer::drawImage(Point(176, 197, Z_IFC_BTN), "tc_present_item_btn");
 		else if (flagged(STATE_EVIDENCE_BTN))
@@ -1877,7 +1891,7 @@ void Game::onInitialScreenClicked(const ustring &id) {
 }
 
 // top right button was clicked
-void Game::onTopRightButtonClicked() {
+void Game::onTopRightButtonClicked(const ustring &id) {
 	// if the court record button is shown, activate evidence page
 	if (flagged(STATE_COURT_REC_BTN)) {
 		int flags=STATE_BACK_BTN | STATE_PROFILES_BTN | STATE_EVIDENCE_PAGE;

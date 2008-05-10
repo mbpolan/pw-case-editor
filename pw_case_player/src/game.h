@@ -363,7 +363,7 @@ class Game {
 		void onInitialScreenClicked(const ustring &id);
 		
 		/// Handler for clicks on the top right button
-		void onTopRightButtonClicked();
+		void onTopRightButtonClicked(const ustring &button);
 		
 		/// Handler for clicks on the top left button
 		void onTopLeftButtonClicked();
