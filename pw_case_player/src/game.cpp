@@ -491,12 +491,18 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 		// buttons have different positions in the examine scene
 		else if (!flagged(STATE_EXAMINE)) {
 			// see if the click hit the top right button, if any
-			if ((e->x>=176 && e->x<=176+80) && (e->y>=197 && e->y<=197+33))
-				//onTopRightButtonClicked();
-				m_UI->handleGUIClick(mouse, "an_court_rec_btn");
+			StringVector ids;
+			if (flagged(STATE_COURT_REC_BTN))
+				ids.push_back("an_court_rec_btn");
+			if (flagged(STATE_PROFILES_BTN))
+				ids.push_back("an_profiles_btn");
+			if (flagged(STATE_EVIDENCE_BTN))
+				ids.push_back("an_evidence_btn");
+			
+			m_UI->handleGUIClick(mouse, ids);
 			
 			// see if the click hit the top left button
-			else if ((e->x>=0 && e->x<=80) && (e->y>=197 && e->y<197+33))
+			if ((e->x>=0 && e->x<=80) && (e->y>=197 && e->y<197+33))
 				onTopLeftButtonClicked();
 			
 			// see if the bottom left button was clicked
@@ -505,64 +511,8 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 		}
 		
 		// see if the center button was clicked
-		if (flagged(STATE_NEXT_BTN) && ((e->x>=16 && e->x<=16+223) && (e->y>=242 && e->y<=242+111)) &&
-		    !m_State.requestingAnswer && !m_State.requestingEvidence) {
-			// if the parser is blocking the dialogue, don't skip
-			if (!m_Parser->dialogueDone() && (m_Parser->isBlocking() || m_State.curTestimony!=STR_NULL))
-				return;
-			
-			// play a sound effect if done
-			else if (m_Parser->dialogueDone()) {
-				// play a sound effect
-				Audio::playEffect("sfx_next_part", Audio::CHANNEL_GUI);
-			}
-			
-			// if we are in the process of a testimony, set the next piece
-			// as the following block
-			if ((m_State.curTestimony!=STR_NULL && !m_State.curExamination) || 
-			   (m_State.curExamination && !m_State.curExaminationPaused)) {
-				Case::Testimony *testimony=m_Case->getTestimony(m_State.curTestimony);
-				
-				// check if there's another piece
-				if (m_State.curTestimonyPiece>=testimony->pieces.size()-1) {
-					// schedule a fade out
-					m_State.fadeOut="top";
-					
-					// save references to queued events
-					m_State.queuedBlock=testimony->nextBlock;
-					m_State.queuedLocation=testimony->followLocation;
-					
-					// reset everything related to a testimony
-					m_State.curTestimonyPiece=0;
-					m_State.blink="none";
-					m_State.curTestimony=STR_NULL;
-				}
-				
-				// otherwise, move along
-				else {
-					// set the speaker
-					m_Parser->setSpeaker(testimony->speaker);
-					
-					// we need to make sure to show the first block and not automatically
-					// increment the counter
-					// FIXME: this is a nasty little hack job, maybe find a more elegant solution later
-					static bool once=true;
-					if (once) {
-						m_Parser->setBlock(testimony->pieces[m_State.curTestimonyPiece].text);
-						once=false;
-					}
-					
-					// set the next block and increment counter
-					else {
-						m_State.curTestimonyPiece++;	
-						m_Parser->setBlock(testimony->pieces[m_State.curTestimonyPiece].text);
-					}
-				}
-			}
-			
-			// proceed to the next block
-			m_Parser->nextStep();
-			
+		if (flagged(STATE_NEXT_BTN) && !m_State.requestingAnswer && !m_State.requestingEvidence) {
+			m_UI->handleGUIClick(mouse, "an_next_btn");
 			return;
 		}
 		
@@ -711,7 +661,16 @@ void Game::registerAnimations() {
 				new UI::ButtonSlot(this, &Game::onMoveSceneClicked)));
 	
 	// register image buttons
-	m_UI->registerGUIButton("an_court_rec_btn", UI::Button("tc_court_rec_btn", "tc_court_rec_btn_on", 200, Point(176, 197, Z_IFC_BTN),
+	m_UI->registerGUIButton("an_court_rec_btn", UI::Button("tc_court_rec_btn", "tc_court_rec_btn_on", 1000, Point(176, 197, Z_IFC_BTN),
+							      new UI::ButtonSlot(this, &Game::onTopRightButtonClicked)));
+	
+	m_UI->registerGUIButton("an_next_btn", UI::Button("tc_next_btn", "tc_next_btn_on", 1000, Point(16, 242, Z_GUI_BTN),
+							      new UI::ButtonSlot(this, &Game::onNextButtonClicked)));
+	
+	m_UI->registerGUIButton("an_profiles_btn", UI::Button("tc_profiles_btn", "tc_profiles_btn_on", 1000, Point(177, 197, Z_IFC_BTN),
+							      new UI::ButtonSlot(this, &Game::onTopRightButtonClicked)));
+	
+	m_UI->registerGUIButton("an_evidence_btn", UI::Button("tc_evidence_btn", "tc_evidence_btn_on", 1000, Point(177, 197, Z_IFC_BTN),
 							      new UI::ButtonSlot(this, &Game::onTopRightButtonClicked)));
 	
 	// register sprite sequences
@@ -1336,7 +1295,8 @@ void Game::renderMenuView() {
 	
 	// draw next button in case of dialog
 	else if (flagged(STATE_NEXT_BTN)) {
-		Renderer::drawImage(Point(16, 242, Z_GUI_BTN), "tc_next_btn");
+		//Renderer::drawImage(Point(16, 242, Z_GUI_BTN), "tc_next_btn");
+		m_UI->drawButton("an_next_btn");
 		
 		// only animate the arrow if the dialogue is done, or if the dialogue
 		// can be skipped
@@ -1406,9 +1366,9 @@ void Game::renderMenuView() {
 		else if (flagged(STATE_PRESENT_BTN))
 			Renderer::drawImage(Point(176, 197, Z_IFC_BTN), "tc_present_item_btn");
 		else if (flagged(STATE_EVIDENCE_BTN))
-			Renderer::drawImage(Point(177, 197, Z_IFC_BTN), "tc_evidence_btn");
+			m_UI->drawButton("an_evidence_btn");
 		else if (flagged(STATE_PROFILES_BTN))
-			Renderer::drawImage(Point(177, 197, Z_IFC_BTN), "tc_profiles_btn");
+			m_UI->drawButton("an_profiles_btn");
 		
 		if (flagged(STATE_PRESS_BTN))
 			Renderer::drawImage(Point(0, 197, Z_IFC_BTN), "tc_press_btn");
@@ -1888,6 +1848,65 @@ void Game::onInitialScreenClicked(const ustring &id) {
 		m_State.fadeOut="both_half";
 		m_State.queuedBlock=m_Case->getInitialBlockId();
 	}
+}
+
+// handler for clicks on next button
+void Game::onNextButtonClicked(const ustring &id) {
+	// if the parser is blocking the dialogue, don't skip
+	if (!m_Parser->dialogueDone() && (m_Parser->isBlocking() || m_State.curTestimony!=STR_NULL))
+		return;
+	
+	// play a sound effect if done
+	else if (m_Parser->dialogueDone()) {
+		// play a sound effect
+		Audio::playEffect("sfx_next_part", Audio::CHANNEL_GUI);
+	}
+	
+	// if we are in the process of a testimony, set the next piece
+	// as the following block
+	if ((m_State.curTestimony!=STR_NULL && !m_State.curExamination) || 
+		    (m_State.curExamination && !m_State.curExaminationPaused)) {
+		Case::Testimony *testimony=m_Case->getTestimony(m_State.curTestimony);
+		
+		// check if there's another piece
+		if (m_State.curTestimonyPiece>=testimony->pieces.size()-1) {
+			// schedule a fade out
+			m_State.fadeOut="top";
+			
+			// save references to queued events
+			m_State.queuedBlock=testimony->nextBlock;
+			m_State.queuedLocation=testimony->followLocation;
+			
+			// reset everything related to a testimony
+			m_State.curTestimonyPiece=0;
+			m_State.blink="none";
+			m_State.curTestimony=STR_NULL;
+		}
+		
+		// otherwise, move along
+		else {
+			// set the speaker
+			m_Parser->setSpeaker(testimony->speaker);
+			
+			// we need to make sure to show the first block and not automatically
+			// increment the counter
+			// FIXME: this is a nasty little hack job, maybe find a more elegant solution later
+			static bool once=true;
+			if (once) {
+				m_Parser->setBlock(testimony->pieces[m_State.curTestimonyPiece].text);
+				once=false;
+			}
+			
+			// set the next block and increment counter
+			else {
+				m_State.curTestimonyPiece++;	
+				m_Parser->setBlock(testimony->pieces[m_State.curTestimonyPiece].text);
+			}
+		}
+	}
+	
+	// proceed to the next block
+	m_Parser->nextStep();
 }
 
 // top right button was clicked

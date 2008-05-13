@@ -199,6 +199,11 @@ class Button {
 		*/
 		int getWidth() const { return m_Anim.w; }
 		
+		/** Get the button's height
+		  * \return The allocated height
+		*/
+		int getHeight() const;
+		
 		/** Get the button's origin in world coordinates
 		  * \return The button's top-left corner coordinates
 		*/

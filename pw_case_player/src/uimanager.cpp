@@ -62,6 +62,11 @@ void UI::Button::initAnim(const Point &p, const ustring &text, int width, const 
 	m_ActiveID=active;
 }
 
+// get the button's height
+int UI::Button::getHeight() const {
+	return (m_Anim.txt==STR_NULL ? Textures::queryTexture(m_IdleID).w : m_Anim.w);
+}
+
 // draw the button
 void UI::Button::draw() {
 	// draw the correct type: text or image
@@ -97,6 +102,10 @@ void UI::Button::draw() {
 			if (now-m_Anim.lastDraw>m_Anim.speed) {
 				m_Anim.lastDraw=now;
 				m_Anim.velocity=0;
+				
+				// emit callback at this point for image buttons
+				if (m_Anim.txt==STR_NULL && m_Anim.callback)
+					m_Anim.callback->emit(STR_NULL);
 			}
 			
 			Renderer::drawImage(m_Anim.current, m_ActiveID);
@@ -112,10 +121,6 @@ void UI::Button::click() {
 	m_Anim.velocity=1;
 	if (m_Anim.sfx!=STR_NULL)
 		Audio::playEffect(m_Anim.sfx, Audio::CHANNEL_GUI);
-	
-	// emit callback at this point for image buttons
-	if (m_Anim.txt==STR_NULL && m_Anim.callback)
-		m_Anim.callback->emit(STR_NULL);
 }
 
 /**************************************************************************************************/
@@ -154,9 +159,6 @@ void UI::Manager::handleGUIClick(const Point &p, const StringVector &ids) {
 		if (mouseOverButton(ids[i], p)) {
 			UI::Button *button=&m_Buttons[ids[i]];
 			button->click();
-			
-			// don't check anything afterwards if this was clicked
-			return;
 		}
 	}
 }
@@ -191,8 +193,10 @@ void UI::Manager::resyncBounceTexture(const ustring &id, bool left) {
 // see if any gui animations are still occurring
 bool UI::Manager::isGUIBusy() {
 	for (std::map<ustring, UI::Button>::iterator it=m_Buttons.begin(); it!=m_Buttons.end(); ++it) {
-		if ((*it).second.isAnimating())
+		if ((*it).second.isAnimating()) {
+			std::cout << (*it).first << std::endl;
 			return true;
+		}
 	}
 	
 	return false;
@@ -202,7 +206,7 @@ bool UI::Manager::isGUIBusy() {
 bool UI::Manager::mouseOverButton(const ustring &id, const Point &p) {
 	UI::Button &button=m_Buttons[id];
 	
-	Rect rect(button.getOrigin(), button.getWidth(), 26);
+	Rect rect(button.getOrigin(), button.getWidth(), button.getHeight());
 	return Utils::pointInRect(p, rect);
 }
 
