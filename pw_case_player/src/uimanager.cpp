@@ -64,7 +64,9 @@ void UI::Button::initAnim(const Point &p, const ustring &text, int width, const 
 
 // get the button's height
 int UI::Button::getHeight() const {
-	return (m_Anim.txt==STR_NULL ? Textures::queryTexture(m_IdleID).w : m_Anim.w);
+	// NOTE: even though textures of text buttons are 26 px high, this should
+	// be changed so its customizable
+	return (m_Anim.txt==STR_NULL ? Textures::queryTexture(m_IdleID).h : 26);
 }
 
 // draw the button
@@ -204,6 +206,10 @@ bool UI::Manager::isGUIBusy() {
 
 // check to see if the mouse is over a button
 bool UI::Manager::mouseOverButton(const ustring &id, const Point &p) {
+	if (m_Buttons.find(id)==m_Buttons.end()) {
+		Utils::alert("Button id '"+id+"' doesn't exist!");
+		return false;
+	}
 	UI::Button &button=m_Buttons[id];
 	
 	Rect rect(button.getOrigin(), button.getWidth(), button.getHeight());
@@ -507,6 +513,11 @@ void UI::Manager::drawAnimation(const ustring &id) {
 
 // draw a button
 void UI::Manager::drawButton(const ustring &id) {
+	if (m_Buttons.find(id)==m_Buttons.end()) {
+		Utils::alert("Button id '"+id+"' doesn't exist!");
+		return;
+	}
+	
 	UI::Button *button=&m_Buttons[id];
 	button->draw();
 }

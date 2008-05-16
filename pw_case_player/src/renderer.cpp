@@ -166,27 +166,15 @@ void Renderer::drawInitialScreen() {
 
 // draw the evidence page
 void Renderer::drawEvidencePage(const std::vector<Case::Evidence*> &evidence, int page, int selected) {
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	
-	glLoadIdentity();
-	gluPerspective(45.0f, SDLContext::instance()->getWidth()/SDLContext::instance()->getHeight(), 0.1, 100.0);
-	
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	
-	glLoadIdentity();
-	glTranslatef(0.0f, 0.0f, -10.0f);
-	
 	// draw the background
-	drawRect(Rect(Point(24, 233, -1.0f), 208, 124), Theme::lookup("court_record_bg"));
+	drawRect(Rect(Point(24, 233, 1.0f), 208, 124), Theme::lookup("court_record_bg"));
 	
 	// draw top info bar borders
-	drawRect(Rect(Point(24, 233, -1.1f), 208, 20), Theme::lookup("court_record_info_bar_top"));
-	drawRect(Rect(Point(25, 234, -1.2f), 207, 19), Theme::lookup("court_record_info_bar_bottom"));
+	drawRect(Rect(Point(24, 233, 1.1f), 208, 20), Theme::lookup("court_record_info_bar_top"));
+	drawRect(Rect(Point(25, 234, 1.2f), 207, 19), Theme::lookup("court_record_info_bar_bottom"));
 	
 	// draw the top info bar
-	drawRect(Rect(Point(26, 235, -1.3f), 204, 16), Theme::lookup("info_bar_bg"));
+	drawRect(Rect(Point(26, 235, 1.3f), 204, 16), Theme::lookup("info_bar_bg"));
 	
 	// draw buttons
 	drawImage(Point(1, 253, 2.0f), "tc_large_btn_left");
@@ -249,12 +237,6 @@ void Renderer::drawEvidencePage(const std::vector<Case::Evidence*> &evidence, in
 			x=36;
 		}
 	}
-	
-	glPopMatrix();
-	
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-	glMatrixMode(GL_MODELVIEW);
 }
 
 // draw evidence information page

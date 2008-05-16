@@ -365,20 +365,23 @@ class Game {
 		/// Handler for clicks on the next button
 		void onNextButtonClicked(const ustring &button);
 		
+		/// Handler for clicks on the cross examine buttons
+		void onXExamineButtonClicked(const ustring &button);
+		
 		/// Handler for clicks on the top right button
 		void onTopRightButtonClicked(const ustring &button);
 		
 		/// Handler for clicks on the top left button
-		void onTopLeftButtonClicked();
+		void onTopLeftButtonClicked(const ustring &button);
 		
 		/// Handler for clicks on the bottom left button
-		void onBottomLeftButtonClicked();
+		void onBottomLeftButtonClicked(const ustring &button);
 		
 		/// Handler for clicks on the bottom right button
-		void onBottomRightButtonClicked();
+		void onBottomRightButtonClicked(const ustring &button);
 		
 		/// Handler for Present button clicks
-		void onPresentCenterClicked();
+		void onPresentCenterClicked(const ustring &button);
 		
 		/// Handler for clicks on the Check button for evidence with check images
 		void onCheckButtonClicked();

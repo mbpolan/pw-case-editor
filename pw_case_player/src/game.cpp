@@ -464,33 +464,32 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 		
 		// check for clicks on examine scene
 		if (flagged(STATE_EXAMINE)) {
-			// this will always be the court record button in this case
-			if ((e->x>=176 && e->x<=176+79) && (e->y>=197 && e->y<=197+21))
-				onTopRightButtonClicked(STR_NULL);
+			StringVector ids;
 			
-			// likewise, this will always be the back button
-			else if ((e->x>=0 && e->x<=79) && (e->y>=369 && e->y<=369+21))
-				onBottomLeftButtonClicked();
+			ids.push_back("an_court_rec_btn_thin");
+			ids.push_back("an_back_btn_thin");
 			
-			// examine button clicked
-			else if ((e->x>=177 && e->x<=256) && (e->y>=369 && e->y<=369+21))
-				onExamineThing(Point(m_State.examinePt.x(), m_State.examinePt.y()+197));
+			if (canExamineRegion())
+				ids.push_back("an_examine_btn_thin");
+			
+			m_UI->handleGUIClick(mouse, ids);
 		}
 		
 		// check for clicks on check image scene
 		else if (flagged(STATE_CHECK_EVIDENCE_IMAGE)) {
-			// back button
-			if ((e->x>=0 && e->x<=79) && (e->y>=369 && e->y<=369+21))
-				onBottomLeftButtonClicked();
+			// available button ids
+			StringVector ids;
+			if (flagged(STATE_BACK_BTN))
+				ids.push_back("an_back_btn");
+			if (flagged(STATE_CHECK_BTN) && m_State.contradictionImg!=STR_NULL)
+				ids.push_back("an_check_btn");
 			
-			// confirm selection button
-			else if ((e->x>=177 && e->x<=256) && (e->y>=359 && e->y<=389) && m_State.contradictionImg!=STR_NULL)
-				onBottomRightButtonClicked();
+			m_UI->handleGUIClick(mouse, ids);
 		}
 		
 		// buttons have different positions in the examine scene
 		else if (!flagged(STATE_EXAMINE)) {
-			// see if the click hit the top right button, if any
+			// see if the click hit a button, if any
 			StringVector ids;
 			if (flagged(STATE_COURT_REC_BTN))
 				ids.push_back("an_court_rec_btn");
@@ -498,16 +497,14 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 				ids.push_back("an_profiles_btn");
 			if (flagged(STATE_EVIDENCE_BTN))
 				ids.push_back("an_evidence_btn");
+			if (flagged(STATE_BACK_BTN))
+				ids.push_back("an_back_btn");
+			if (flagged(STATE_PRESS_BTN))
+				ids.push_back("an_press_btn");
+			if (flagged(STATE_CONFIRM_BTN))
+				ids.push_back("an_confirm_btn");
 			
 			m_UI->handleGUIClick(mouse, ids);
-			
-			// see if the click hit the top left button
-			if ((e->x>=0 && e->x<=80) && (e->y>=197 && e->y<197+33))
-				onTopLeftButtonClicked();
-			
-			// see if the bottom left button was clicked
-			else if ((e->x>=0 && e->x<=79) && (e->y>=359 && e->y<=389))
-				onBottomLeftButtonClicked();
 		}
 		
 		// see if the center button was clicked
@@ -522,46 +519,13 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 			if (!m_Parser->dialogueDone() && (m_Parser->isBlocking() || m_State.curTestimony!=STR_NULL))
 				return;
 			
-			Case::Testimony *testimony=m_Case->getTestimony(m_State.curTestimony);
-			
-			// left button clicked
-			if ((e->x>=16 && e->x<=122) && (e->y>=261 && e->y<=341)) {
-				m_State.curTestimonyPiece--;
-				if (m_State.curTestimonyPiece<0)
-					m_State.curTestimonyPiece=0;
-				
-				m_Parser->setBlock(testimony->pieces[m_State.curTestimonyPiece].text);
-				
-				m_Parser->nextStep();
-			}
-			
-			// right button clicked
-			else if ((e->x>=134 && e->x<=240) && (e->y>=261 && e->y<=341)) {
-				// we've reached the end of the testimony
-				if (m_State.curTestimonyPiece>=testimony->pieces.size()-1) {
-					m_State.curExaminationPaused=true;
-					m_State.curTestimonyPiece=0;
-					
-					// now set the ending block
-					m_Parser->setBlock(m_Case->getBuffers()[testimony->xExamineEndBlock]);
-					
-					m_Parser->nextStep();
-				}
-				
-				// move to the next block of testimony
-				else {
-					// set the next block and increment counter
-					m_State.curTestimonyPiece++;
-					m_Parser->setBlock(testimony->pieces[m_State.curTestimonyPiece].text);
-					
-					m_Parser->nextStep();
-				}
-			}
+			m_UI->handleGUIClick(mouse, "an_x_examine_btn_left");
+			m_UI->handleGUIClick(mouse, "an_x_examine_btn_right");
 		}
 		
 		// check if the centered, present button was clicked
-		if (flagged(STATE_PRESENT_TOP_BTN) && ((e->x>=89 && e->x<=167) && (e->y>=197 && e->y<=229)))
-			onPresentCenterClicked();
+		if (flagged(STATE_PRESENT_TOP_BTN))
+			m_UI->handleGUIClick(mouse, "an_present_item_btn");
 		
 		// if the controls are drawn, see if one was clicked
 		else if (flagged(STATE_CONTROLS))
@@ -663,6 +627,9 @@ void Game::registerAnimations() {
 	// register image buttons
 	m_UI->registerGUIButton("an_court_rec_btn", UI::Button("tc_court_rec_btn", "tc_court_rec_btn_on", 1000, Point(176, 197, Z_IFC_BTN),
 							      new UI::ButtonSlot(this, &Game::onTopRightButtonClicked)));
+	m_UI->registerGUIButton("an_court_rec_btn_thin", 
+				UI::Button("tc_court_rec_btn_thin", "tc_court_rec_btn_thin_on", 1000, Point(176, 197, Z_IFC_BTN),
+							      new UI::ButtonSlot(this, &Game::onTopRightButtonClicked)));
 	
 	m_UI->registerGUIButton("an_next_btn", UI::Button("tc_next_btn", "tc_next_btn_on", 1000, Point(16, 242, Z_GUI_BTN),
 							      new UI::ButtonSlot(this, &Game::onNextButtonClicked)));
@@ -673,6 +640,39 @@ void Game::registerAnimations() {
 	m_UI->registerGUIButton("an_evidence_btn", UI::Button("tc_evidence_btn", "tc_evidence_btn_on", 1000, Point(177, 197, Z_IFC_BTN),
 							      new UI::ButtonSlot(this, &Game::onTopRightButtonClicked)));
 	
+	m_UI->registerGUIButton("an_back_btn", UI::Button("tc_back_btn", "tc_back_btn_on", 1000, Point(0, 359, Z_IFC_BTN),
+							      new UI::ButtonSlot(this, &Game::onBottomLeftButtonClicked)));
+	
+	m_UI->registerGUIButton("an_back_btn_thin", UI::Button("tc_back_btn_thin", "tc_back_btn_thin_on", 1000, Point(0, 369, Z_IFC_BTN),
+							      new UI::ButtonSlot(this, &Game::onBottomLeftButtonClicked)));
+	
+	m_UI->registerGUIButton("an_press_btn", UI::Button("tc_press_btn", "tc_press_btn_on", 1000, Point(0, 197, Z_IFC_BTN),
+							      new UI::ButtonSlot(this, &Game::onTopLeftButtonClicked)));
+	
+	m_UI->registerGUIButton("an_x_examine_btn_right", UI::Button("tc_x_examine_btn", "tc_x_examine_btn_on", 1000, Point(16, 261, Z_GUI_BTN),
+							      new UI::ButtonSlot(this, &Game::onXExamineButtonClicked)));
+	
+	m_UI->registerGUIButton("an_x_examine_btn_left", UI::Button("tc_x_examine_btn", "tc_x_examine_btn_on", 1000, Point(134, 261, Z_GUI_BTN),
+							      new UI::ButtonSlot(this, &Game::onXExamineButtonClicked)));
+	
+	m_UI->registerGUIButton("an_confirm_btn", UI::Button("tc_confirm_btn", "tc_confirm_btn_on", 1000, Point(177, 359, Z_IFC_BTN),
+							      new UI::ButtonSlot(this, &Game::onTopLeftButtonClicked)));
+	
+	m_UI->registerGUIButton("an_check_btn", UI::Button("tc_check_btn", "tc_check_btn_on", 1000, Point(177, 359, Z_IFC_BTN),
+							      new UI::ButtonSlot(this, &Game::onBottomRightButtonClicked)));
+	
+	m_UI->registerGUIButton("an_examine_btn_thin", 
+				UI::Button("tc_examine_btn_thin", "tc_examine_btn_thin_on", 1000, Point(177, 369, Z_IFC_BTN),
+							      new UI::ButtonSlot(this, &Game::onBottomRightButtonClicked)));
+	
+	m_UI->registerGUIButton("an_present_item_btn", 
+				UI::Button("tc_present_item_btn", "tc_present_item_btn_on", 1000, Point(176, 197, Z_IFC_BTN),
+							      new UI::ButtonSlot(this, &Game::onTopRightButtonClicked)));
+	
+	m_UI->registerGUIButton("an_present_top_btn", 
+				UI::Button("tc_present_top_btn", "tc_present_top_btn_on", 1000, Point(89, 197, Z_IFC_BTN),
+					   		     new UI::ButtonSlot(this, &Game::onPresentCenterClicked)));
+	 
 	// register sprite sequences
 	m_UI->registerTestimonySequence("an_testimony_sequence");
 	m_UI->registerCrossExamineSequence("an_cross_examine_sequence");
@@ -1295,13 +1295,16 @@ void Game::renderMenuView() {
 	
 	// draw next button in case of dialog
 	else if (flagged(STATE_NEXT_BTN)) {
-		//Renderer::drawImage(Point(16, 242, Z_GUI_BTN), "tc_next_btn");
 		m_UI->drawButton("an_next_btn");
 		
 		// only animate the arrow if the dialogue is done, or if the dialogue
 		// can be skipped
 		bool draw=true;
-		if (m_Parser->isBlocking()) {
+		
+		// NOTE: commented out since i hate having to wait for the dialogue to finish :P
+		// re-enable this once a release is ready
+		//if (m_Parser->isBlocking()) {
+		if (1) {
 			if (!m_Parser->dialogueDone())
 				draw=false;
 		}
@@ -1330,8 +1333,8 @@ void Game::renderMenuView() {
 	// draw testimony movement buttons
 	else if (flagged(STATE_CROSS_EXAMINE_BTNS)) {
 		// first, draw the two testimony movement buttons
-		Renderer::drawImage(Point(16, 261, Z_GUI_BTN), "tc_x_examine_btn");
-		Renderer::drawImage(Point(134, 261, Z_GUI_BTN), "tc_x_examine_btn");
+		m_UI->drawButton("an_x_examine_btn_left");
+		m_UI->drawButton("an_x_examine_btn_right");
 		
 		// don't draw the left arrow if there is not testimony piece
 		// that precedes this one
@@ -1364,39 +1367,32 @@ void Game::renderMenuView() {
 		if (flagged(STATE_COURT_REC_BTN))
 			m_UI->drawButton("an_court_rec_btn"+append);
 		else if (flagged(STATE_PRESENT_BTN))
-			Renderer::drawImage(Point(176, 197, Z_IFC_BTN), "tc_present_item_btn");
+			m_UI->drawButton("an_present_item_btn");
 		else if (flagged(STATE_EVIDENCE_BTN))
 			m_UI->drawButton("an_evidence_btn");
 		else if (flagged(STATE_PROFILES_BTN))
 			m_UI->drawButton("an_profiles_btn");
 		
 		if (flagged(STATE_PRESS_BTN))
-			Renderer::drawImage(Point(0, 197, Z_IFC_BTN), "tc_press_btn");
+			m_UI->drawButton("an_press_btn");
 		
 		// check evidence or confirm button, if needed
 		if (flagged(STATE_CHECK_BTN))
-			Renderer::drawImage(Point(177, 359, Z_IFC_BTN), "tc_check_btn");
+			m_UI->drawButton("an_check_btn");
 		else if (flagged(STATE_CONFIRM_BTN))
-			Renderer::drawImage(Point(177, 359, Z_IFC_BTN), "tc_confirm_btn");
+			m_UI->drawButton("an_confirm_btn");
 	
 		// draw the present evidence button, centered on the upper portion of the lower screen
 		if (flagged(STATE_PRESENT_TOP_BTN))
-			Renderer::drawImage(Point(89, 197, Z_IFC_BTN), "tc_present_top_btn");
+			m_UI->drawButton("an_present_top_btn");
 		
 		// draw examine button if needed
 		if (flagged(STATE_EXAMINE) && canExamineRegion())
-			Renderer::drawImage(Point(256-79, 369, Z_IFC_BTN), "tc_examine_btn_thin");
+			m_UI->drawButton("an_examine_btn_thin");
 		
 		// draw the back button
-		if (flagged(STATE_BACK_BTN)) {
-			// same applies here, draw the back button lower if it is the thin variety
-			int y=359;
-			if (append=="_thin")
-				y+=10;
-			
-			// draw the button
-			Renderer::drawImage(Point(0, y, Z_IFC_BTN), "tc_back_btn"+append);
-		}
+		if (flagged(STATE_BACK_BTN))
+			m_UI->drawButton("an_back_btn"+append);
 	}
 }
 
@@ -1909,6 +1905,45 @@ void Game::onNextButtonClicked(const ustring &id) {
 	m_Parser->nextStep();
 }
 
+// handler for cross examine buttons
+void Game::onXExamineButtonClicked(const ustring &id) {
+	Case::Testimony *testimony=m_Case->getTestimony(m_State.curTestimony);
+	
+	// left button clicked
+	if (id=="an_x_examine_btn_left") {
+		m_State.curTestimonyPiece--;
+		if (m_State.curTestimonyPiece<0)
+			m_State.curTestimonyPiece=0;
+		
+		m_Parser->setBlock(testimony->pieces[m_State.curTestimonyPiece].text);
+		
+		m_Parser->nextStep();
+	}
+	
+	// right button clicked
+	else {
+		// we've reached the end of the testimony
+		if (m_State.curTestimonyPiece>=testimony->pieces.size()-1) {
+			m_State.curExaminationPaused=true;
+			m_State.curTestimonyPiece=0;
+			
+			// now set the ending block
+			m_Parser->setBlock(m_Case->getBuffers()[testimony->xExamineEndBlock]);
+			
+			m_Parser->nextStep();
+		}
+		
+		// move to the next block of testimony
+		else {
+			// set the next block and increment counter
+			m_State.curTestimonyPiece++;
+			m_Parser->setBlock(testimony->pieces[m_State.curTestimonyPiece].text);
+			
+			m_Parser->nextStep();
+		}
+	}
+}
+
 // top right button was clicked
 void Game::onTopRightButtonClicked(const ustring &id) {
 	// if the court record button is shown, activate evidence page
@@ -2084,7 +2119,7 @@ void Game::onTopRightButtonClicked(const ustring &id) {
 }
 
 // top left button was clicked
-void Game::onTopLeftButtonClicked() {
+void Game::onTopLeftButtonClicked(const ustring &id) {
 	// the only button shown on the top left is the press button
 	if (flagged(STATE_PRESS_BTN)) {
 		// get the current testimony
@@ -2107,7 +2142,7 @@ void Game::onTopLeftButtonClicked() {
 }
 
 // bottom left button was clicked
-void Game::onBottomLeftButtonClicked() {
+void Game::onBottomLeftButtonClicked(const ustring &id) {
 	// if the back button is shown, return to previous screen
 	if (flagged(STATE_BACK_BTN)) {
 		int flags=0;
@@ -2195,7 +2230,7 @@ void Game::onBottomLeftButtonClicked() {
 }
 
 // bottom right button was clicked
-void Game::onBottomRightButtonClicked() {
+void Game::onBottomRightButtonClicked(const ustring &id) {
 	// confirm button was clicked
 	if (flagged(STATE_CONFIRM_BTN)) {
 		// during examining an image for contradiction
@@ -2225,10 +2260,16 @@ void Game::onBottomRightButtonClicked() {
 			m_UI->registerBGSlide("an_bg_slide");
 		}
 	}
+	
+	// examining a scene - must be examine button
+	else if (flagged(STATE_EXAMINE)) {
+		if (id=="an_examine_btn_thin")
+			onExamineThing(Point(m_State.examinePt.x(), m_State.examinePt.y()+197));
+	}
 }
 
 // centered present button clicked
-void Game::onPresentCenterClicked() {
+void Game::onPresentCenterClicked(const ustring &id) {
 	// we are presenting evidence
 	if (m_State.requestingEvidence) {
 		// disable the requesting evidence mode
