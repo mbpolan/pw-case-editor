@@ -184,6 +184,11 @@ class Button {
 		*/
 		Button(const ustring &idle, const ustring &active, int blinkTime, const Point &p, ButtonSlot *slot, const ustring &sfx=STR_NULL);
 		
+		/** Finish the button's animation, regardless of its state
+		  * \note This will not execute any callbacks
+		*/
+		void finishAnimation() { m_Anim.velocity=0; }
+		
 		/** Set the ID for this button
 		  * \param id The ID
 		*/

@@ -467,6 +467,8 @@ ustring TextParser::parse(bool drawDialogue) {
 					int flags=STATE_TEXT_BOX | STATE_TALK;
 					m_Game->m_State.drawFlags=flags;
 					
+					UI::Manager::instance()->getButton("an_next_btn")->finishAnimation();
+					
 					Audio::playEffect("sfx_return", Audio::CHANNEL_GUI);
 				}
 				

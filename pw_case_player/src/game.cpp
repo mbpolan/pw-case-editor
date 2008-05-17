@@ -451,12 +451,20 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 		
 		// check for clicks on talk scene
 		else if (flagged(STATE_TALK)) {
-			Case::Location *location=m_Case->getLocation(m_State.currentLocation);
-			Character *character=m_Case->getCharacter(location->character);
-			
 			// include button ids for visible talk options
 			StringVector ids;
-			for (int i=0; i<character->getTalkOptions().size(); i++)
+			int amount;
+			
+			if (!m_State.requestingAnswer) {
+				Case::Location *location=m_Case->getLocation(m_State.currentLocation);
+				Character *character=m_Case->getCharacter(location->character);
+				amount=character->getTalkOptions().size();
+			}
+			
+			else
+				amount=m_State.talkOptions.size();
+			
+			for (int i=0; i<amount; i++)
 				ids.push_back("an_talk_op"+Utils::itoa(i+1)+"_btn");
 			
 			m_UI->handleGUIClick(mouse, ids);
@@ -671,8 +679,8 @@ void Game::registerAnimations() {
 	
 	m_UI->registerGUIButton("an_present_top_btn", 
 				UI::Button("tc_present_top_btn", "tc_present_top_btn_on", 1000, Point(89, 197, Z_IFC_BTN),
-					   		     new UI::ButtonSlot(this, &Game::onPresentCenterClicked)));
-	 
+					   		      new UI::ButtonSlot(this, &Game::onPresentCenterClicked)));
+	
 	// register sprite sequences
 	m_UI->registerTestimonySequence("an_testimony_sequence");
 	m_UI->registerCrossExamineSequence("an_cross_examine_sequence");
@@ -1156,7 +1164,7 @@ void Game::renderTopView() {
 		if (flagged(STATE_EXAMINE) || (m_State.prevScreen==SCREEN_EXAMINE && !flagged(STATE_TEXT_BOX)) ||
 		    m_State.requestingEvidence || m_State.requestingAnswer) {
 			// draw a translucent rectangle
-			Renderer::drawRect(Rect(Point(0, 0, Z_FADE), 256, 192), Color(0, 0, 0, 128));
+			//Renderer::drawRect(Rect(Point(0, 0, Z_FADE), 256, 192), Color(0, 0, 0, 128));
 		}
 	}
 	
@@ -1182,7 +1190,7 @@ void Game::renderTopView() {
 	
 	// if we are required to present evidence, draw elements now
 	if (m_State.requestingEvidence || m_State.requestingAnswer)
-		Renderer::drawImage(Point(0, 168), "tc_answer_bar");
+		Renderer::drawImage(Point(0, 168, Z_ANSWER_BAR), "tc_answer_bar");
 	
 	// if there is shown evidence, draw it as well
 	if (m_State.shownEvidence!=STR_NULL) {

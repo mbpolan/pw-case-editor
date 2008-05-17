@@ -58,14 +58,15 @@ typedef std::vector<std::pair<ValueRange, Color> > ColorRangeVector;
   * needs to be drawn over another.
 */
 const float Z_FADE=		20.0f;
-const float Z_ANIM_SPRITE=	14.0f;
+const float Z_ANIM_SPRITE=	14.5f;
 const float Z_TEXT=		14.0f;
+const float Z_ANSWER_BAR=	13.5f;
 const float Z_TEXT_BOX_TAG=	13.0f;
 const float Z_IFC_BTN=		13.0f;
 const float Z_TEXT_BOX=		12.0f;
-const float Z_SCREEN_BARS=	12.0f;
+const float Z_SCREEN_BARS=	11.5f;
 const float Z_SPRITE=		11.0f;
-const float Z_BARS=		11.0f;
+const float Z_BARS=		10.5f;
 const float Z_SCANLINES=	10.0f;
 const float Z_GUI_BTN=		5.0f;
 const float Z_BTN_ARROWS=	6.0f;
