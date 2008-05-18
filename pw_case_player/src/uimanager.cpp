@@ -43,6 +43,12 @@ UI::Button::Button(const ustring &idle, const ustring &active, int blinkTime, co
 	initAnim(p, STR_NULL, idleTex.w, idle, active, slot, sfx);
 }
 
+// free any used memory associated with this button
+void UI::Button::free() {
+	if (m_Anim.callback)
+		delete m_Anim.callback;
+}
+
 // prepare the button's internal animation data
 void UI::Button::initAnim(const Point &p, const ustring &text, int width, const ustring &idle, const ustring &active, 
 			  UI::ButtonSlot *slot, const ustring &sfx) {
@@ -132,9 +138,20 @@ UI::Manager::Manager(Case::Case *pcase): m_Case(pcase) {
 	g_Manager=this;
 }
 
+// destructor
+UI::Manager::~Manager() {
+	this->free();
+}
+
 // return an instance of the ui manager
 UI::Manager* UI::Manager::instance() {
 	return g_Manager;
+}
+
+// frees any used memory
+void UI::Manager::free() {
+	for (std::map<ustring, UI::Button>::iterator it=m_Buttons.begin(); it!=m_Buttons.end(); ++it)
+		(*it).second.free();
 }
 
 // get a pointer to an animation struct

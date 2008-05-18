@@ -184,6 +184,9 @@ class Button {
 		*/
 		Button(const ustring &idle, const ustring &active, int blinkTime, const Point &p, ButtonSlot *slot, const ustring &sfx=STR_NULL);
 		
+		/// Free any used memory associated with this button
+		void free();
+		
 		/** Finish the button's animation, regardless of its state
 		  * \note This will not execute any callbacks
 		*/
@@ -259,10 +262,16 @@ class Manager {
 		*/
 		Manager(Case::Case *pcase);
 		
+		/// Destructor
+		~Manager();
+		
 		/** Get the only instance of this class
 		  * \return A pointer to the only instance of this class
 		*/
 		static Manager* instance();
+		
+		/// Frees any used memory from all animations
+		void free();
 		
 		/** Get a pointer to an animation struct
 		  * \return A pointer to the Animation struct requested, NULL if it doesn't exist

@@ -162,49 +162,6 @@ bool Game::loadStockTextures() {
 	Case::Overrides ov=m_Case->getOverrides();
 	int tbAlpha=(ov.textboxAlpha!=-1 ? ov.textboxAlpha : 165);
 	
-	// modify certain textures
-	/*
-	SDL_SetAlpha(Textures::queryTexture("scanlines_overlay"), SDL_SRCALPHA, 30);
-	SDL_SetAlpha(Textures::queryTexture("tc_next_btn"), SDL_SRCALPHA, 225);
-	SDL_SetAlpha(Textures::queryTexture("tc_text_box"), SDL_SRCALPHA, tbAlpha);
-	SDL_SetAlpha(Textures::queryTexture("tc_text_box_border"), SDL_SRCALPHA, tbAlpha);
-	
-	SDL_SetAlpha(Textures::queryTexture("tc_select_tl"), SDL_SRCALPHA, 225);
-	SDL_SetAlpha(Textures::queryTexture("tc_select_tr"), SDL_SRCALPHA, 225);
-	SDL_SetAlpha(Textures::queryTexture("tc_select_br"), SDL_SRCALPHA, 225);
-	SDL_SetAlpha(Textures::queryTexture("tc_select_bl"), SDL_SRCALPHA, 225);
-	
-	
-	// map of opaque surfaces
-	std::map<ustring, std::pair<char, std::pair<int, int> > > surfaces;
-	surfaces["opaque_black"]=std::make_pair<char, std::pair<int , int> >(0, std::make_pair<int, int>(256, 192));
-	surfaces["opaque_white"]=std::make_pair<char, std::pair<int , int> >(255, std::make_pair<int, int>(256, 192));
-	surfaces["transparent"]=std::make_pair<char, std::pair<int , int> >(0, std::make_pair<int, int>(256, 192));
-	
-	// create these surfaces and add them as textures
-	for (std::map<ustring, std::pair<char, std::pair<int, int> > >::iterator it=surfaces.begin(); it!=surfaces.end(); ++it) {
-		SDL_Surface *opaque=SDL_CreateRGBSurface(SDL_SWSURFACE, (*it).second.second.first, (*it).second.second.second, 32, 0, 0, 0, 0);
-		SDL_LockSurface(opaque);
-		
-		// set all pixels to black
-		char *pixels=(char*) opaque->pixels;
-		for (int i=0; i<(*it).second.second.first*(*it).second.second.second*4; i++)
-			pixels[i]=(char) (*it).second.first;
-		opaque->pixels=(void*) pixels;
-		
-		SDL_UnlockSurface(opaque);
-		
-		// add this surface as a texture
-		Textures::pushTexture((*it).first, opaque);
-	}
-	
-	// modify surfaces
-	SDL_SetColorKey(Textures::queryTexture("transparent"), SDL_SRCCOLORKEY, 0);
-	
-	// add other surfaces
-	Textures::pushTexture("court_panorama_filled", Utils::createSurface(1296, 192));
-	*/
-	
 	// register stock texture animations
 	registerAnimations();
 	
