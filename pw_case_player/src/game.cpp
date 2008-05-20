@@ -64,6 +64,7 @@ Game::Game(const ustring &rootPath, Case::Case *pcase): m_RootPath(rootPath), m_
 	m_State.hideTextBox=false;
 	
 	// reset testimony variables
+	m_State.testimonyTitle=false;
 	m_State.curTestimony=STR_NULL;
 	m_State.curTestimonyPiece=0;
 	m_State.barPercent=100;
@@ -1572,6 +1573,7 @@ bool Game::renderSpecialEffects() {
 			
 			// set the first block of testimony: the title
 			m_Parser->setBlock("<testimony-title>"+testimony->title+"</testimony-title>");
+			m_State.testimonyTitle=true;
 			
 			m_State.testimonySequence="none";
 			
@@ -1608,6 +1610,7 @@ bool Game::renderSpecialEffects() {
 			
 			// once again, we set the testimony title as our cross examination title
 			m_Parser->setBlock("<testimony-title>"+testimony->title+"</testimony-title>");
+			m_State.testimonyTitle=true;
 			
 			return true;
 		}
@@ -1830,7 +1833,7 @@ void Game::onNextButtonClicked(const ustring &id) {
 		Case::Testimony *testimony=m_Case->getTestimony(m_State.curTestimony);
 		
 		// check if there's another piece
-		if (m_State.curTestimonyPiece>=testimony->pieces.size()-1) {
+		if (m_State.curTestimonyPiece>=testimony->pieces.size()-1 && !m_State.testimonyTitle) {
 			// schedule a fade out
 			m_State.fadeOut="top";
 			
@@ -1840,12 +1843,17 @@ void Game::onNextButtonClicked(const ustring &id) {
 			
 			// reset everything related to a testimony
 			m_State.curTestimonyPiece=0;
+			m_State.testimonyTitle=false;
 			m_State.blink="none";
 			m_State.curTestimony=STR_NULL;
 		}
 		
 		// otherwise, move along
 		else {
+			// flag that we began the testimony
+			if (m_State.testimonyTitle)
+				m_State.testimonyTitle=false;
+			
 			// set the speaker
 			m_Parser->setSpeaker(testimony->speaker);
 			

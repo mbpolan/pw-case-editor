@@ -147,6 +147,7 @@ struct _GameState {
 	int bgFade;
 	
 	// testimony variables
+	bool testimonyTitle; // whether we have/have not started the actual testimony yet
 	ustring curTestimony;
 	int curTestimonyPiece;
 	int barPercent; // amount of green bar filled in
