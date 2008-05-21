@@ -530,7 +530,7 @@ void Game::registerAnimations() {
 	m_UI->registerSideBounceAnimation("an_info_page_button_right", "tc_button_arrow_small_right", 
 					  true, Point(247, 267, Z_BTN_ARROWS), -2, 2, 25);
 	m_UI->registerSyncBounce("an_x_examine_arrows", "tc_button_arrow_left", "tc_button_arrow_right",
-				 Point(51, 285), Point(169, 285), -2, 2, 25);
+				 Point(51, 285, Z_BTN_ARROWS), Point(169, 285, Z_BTN_ARROWS), -2, 2, 25);
 	
 	// register fade effects
 	m_UI->registerFadeOut("an_next_location_fade_top", 1, UI::ANIM_FADE_OUT_TOP);
@@ -554,15 +554,15 @@ void Game::registerAnimations() {
 	m_UI->registerCourtCameraMovement("an_court_camera");
 	
 	// register exclamations
-	m_UI->registerExclamation("an_hold_it", "tc_hold_it", Point(0, 0));
-	m_UI->registerExclamation("an_objection", "tc_objection", Point(0, 0));
-	m_UI->registerExclamation("an_take_that", "tc_take_that", Point(0, 0));
+	m_UI->registerExclamation("an_hold_it", "tc_hold_it", Point(0, 0, Z_ANIM_SPRITE));
+	m_UI->registerExclamation("an_objection", "tc_objection", Point(0, 0, Z_ANIM_SPRITE));
+	m_UI->registerExclamation("an_take_that", "tc_take_that", Point(0, 0, Z_ANIM_SPRITE));
 	
 	// register green bars
-	m_UI->registerGreenBarControl("an_court_green_bar", "tc_court_green_bar", Point(172, 10));
+	m_UI->registerGreenBarControl("an_court_green_bar", "tc_court_green_bar", Point(172, 10, Z_ANIM_SPRITE+0.1f));
 	
 	// register blink effects
-	m_UI->registerBlink("an_testimony_blink", "testimony_logo", Point(2, 2), 1500);
+	m_UI->registerBlink("an_testimony_blink", "testimony_logo", Point(2, 2, Z_ANIM_SPRITE+0.1f), 1500);
 	
 	// register flash effects
 	m_UI->registerFlash("an_flash", 5);
@@ -570,6 +570,9 @@ void Game::registerAnimations() {
 	
 	// register gui animations
 	m_UI->registerGUIButton("an_new_game_btn", UI::Button("New Game", 150, Point(53, 240, Z_GUI_BTN), 
+				new UI::ButtonSlot(this, &Game::onInitialScreenClicked), "sfx_gavel"));
+	
+	m_UI->registerGUIButton("an_continue_btn", UI::Button("Continue", 150, Point(53, 280, Z_GUI_BTN), 
 				new UI::ButtonSlot(this, &Game::onInitialScreenClicked), "sfx_gavel"));
 	
 	m_UI->registerGUIButton("an_talk_op1_btn", UI::Button("", 200, Point(28, 236, Z_GUI_BTN), 
@@ -615,10 +618,10 @@ void Game::registerAnimations() {
 	m_UI->registerGUIButton("an_press_btn", UI::Button("tc_press_btn", "tc_press_btn_on", 1000, Point(0, 197, Z_IFC_BTN),
 							      new UI::ButtonSlot(this, &Game::onTopLeftButtonClicked)));
 	
-	m_UI->registerGUIButton("an_x_examine_btn_right", UI::Button("tc_x_examine_btn", "tc_x_examine_btn_on", 1000, Point(16, 261, Z_GUI_BTN),
+	m_UI->registerGUIButton("an_x_examine_btn_left", UI::Button("tc_x_examine_btn", "tc_x_examine_btn_on", 1000, Point(16, 261, Z_GUI_BTN),
 							      new UI::ButtonSlot(this, &Game::onXExamineButtonClicked)));
 	
-	m_UI->registerGUIButton("an_x_examine_btn_left", UI::Button("tc_x_examine_btn", "tc_x_examine_btn_on", 1000, Point(134, 261, Z_GUI_BTN),
+	m_UI->registerGUIButton("an_x_examine_btn_right", UI::Button("tc_x_examine_btn", "tc_x_examine_btn_on", 1000, Point(134, 261, Z_GUI_BTN),
 							      new UI::ButtonSlot(this, &Game::onXExamineButtonClicked)));
 	
 	m_UI->registerGUIButton("an_confirm_btn", UI::Button("tc_confirm_btn", "tc_confirm_btn_on", 1000, Point(177, 359, Z_IFC_BTN),
@@ -1816,6 +1819,8 @@ void Game::onInitialScreenClicked(const ustring &id) {
 
 // handler for clicks on next button
 void Game::onNextButtonClicked(const ustring &id) {
+	static bool once=true;
+	
 	// if the parser is blocking the dialogue, don't skip
 	if (!m_Parser->dialogueDone() && (m_Parser->isBlocking() || m_State.curTestimony!=STR_NULL))
 		return;
@@ -1844,6 +1849,7 @@ void Game::onNextButtonClicked(const ustring &id) {
 			// reset everything related to a testimony
 			m_State.curTestimonyPiece=0;
 			m_State.testimonyTitle=false;
+			once=true;
 			m_State.blink="none";
 			m_State.curTestimony=STR_NULL;
 		}
@@ -1860,7 +1866,6 @@ void Game::onNextButtonClicked(const ustring &id) {
 			// we need to make sure to show the first block and not automatically
 			// increment the counter
 			// FIXME: this is a nasty little hack job, maybe find a more elegant solution later
-			static bool once=true;
 			if (once) {
 				m_Parser->setBlock(testimony->pieces[m_State.curTestimonyPiece].text);
 				once=false;
@@ -1868,7 +1873,7 @@ void Game::onNextButtonClicked(const ustring &id) {
 			
 			// set the next block and increment counter
 			else {
-				m_State.curTestimonyPiece++;	
+				m_State.curTestimonyPiece++;
 				m_Parser->setBlock(testimony->pieces[m_State.curTestimonyPiece].text);
 			}
 		}

@@ -113,7 +113,7 @@ void UI::Button::draw() {
 				
 				// emit callback at this point for image buttons
 				if (m_Anim.txt==STR_NULL && m_Anim.callback)
-					m_Anim.callback->emit(STR_NULL);
+					m_Anim.callback->emit(m_ID);
 			}
 			
 			Renderer::drawImage(m_Anim.current, m_ActiveID);

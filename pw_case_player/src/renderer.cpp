@@ -158,7 +158,7 @@ void Renderer::drawInitialScreen() {
 	
 	// draw two buttons, one for New Game, and one for Continue
 	UI::Manager::instance()->drawButton("an_new_game_btn");
-	Renderer::drawButton(Point(53, 280, 2), 150, "Continue");
+	UI::Manager::instance()->drawButton("an_continue_btn");
 	
 	// draw scanlines to top it off
 	Renderer::drawImage(Point(0, 197), "scanlines_overlay");
