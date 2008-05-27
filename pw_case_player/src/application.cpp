@@ -20,6 +20,7 @@
 // application.cpp: implementation of Application class
 
 #include <sstream>
+#include <glibmm.h>
 #include "SDL.h"
 #include "SDL/SDL_ttf.h"
 
@@ -27,6 +28,7 @@
 #include "audio.h"
 #include "font.h"
 #include "iohandler.h"
+#include "intl.h"
 #include "utilities.h"
 
 ustring Application::VERSION="1.0b";
@@ -52,12 +54,23 @@ Application::Application(int argc, char *argv[]) {
 			else if (longArg=="debug" || shortArg=="d")
 				Utils::g_DebugOn=true;
 			
+			// enable internal debug mode
+			else if (longArg=="interal-debug" || shortArg=="id")
+				Utils::g_IDebugOn=true;
+			
+			// change default language
+			else if (longArg.find("lang")!=-1) {
+				int npos=longArg.find("=");
+				ustring code=longArg.substr(npos+1, 2);
+				Intl::g_Language=code;
+			}
+			
 			// start fullscreen
 			else if (longArg=="fullscreen" || shortArg=="fs")
 				m_ArgFlags |= ARG_FULLSCREEN;
 			
 			else
-				Utils::alert("Unrecognized argument passed to player: '"+(arg)+"'.");
+				Utils::alert(_("Unrecognized argument passed to player")+": '"+arg+"'.");
 		}
 		
 		// the only other argument that doesn't use a - or -- is
@@ -83,6 +96,12 @@ void Application::run() {
 	if (!IO::unpackResourceFile("data.dpkg"))
 		return;
 	
+	// set the language to use
+	if (Intl::g_Language!="en" && !Intl::setLanguage(Intl::g_Language)) {
+		Utils::alert("Unable to load language: "+Intl::g_Language);
+		Intl::g_Language="en";
+	}
+	
 	// initialize audio, unless NO_SOUND was passed
 	if (!(m_ArgFlags & ARG_NO_SOUND))
 		Audio::g_Output=m_SDLContext->initAudio();
@@ -104,7 +123,7 @@ void Application::run() {
 	
 	// calculate elapsed time
 	int time=(SDL_GetTicks()-start);
-	std::cout << "Loading time was " << float((time/1000)) << " seconds.\n";
+	std::cout << _("Loading time was") << " " << float((time/1000)) << " " << _("seconds") << ".\n";
 	
 	// set the window manager title
 	SDL_WM_SetCaption("PW Case Player", 0);

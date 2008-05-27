@@ -58,6 +58,7 @@ typedef std::vector<std::pair<ValueRange, Color> > ColorRangeVector;
   * needs to be drawn over another.
 */
 const float Z_FADE=		20.0f;
+const float Z_ANIM_OVSPRITE=	15.0f;
 const float Z_ANIM_SPRITE=	14.5f;
 const float Z_TEXT=		14.0f;
 const float Z_ANSWER_BAR=	13.5f;
@@ -88,28 +89,26 @@ class Color {
 		  * \param b The blue component
 		  * \param a The alpha component
 		*/
-		Color(char r=255, char g=255, char b=255, char a=255) {
-			m_R=r;
-			m_G=g;
-			m_B=b;
-			m_A=a;
+		Color(int r=255, int g=255, int b=255, int a=255) {
+			m_Color=0;
+			m_Color |= (b | (g << 8) | (r << 16) | (a << 24));
 		}
 		
 		/** Convert this color to an SDL_Color struct
 		  * \return A completed SDL_Color struct
 		*/
-		SDL_Color toSDLColor() const {SDL_Color color={ m_R, m_G, m_B }; return color; }
+		SDL_Color toSDLColor() const {SDL_Color color={ r(), g(), b() }; return color; }
 		
 		//@{
 		/** Get a color component from this object */
-		char r() const { return m_R; }
-		char g() const { return m_G; }
-		char b() const { return m_B; }
-		char a() const { return m_A; }
+		char r() const { return ((m_Color & 0x00FF0000) >> 16); }
+		char g() const { return ((m_Color & 0x0000FF00) >> 8); }
+		char b() const { return ((m_Color & 0x000000FF)); }
+		char a() const { return ((m_Color & 0xFF000000) >> 24); }
 		//@}
 		
 	private:
-		char m_R, m_G, m_B, m_A;
+		int m_Color;
 };
 
 /** A range consisting of two values

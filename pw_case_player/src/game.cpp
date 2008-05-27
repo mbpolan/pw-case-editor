@@ -469,6 +469,8 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 				ids.push_back("an_press_btn");
 			if (flagged(STATE_CONFIRM_BTN))
 				ids.push_back("an_confirm_btn");
+			if (flagged(STATE_PRESENT_BTN))
+				ids.push_back("an_present_item_btn");
 			
 			m_UI->handleGUIClick(mouse, ids);
 		}
@@ -491,7 +493,7 @@ void Game::onMouseEvent(SDL_MouseButtonEvent *e) {
 		
 		// check if the centered, present button was clicked
 		if (flagged(STATE_PRESENT_TOP_BTN))
-			m_UI->handleGUIClick(mouse, "an_present_item_btn");
+			m_UI->handleGUIClick(mouse, "an_present_top_btn");
 		
 		// if the controls are drawn, see if one was clicked
 		else if (flagged(STATE_CONTROLS))
@@ -554,9 +556,9 @@ void Game::registerAnimations() {
 	m_UI->registerCourtCameraMovement("an_court_camera");
 	
 	// register exclamations
-	m_UI->registerExclamation("an_hold_it", "tc_hold_it", Point(0, 0, Z_ANIM_SPRITE));
-	m_UI->registerExclamation("an_objection", "tc_objection", Point(0, 0, Z_ANIM_SPRITE));
-	m_UI->registerExclamation("an_take_that", "tc_take_that", Point(0, 0, Z_ANIM_SPRITE));
+	m_UI->registerExclamation("an_hold_it", "tc_hold_it", Point(0, 0, Z_ANIM_OVSPRITE));
+	m_UI->registerExclamation("an_objection", "tc_objection", Point(0, 0, Z_ANIM_OVSPRITE));
+	m_UI->registerExclamation("an_take_that", "tc_take_that", Point(0, 0, Z_ANIM_OVSPRITE));
 	
 	// register green bars
 	m_UI->registerGreenBarControl("an_court_green_bar", "tc_court_green_bar", Point(172, 10, Z_ANIM_SPRITE+0.1f));
@@ -923,8 +925,12 @@ void Game::updateFlags() {
 			flags |= STATE_BACK_BTN;
 		}
 			
-		if (m_State.curExamination && !m_State.curExaminationPaused)
-			flags |= STATE_COURT_GREEN_BAR;
+		if (m_State.curExamination) {
+			flags |= STATE_PRESENT_TOP_BTN;
+			
+			if (!m_State.curExaminationPaused)
+				flags |= STATE_COURT_GREEN_BAR;
+		}
 	}
 	
 	// draw evidence info page
@@ -934,8 +940,9 @@ void Game::updateFlags() {
 		flags |= STATE_BACK_BTN;
 		
 		if (m_State.curExamination) {
-			flags |= STATE_PRESENT_TOP_BTN;
-				
+			flags &= ~STATE_PROFILES_BTN;
+			flags |= STATE_PRESENT_BTN;
+			
 			if (!m_State.curExaminationPaused)
 				flags |= STATE_COURT_GREEN_BAR;
 		}
@@ -947,8 +954,12 @@ void Game::updateFlags() {
 		flags |= STATE_PROFILES_PAGE;
 		flags |= STATE_BACK_BTN;
 			
-		if (m_State.curExamination && !m_State.curExaminationPaused)
-			flags |= STATE_COURT_GREEN_BAR;
+		if (m_State.curExamination) {
+			flags |= STATE_PRESENT_TOP_BTN;
+			
+			if(!m_State.curExaminationPaused)
+				flags |= STATE_COURT_GREEN_BAR;
+		}
 	}
 	
 	// draw profile info page
@@ -958,7 +969,8 @@ void Game::updateFlags() {
 		flags |= STATE_BACK_BTN;
 		
 		if (m_State.curExamination) {
-			flags |= STATE_PRESENT_TOP_BTN;
+			flags &= ~STATE_EVIDENCE_BTN;
+			flags |= STATE_PRESENT_BTN;
 			
 			if (!m_State.curExaminationPaused)
 				flags |= STATE_COURT_GREEN_BAR;
@@ -1125,7 +1137,7 @@ void Game::renderTopView() {
 		if (flagged(STATE_EXAMINE) || (m_State.prevScreen==SCREEN_EXAMINE && !flagged(STATE_TEXT_BOX)) ||
 		    m_State.requestingEvidence || m_State.requestingAnswer) {
 			// draw a translucent rectangle
-			//Renderer::drawRect(Rect(Point(0, 0, Z_FADE), 256, 192), Color(0, 0, 0, 128));
+			Renderer::drawRect(Rect(Point(0, 0, Z_FADE), 256, 192), Color(0, 0, 0, 128));
 		}
 	}
 	
@@ -1143,7 +1155,7 @@ void Game::renderTopView() {
 	// draw the green court record bar, if needed
 	if (flagged(STATE_COURT_GREEN_BAR) && m_State.exclamation=="none") {
 		// first, draw the border
-		Renderer::drawImage(Point(170, 8), "tc_court_bar_border");
+		Renderer::drawImage(Point(170, 8, Z_ANIM_SPRITE+0.1f), "tc_court_bar_border");
 		
 		// now animate the green bar
 		m_UI->animateGreenBar("an_court_green_bar");
@@ -1161,9 +1173,9 @@ void Game::renderTopView() {
 		
 		// draw the evidence depending on position
 		if (m_State.shownEvidencePos==POSITION_LEFT)
-			Renderer::drawImage(Point(20, 20), ev->texture);
+			Renderer::drawImage(Point(20, 20, Z_ANIM_SPRITE+0.2f), ev->texture);
 		else
-			Renderer::drawImage(Point(166, 20), ev->texture);
+			Renderer::drawImage(Point(166, 20, Z_ANIM_SPRITE+0.2f), ev->texture);
 	}
 }
 
@@ -1516,7 +1528,6 @@ bool Game::renderSpecialEffects() {
 			return true;
 		}
 		
-		// FIXME
 		// animate the camera
 		if (m_UI->moveCourtCamera("an_court_camera", start, end)) {
 			// flag that we're done
@@ -1530,7 +1541,7 @@ bool Game::renderSpecialEffects() {
 			}
 			
 			// also, reset the animation for future use
-			m_UI->registerCourtCameraMovement("an_court_camera");
+			//m_UI->registerCourtCameraMovement("an_court_camera");
 			
 			// execute any queued cross examination blocks
 			if (m_State.curExamination && m_State.queuedBlock!=STR_NULL) {
@@ -1626,10 +1637,14 @@ bool Game::renderSpecialEffects() {
 	else if (m_State.exclamation!="none") {
 		// format is: animation,sound_effect
 		StringVector p=Utils::explodeString(',', m_State.exclamation);
+		int inCourt=atoi(p[2].c_str());
 		
 		bool ret=m_UI->exclamation(p[0], Audio::queryAudio(p[1]), NULL);
 		if (ret) {
-			//m_State.courtCamera="witness_stand,defense_stand";
+			// FIXME: although this is true for pressing, what if prosecution raises an objection? :P
+			if (inCourt)
+				m_State.courtCamera="witness_stand,defense_stand";
+			
 			m_State.exclamation="none";
 		}
 	}
@@ -2113,7 +2128,7 @@ void Game::onTopLeftButtonClicked(const ustring &id) {
 			
 			// and schedule said animation
 			// TODO: sound effects for exclamations
-			m_State.exclamation="an_hold_it,NULL";
+			m_State.exclamation="an_hold_it,NULL,1";
 			m_State.curExaminationPaused=true;
 		}
 	}
@@ -2256,10 +2271,12 @@ void Game::onPresentCenterClicked(const ustring &id) {
 		// get the current evidence/profile
 		ustring id=STR_NULL;
 		if (flagged(STATE_EVIDENCE_INFO_PAGE) && !m_State.visibleEvidence.empty())
-			id=m_State.visibleEvidence[m_State.evidencePage*8+m_State.selectedEvidence];
+			//id=m_State.visibleEvidence[m_State.evidencePage*8+m_State.selectedEvidence];
+			id=getSelectedEvidence();
 		
 		else if (!m_State.visibleProfiles.empty())
-			id=m_State.visibleProfiles[m_State.profilesPage*8+m_State.selectedProfile];
+			//id=m_State.visibleProfiles[m_State.profilesPage*8+m_State.selectedProfile];
+			id=getSelectedProfile();
 		
 		// split the parameter string up
 		StringVector vec=Utils::explodeString(',', m_State.requestedEvidenceParams);
@@ -2288,6 +2305,11 @@ void Game::onPresentCenterClicked(const ustring &id) {
 		
 		// play sound effect
 		Audio::playEffect("sfx_click", Audio::CHANNEL_GUI);
+	}
+	
+	// presenting a contradiction
+	else if (m_State.curExamination) {
+		
 	}
 }
 

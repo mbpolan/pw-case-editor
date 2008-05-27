@@ -35,6 +35,7 @@
 
 namespace Utils {
 	bool g_DebugOn=false;
+	bool g_IDebugOn=false;
 }
 
 // get the current working directory
@@ -124,6 +125,11 @@ void Utils::FS::removeDir(const ustring &path) {
 		delete [] from;
 #endif
 	}
+}
+
+// display a message through the console
+void Utils::message(const ustring &text) {
+	std::cout << text;
 }
 
 // display an alert message to the user

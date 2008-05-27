@@ -33,6 +33,9 @@ enum MessageType { MESSAGE_CRITICAL=0, MESSAGE_WARNING };
 /// Whether or not debugging is enabled in the player
 extern bool g_DebugOn;
 
+/// Whether or not internal debuggin is enabled in the player
+extern bool g_IDebugOn;
+
 /// Namespace for general filesystem functions for cross-platform compatability
 namespace FS {
 
@@ -64,6 +67,11 @@ void makeDir(const ustring &path);
 void removeDir(const ustring &path);
 
 } // namespace FS
+
+/** Display a message through the console
+  * \param text The text to display
+*/
+void message(const ustring &text);
 
 /** Display an alert message to the user.
   * \note This will show a message box on Windows, and console output on Linux

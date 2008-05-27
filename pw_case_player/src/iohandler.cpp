@@ -22,8 +22,10 @@
 #include <archive.h>
 #include <archive_entry.h>
 #include <cstdio>
+#include <iomanip>
 #include <iostream>
 #include <libxml/parser.h>
+#include <sstream>
 #include "SDL_image.h"
 #include "SDL_rotozoom.h"
 
@@ -514,6 +516,9 @@ bool IO::loadSpriteFromFile(const ustring &path, Sprite &sprite) {
 	int count;
 	fread(&count, sizeof(int), 1, f);
 	
+	if (Utils::g_IDebugOn)
+		Utils::message("Loading sprite: ");
+	
 	// iterate over animations
 	for (int i=0; i<count; i++) {
 		Animation anim;
@@ -529,7 +534,7 @@ bool IO::loadSpriteFromFile(const ustring &path, Sprite &sprite) {
 		fread(&fcount, sizeof(int), 1, f);
 		
 		// load over frames
-		for (int i=0; i<fcount; i++) {
+		for (int j=0; j<fcount; j++) {
 			Frame fr;
 			
 			// read time
@@ -547,7 +552,13 @@ bool IO::loadSpriteFromFile(const ustring &path, Sprite &sprite) {
 		
 		// add this animation
 		sprite.addAnimation(anim);
+		
+		if (Utils::g_IDebugOn)
+			Utils::message(Utils::itoa(count-(i+1))+" ");
 	}
+	
+	if (Utils::g_IDebugOn)
+		Utils::message("[done]\n");
 	
 	// wrap up
 	fclose(f);
@@ -691,6 +702,42 @@ bool IO::loadStockFile(const ustring &path, Case::Case *pcase) {
 	}
 	
 	// close the file
+	fclose(f);
+	return true;
+}
+
+// load a translation file
+bool IO::loadTranslationFile(const ustring &path, std::map<ustring, ustring> &map) {
+	// open the file
+	FILE *f=fopen(path.c_str(), "r");
+	if (!f)
+		return false;
+	
+	// iterate that many times and read all translations
+	while(1) {
+		// read a line of text
+		char str[512];
+		if (fgets(str, 512, f)==NULL)
+			break;
+		
+		ustring gstr=str;
+		
+		// make sure that there is a translation on this line
+		if (gstr.find('~')==-1 || gstr[0]=='#')
+			continue;
+		
+		// extract the english key
+		gstr.erase(0, 1);
+		ustring key=gstr.substr(0, gstr.find('~')-1);
+		gstr.erase(0, gstr.find('~')+2);
+		
+		// extract the translation
+		ustring trs=gstr.substr(0, gstr.find('"'));
+		
+		// add this key
+		map[key]=trs;
+	}
+	
 	fclose(f);
 	return true;
 }

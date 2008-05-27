@@ -90,6 +90,13 @@ bool loadSpriteFromFile(const ustring &path, Sprite &sprite);
 */
 bool loadStockFile(const ustring &path, Case::Case *pcase);
 
+/** Load a translation file
+ * \param path The path to the file
+ * \param map The translation string map to load data into
+ * \return <b>true</b> if no errors occurred, <b>false</b> otherwise
+ */
+bool loadTranslationFile(const ustring &path, std::map<ustring, ustring> &map);
+
 /** Load the theme from XML
   * \param path The path to the config file
   * \param map A Theme::ColorMap object to load theme data into
