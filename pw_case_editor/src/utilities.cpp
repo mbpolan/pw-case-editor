@@ -130,6 +130,14 @@ void Utils::flush_events() {
 		Gtk::Main::iteration();
 }
 
+// capitalize a string
+Glib::ustring Utils::capitalize(const Glib::ustring &str) {
+	Glib::ustring nstr="";
+	for (int i=0; i<str.size(); i++)
+		nstr+=(char) toupper(str[i]);
+	return nstr;
+}
+
 // calculate center of screen coordinates for a window
 void Utils::calculate_center(int width, int height, int &x, int &y) {
 	// we assume the default screen

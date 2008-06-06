@@ -64,6 +64,12 @@ void remove_dir(const Glib::ustring &path);
 /// Flush GUI events that may still be pending in the main loop
 void flush_events();
 
+/** Capitalize a string
+  * \param str The string to capitalize
+  * \return Capitalized string
+*/
+Glib::ustring capitalize(const Glib::ustring &str);
+
 /** Calculate center of screen coordinates for a window
   * \param width The width of the window
   * \param height The height of the window

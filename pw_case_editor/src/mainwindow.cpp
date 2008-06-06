@@ -32,6 +32,7 @@
 #include <gtkmm/toolbar.h>
 #include <sstream>
 
+#include "coreblockdialog.h"
 #include "config.h"
 #include "customizedialog.h"
 #include "dialogs.h"
@@ -70,9 +71,14 @@ MainWindow::MainWindow() {
 	
 	construct();
 	
+	// set default case blocks
+	for (int i=0; i<Case::Case::CORE_BLOCK_COUNT; i++)
+		m_Case.set_core_block(i, Case::g_DefaultBlocks[i]);
+	
 	// now we can safely delete the resource temp directory
 	Utils::FS::remove_dir(Utils::FS::cwd()+".temp");
 	Utils::FS::remove_dir(Utils::FS::cwd()+"lang");
+	Utils::FS::remove_dir(Utils::FS::cwd()+"blocks");
 }
 
 // build the ui
@@ -118,6 +124,8 @@ void MainWindow::construct() {
 			   sigc::mem_fun(*this, &MainWindow::on_case_browse_chars));
 	m_ActionGroup->add(Gtk::Action::create("CaseManageTestimonies", AppStock::TESTIMONY, _("_Manage Testimonies")),
 			   sigc::mem_fun(*this, &MainWindow::on_case_manage_testimonies));
+	m_ActionGroup->add(Gtk::Action::create("CaseCoreBlocks", Gtk::Stock::EXECUTE, _("_Core Text Blocks")),
+			   sigc::mem_fun(*this, &MainWindow::on_case_core_blocks));
 	m_ActionGroup->add(Gtk::Action::create("CaseEditLocations", AppStock::LOCATION, _("_Edit Locations")),
 			   sigc::mem_fun(*this, &MainWindow::on_case_edit_locations));
 	m_ActionGroup->add(Gtk::Action::create("CaseEditOverview", Gtk::Stock::PROPERTIES, _("_Edit Overview")),
@@ -192,6 +200,8 @@ void MainWindow::construct() {
 			"		<menuitem action='CaseBrowseChar'/>"
 			"		<separator/>"
 			"		<menuitem action='CaseManageTestimonies'/>"
+			"		<separator/>"
+			"		<menuitem action='CaseCoreBlocks'/>"
 			"		<separator/>"
 			"		<menuitem action='CaseInitialBlock'/>"
 			"		<menuitem action='CaseEditLocations'/>"
@@ -1604,6 +1614,18 @@ void MainWindow::on_case_manage_testimonies() {
 		m_Case.clear_testimonies();
 		for (TestimonyMap::iterator it=tmap.begin(); it!=tmap.end(); ++it)
 			m_Case.add_testimony((*it).second);
+	}
+}
+
+// manage core blocks
+void MainWindow::on_case_core_blocks() {
+	// run the dialog
+	CoreBlockDialog::Data data;
+	data.xExamineBadEv=m_Case.get_core_block(Case::Case::CORE_XEXAMINE_BAD_EV);
+	data.xExamineFail=m_Case.get_core_block(Case::Case::CORE_XEXAMINE_FAIL);
+	
+	CoreBlockDialog cbd(data);
+	if (cbd.run()) {
 	}
 }
 

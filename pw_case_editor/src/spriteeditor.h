@@ -78,6 +78,9 @@ class SpriteEditor: public Gtk::Window {
 		/// Handler for loop check button toggles
 		void on_loop_cb_toggled();
 		
+		/// Handler for default animation check button toggles
+		void on_def_anim_cb_toggled();
+		
 		/// Handler for combo box changes
 		void on_anim_cb_changed();
 		
@@ -86,6 +89,9 @@ class SpriteEditor: public Gtk::Window {
 		
 		/// Handler for new animation button clicks
 		void on_new_animation_button_clicked();
+		
+		/// Handler for renaming animation button clicks
+		void on_rename_animation_button_clicked();
 		
 		/// Handler for delete animation button clicks
 		void on_delete_animation_button_clicked();
@@ -124,6 +130,7 @@ class SpriteEditor: public Gtk::Window {
 		Gtk::Button *m_CloseButton;
 		Gtk::Button *m_PreviewButton;
 		Gtk::Button *m_NewAnimButton;
+		Gtk::Button *m_RenameAnimButton;
 		Gtk::Button *m_DeleteAnimButton;
 		Gtk::Button *m_AddFrameButton;
 		Gtk::Button *m_DeleteFrameButton;

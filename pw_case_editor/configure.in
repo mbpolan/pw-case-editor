@@ -16,5 +16,7 @@ AM_PROG_LIBTOOL
 AC_LANG_CPLUSPLUS
 
 PKG_CHECK_MODULES([GTKMM], [gtkmm-2.4 >= 2.8.0])
+PKG_CHECK_MODULES(ImageMagick, ImageMagick++ >= 6.2.4)
+PKG_CHECK_MODULES(MagickWand, Wand >= 6.2.4)
 
-AC_OUTPUT(Makefile src/Makefile )
+AC_OUTPUT(Makefile src/Makefile update_client/Makefile)

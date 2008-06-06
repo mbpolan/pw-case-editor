@@ -104,6 +104,7 @@ void SpriteEditor::construct() {
 	m_ExportButton=Gtk::manage(new Gtk::Button(_("Export")));
 	m_PreviewButton=Gtk::manage(new Gtk::Button(_("Preview")));
 	m_NewAnimButton=Gtk::manage(new Gtk::Button(_("New Animation")));
+	m_RenameAnimButton=Gtk::manage(new Gtk::Button(_("Rename Animation")));
 	m_DeleteAnimButton=Gtk::manage(new Gtk::Button(_("Delete Animation")));
 	m_AddFrameButton=Gtk::manage(new Gtk::Button(_("Add Frames")));
 	m_DeleteFrameButton=Gtk::manage(new Gtk::Button(_("Delete Frame")));
@@ -117,6 +118,7 @@ void SpriteEditor::construct() {
 	m_CloseButton->signal_clicked().connect(sigc::mem_fun(*this, &SpriteEditor::on_close));
 	m_PreviewButton->signal_clicked().connect(sigc::mem_fun(*this, &SpriteEditor::on_preview_animation));
 	m_NewAnimButton->signal_clicked().connect(sigc::mem_fun(*this, &SpriteEditor::on_new_animation_button_clicked));
+	m_RenameAnimButton->signal_clicked().connect(sigc::mem_fun(*this, &SpriteEditor::on_rename_animation_button_clicked));
 	m_DeleteAnimButton->signal_clicked().connect(sigc::mem_fun(*this, &SpriteEditor::on_delete_animation_button_clicked));
 	m_AddFrameButton->signal_clicked().connect(sigc::mem_fun(*this, &SpriteEditor::on_add_frame_button_clicked));
 	m_DeleteFrameButton->signal_clicked().connect(sigc::mem_fun(*this, &SpriteEditor::on_delete_frame_button_clicked));
@@ -125,7 +127,7 @@ void SpriteEditor::construct() {
 	m_AmendButton->signal_clicked().connect(sigc::mem_fun(*this, &SpriteEditor::on_amend_button_clicked));
 	
 	// allocate check button
-	m_LoopCB=Gtk::manage(new Gtk::CheckButton(_("Loop Animation Upon Completion")));
+	m_LoopCB=Gtk::manage(new Gtk::CheckButton(_("Loop animation upon completion")));
 	m_LoopCB->set_active(true);
 	
 	// connect signal
@@ -154,6 +156,17 @@ void SpriteEditor::construct() {
 	hbb->pack_start(*m_ExportButton);
 	hbb->pack_start(*m_CloseButton);
 	
+	// button box for animation buttons
+	Gtk::HButtonBox *ahbb=manage(new Gtk::HButtonBox);
+	ahbb->pack_start(*m_NewAnimButton);
+	ahbb->pack_start(*m_RenameAnimButton);
+	ahbb->pack_start(*m_DeleteAnimButton);
+	
+	// button box for frame buttons
+	Gtk::HButtonBox *fhbb=manage(new Gtk::HButtonBox);
+	fhbb->pack_start(*m_AddFrameButton);
+	fhbb->pack_start(*m_DeleteFrameButton);
+	
 	// attach options
 	Gtk::AttachOptions xops=Gtk::FILL | Gtk::EXPAND;
 	Gtk::AttachOptions yops=Gtk::SHRINK | Gtk::SHRINK;
@@ -172,19 +185,17 @@ void SpriteEditor::construct() {
 	frame->add(*ftable);
 	
 	// place widgets
-	table->attach(*m_AnimLabel, 0, 1, 0, 1, xops, yops);
+	table->attach(*m_AnimLabel, 0, 1, 0, 1, yops, yops);
 	table->attach(*m_AnimCB, 1, 3, 0, 1, xops, yops);
-	table->attach(*m_PreviewButton, 3, 4, 0, 1, xops, yops);
-	table->attach(*m_NewAnimButton, 0, 1, 1, 2, xops, yops);
-	table->attach(*m_DeleteAnimButton, 1, 2, 1, 2, xops, yops);
-	table->attach(*m_AddFrameButton, 2, 3, 1, 2, xops, yops);
-	table->attach(*m_DeleteFrameButton, 3, 4, 1, 2, xops, yops);
-	table->attach(*m_PrevFrameButton, 0, 1, 2, 3, xops, yops);
-	table->attach(*m_FrameLabel, 1, 3, 2, 3, xops, yops);
-	table->attach(*m_NextFrameButton, 3, 4, 2, 3, xops, yops);
-	table->attach(*m_Image, 0, 4, 3, 4);
-	table->attach(*m_LoopCB, 0, 4, 4, 5, xops, yops);
-	table->attach(*frame, 0, 4, 5, 6, xops, yops);
+	table->attach(*m_PreviewButton, 3, 4, 0, 1, yops, yops);
+	table->attach(*ahbb, 0, 4, 1, 2, xops, yops);
+	table->attach(*fhbb, 0, 4, 2, 3, xops, yops);
+	table->attach(*m_PrevFrameButton, 0, 1, 3, 4, xops, yops);
+	table->attach(*m_FrameLabel, 1, 3, 3, 4, xops, yops);
+	table->attach(*m_NextFrameButton, 3, 4, 3, 4, xops, yops);
+	table->attach(*m_Image, 0, 4, 4, 5);
+	table->attach(*m_LoopCB, 0, 4, 5, 6, xops, yops);
+	table->attach(*frame, 0, 4, 6, 7, xops, yops);
 	
 	vb->pack_start(*table, Gtk::PACK_SHRINK);
 	
@@ -330,6 +341,12 @@ void SpriteEditor::on_loop_cb_toggled() {
 	anim.loop=m_LoopCB->get_active();
 }
 
+// handler for default animation check button toggles
+void SpriteEditor::on_def_anim_cb_toggled() {
+	// set the new id
+	m_Sprite.set_default_animation(m_AnimCB->get_active_text());
+}
+
 // handler for combo box changes
 void SpriteEditor::on_anim_cb_changed() {
 	// set the image frame to the first frame of this animation
@@ -379,6 +396,29 @@ void SpriteEditor::on_new_animation_button_clicked() {
 		
 		// add it to the sprite
 		m_Sprite.add_animation(anim);
+	}
+}
+
+// handler for renaming animation button clicks
+void SpriteEditor::on_rename_animation_button_clicked() {
+	// get the current anim text and ask for input
+	Glib::ustring old=m_AnimCB->get_active_text();
+	TextInputDialog d("Enter new ID", old);
+	if (d.run()==Gtk::RESPONSE_OK) {
+		Glib::ustring nstr=d.get_text();
+		
+		// now get the animation data, and change the id
+		Animation anim=m_Sprite.get_animation(old);
+		anim.id=nstr;
+		
+		// remove and add the new one
+		m_Sprite.remove_animation(old);
+		m_Sprite.add_animation(anim);
+		
+		// remove the old text and set the new one
+		m_AnimCB->remove_text(old);
+		m_AnimCB->append_text(nstr);
+		m_AnimCB->set_active_text(nstr);
 	}
 }
 

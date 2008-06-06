@@ -131,6 +131,12 @@ IO::Code export_sprite_to_file(const Glib::ustring &path, const Sprite &spr);
 */
 IO::Code load_sprite_from_file(const Glib::ustring &path, Sprite &spr);
 
+/** Load default blocks for the case
+  * \param lang The language to load
+  * \return IO::CODE_OK if successful, other codes if an error occurred.
+*/
+IO::Code load_default_blocks(const Glib::ustring &lang);
+
 /** Load a translation file
   * \param path The path to the file
   * \param map The translation string map to load data into

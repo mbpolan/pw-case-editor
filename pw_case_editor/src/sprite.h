@@ -71,7 +71,17 @@ typedef std::map<Glib::ustring, Animation>::iterator AnimationMapIter;
 class Sprite {
 	public:
 		/// Default constructor
-		Sprite() { }
+		Sprite();
+		
+		/** Set the ID of the sprite's default animation
+		  * \param id The animation ID
+		*/
+		void set_default_animation(const Glib::ustring &id) { m_DefAnim=id; }
+		
+		/** Get the ID of the default animation
+		  * \return ID of the default animation
+		*/
+		Glib::ustring get_default_animation() const { return m_DefAnim; }
 		
 		/** Create a sprite from GIFs in a directory
 		  * \param path The path to the directory
@@ -130,6 +140,9 @@ class Sprite {
 	private:
 		/// Map of animations
 		AnimationMap m_Animations;
+		
+		/// ID of default animation
+		Glib::ustring m_DefAnim;
 };
 
 #endif

@@ -68,6 +68,9 @@ int main(int argc, char *argv[]) {
 	if (!Intl::set_language(Config::Manager::instance()->get_language()))
 		Intl::set_language("en");
 	
+	// load default case blocks
+	IO::load_default_blocks(Config::Manager::instance()->get_language());
+	
 	// initialize threads and gtkmm
 	Glib::thread_init();
 	Gtk::Main app(&argc, NULL);

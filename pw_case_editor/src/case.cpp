@@ -21,6 +21,12 @@
 
 #include "case.h"
 
+namespace Case {
+
+Glib::ustring g_DefaultBlocks[16];
+
+}; // namespace Case
+
 // constructor
 Case::Case::Case() {
 	// clear this case out
@@ -211,6 +217,11 @@ void Case::Case::clear() {
 	m_Overrides.titleScreen="null";
 	
 	m_InitialBlockId="null";
+	
+	// clear core blocks
+	m_CoreBlocks.clear();
+	m_CoreBlocks.push_back("");
+	m_CoreBlocks.push_back("");
 	
 	// clear out the rest of the pertinent stuff
 	clear_backgrounds();

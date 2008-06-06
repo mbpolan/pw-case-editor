@@ -24,12 +24,15 @@
       <mainprogram>src/pw_case_editor</mainprogram>
       <runarguments>
         <pw_case_editor/>
+        <update_client/>
       </runarguments>
       <debugarguments>
         <pw_case_editor/>
+        <update_client/>
       </debugarguments>
       <cwd>
         <pw_case_editor>/home/mike/Documents/programming/pw_case_editor/./src</pw_case_editor>
+        <update_client>/home/mike/Documents/programming/pw_case_editor/./update_client</update_client>
       </cwd>
     </run>
     <configurations>

@@ -224,12 +224,21 @@ typedef std::pair<Glib::ustring, Glib::ustring> StringPair;
 
 namespace Case {
 
+/// Default text blocks that come preloaded with each case
+extern Glib::ustring g_DefaultBlocks[16];
+
 /** Core class that holds all pertinent data about a case.
   * This class stores all of the individual bits and pieces of a case, 
   * such as testimonies, text blocks, images, characters, etc.
 */ 
 class Case {
 	public:
+		/// Enumeration for core case blocks
+		enum CoreBlock { CORE_XEXAMINE_BAD_EV=0,	///< Incorrect evidence presented at trial
+				 CORE_XEXAMINE_FAIL,		///< Player ran out of penalties at trial
+				 CORE_BLOCK_COUNT		///< Amount of core blocks
+			       };
+		
 		/// Default constructor
 		Case();
 		
@@ -262,6 +271,18 @@ class Case {
 		  * \return ID of the initial text block
 		*/
 		Glib::ustring get_initial_block_id() const { return m_InitialBlockId; }
+		
+		/** Get a core block from the internal map
+		  * \param block Which block to get
+		  * \return The requested block
+		*/
+		Glib::ustring get_core_block(int block) const { return m_CoreBlocks[block]; }
+		
+		/** Replace a core block with a new one
+		  * \param block Which block to set
+		  * \param contents Contents of new block
+		*/
+		void set_core_block(int block, const Glib::ustring &content) { m_CoreBlocks[block]=content; }
 		
 		/** Add a character to the internal map
 		  * \param character The character
@@ -452,6 +473,9 @@ class Case {
 		
 		/// Map of testimonies
 		TestimonyMap m_Testimonies;
+		
+		/// Vector of core blocks
+		StringVector m_CoreBlocks;
 		
 };
 

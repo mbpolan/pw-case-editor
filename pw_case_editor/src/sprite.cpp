@@ -26,6 +26,10 @@
 #include "sprite.h"
 #include "utilities.h"
 
+// default constructor
+Sprite::Sprite(): m_DefAnim("null") {
+}
+
 // create a sprite from gifs in a directory
 bool Sprite::create_from_gifs(const Glib::ustring &path) {
 	// create dialog to show progress

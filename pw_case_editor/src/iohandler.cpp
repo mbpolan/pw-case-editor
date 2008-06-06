@@ -59,6 +59,10 @@ IO::Code IO::save_case_to_file(const Glib::ustring &path, const Case::Case &pcas
 	write_string(f, overview.author);
 	fwrite(&overview.lawSys, sizeof(int), 1, f);
 	
+	// iterate over core blocks and write them
+	for (int i=0; i<Case::Case::CORE_BLOCK_COUNT; i++)
+		write_string(f, pcase.get_core_block(i));
+	
 	// get overrides
 	Case::Overrides ov=pcase.get_overrides();
 	
@@ -624,6 +628,10 @@ IO::Code IO::load_case_from_file(const Glib::ustring &path, Case::Case &pcase,
 	overview.author=read_string(f);
 	fread(&overview.lawSys, sizeof(int), 1, f);
 	
+	// read in core blocks
+	//for (int i=0; i<Case::Case::CORE_BLOCK_COUNT; i++)
+	//	pcase.set_core_block(i, read_string(f));
+	
 	// create new overrides object
 	Case::Overrides ov;
 	
@@ -1047,6 +1055,8 @@ IO::Code IO::export_sprite_to_file(const Glib::ustring &path, const Sprite &spr)
 		// update progress
 		double prog=(double) c/(double) count;
 		pd.set_progress(prog);
+		
+		Utils::flush_events();
 	}
 	
 	pd.hide();
@@ -1130,6 +1140,42 @@ IO::Code IO::load_sprite_from_file(const Glib::ustring &path, Sprite &spr) {
 	return IO::CODE_OK;
 }
 
+// load default case blocks
+IO::Code IO::load_default_blocks(const Glib::ustring &lang) {
+	// capitalized the code
+	Glib::ustring code=Utils::capitalize(lang);
+	
+	// default block names, excluding language prefix
+	Glib::ustring blocks[Case::Case::CORE_BLOCK_COUNT]={ "bad_evidence", "game_over" };
+	
+	// load each block
+	for (int i=0; i<Case::Case::CORE_BLOCK_COUNT; i++) {
+		// form full path
+		Glib::ustring path=".temp/blocks/"+code+"_"+blocks[i];
+		
+		// try to load it
+		FILE *f=fopen(path.c_str(), "r");
+		if (!f) {
+			g_message("Warning: unable to load default block: %s", path.c_str());
+			continue;
+		}
+		
+		// read in all contents
+		Glib::ustring block="";
+		while(!feof(f)) {
+			char line[256];
+			fgets(line, 256, f);
+			block+=line;
+		}
+		fclose(f);
+		
+		Case::g_DefaultBlocks[i]=block;
+	}
+	
+	return IO::CODE_OK;
+}
+
+// load translation files
 IO::Code IO::load_translation_file(const Glib::ustring &path, std::map<Glib::ustring, Glib::ustring> &map) {
 	// open the file
 	FILE *f=fopen(path.c_str(), "r");
@@ -1417,6 +1463,8 @@ IO::Code IO::unpack_resource_file(const Glib::ustring &file) {
 	
 	// make our temporary directory
 	Utils::FS::make_dir(".temp");
+	Utils::FS::make_dir(".temp/blocks");
+	Utils::FS::make_dir(".temp/lang");
 	
 	// windows is a jerk and doesn't hide by prefixed dot, so we
 	// need to set some attributes

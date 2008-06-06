@@ -146,6 +146,9 @@ class MainWindow: public Gtk::Window {
 		/// Handler to manage testimonies
 		void on_case_manage_testimonies();
 		
+		/// Handler to manage core text blocks
+		void on_case_core_blocks();
+		
 		/// Handler to edit locations
 		void on_case_edit_locations();
 		
