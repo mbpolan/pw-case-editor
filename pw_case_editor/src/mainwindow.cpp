@@ -1626,6 +1626,12 @@ void MainWindow::on_case_core_blocks() {
 	
 	CoreBlockDialog cbd(data);
 	if (cbd.run()) {
+		// get the updated data
+		CoreBlockDialog::Data data=cbd.get_updated_data();
+		
+		// now set the blocks once more
+		m_Case.set_core_block(Case::Case::CORE_XEXAMINE_BAD_EV, data.xExamineBadEv);
+		m_Case.set_core_block(Case::Case::CORE_XEXAMINE_FAIL, data.xExamineFail);
 	}
 }
 

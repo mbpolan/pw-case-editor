@@ -330,6 +330,10 @@ IO::Code IO::export_case_to_file(const Glib::ustring &path, const Case::Case &pc
 	write_string(f, overview.author);
 	fwrite(&overview.lawSys, sizeof(int), 1, f);
 	
+	// iterate over core blocks and write them
+	for (int i=0; i<Case::Case::CORE_BLOCK_COUNT; i++)
+		write_string(f, pcase.get_core_block(i));
+	
 	// get overrides
 	Case::Overrides ov=pcase.get_overrides();
 	
@@ -629,8 +633,8 @@ IO::Code IO::load_case_from_file(const Glib::ustring &path, Case::Case &pcase,
 	fread(&overview.lawSys, sizeof(int), 1, f);
 	
 	// read in core blocks
-	//for (int i=0; i<Case::Case::CORE_BLOCK_COUNT; i++)
-	//	pcase.set_core_block(i, read_string(f));
+	for (int i=0; i<Case::Case::CORE_BLOCK_COUNT; i++)
+		pcase.set_core_block(i, read_string(f));
 	
 	// create new overrides object
 	Case::Overrides ov;

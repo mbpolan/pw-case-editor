@@ -69,7 +69,7 @@ int main(int argc, char *argv[]) {
 		Intl::set_language("en");
 	
 	// load default case blocks
-	IO::load_default_blocks(Config::Manager::instance()->get_language());
+	IO::load_default_blocks(Intl::g_Language);
 	
 	// initialize threads and gtkmm
 	Glib::thread_init();
