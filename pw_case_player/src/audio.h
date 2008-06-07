@@ -116,6 +116,9 @@ Sample* queryAudio(const ustring &id);
 /// Clear the audio stack
 void clearAudioStack();
 
+/// Free the current music buffer
+void freeMusic();
+
 }; // namespace Audio
 
 #endif

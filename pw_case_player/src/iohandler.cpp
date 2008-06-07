@@ -126,6 +126,10 @@ bool IO::loadCaseFromFile(const ustring &path, Case::Case &pcase) {
 	overview.author=readString(f);
 	fread(&overview.lawSys, sizeof(int), 1, f);
 	
+	// read in core blocks
+	for (int i=0; i<Case::Case::CORE_BLOCK_COUNT; i++)
+		pcase.setCoreBlock(i, readString(f));
+	
 	// skip to overrides
 	fseek(f, header.overridesOffset, SEEK_SET);
 	

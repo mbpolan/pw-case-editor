@@ -1002,8 +1002,10 @@ void Game::updateFlags() {
 	// remove certain flags in specific situations
 	if (m_State.requestingEvidence) {
 		// back button should not be shown when record pages are shown
-		if ((flags & STATE_EVIDENCE_PAGE) || (flags & STATE_PROFILES_PAGE))
+		if ((flags & STATE_EVIDENCE_PAGE) || (flags & STATE_PROFILES_PAGE)) {
 			flags &= ~STATE_BACK_BTN;
+			flags |= STATE_PRESENT_TOP_BTN;
+		}
 		
 		// add the present top button
 		if ((flags & STATE_EVIDENCE_INFO_PAGE) || (flags & STATE_PROFILE_INFO_PAGE))

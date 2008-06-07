@@ -28,6 +28,10 @@ Case::Case::Case() {
 	
 	// add some default blocks
 	addBuffer("INTERNAL_testimony", STR_NULL);
+	
+	// add our default blocks
+	for (int i=0; i<Case::Case::CORE_BLOCK_COUNT; i++)
+		m_CoreBlocks.push_back("");
 }
 
 // destructor

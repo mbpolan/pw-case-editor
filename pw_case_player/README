@@ -1,0 +1,15 @@
+--------------------------
+PLEASE REMEMBER:
+The Phoenix Wright Case Editor
+(pw-case-editor.sf.net)
+is not a finished product (by any means).
+--------------------------
+
+This means, almost non-existent documentation (Doxygen, triggers and file format), and (perhaps) a not very clean UI.
+
+After this notice of dire warning, please feel free to compile with:
+sh bootstrap.sh
+./configure
+make
+
+The output will be into the src directory. If you wish to install, please run make install after the above steps.

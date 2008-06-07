@@ -224,6 +224,13 @@ namespace Case {
 */
 class Case {
 	public:
+		/// Enumeration for core case blocks
+		enum CoreBlock { CORE_XEXAMINE_BAD_EV=0,	///< Incorrect evidence presented at trial
+				 CORE_XEXAMINE_FAIL,		///< Player ran out of penalties at trial
+				 CORE_BLOCK_COUNT		///< Amount of core blocks
+				};
+
+		
 		/// Default constructor
 		Case();
 		
@@ -249,6 +256,19 @@ class Case {
 		  * \return The set Overrides struct
 		*/
 		Overrides getOverrides() const { return m_Overrides; }
+		
+		/** Get a core block from the internal map
+		 * \param block Which block to get
+		 * \return The requested block
+		 */
+		ustring getCoreBlock(int block) const { return m_CoreBlocks[block]; }
+		
+		/** Replace a core block with a new one
+		 * \param block Which block to set
+		 * \param contents Contents of new block
+		 */
+		void setCoreBlock(int block, const ustring &content) { m_CoreBlocks[block]=content; }
+
 		
 		/** Set the ID of the initial text block
 		  * \param id ID of the text block
@@ -412,6 +432,10 @@ class Case {
 		
 		/// Map of buffers
 		BufferMap m_Buffers;
+		
+		/// Vector of core blocks
+		StringVector m_CoreBlocks;
+
 };
 
 }; // namespace Case

@@ -146,8 +146,7 @@ void Audio::haltMusic() {
 	Mix_HaltMusic();
 	
 	// then free any previous music
-	if (Audio::g_Music.mBuffer)
-		Mix_FreeMusic(Audio::g_Music.mBuffer);
+	freeMusic();
 }
 
 // add an audio sample
@@ -200,10 +199,20 @@ void Audio::clearAudioStack() {
 		}
 	}
 	
-	if (Audio::g_Music.mBuffer) {
-		Mix_HaltMusic();
-		Mix_FreeMusic(Audio::g_Music.mBuffer);
-	}
+	// free any music buffers
+	freeMusic();
 	
 	g_Audio.clear();
+}
+
+// free the music buffer
+void Audio::freeMusic() {
+	if (Audio::g_Music.mBuffer) {
+		// halt playback beforehand
+		if (isMusicPlaying())
+			Mix_HaltMusic();
+		
+		Mix_FreeMusic(Audio::g_Music.mBuffer);
+		Audio::g_Music.mBuffer=NULL;
+	}
 }
