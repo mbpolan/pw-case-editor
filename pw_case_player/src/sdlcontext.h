@@ -23,6 +23,7 @@
 #define SDLCONTEXT_H
 
 #include <iostream>
+#include <memory>
 #include "SDL.h"
 
 #include "case.h"

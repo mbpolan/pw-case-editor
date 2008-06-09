@@ -147,7 +147,7 @@ bool SDLContext::initAudio() {
 		
 		// normally, we should quit if audio wasn't opened, but the game is 
 		// still playable without sound
-		return true;
+		return false;
 	}
 	
 	return true;
