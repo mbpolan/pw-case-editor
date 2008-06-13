@@ -17,34 +17,38 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-// config.cpp: implementation of Config namespace
+// auxdialogs.cpp: implementations of classes in auxdialogs.h
 
-#include "config.h"
-
-Config::Manager *g_Manager=NULL;
-
-// create an instance of this manager
-Config::Manager* Config::Manager::create(const Config::File &file) {
-	g_Manager=new Manager(file);
-	return g_Manager;
-}
-
-// get a pointer to an instance of this manager
-Config::Manager* Config::Manager::instance() {
-	return g_Manager;
-}
-
-// save values into a Config::File struct
-Config::File Config::Manager::serialize() {
-	File cfg;
-	cfg.language=m_Language;
-	cfg.keys=m_Keys;
-	
-	return cfg;
-}
+#include "auxdialogs.h"
+#include "intl.h"
 
 // constructor
-Config::Manager::Manager(const Config::File &file) {
-	m_Language=file.language;
-	m_Keys=file.keys;
+ExWarningDialog::ExWarningDialog():
+	Gtk::MessageDialog(_("Your case seems to have no characters or evidence.\n"
+			     "Would you still like to export your case?"),
+		           false, Gtk::MESSAGE_WARNING, Gtk::BUTTONS_YES_NO, true) {
+	construct();
+}
+
+// run the dialog
+ExWarningDialog::Data ExWarningDialog::run() {
+	Data data;
+	data.returnCode=Gtk::MessageDialog::run();
+	data.keepWarning=!m_KeepCB->get_active();
+	
+	return data;
+}
+
+// build the interface
+void ExWarningDialog::construct() {
+	// get the vbox
+	Gtk::VBox *vb=get_vbox();
+	
+	// allocate check button
+	m_KeepCB=manage(new Gtk::CheckButton(_("Don't show me this message anymore.")));
+	m_KeepCB->set_active(true);
+	
+	vb->pack_start(*m_KeepCB, Gtk::PACK_SHRINK);
+	
+	vb->show_all_children();
 }

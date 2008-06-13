@@ -1225,6 +1225,16 @@ IO::Code IO::save_config_file(const Glib::ustring &path, const Config::File &fil
 	// write language
 	write_string(f, file.language);
 	
+	// write amount of keys
+	int amount=file.keys.size();
+	fwrite(&amount, sizeof(int), 1, f);
+	
+	// write each pair
+	for (std::map<Glib::ustring, Glib::ustring>::const_iterator it=file.keys.begin(); it!=file.keys.end(); ++it) {
+		write_string(f, (*it).first);
+		write_string(f, (*it).second);
+	}
+	
 	fclose(f);
 	return IO::CODE_OK;
 }
@@ -1243,6 +1253,18 @@ IO::Code IO::load_config_file(const Glib::ustring &path, Config::File &file) {
 	
 	// read language
 	file.language=read_string(f);
+	
+	// read amount of keys
+	int amount=0;
+	fread(&amount, sizeof(int), 1, f);
+	
+	// read each pair
+	for (int i=0; i<amount; i++) {
+		Glib::ustring key=read_string(f);
+		Glib::ustring val=read_string(f);
+		
+		file.keys[key]=val;
+	}
 	
 	fclose(f);
 	return IO::CODE_OK;

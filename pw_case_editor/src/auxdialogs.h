@@ -17,34 +17,40 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-// config.cpp: implementation of Config namespace
+// auxdialogs.h: Auxillary dialogs
 
-#include "config.h"
+#ifndef AUXDIALOGS_H
+#define AUXDIALOGS_H
 
-Config::Manager *g_Manager=NULL;
+#include <gtkmm/checkbutton.h>
+#include <gtkmm/messagedialog.h>
 
-// create an instance of this manager
-Config::Manager* Config::Manager::create(const Config::File &file) {
-	g_Manager=new Manager(file);
-	return g_Manager;
-}
+/** Dialog used to display a warning before exporting a case, if
+  * the user has no characters or evidence added.
+*/
+class ExWarningDialog: public Gtk::MessageDialog {
+	public:
+		/// Data returned upon dialog closure
+		struct _Data {
+			int returnCode;
+			bool keepWarning;
+		};
+		typedef struct _Data Data;
+		
+		/// Constructor
+		ExWarningDialog();
+		
+		/** Run the dialog
+		  * \return Data struct with responses
+		*/
+		Data run();
+		
+	private:
+		/// Build the interface
+		void construct();
+		
+		// check buttons
+		Gtk::CheckButton *m_KeepCB;
+};
 
-// get a pointer to an instance of this manager
-Config::Manager* Config::Manager::instance() {
-	return g_Manager;
-}
-
-// save values into a Config::File struct
-Config::File Config::Manager::serialize() {
-	File cfg;
-	cfg.language=m_Language;
-	cfg.keys=m_Keys;
-	
-	return cfg;
-}
-
-// constructor
-Config::Manager::Manager(const Config::File &file) {
-	m_Language=file.language;
-	m_Keys=file.keys;
-}
+#endif

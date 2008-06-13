@@ -23,6 +23,7 @@
 #define CONFIG_H
 
 #include <glibmm/ustring.h>
+#include <map>
 
 /// Namespace for all configuration related code
 namespace Config {
@@ -32,6 +33,9 @@ namespace Config {
 struct _File {
 	/// The language to set for the editor
 	Glib::ustring language;
+	
+	/// Map of keys and values
+	std::map<Glib::ustring, Glib::ustring> keys;
 };
 typedef struct _File File;
 
@@ -67,12 +71,26 @@ class Manager {
 		*/
 		Glib::ustring get_language() const { return m_Language; }
 		
+		/** Set or edit a key in the config
+		  * \param key The key to create or edit
+		  * \param value The value to assign
+		*/
+		void set_key(const Glib::ustring &key, const Glib::ustring &value) { m_Keys[key]=value; }
+		
+		/** Get a key from the config
+		  * \param key The key whose value to return
+		*/
+		Glib::ustring get_key(const Glib::ustring &key) { return (m_Keys.find(key)==m_Keys.end() ? "-1" : m_Keys[key]); }
+		
 	private:
 		/// Hidden constructor
 		Manager(const File &file);
 		
 		/// The language set in the config file
 		Glib::ustring m_Language;
+		
+		/// Map of key:value pairs
+		std::map<Glib::ustring, Glib::ustring> m_Keys;
 };
 
 }; // namespace Config

@@ -32,6 +32,7 @@
 #include <gtkmm/toolbar.h>
 #include <sstream>
 
+#include "auxdialogs.h"
 #include "coreblockdialog.h"
 #include "config.h"
 #include "customizedialog.h"
@@ -745,6 +746,18 @@ void MainWindow::on_save_as() {
 
 // export case handler
 void MainWindow::on_export() {
+	// check to see if any profiles/evidence are present
+	if (m_Case.get_character_names().empty() && m_Case.get_evidence_ids().empty()
+	    && Config::Manager::instance()->get_key("exwarningdialog")!="0") {
+		ExWarningDialog diag;
+		ExWarningDialog::Data data=diag.run();
+		
+		Config::Manager::instance()->set_key("exwarningdialog", (data.keepWarning ? "1" : "0"));
+		
+		if (data.returnCode==Gtk::RESPONSE_NO)
+			return;
+	}
+	
 	// prepare file chooser dialog
 	Gtk::FileChooserDialog fcd(*this, _("Export Case"), Gtk::FILE_CHOOSER_ACTION_SAVE);
 	fcd.add_button(_("Export"), Gtk::RESPONSE_OK);
