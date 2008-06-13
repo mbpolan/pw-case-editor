@@ -31,6 +31,8 @@
 #include "intl.h"
 #include "utilities.h"
 
+Application *g_Application=NULL;
+
 ustring Application::VERSION="1.0b";
 
 // constructor
@@ -78,6 +80,13 @@ Application::Application(int argc, char *argv[]) {
 		else
 			m_CasePath=arg;
 	}
+	
+	g_Application=this;
+}
+
+// return an instance of this class
+Application* Application::instance() {
+	return g_Application;
 }
 
 // run the application

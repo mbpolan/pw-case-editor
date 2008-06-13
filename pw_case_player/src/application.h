@@ -46,6 +46,16 @@ class Application {
 		*/
 		Application(int argc, char *argv[]);
 		
+		/** Get an instance of this object
+		  * \return Sole instance of the Application class
+		*/
+		static Application* instance();
+		
+		/** Get the path to the case file
+		  * \return Path to the loaded case file
+		*/
+		ustring getCasePath() const { return m_CasePath; }
+		
 		/// Run the application
 		void run();
 		

@@ -29,9 +29,11 @@
 #include "SDL_image.h"
 #include "SDL_rotozoom.h"
 
+#include "application.h"
 #include "audio.h"
 #include "font.h"
 #include "iohandler.h"
+#include "textparser.h"
 #include "utilities.h"
 
 // unpack the resource file
@@ -80,6 +82,244 @@ bool IO::unpackResourceFile(const ustring &path) {
 	archive_read_finish(ar);
 	fclose(f);
 	
+	return true;
+}
+
+// save a game state
+bool IO::saveGameState(const GameState &gstate, int number) {
+	// save the file where the case resides
+	ustring path=Application::instance()->getCasePath();
+	path.erase(path.rfind('/')+1, path.size());
+	path+="game"+Utils::itoa(number)+".sv";
+	
+	// open the file
+	FILE *f=fopen(path.c_str(), "wb");
+	if (!f)
+		return false;
+	
+	// write magic number and version
+	fwrite(&SV_FILE_MAGIC_NUM, sizeof(int), 1, f);
+	fwrite(&SV_VERSION, sizeof(int), 1, f);
+	
+	// write the flags
+	fwrite(&gstate.drawFlags, sizeof(int), 1, f);
+	
+	// write the other values
+	fwrite(&gstate.evidencePage, sizeof(int), 1, f);
+	fwrite(&gstate.profilesPage, sizeof(int), 1, f);
+	
+	fwrite(&gstate.selectedEvidence, sizeof(int), 1, f);
+	fwrite(&gstate.selectedProfile, sizeof(int), 1, f);
+	fwrite(&gstate.selectedControl, sizeof(int), 1, f);
+	fwrite(&gstate.selectedLocation, sizeof(int), 1, f);
+	fwrite(&gstate.selectedTalkOption, sizeof(int), 1, f);
+	
+	fwrite(&gstate.requestingEvidence, sizeof(bool), 1, f);
+	fwrite(&gstate.requestingAnswer, sizeof(bool), 1, f);
+	
+	writeString(gstate.requestedEvidenceParams, f);
+	writeString(gstate.requestedAnswerParams, f);
+	writeString(gstate.requestedContrParams, f);
+	
+	writeString(gstate.tempImage, f);
+	
+	fwrite(&gstate.examinePt, sizeof(Point), 1, f);
+	
+	writeString(gstate.contradictionImg, f);
+	fwrite(&gstate.contradictionRegion, sizeof(Rect), 1, f);
+	
+	fwrite(&gstate.prevScreen, sizeof(int), 1, f);
+	
+	fwrite(&gstate.hideTextBox, sizeof(bool), 1, f);
+	
+	fwrite(&gstate.continueMusic, sizeof(bool), 1, f);
+	
+	fwrite(&gstate.bgFade, sizeof(int), 1, f);
+	
+	fwrite(&gstate.testimonyTitle, sizeof(bool), 1, f);
+	writeString(gstate.curTestimony, f);
+	fwrite(&gstate.curTestimonyPiece, sizeof(int), 1, f);
+	fwrite(&gstate.barPercent, sizeof(int), 1, f);
+	fwrite(&gstate.curExamination, sizeof(bool), 1, f);
+	fwrite(&gstate.curExaminationPaused, sizeof(bool), 1, f);
+	
+	fwrite(&gstate.shake, sizeof(int), 1, f);
+	writeString(gstate.whiteFlash, f);
+	writeString(gstate.alphaDecay, f);
+	writeString(gstate.fadeOut, f);
+	writeString(gstate.fadeIn, f);
+	writeString(gstate.flash, f);
+	writeString(gstate.blink, f);
+	writeString(gstate.gavel, f);
+	writeString(gstate.courtCamera, f);
+	writeString(gstate.testimonySequence, f);
+	writeString(gstate.crossExamineSequence, f);
+	writeString(gstate.exclamation, f);
+	writeString(gstate.addEvidence, f);
+	
+	writeString(gstate.crossExamineLawyers.first, f);
+	writeString(gstate.crossExamineLawyers.second, f);
+	
+	writeString(gstate.shownEvidence, f);
+	fwrite(&gstate.shownEvidencePos, sizeof(Position), 1, f);
+	
+	writeString(gstate.crOverviewDefense, f);
+	writeString(gstate.crOverviewProsecutor, f);
+	writeString(gstate.crOverviewWitness, f);
+	
+	writeString(gstate.currentLocation, f);
+	
+	fwrite(&gstate.queuedFlags, sizeof(int), 1, f);
+	writeString(gstate.queuedLocation, f);
+	writeString(gstate.queuedBlock, f);
+	writeString(gstate.resetAnimations, f);
+	
+	int amount=gstate.talkOptions.size();
+	fwrite(&amount, sizeof(int), 1, f);
+	for (int i=0; i<amount; i++) {
+		writeString(gstate.talkOptions[i].first, f);
+		writeString(gstate.talkOptions[i].second, f);
+	}
+	
+	amount=gstate.visibleEvidence.size();
+	fwrite(&amount, sizeof(int), 1, f);
+	for (int i=0; i<amount; i++)
+		writeString(gstate.visibleEvidence[i], f);
+	
+	amount=gstate.visibleProfiles.size();
+	fwrite(&amount, sizeof(int), 1, f);
+	for (int i=0; i<amount; i++)
+		writeString(gstate.visibleProfiles[i], f);
+	
+	// now save text parser state
+	TextParser::instance()->serializeToFile(f);
+	
+	fclose(f);
+	return true;
+}
+
+// load a saved game state from file
+bool IO::loadGameState(GameState &gstate, int number) {
+	// save the file where the case resides
+	ustring path=Application::instance()->getCasePath();
+	path.erase(path.rfind('/')+1, path.size());
+	path+="game"+Utils::itoa(number)+".sv";
+	
+	// open the file
+	FILE *f=fopen(path.c_str(), "rb");
+	if (!f)
+		return false;
+	
+	// verify magic number
+	int magic;
+	fread(&magic, sizeof(int), 1, f);
+	if (magic!=SV_FILE_MAGIC_NUM) {
+		fclose(f);
+		return false;
+	}
+	
+	// verify version
+	int version;
+	fread(&version, sizeof(int), 1, f);
+	if (version!=SV_VERSION) {
+		fclose(f);
+		return false;
+	}
+	
+	// read the flags
+	fread(&gstate.drawFlags, sizeof(int), 1, f);
+	
+	// read the other values
+	fread(&gstate.evidencePage, sizeof(int), 1, f);
+	fread(&gstate.profilesPage, sizeof(int), 1, f);
+	
+	fread(&gstate.selectedEvidence, sizeof(int), 1, f);
+	fread(&gstate.selectedProfile, sizeof(int), 1, f);
+	fread(&gstate.selectedControl, sizeof(int), 1, f);
+	fread(&gstate.selectedLocation, sizeof(int), 1, f);
+	fread(&gstate.selectedTalkOption, sizeof(int), 1, f);
+	
+	fread(&gstate.requestingEvidence, sizeof(bool), 1, f);
+	fread(&gstate.requestingAnswer, sizeof(bool), 1, f);
+	
+	gstate.requestedEvidenceParams=readString(f);
+	gstate.requestedAnswerParams=readString(f);
+	gstate.requestedContrParams=readString(f);
+	
+	gstate.tempImage=readString(f);
+	
+	fread(&gstate.examinePt, sizeof(Point), 1, f);
+	
+	gstate.contradictionImg=readString(f);
+	fread(&gstate.contradictionRegion, sizeof(Rect), 1, f);
+	
+	fread(&gstate.prevScreen, sizeof(int), 1, f);
+	
+	fread(&gstate.hideTextBox, sizeof(bool), 1, f);
+	
+	fread(&gstate.continueMusic, sizeof(bool), 1, f);
+	
+	fread(&gstate.bgFade, sizeof(int), 1, f);
+	
+	fread(&gstate.testimonyTitle, sizeof(bool), 1, f);
+	gstate.curTestimony=readString(f);
+	fread(&gstate.curTestimonyPiece, sizeof(int), 1, f);
+	fread(&gstate.barPercent, sizeof(int), 1, f);
+	fread(&gstate.curExamination, sizeof(bool), 1, f);
+	fread(&gstate.curExaminationPaused, sizeof(bool), 1, f);
+	
+	fread(&gstate.shake, sizeof(int), 1, f);
+	gstate.whiteFlash=readString(f);
+	gstate.alphaDecay=readString(f);
+	gstate.fadeOut=readString(f);
+	gstate.fadeIn=readString(f);
+	gstate.flash=readString(f);
+	gstate.blink=readString(f);
+	gstate.gavel=readString(f);
+	gstate.courtCamera=readString(f);
+	gstate.testimonySequence=readString(f);
+	gstate.crossExamineSequence=readString(f);
+	gstate.exclamation=readString(f);
+	gstate.addEvidence=readString(f);
+	
+	gstate.crossExamineLawyers.first=readString(f);
+	gstate.crossExamineLawyers.second=readString(f);
+	
+	gstate.shownEvidence=readString(f);
+	fread(&gstate.shownEvidencePos, sizeof(Position), 1, f);
+	
+	gstate.crOverviewDefense=readString(f);
+	gstate.crOverviewProsecutor=readString(f);
+	gstate.crOverviewWitness=readString(f);
+	
+	gstate.currentLocation=readString(f);
+	
+	fread(&gstate.queuedFlags, sizeof(int), 1, f);
+	gstate.queuedLocation=readString(f);
+	gstate.queuedBlock=readString(f);
+	gstate.resetAnimations=readString(f);
+	
+	int amount;
+	fread(&amount, sizeof(int), 1, f);
+	for (int i=0; i<amount; i++) {
+		StringPair p;
+		p.first=readString(f);
+		p.second=readString(f);
+		gstate.talkOptions.push_back(p);
+	}
+	
+	fread(&amount, sizeof(int), 1, f);
+	for (int i=0; i<amount; i++)
+		gstate.visibleEvidence.push_back(readString(f));
+	
+	fread(&amount, sizeof(int), 1, f);
+	for (int i=0; i<amount; i++)
+		gstate.visibleProfiles.push_back(readString(f));
+	
+	// now restore text parser state
+	TextParser::instance()->serializeFromFile(f);
+	
+	fclose(f);
 	return true;
 }
 
@@ -823,6 +1063,16 @@ SDL_Surface* IO::readImage(FILE *f) {
 	delete [] buffer;
 	
 	return srf;
+}
+
+// write a string to file
+void IO::writeString(const ustring &str, FILE *f) {
+	int amount=str.size();
+	fwrite(&amount, sizeof(int), 1, f);
+	for (int i=0; i<amount; i++) {
+		uchar ch=str[i];
+		fwrite(&ch, sizeof(uchar), 1, f);
+	}
 }
 
 // read a string from file

@@ -25,6 +25,7 @@
 #include <iostream>
 
 #include "case.h"
+#include "game.h"
 #include "sprite.h"
 #include "texture.h"
 #include "theme.h"
@@ -54,8 +55,14 @@ typedef struct _PWTHeader PWTHeader;
 /// Magic number for PWT case file
 const int FILE_MAGIC_NUM=(('T' << 16) + ('W' << 8) + 'P');
 
+/// Magic number for save files
+const int SV_FILE_MAGIC_NUM=(('V' << 8) + 'S');
+
 /// Supported version of the PWT case file
 const int FILE_VERSION=10;
+
+/// Supported version of the SV save file
+const int SV_VERSION=10;
 
 /// Magic number for the sprite file
 const ustring SPR_MAGIC_NUM="SPR";
@@ -68,6 +75,20 @@ const int SPR_VERSION=10;
   * \return <b>true</b> if no errors occurred, <b>false</b> otherwise
 */
 bool unpackResourceFile(const ustring &path);
+
+/** Save a game state to file
+  * \param gstate The GameState struct to save
+  * \param number ID number for the file
+  * \return <b>true</b> if no errors occurred, <b>false</b> otherwise
+*/
+bool saveGameState(const GameState &gstate, int number);
+
+/** Load a saved game state from file
+  * \param gstate The GameState struct to write values to
+  * \param number ID number for the file
+  * \return <b>true</b> if no errors occurred, <b>false</b> otherwise
+*/
+bool loadGameState(GameState &gstate, int number);
 
 /** Load a case from file
   * \param path The path to the file
@@ -109,6 +130,12 @@ bool loadThemeXML(const ustring &path, Theme::ColorMap &map);
   * \return An allocated SDL_Surface on success, NULL otherwise
 */
 SDL_Surface* readImage(FILE *f);
+
+/** Write a string to file
+  * \param str The string to write
+  * \param f FILE handle with pointer set to write
+*/
+void writeString(const ustring &str, FILE *f);
 
 /** Read a string from the file
   * \param f FILE handle with read pointer set to string

@@ -23,7 +23,7 @@
 #define TEXTPARSER_H
 
 #include <iostream>
-#include <queue>
+#include <deque>
 #include <map>
 
 #include "common.h"
@@ -68,6 +68,11 @@ class TextParser {
 		  * \param game Pointer to the Game engine object
 		*/
 		TextParser(Game *game);
+		
+		/** Get an instance of this class
+		  * \return Instance of this class
+		*/
+		static TextParser* instance();
 		
 		/** Set a text block to parse
 		  * \param block The block to parse
@@ -126,6 +131,16 @@ class TextParser {
 		
 		/// Move on to the next break point
 		void nextStep();
+		
+		/** Serialize data from the TextParser to file
+		  * \param f FILE handle to which to write
+		*/
+		void serializeToFile(FILE *f);
+		
+		/** Serialize data from a file to the TextParser
+		  * \param f FILE handle from which to read
+		*/
+		void serializeFromFile(FILE *f);
 		
 	private:
 		/** See if a dialogue sound effect should be played for a given character
@@ -222,7 +237,7 @@ class TextParser {
 		FontStyle m_FontStyle;
 		
 		/// Triggers to be executed in a linear manner
-		std::queue<StringPair> m_QueuedTriggers;
+		std::deque<StringPair> m_QueuedTriggers;
 		
 		/// Scheduled fade out
 		ustring m_QueuedFade;

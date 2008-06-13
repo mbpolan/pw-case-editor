@@ -244,6 +244,16 @@ class Game {
 		*/
 		bool loadStockTextures();
 		
+		/** Save the current game to file
+		  * \return <b>true</b> if no errors occurred, <b>false</b> otherwise
+		*/
+		bool saveGameState();
+		
+		/** Load a saved game from file
+		  * \return <b>true</b> if no errors occurred, <b>false</b> otherwise
+		*/
+		bool loadGameState();
+		
 		/// Render the current scene
 		void render();
 		

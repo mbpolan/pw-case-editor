@@ -24,8 +24,11 @@
 #include "audio.h"
 #include "font.h"
 #include "game.h"
+#include "iohandler.h"
 #include "textparser.h"
 #include "utilities.h"
+
+TextParser *g_TextParser=NULL;
 
 // constructor
 TextParser::TextParser(Game *game): m_Game(game) {
@@ -47,6 +50,13 @@ TextParser::TextParser(Game *game): m_Game(game) {
 	m_Speed=50;
 	m_TimedGoto=0;
 	m_PauseDiag=0;
+	
+	g_TextParser=this;
+}
+
+// return an instance of this class
+TextParser* TextParser::instance() {
+	return g_TextParser;
 }
 
 // set the text block
@@ -166,7 +176,7 @@ ustring TextParser::parse(bool drawDialogue) {
 					m_Dialogue+='^';
 					
 					// and append this trigger
-					m_QueuedTriggers.push(std::make_pair<ustring, ustring> (trigOp, trigComm));
+					m_QueuedTriggers.push_back(std::make_pair<ustring, ustring> (trigOp, trigComm));
 				}
 				
 				else {
@@ -337,7 +347,7 @@ ustring TextParser::parse(bool drawDialogue) {
 				// don't execute certain triggers during cross examination
 				if (m_Game->m_State.curExamination && !m_Game->m_State.curExaminationPaused) {
 					b=!filterTrigger(m_QueuedTriggers.front().first, FILTER_CROSS_EXAMINE);
-					m_QueuedTriggers.pop();
+					m_QueuedTriggers.pop_front();
 				}
 				
 				if (b)
@@ -596,6 +606,78 @@ void TextParser::nextStep() {
 	}
 }
 
+// serialize pertinent data to file
+void TextParser::serializeToFile(FILE *f) {
+	IO::writeString(m_Block, f);
+	IO::writeString(m_NextBlock, f);
+	IO::writeString(m_Speaker, f);
+	fwrite(&m_SpeakerGender, sizeof(Character::Gender), 1, f);
+	fwrite(&m_BreakPoint, sizeof(int), 1, f);
+	fwrite(&m_Pause, sizeof(bool), 1, f);
+	fwrite(&m_Done, sizeof(bool), 1, f);
+	fwrite(&m_Direct, sizeof(bool), 1, f);
+	fwrite(&m_BlockDiag, sizeof(bool), 1, f);
+	fwrite(&m_TalkLocked, sizeof(bool), 1, f);
+	IO::writeString(m_Dialogue, f);
+	fwrite(&m_StrPos, sizeof(int), 1, f);
+	fwrite(&m_LastChar, sizeof(int), 1, f);
+	fwrite(&m_Speed, sizeof(int), 1, f);
+	fwrite(&m_PauseDiag, sizeof(int), 1, f);
+	fwrite(&m_TagOpen, sizeof(bool), 1, f);
+	
+	int amount=m_QueuedTriggers.size();
+	for (int i=0; i<amount; i++) {
+		IO::writeString(m_QueuedTriggers[i].first, f);
+		IO::writeString(m_QueuedTriggers[i].second, f);
+	}
+	
+	IO::writeString(m_QueuedFade, f);
+	IO::writeString(m_QueuedTestimony, f);
+	IO::writeString(m_QueuedExamination, f);
+	IO::writeString(m_QueuedResume, f);
+	
+	IO::writeString(m_QueuedEvent, f);
+	IO::writeString(m_QueuedEventArgs, f);
+	
+	fwrite(&m_TimedGoto, sizeof(int), 1, f);
+}
+
+// read data from file to text parser
+void TextParser::serializeFromFile(FILE *f) {
+	m_Block=IO::readString(f);
+	m_NextBlock=IO::readString(f);
+	m_Speaker=IO::readString(f);
+	fread(&m_SpeakerGender, sizeof(Character::Gender), 1, f);
+	fread(&m_BreakPoint, sizeof(int), 1, f);
+	fread(&m_Pause, sizeof(bool), 1, f);
+	fread(&m_Done, sizeof(bool), 1, f);
+	fread(&m_Direct, sizeof(bool), 1, f);
+	fread(&m_BlockDiag, sizeof(bool), 1, f);
+	fread(&m_TalkLocked, sizeof(bool), 1, f);
+	m_Dialogue=IO::readString(f);
+	fread(&m_StrPos, sizeof(int), 1, f);
+	fread(&m_LastChar, sizeof(int), 1, f);
+	fread(&m_Speed, sizeof(int), 1, f);
+	fread(&m_PauseDiag, sizeof(int), 1, f);
+	fread(&m_TagOpen, sizeof(bool), 1, f);
+	
+	int amount=m_QueuedTriggers.size();
+	for (int i=0; i<amount; i++) {
+		IO::writeString(m_QueuedTriggers[i].first, f);
+		IO::writeString(m_QueuedTriggers[i].second, f);
+	}
+	
+	m_QueuedFade=IO::readString(f);
+	m_QueuedTestimony=IO::readString(f);
+	m_QueuedExamination=IO::readString(f);
+	m_QueuedResume=IO::readString(f);
+	
+	m_QueuedEvent=IO::readString(f);
+	m_QueuedEventArgs=IO::readString(f);
+	
+	fread(&m_TimedGoto, sizeof(int), 1, f);
+}
+
 // see if a dialogue sound effect should be played for a given character
 bool TextParser::shouldPlayDialogueEffect(uchar prev, uchar ch, uchar next) {
 	// spaces are never played, nor trigger hooks
@@ -686,7 +768,7 @@ void TextParser::executeNextTrigger() {
 	doTrigger(trigger.first, trigger.second);
 	
 	// get rid of it
-	m_QueuedTriggers.pop();
+	m_QueuedTriggers.pop_front();
 }
 
 // execute a trigger

@@ -173,6 +173,16 @@ bool Game::loadStockTextures() {
 	return true;
 }
 
+// save the current game snapshot
+bool Game::saveGameState() {
+	return IO::saveGameState(m_State, 0);
+}
+
+// load a save game snapshot
+bool Game::loadGameState() {
+	return IO::loadGameState(m_State, 0);
+}
+
 // render the current scene
 void Game::render() {
 	// if we are to shake the screen, do so now, since the elements depend

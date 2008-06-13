@@ -259,6 +259,27 @@ void SDLContext::onKeyboardEvent(SDL_KeyboardEvent *e) {
 		SDL_SaveBMP(m_Screen, ss.str().c_str());
 	}
 	
+	/*******************************************************************/
+	// TODO: these two functions are just for debug purposes!
+	//       replace them later with actual save/load screens
+	//
+	//	 niestety, jeszcze nie mam wymaganych grafikow zeby zastosowac
+	//	 tych elementow, ale pozniej gdzies je znajde ;P
+	
+	// save the game
+	else if (e->keysym.sym==SDLK_F4) {
+		if (!m_Game->saveGameState())
+			Utils::message("Unable to save game!");
+	}
+	
+	// load the game
+	else if (e->keysym.sym==SDLK_F5) {
+		if (!m_Game->loadGameState())
+			Utils::message("Unable to load game!");
+	}
+	
+	/*******************************************************************/
+	
 	m_Game->onKeyboardEvent(e);
 }
 
