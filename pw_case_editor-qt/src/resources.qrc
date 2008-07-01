@@ -1,0 +1,20 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+	<file>icons/new.png</file>
+	<file>icons/open.png</file>
+	<file>icons/save.png</file>
+	<file>icons/saveas.png</file>
+	<file>icons/export.png</file>
+	<file>icons/testimony.png</file>
+	<file>icons/bg.png</file>
+	<file>icons/audio.png</file>
+	<file>icons/browse-chars.png</file>
+	<file>icons/evidence.png</file>
+	<file>icons/image.png</file>
+	<file>icons/add-char.png</file>
+	<file>icons/location.png</file>
+	<file>icons/insert-dialogue.png</file>
+	<file>icons/initblock.png</file>
+	<file>icons/splash.png</file>
+</qresource>
+</RCC>
