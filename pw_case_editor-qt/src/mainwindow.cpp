@@ -24,6 +24,7 @@
 #include <QFileDialog>
 #include <QHBoxLayout>
 #include <QMenuBar>
+#include <QMessageBox>
 #include <QSettings>
 #include <QSplitter>
 #include <QStatusBar>
@@ -42,8 +43,13 @@ const QString g_AppName="Case Editor";
 // constructor
 MainWindow::MainWindow(QWidget *parent): QMainWindow(parent) {
 	// set title and minimum size
-	setWindowTitle(tr("Unsaved File")+" - Phoenix Wright Case Editor");
+	setWindowTitle(tr("Unsaved File")+"[*] - Phoenix Wright Case Editor");
 	setMinimumSize(640, 480);
+	
+	// os-specific calls
+#ifdef __MAC__
+	setUnifiedTitleAndToolBarOnMac(true);
+#endif
 	
 	construct();
 	
@@ -51,11 +57,18 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent) {
 	readSettings();
 }
 
+/// Handler for modified document status
+void MainWindow::onDocModified(bool state) {
+	setWindowModified(state);
+}
+
 // handler for File|New
 void MainWindow::onFileNew() {
 	// present the dialog
 	NewCaseDialog nd(this);
 	if (nd.exec()==QDialog::Accepted) {
+		// enable the widgets
+		setWindowEnabled(true);
 	}
 }
 
@@ -104,6 +117,14 @@ void MainWindow::onFileOpen() {
 
 // handler for File|Save
 void MainWindow::onFileSave() {
+	QString path=QFileDialog::getSaveFileName(this, tr("Save Case"), "", tr("Case Project Files (*.cprjt)"));
+	if (!path.isNull()) {
+		// ask the iohandler to save our case
+		// TODO
+		
+		// clear our modified flag
+		onDocModified(false);
+	}
 }
 
 // handler for File|Save As
@@ -118,8 +139,89 @@ void MainWindow::onFileExport() {
 void MainWindow::onRecentFile() {
 }
 
+// handler for Case|Manage Locations
+void MainWindow::onManageLocations() {
+	// launch location manager
+	LocationEditor lm(m_Case.getLocations(), this);
+	if (lm.exec()==QDialog::Accepted) {
+		// clear the old locations
+		m_Case.clearLocations();
+		
+		// get the new map
+		LocationMap lmap=lm.getLocations();
+		
+		// add new ones in
+		for (LocationMap::iterator it=lmap.begin(); it!=lmap.end(); ++it)
+			m_Case.addLocation((*it).second);
+	}
+}
+
+// handler for Assets|Manage Evidence
+void MainWindow::onManageEvidence() {
+	// launch evidence editing dialog
+	EvidenceEditor diag(m_Case.getEvidence(), this);
+	if (diag.exec()==QDialog::Accepted) {
+		// clear the old evidence
+		m_Case.clearEvidence();
+		
+		// get the new map
+		EvidenceMap emap=diag.getEvidence();
+		
+		// add new ones in
+		for (EvidenceMap::iterator it=emap.begin(); it!=emap.end(); ++it)
+			m_Case.addEvidence((*it).second);
+	}
+}
+
+
+// handler for Assets|Manage Backgrounds
+void MainWindow::onManageBackgrounds() {
+	BackgroundManager bm(m_Case.getBackgrounds(), this);
+	if (bm.exec()==QDialog::Accepted) {
+		// clear the old backgrounds
+		m_Case.clearBackgrounds();
+		
+		// get the new map
+		BackgroundMap bmap=bm.getBackgrounds();
+		
+		// add new ones in
+		for (BackgroundMap::iterator it=bmap.begin(); it!=bmap.end(); ++it)
+			m_Case.addBackground((*it).second);
+	}
+}
+
+// handler for File|Manage Character
+void MainWindow::onManageCharacters() {
+	CharacterManager cm(m_Case.getCharacters(), this);
+	if (cm.exec()==QDialog::Accepted) {
+		// copy the new data
+		m_Case.clearCharacters();
+		
+		// get our new map
+		CharacterMap nmap=cm.getCharacters();
+		
+		// add the new ones in
+		for (CharacterMap::iterator it=nmap.begin(); it!=nmap.end(); ++it)
+			m_Case.addCharacter((*it).second);
+	}
+}
+
 // overloaded onCloseEvent
-void MainWindow::onCloseEvent(QCloseEvent *e) {
+void MainWindow::closeEvent(QCloseEvent *e) {
+	// ask to save before closing
+	if (isWindowModified()) {
+		QMessageBox::StandardButton b=QMessageBox::question(this, tr("Unsaved Changes"), 
+									 tr("You have unsaved changes in your current case. Save before closing?"), 
+									 QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+		if (b==QMessageBox::Yes)
+			onFileSave();
+		
+		else if (b==QMessageBox::Cancel) {
+			e->ignore();
+			return;
+		}
+	}
+	
 	e->accept();
 }
 
@@ -138,6 +240,7 @@ void MainWindow::construct() {
 	
 	// connect signals
 	connect(m_ScriptWidget, SIGNAL(contentsUpdated(QString, QString)), m_Lists, SLOT(updateBlock(QString, QString)));
+	connect(m_ScriptWidget, SIGNAL(modified(bool)), this, SLOT(onDocModified(bool)));
 	connect(m_Lists, SIGNAL(blockChanged(QString, QString)), m_ScriptWidget, SLOT(setActiveBlock(QString, QString)));
 	
 	// allocate splitter
@@ -157,6 +260,16 @@ void MainWindow::construct() {
 	m_StatusLabel=new QLabel(this);
 	statusBar()->addWidget(m_StatusLabel);
 	statusBar()->showMessage(tr("Ready"));
+	
+	// start fresh with a new document
+	setWindowEnabled(false);
+	onDocModified(false);
+}
+
+// toggle the editable status of the window contents
+void MainWindow::setWindowEnabled(bool enabled) {
+	m_ScriptWidget->setEnabled(enabled);
+	m_Lists->setEnabled(enabled);
 }
 
 // read stored application settings
@@ -194,6 +307,22 @@ void MainWindow::createActions() {
 	
 	m_Actions["File|Export"]=createQAction(":/icons/export.png", tr("Export"), tr("Ctrl+E"), tr("Export a playable case"));
 	connect(m_Actions["File|Export"], SIGNAL(triggered()), this, SLOT(onFileExport()));
+	
+	m_Actions["Case|ManageCharacters"]=createQAction(":/icons/browse-chars.png", tr("Manage Characters"), "", 
+									tr("Add, edit, and delete characters"));
+	connect(m_Actions["Case|ManageCharacters"], SIGNAL(triggered()), this, SLOT(onManageCharacters()));
+	
+	m_Actions["Case|ManageLocations"]=createQAction(":/icons/location.png", tr("Manage Locations"), "",
+									tr("Add, edit, and delete locations"));
+	connect(m_Actions["Case|ManageLocations"], SIGNAL(triggered()), this, SLOT(onManageLocations()));
+	
+	m_Actions["Assets|ManageEvidence"]=createQAction(":/icons/evidence.png", tr("Manage Evidence"), "",
+									 tr("Add, edit, and delete evidence"));
+	connect(m_Actions["Assets|ManageEvidence"], SIGNAL(triggered()), this, SLOT(onManageEvidence()));
+	
+	m_Actions["Assets|ManageBGs"]=createQAction(":/icons/bg.png", tr("Manage Backgrounds"), "",
+									 tr("Add, edit, and delete backgrounds"));
+	connect(m_Actions["Assets|ManageBGs"], SIGNAL(triggered()), this, SLOT(onManageBackgrounds()));
 }
 
 // create all menus
@@ -209,14 +338,21 @@ void MainWindow::createMenus() {
 	
 	m_Menus["File|Recent"]=m_Menus["File"]->addMenu(tr("Recent Files"));
 	
+#ifndef __MAC__
 	m_Menus["File"]->addSeparator();
 	m_Menus["File"]->addAction(m_Actions["File|Quit"]);
+#endif
 	
 	m_Menus["Edit"]=menuBar()->addMenu(tr("&Edit"));
 	
 	m_Menus["Case"]=menuBar()->addMenu(tr("&Case"));
+	m_Menus["Case"]->addAction(m_Actions["Case|ManageCharacters"]);
+	m_Menus["Case"]->addSeparator();
+	m_Menus["Case"]->addAction(m_Actions["Case|ManageLocations"]);
 	
 	m_Menus["Assets"]=menuBar()->addMenu(tr("&Assets"));
+	m_Menus["Assets"]->addAction(m_Actions["Assets|ManageBGs"]);
+	m_Menus["Assets"]->addAction(m_Actions["Assets|ManageEvidence"]);
 	
 	m_Menus["Tools"]=menuBar()->addMenu(tr("&Tools"));
 	

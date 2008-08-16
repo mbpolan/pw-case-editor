@@ -14,7 +14,12 @@ TRANSLATIONS = intl/pw_case_editor-qt_pl.ts
 
 RESOURCES = src/resources.qrc
 
-FORMS = src/ui/newcasedialog.ui
+FORMS = src/ui/newcasedialog.ui \
+	  src/ui/charactereditor.ui \
+	  src/ui/charactermanager.ui \
+	  src/ui/locationeditor.ui \
+	  src/ui/evidenceeditor.ui \
+	  src/ui/bgmanager.ui
 
 # Input
 HEADERS =   src/clistview.h \

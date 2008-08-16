@@ -1,63 +1,54 @@
 <ui version="4.0" >
- <class>NewCaseDialog</class>
- <widget class="QDialog" name="NewCaseDialog" >
+ <class>CharacterManager</class>
+ <widget class="QDialog" name="CharacterManager" >
   <property name="geometry" >
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>307</width>
-    <height>182</height>
+    <width>381</width>
+    <height>280</height>
    </rect>
   </property>
   <property name="windowTitle" >
-   <string>New Case</string>
-  </property>
-  <property name="sizeGripEnabled" >
-   <bool>true</bool>
+   <string>Character Manager</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_2" >
    <item row="0" column="0" >
     <layout class="QGridLayout" name="gridLayout" >
-     <item row="0" column="0" >
-      <widget class="QLabel" name="m_CaseLabel" >
-       <property name="text" >
-        <string>Case Name</string>
+     <item rowspan="3" row="1" column="0" >
+      <widget class="QListWidget" name="m_CharList" />
+     </item>
+     <item rowspan="3" row="1" column="1" >
+      <layout class="QVBoxLayout" name="verticalLayout" >
+       <property name="sizeConstraint" >
+        <enum>QLayout::SetDefaultConstraint</enum>
        </property>
-      </widget>
-     </item>
-     <item row="0" column="1" >
-      <widget class="QLineEdit" name="m_CaseEdit" />
-     </item>
-     <item row="1" column="0" >
-      <widget class="QLabel" name="m_AuthorLabel" >
-       <property name="text" >
-        <string>Author</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1" >
-      <widget class="QLineEdit" name="m_AuthorEdit" />
-     </item>
-     <item row="2" column="0" >
-      <widget class="QLabel" name="m_DaysLabel" >
-       <property name="text" >
-        <string>Duration (days)</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1" >
-      <widget class="QSpinBox" name="m_DaysEdit" />
+       <item>
+        <widget class="QPushButton" name="m_AddButton" >
+         <property name="text" >
+          <string>Add</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="m_EditButton" >
+         <property name="text" >
+          <string>Edit</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="m_DeleteButton" >
+         <property name="text" >
+          <string>Delete</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
     </layout>
    </item>
    <item row="1" column="0" >
-    <widget class="Line" name="line" >
-     <property name="orientation" >
-      <enum>Qt::Horizontal</enum>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0" >
     <widget class="QDialogButtonBox" name="buttonBox" >
      <property name="orientation" >
       <enum>Qt::Horizontal</enum>
@@ -74,7 +65,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>NewCaseDialog</receiver>
+   <receiver>CharacterManager</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel" >
@@ -90,7 +81,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>NewCaseDialog</receiver>
+   <receiver>CharacterManager</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel" >

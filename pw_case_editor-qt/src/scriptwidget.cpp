@@ -62,4 +62,8 @@ void ScriptWidget::onTextChanged() {
 	id=id.mid(npos+2, id.size()-npos);
 	
 	emit contentsUpdated(id, m_BlockEdit->toPlainText());
+	
+	// no point firing useless signals
+	if (m_BlockEdit->isEnabled())
+		emit modified(true);
 }

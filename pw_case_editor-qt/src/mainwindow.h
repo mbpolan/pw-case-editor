@@ -49,6 +49,9 @@ class MainWindow: public QMainWindow {
 		MainWindow(QWidget *parent=NULL);
 	
 	private slots:
+		/// Handler for modified document status
+		void onDocModified(bool state);
+	
 		/// Handler for File|New
 		void onFileNew();
 		
@@ -66,13 +69,30 @@ class MainWindow: public QMainWindow {
 		
 		/// Handler for File|Recent Files actions
 		void onRecentFile();
+		
+		/// Handler for Case|Manage Character
+		void onManageCharacters();
+		
+		/// Handler for Case|Manage Locations
+		void onManageLocations();
+		
+		/// Handler for Assets|Manage Evidence
+		void onManageEvidence();
+		
+		/// Handler for Assets|Manage Backgrounds
+		void onManageBackgrounds();
 	
 	protected:
-		/// Overloaded onCloseEvent
-		virtual void onCloseEvent(QCloseEvent *e);
+		/// Overloaded closeEvent handler
+		virtual void closeEvent(QCloseEvent *e);
 		
 		/// Build the interface
 		void construct();
+		
+		/** Toggle the status of the window contents
+		  * \param enabled <b>true</b> to enable, <b>false</b> to disable
+		*/
+		void setWindowEnabled(bool enabled);
 		
 		/// Read saved application settings
 		void readSettings();

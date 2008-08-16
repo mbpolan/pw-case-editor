@@ -1,0 +1,353 @@
+<ui version="4.0" >
+ <class>CharacterEditor</class>
+ <widget class="QDialog" name="CharacterEditor" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>451</width>
+    <height>494</height>
+   </rect>
+  </property>
+  <property name="sizePolicy" >
+   <sizepolicy vsizetype="Preferred" hsizetype="Preferred" >
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle" >
+   <string>Character Editor</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout_5" >
+   <item row="0" column="0" >
+    <widget class="QTabWidget" name="m_TabWidget" >
+     <property name="sizePolicy" >
+      <sizepolicy vsizetype="Preferred" hsizetype="Preferred" >
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="toolTip" >
+      <string/>
+     </property>
+     <property name="currentIndex" >
+      <number>0</number>
+     </property>
+     <widget class="QWidget" name="m_GeneralTab" >
+      <property name="geometry" >
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>421</width>
+        <height>407</height>
+       </rect>
+      </property>
+      <property name="sizePolicy" >
+       <sizepolicy vsizetype="Preferred" hsizetype="Preferred" >
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <attribute name="title" >
+       <string>General</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_3" >
+       <item row="0" column="0" >
+        <widget class="QLabel" name="label" >
+         <property name="text" >
+          <string>Internal ID</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1" >
+        <widget class="QLineEdit" name="m_IDEdit" >
+         <property name="toolTip" >
+          <string>The ID name that will be used from within the script.</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0" >
+        <widget class="QLabel" name="label_2" >
+         <property name="text" >
+          <string>Name</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1" >
+        <widget class="QLineEdit" name="m_NameEdit" >
+         <property name="toolTip" >
+          <string>The name that will be displayed in the game.</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0" >
+        <widget class="QLabel" name="label_3" >
+         <property name="text" >
+          <string>Gender</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1" >
+        <widget class="QComboBox" name="m_GenderCB" >
+         <property name="toolTip" >
+          <string>The gender of this character.</string>
+         </property>
+         <item>
+          <property name="text" >
+           <string>Male</string>
+          </property>
+         </item>
+         <item>
+          <property name="text" >
+           <string>Female</string>
+          </property>
+         </item>
+         <item>
+          <property name="text" >
+           <string>Unknown</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="3" column="0" >
+        <widget class="QLabel" name="label_4" >
+         <property name="text" >
+          <string>Caption</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1" >
+        <widget class="QLineEdit" name="m_CaptionEdit" >
+         <property name="toolTip" >
+          <string>Brief string shown in the Court Record green box.</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0" >
+        <widget class="QLabel" name="label_5" >
+         <property name="text" >
+          <string>Description</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1" >
+        <widget class="QLineEdit" name="m_DescEdit" />
+       </item>
+       <item row="5" column="0" >
+        <widget class="QLabel" name="label_6" >
+         <property name="text" >
+          <string>Sprite Name</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1" >
+        <widget class="QLineEdit" name="m_SpriteEdit" >
+         <property name="toolTip" >
+          <string>Base name of the character's sprite.</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="2" >
+        <widget class="QPushButton" name="m_SprButton" >
+         <property name="text" >
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="m_GfxTab" >
+      <property name="geometry" >
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>421</width>
+        <height>407</height>
+       </rect>
+      </property>
+      <attribute name="title" >
+       <string>Graphics</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_4" >
+       <item row="0" column="0" >
+        <widget class="QGroupBox" name="groupBox" >
+         <property name="title" >
+          <string>Profile Picture</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_2" >
+          <item row="0" column="0" colspan="3" >
+           <widget class="QCheckBox" name="m_EnablePicCB" >
+            <property name="text" >
+             <string>Enable</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0" >
+           <widget class="QLabel" name="m_PicSLabel" >
+            <property name="enabled" >
+             <bool>false</bool>
+            </property>
+            <property name="text" >
+             <string>Image</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1" >
+           <widget class="QLineEdit" name="m_PicEdit" >
+            <property name="enabled" >
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2" >
+           <widget class="QPushButton" name="m_PicButton" >
+            <property name="enabled" >
+             <bool>false</bool>
+            </property>
+            <property name="text" >
+             <string>...</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1" >
+           <widget class="QLabel" name="m_PicLabel" >
+            <property name="enabled" >
+             <bool>false</bool>
+            </property>
+            <property name="minimumSize" >
+             <size>
+              <width>70</width>
+              <height>70</height>
+             </size>
+            </property>
+            <property name="maximumSize" >
+             <size>
+              <width>70</width>
+              <height>70</height>
+             </size>
+            </property>
+            <property name="text" >
+             <string/>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="1" column="0" >
+        <widget class="QGroupBox" name="groupBox_2" >
+         <property name="title" >
+          <string>Textbox Tag</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout" >
+          <item row="0" column="0" colspan="2" >
+           <widget class="QCheckBox" name="m_TagCB" >
+            <property name="text" >
+             <string>Enable</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0" >
+           <widget class="QLabel" name="m_TagSLabel" >
+            <property name="enabled" >
+             <bool>false</bool>
+            </property>
+            <property name="text" >
+             <string>Image</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1" >
+           <widget class="QLineEdit" name="m_TagEdit" >
+            <property name="enabled" >
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2" >
+           <widget class="QPushButton" name="m_TagButton" >
+            <property name="enabled" >
+             <bool>false</bool>
+            </property>
+            <property name="text" >
+             <string>...</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1" >
+           <widget class="QLabel" name="m_TagLabel" >
+            <property name="enabled" >
+             <bool>false</bool>
+            </property>
+            <property name="minimumSize" >
+             <size>
+              <width>70</width>
+              <height>70</height>
+             </size>
+            </property>
+            <property name="maximumSize" >
+             <size>
+              <width>70</width>
+              <height>70</height>
+             </size>
+            </property>
+            <property name="text" >
+             <string/>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item row="1" column="0" >
+    <widget class="QDialogButtonBox" name="buttonBox" >
+     <property name="orientation" >
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons" >
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>CharacterEditor</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>248</x>
+     <y>254</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>157</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>CharacterEditor</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>316</x>
+     <y>260</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>286</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

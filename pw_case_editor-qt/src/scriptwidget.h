@@ -44,6 +44,11 @@ class ScriptWidget: public QWidget {
 		  * \param contents Updated string contents
 		*/
 		void contentsUpdated(QString id, QString contents);
+		
+		/** Signal emitted when something was modified in the widget
+		  * \param state Always <b>true</b>
+		*/
+		void modified(bool state);
 	
 	public slots:
 		/** Set the active block
